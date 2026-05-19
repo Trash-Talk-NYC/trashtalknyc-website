@@ -118,12 +118,14 @@
     display: flex;
     align-items: center;
     gap: 2rem;
+    order: 3;
   }
 
   .nav-links {
     display: flex;
     gap: 2rem;
     list-style: none;
+    order: 2;
   }
 
   .nav-links a {
@@ -986,10 +988,45 @@
     color: rgba(247,244,237,0.22);
   }
 
+  /* ── HAMBURGER ── */
+  .nav-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--cream);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+  .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
   /* ── MOBILE ── */
   @media (max-width: 768px) {
-    nav { padding: 0 1.25rem; }
-    .nav-links { display: none; }
+    nav { padding: 0 1.25rem; flex-wrap: wrap; height: auto; min-height: 60px; }
+    .nav-hamburger { display: flex; }
+    .nav-links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 0;
+      padding: 0.5rem 0 1rem;
+      order: 3;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links li { border-top: 1px solid rgba(247,244,237,0.1); }
+    .nav-links a { display: block; padding: 0.75rem 0.25rem; font-size: 0.9rem; }
+    .nav-right { gap: 1rem; }
 
     .hero {
       grid-template-columns: 1fr;
@@ -1235,16 +1272,19 @@
 <nav>
   <a class="nav-logo" href="#">Trash Talk <span>NYC</span></a>
   <div class="nav-right">
-    <ul class="nav-links">
-      <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
-      <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
-      <li><a href="#signup" class="nav-cta" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
-    </ul>
     <div class="lang-toggle">
       <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
       <button class="lang-btn" id="btnES" onclick="setLang('es')">ES</button>
     </div>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
   </div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
+    <li><a href="#signup" class="nav-cta" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
+  </ul>
 </nav>
 
 <!-- HERO -->
@@ -1510,6 +1550,23 @@
 </footer>
 
 <script>
+  // ── MOBILE NAV ──
+  function toggleMobileNav() {
+    const btn = document.getElementById('navHamburger');
+    const links = document.getElementById('navLinks');
+    btn.classList.toggle('open');
+    links.classList.toggle('open');
+  }
+  // close mobile nav when a link is clicked
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav-links a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        document.getElementById('navHamburger').classList.remove('open');
+        document.getElementById('navLinks').classList.remove('open');
+      });
+    });
+  });
+
   // ── FORM SUBMIT ──
   document.getElementById('volunteerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
