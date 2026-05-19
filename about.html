@@ -248,30 +248,56 @@
   }
 
   .email-toggle-btn {
-    display: inline-flex;
+    width: 100%;
+    display: flex;
     align-items: center;
-    gap: 0.4rem;
-    background: none;
-    border: 2px solid var(--purple-light);
-    color: var(--purple);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    padding: 0.45rem 1.1rem;
-    border-radius: 20px;
+    gap: 0.65rem;
+    background: #e8e8ec;
+    border: none;
+    border-bottom: 1px solid #d4d4d8;
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    text-align: left;
+    transition: border-radius 0.15s;
   }
 
-  .email-toggle-btn:hover,
   .email-toggle-btn.open {
-    background: var(--purple);
-    color: #fff;
-    border-color: var(--purple);
+    border-radius: 10px 10px 0 0;
   }
 
-  .tl-email .email-card { margin-top: 1.25rem; }
+  .email-toggle-btn:hover { background: #dddde2; }
+
+  .toggle-dots {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .toggle-subject {
+    flex: 1;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #555;
+  }
+
+  .toggle-arrow {
+    font-size: 0.65rem;
+    color: #888;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+
+  .email-toggle-btn.open .toggle-arrow { transform: rotate(180deg); }
+
+  .tl-email .email-card {
+    border-radius: 0 0 14px 14px;
+  }
+
+  .tl-email .email-card .email-chrome { display: none; }
 
   /* ── MISSION BOX ── */
   .tl-marker--end {
@@ -500,7 +526,15 @@
       </div>
 
       <div class="tl-email">
-        <button class="email-toggle-btn" id="emailToggle" onclick="toggleEmail()">Read our first email ↓</button>
+        <button class="email-toggle-btn" id="emailToggle" onclick="toggleEmail()">
+          <span class="toggle-dots">
+            <span class="email-dot"></span>
+            <span class="email-dot"></span>
+            <span class="email-dot"></span>
+          </span>
+          <span class="toggle-subject">That first email — Trash Talk NYC</span>
+          <span class="toggle-arrow">▼</span>
+        </button>
         <div class="email-card" id="firstEmail" style="display:none;">
           <div class="email-chrome">
             <div class="email-dot"></div>
@@ -564,7 +598,6 @@
     const btn = document.getElementById('emailToggle');
     const open = card.style.display !== 'none';
     card.style.display = open ? 'none' : 'block';
-    btn.textContent = open ? 'Read our first email ↓' : 'Close email ↑';
     btn.classList.toggle('open', !open);
   }
 </script>
