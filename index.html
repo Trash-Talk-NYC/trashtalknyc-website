@@ -1179,6 +1179,44 @@
   .hero-sub     { animation: fadeUp 0.5s 0.2s ease both; }
   .hero-btns    { animation: fadeUp 0.5s 0.3s ease both; }
   .hero-cards   { animation: fadeUp 0.5s 0.4s ease both; }
+  /* ── GOFUNDME SECTION ── */
+  .gfm-section {
+    background: var(--cream);
+    padding: 5rem 2rem;
+    text-align: center;
+  }
+
+  .gfm-inner {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .gfm-section .section-label {
+    margin-bottom: 0.75rem;
+  }
+
+  .gfm-section .section-title {
+    margin-bottom: 1rem;
+  }
+
+  .gfm-section p {
+    color: var(--gray);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .gfm-widget-wrap {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(107,63,160,0.13);
+    padding: 2rem;
+    max-width: 500px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
 </style>
 </head>
 <body>
@@ -1199,7 +1237,7 @@
   <div class="nav-right">
     <ul class="nav-links">
       <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
-      <li><a href="#hotspots" data-en="Hotspots" data-es="Lugares">Hotspots</a></li>
+      <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
       <li><a href="#signup" class="nav-cta" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
     </ul>
     <div class="lang-toggle">
@@ -1411,6 +1449,19 @@
   </div>
 </section>
 
+<!-- GOFUNDME -->
+<section class="gfm-section" id="donate">
+  <div class="gfm-inner">
+    <h2 class="section-title" data-en="Help us keep NYC clean" data-es="Ayúdanos a mantener NYC limpia">Help us keep NYC clean</h2>
+    <p data-en="Every dollar goes directly toward cleanup supplies, equipment, and organizing future events across all five boroughs." data-es="Cada dólar va directamente a materiales de limpieza, equipo y organización de eventos futuros en los cinco condados.">Every dollar goes directly toward cleanup supplies, equipment, and organizing future events across all five boroughs.</p>
+
+    <div class="gfm-widget-wrap">
+      <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
+      <script defer src="https://www.gofundme.com/static/js/embed.js"></script>
+    </div>
+  </div>
+</section>
+
 <!-- IG CTA -->
 <section class="ig-cta">
   <div class="big-text" data-en="Follow the movement<br>on Instagram" data-es="Sigue el movimiento<br>en Instagram">Follow the movement<br>on Instagram</div>
@@ -1451,8 +1502,8 @@
   <div class="footer-logo">Trash Talk NYC</div>
   <ul class="footer-links">
     <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
-    <li><a href="#hotspots" data-en="Hotspots" data-es="Lugares">Hotspots</a></li>
     <li><a href="#signup" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
+    <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
     <li><a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">Instagram</a></li>
   </ul>
   <div class="footer-copy">© 2025 Trash Talk NYC</div>
