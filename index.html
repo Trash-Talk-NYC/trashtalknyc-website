@@ -110,6 +110,7 @@
     color: var(--yellow);
     letter-spacing: 0.06em;
     text-decoration: none;
+    white-space: nowrap;
   }
 
   .nav-logo span { color: var(--purple-light); }
@@ -341,6 +342,25 @@
     color: var(--off-white);
   }
   .hero-big-emoji svg { width: 100%; height: 100%; }
+
+  .hero-gfm {
+    display: none;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 420px;
+  }
+  .hero-gfm .gfm-embed-wrap {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(107,63,160,0.18);
+    padding: 1.5rem;
+    overflow: hidden;
+  }
+  @media (min-width: 1024px) {
+    .hero-gfm { display: block; }
+    .hero-big-emoji { opacity: 0.05; }
+  }
 
   .hero-cards {
     position: relative;
@@ -1025,8 +1045,16 @@
     }
     .nav-links.open { display: flex; }
     .nav-links li { border-top: 1px solid rgba(247,244,237,0.1); }
-    .nav-links a { display: block; padding: 0.75rem 0.25rem; font-size: 0.9rem; }
-    .nav-right { gap: 1rem; }
+    .nav-links a { display: block; padding: 0.75rem 0.5rem; font-size: 0.9rem; text-align: center; }
+    .nav-links .nav-cta {
+      margin: 0.6rem 0 0.25rem;
+      padding: 0.7rem 1.25rem;
+      border-radius: 6px;
+      text-align: center;
+      display: block;
+    }
+    .nav-right { gap: 0.5rem; }
+    .nav-logo { font-size: 1.25rem; }
 
     .hero {
       grid-template-columns: 1fr;
@@ -1062,6 +1090,12 @@
     }
 
     .footer-links { flex-wrap: wrap; gap: 1rem; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-btns { flex-direction: column; align-items: flex-start; }
+    .btn-primary, .btn-secondary { font-size: 0.78rem; padding: 0.8rem 1.4rem; width: 100%; text-align: center; }
+    .lang-btn { padding: 0.3rem 0.55rem; }
   }
 
   /* ── LITTER MAP TEASER ── */
@@ -1314,6 +1348,11 @@
         <line x1="60" y1="30" x2="60" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
       </svg>
     </div>
+    <div class="hero-gfm">
+      <div class="gfm-embed-wrap">
+        <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1354,14 +1393,17 @@
       <div class="step">
         <div class="step-num">03</div>
         <div class="step-icon">
-          <!-- camera / share -->
+          <!-- people / network / involve -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
           </svg>
         </div>
-        <h2 data-en="Share the love" data-es="Comparte el amor">Share the love!</h2>
-        <p data-en="Tag @trashtalk_nyc on Instagram. Let the city see what community looks like." data-es="Etiqueta @trashtalk_nyc en Instagram. Que la ciudad vea cómo se ve la comunidad.">Tag <strong>@trashtalk_nyc</strong> on Instagram. Let the city see what community looks like.</p>
+        <h2 data-en="Involve your circle" data-es="Involucra a tu círculo">Involve your circle</h2>
+        <p data-en="Share Trash Talk NYC social media and events with friends." data-es="Comparte las redes sociales y eventos de Trash Talk NYC con tus amigos.">Share Trash Talk NYC social media and events with friends.</p>
       </div>
     </div>
   </div>
