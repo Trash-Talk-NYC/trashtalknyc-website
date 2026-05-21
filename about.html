@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Trash Talk NYC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #1c1c22;
+    --off-white: #f7f4ed;
+    --cream: #ede9df;
+    --yellow: #f5d000;
+    --yellow-dark: #c9a900;
+    --purple: #6b3fa0;
+    --purple-light: #9b5de5;
+    --purple-pale: #f0e8ff;
+    --green: #2a6b2a;
+    --green-light: #3d9e3d;
+    --gray: #7a7a8a;
+    --warm-gray: #b0aca2;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--off-white);
+    color: var(--charcoal);
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.35;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: var(--charcoal);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 60px;
+    border-bottom: 3px solid var(--purple-light);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--yellow);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .nav-logo span { color: var(--purple-light); }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    order: 3;
+  }
+
+  .lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 2px solid var(--purple-light);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .lang-btn {
+    background: transparent;
+    color: rgba(247,244,237,0.55);
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .lang-btn.active { background: var(--purple-light); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--off-white); }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    order: 2;
+  }
+
+  .nav-links a {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(247,244,237,0.7);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: color 0.15s;
+  }
+
+  .nav-links a:hover { color: var(--yellow); }
+  .nav-links a.active { color: var(--yellow); }
+
+  .nav-cta {
+    background: var(--yellow);
+    color: var(--charcoal) !important;
+    padding: 0.4rem 1.1rem;
+    border-radius: 4px;
+    font-weight: 800 !important;
+  }
+
+  .nav-cta:hover { background: var(--purple-light) !important; color: #fff !important; }
+
+  .nav-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .nav-hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--cream);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+  .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ── SECTION SHARED ── */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--purple-light);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: var(--charcoal);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── PAGE HERO ── */
+  .page-hero {
+    background: var(--charcoal);
+    padding: 3rem 2rem 2.75rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 3px solid var(--purple-light);
+  }
+
+  .page-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 18px,
+      rgba(107,63,160,0.06) 18px,
+      rgba(107,63,160,0.06) 19px
+    );
+    pointer-events: none;
+  }
+
+  .page-hero-inner { position: relative; z-index: 1; }
+
+  .page-hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 10vw, 6rem);
+    color: var(--off-white);
+    letter-spacing: 0.06em;
+    line-height: 1;
+    margin-bottom: 0;
+  }
+
+  .page-hero h1 span { color: var(--yellow); }
+
+  /* ── ORIGIN TIMELINE ── */
+  .origin {
+    background: var(--cream);
+    padding: 3.5rem 2rem;
+  }
+
+  .origin-inner {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .timeline {
+    position: relative;
+    margin-top: 2rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: calc(1.05rem - 1px);
+    top: 2.1rem;
+    bottom: 1.05rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--purple-light), var(--purple));
+    opacity: 0.35;
+  }
+
+  .tl-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding-bottom: 2rem;
+    text-align: left;
+  }
+
+  .tl-item:last-child { padding-bottom: 0; }
+
+  .tl-marker {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: var(--purple);
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tl-content { flex: 1; padding-top: 0.3rem; }
+
+  .tl-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--charcoal);
+    margin-bottom: 0.3rem;
+  }
+
+  .tl-item p {
+    font-size: 0.85rem;
+    color: var(--gray);
+    line-height: 1.6;
+  }
+
+  .letter-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    letter-spacing: 0.03em;
+    color: var(--charcoal);
+    margin-bottom: 2rem;
+    line-height: 1;
+  }
+
+  /* ── EMAIL TOGGLE ── */
+  .tl-email {
+    padding-left: calc(2.1rem + 1.25rem);
+    padding-bottom: 2.5rem;
+  }
+
+  .email-toggle-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: #e8e8ec;
+    border: none;
+    border-bottom: 1px solid #d4d4d8;
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem;
+    cursor: pointer;
+    text-align: left;
+    transition: border-radius 0.15s;
+  }
+
+  .email-toggle-btn.open { border-radius: 10px 10px 0 0; }
+  .email-toggle-btn:hover { background: #dddde2; }
+
+  .toggle-dots {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .toggle-subject {
+    flex: 1;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #555;
+  }
+
+  .toggle-arrow {
+    font-size: 0.65rem;
+    color: #888;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+
+  .email-toggle-btn.open .toggle-arrow { transform: rotate(180deg); }
+
+  /* ── EMAIL MODAL OVERLAY ── */
+  .email-modal-overlay { display: none; }
+  .email-modal-overlay.open { display: block; }
+  .email-modal-close { display: none; }
+
+  .tl-email .email-card { border-radius: 0 0 14px 14px; }
+
+  /* ── TIMELINE REWIND CUE ── */
+  .tl-rewind {
+    padding-left: calc(2.1rem + 1.25rem);
+    padding-bottom: 1.75rem;
+    padding-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tl-rewind::before,
+  .tl-rewind::after {
+    content: '';
+    height: 1.5px;
+    background: rgba(107,63,160,0.3);
+  }
+
+  .tl-rewind::before { flex: 0 0 0.75rem; }
+  .tl-rewind::after  { flex: 1; }
+
+  .tl-rewind span {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--purple);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    background: var(--purple-pale);
+    border: 1.5px solid rgba(107,63,160,0.25);
+    border-radius: 20px;
+    padding: 0.22rem 0.7rem;
+  }
+
+  /* ── MISSION BOX ── */
+  .tl-marker--mission {
+    background: var(--yellow);
+    font-size: 0;
+    flex-shrink: 0;
+  }
+
+  .mission-box {
+    flex: 1;
+    background: var(--charcoal);
+    border-radius: 14px;
+    padding: 1.75rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mission-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 18px,
+      rgba(107,63,160,0.05) 18px,
+      rgba(107,63,160,0.05) 19px
+    );
+    pointer-events: none;
+  }
+
+  .mission-box .section-label {
+    color: var(--purple-light);
+    position: relative;
+    z-index: 1;
+  }
+
+  .mission-quote {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(0.88rem, 1.6vw, 1rem);
+    font-weight: 700;
+    color: rgba(247,244,237,0.88);
+    letter-spacing: 0.01em;
+    line-height: 1.75;
+    margin: 0.6rem 0 0.85rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── SCRAPPED STATEMENTS ── */
+  .scrapped-outer {
+    margin-top: 1.25rem;
+    border-top: 1px solid rgba(155,93,229,0.2);
+    padding-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scrapped-toggle-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    gap: 0.5rem;
+  }
+
+  .scrapped-toggle-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    color: rgba(247,244,237,0.42);
+    transition: color 0.15s;
+  }
+
+  .scrapped-toggle-label::before {
+    content: '› ';
+    font-style: normal;
+  }
+
+  .scrapped-toggle-btn.open .scrapped-toggle-label::before { content: '‹ '; }
+
+  .scrapped-toggle-btn:hover .scrapped-toggle-label,
+  .scrapped-toggle-btn.open .scrapped-toggle-label { color: rgba(247,244,237,0.7); }
+
+  .scrapped-toggle-arrow {
+    font-size: 0.55rem;
+    color: rgba(155,93,229,0.5);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .scrapped-toggle-btn.open .scrapped-toggle-arrow { transform: rotate(180deg); }
+
+  .scrapped-list {
+    display: none;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .scrapped-list.open { display: flex; }
+
+  .scrapped-item-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: rgba(155,93,229,0.08);
+    border: 1px solid rgba(155,93,229,0.22);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+  }
+
+  .scrapped-item-btn:hover { background: rgba(155,93,229,0.15); }
+  .scrapped-item-btn.open { border-radius: 6px 6px 0 0; }
+
+  .scrapped-item-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(247,244,237,0.55);
+    letter-spacing: 0.03em;
+  }
+
+  .scrapped-item-arrow {
+    font-size: 0.5rem;
+    color: rgba(155,93,229,0.45);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .scrapped-item-btn.open .scrapped-item-arrow { transform: rotate(180deg); }
+
+  .scrapped-item-body {
+    display: block;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(155,93,229,0.22);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+  }
+
+  .scrapped-item-body p {
+    font-size: 0.82rem;
+    color: rgba(247,244,237,0.4);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .mission-nyc { color: var(--yellow); }
+
+  .mission-quote strong {
+    font-weight: 800;
+    color: #fff;
+    font-size: 1.04em;
+    letter-spacing: 0.02em;
+  }
+
+  .mission-sub {
+    font-size: 0.88rem;
+    color: rgba(247,244,237,0.6);
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── EMAIL CARD ── */
+  .email-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 32px rgba(28,28,34,0.10), 0 1px 4px rgba(28,28,34,0.06);
+    overflow: hidden;
+  }
+
+  .email-chrome {
+    background: #e8e8ec;
+    padding: 0.55rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-bottom: 1px solid #d4d4d8;
+  }
+
+  .email-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+
+  .email-dot:nth-child(1) { background: #ff5f57; }
+  .email-dot:nth-child(2) { background: #febc2e; }
+  .email-dot:nth-child(3) { background: #28c840; }
+
+  .email-header {
+    background: var(--charcoal);
+    padding: 1.5rem 2rem;
+    border-bottom: 3px solid var(--purple-light);
+  }
+
+  .email-meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .email-meta-label {
+    color: rgba(247,244,237,0.45);
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.65rem;
+    padding-top: 0.1rem;
+  }
+
+  .email-meta-value {
+    color: rgba(247,244,237,0.8);
+    font-weight: 600;
+  }
+
+  .email-body {
+    padding: 2.25rem 2rem;
+    font-size: 0.97rem;
+    line-height: 1.8;
+    color: #2a2a32;
+  }
+
+  .email-body p { margin-bottom: 1.1rem; }
+  .email-body p:last-child { margin-bottom: 0; }
+
+  .email-sig {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--cream);
+    font-style: italic;
+    color: var(--gray);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--charcoal);
+    color: rgba(247,244,237,0.55);
+    text-align: center;
+    padding: 2.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--yellow);
+    letter-spacing: 0.06em;
+    margin-bottom: 1rem;
+  }
+
+  .footer-links {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+
+  .footer-links a {
+    color: rgba(247,244,237,0.55);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: color 0.15s;
+  }
+
+  .footer-links a:hover { color: var(--yellow); }
+  .footer-copy { font-size: 0.7rem; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    nav {
+      padding: 0 1.25rem;
+      flex-wrap: wrap;
+      height: auto;
+      min-height: 60px;
+    }
+
+    .nav-logo { font-size: 1.25rem; }
+
+    .nav-hamburger { display: flex; }
+
+    .nav-links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 0;
+      padding: 0.5rem 0 1rem;
+      order: 3;
+    }
+
+    .nav-links.open { display: flex; }
+    .nav-links li { border-top: 1px solid rgba(247,244,237,0.1); }
+    .nav-links a { display: block; padding: 0.75rem 0.5rem; font-size: 0.9rem; text-align: center; }
+    .nav-links .nav-cta {
+      margin: 0.6rem 0 0.25rem;
+      padding: 0.7rem 1.25rem;
+      border-radius: 6px;
+      text-align: center;
+      display: block;
+    }
+
+    .origin { padding: 2.5rem 1.25rem; }
+
+    .email-modal-overlay.open {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(28,28,34,0.92);
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .email-modal-close {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.5rem;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .email-modal-close button {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      border: none;
+      background: var(--off-white);
+      color: var(--charcoal);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+
+    .email-modal-overlay.open .email-card {
+      border-radius: 14px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">Trash Talk <span>NYC</span></a>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="btnES" onclick="setLang('es')">ES</button>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="about.html" class="active" data-en="About" data-es="Nosotros">About</a></li>
+    <li><a href="index.html#signup" class="nav-cta" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <h1><span data-en="About" data-es="Sobre Nosotros">About</span></h1>
+  </div>
+</section>
+
+<!-- ORIGIN + LETTER + MISSION -->
+<section class="origin">
+  <div class="origin-inner">
+    <div class="letter-title" data-en="Timeline" data-es="Cronología">Timeline</div>
+    <div class="timeline">
+
+      <!-- MISSION FIRST -->
+      <div class="tl-item">
+        <div class="tl-marker tl-marker--mission"></div>
+        <div class="mission-box">
+          <div class="section-label" data-en="Our mission" data-es="Nuestra misión">Our mission</div>
+          <div class="mission-quote">
+            <span class="lang-swap" data-lang="en">Lead a <strong>revolution of service</strong> to revive its value, appreciation, and ubiquity. By organizing ambitious trash clean-ups, we refuse to settle for a subpar standard of urban care-taking. We exist as a social enterprise hellbent on converting community involvement from a hobby—<em>a quirk, even</em>—to a wholehearted instinct.<br><br>New Yorkers are the stakeholders shared between <span class="mission-nyc">Trash Talk NYC</span> and local government.<br><br>They are to whom we situate ourselves flush, and consequently, to whom we provide supplement amid governmental inefficiency.</span>
+            <span class="lang-swap" data-lang="es" style="display:none">Liderar una <strong>revolución de servicio</strong> para revivir su valor, apreciación y ubicuidad. Al organizar ambiciosas limpiezas de basura, nos negamos a conformarnos con un estándar mediocre de cuidado urbano. Existimos como una empresa social empeñada en convertir la participación comunitaria de un pasatiempo—<em>una rareza, incluso</em>—a un instinto de todo corazón.<br><br>Los neoyorquinos son los interesados compartidos entre <span class="mission-nyc">Trash Talk NYC</span> y el gobierno local.<br><br>A ellos nos situamos al lado y, consecuentemente, les brindamos apoyo ante la ineficiencia gubernamental.</span>
+          </div>
+
+          <div class="scrapped-outer">
+            <button class="scrapped-toggle-btn" id="scrappedToggle" onclick="toggleScrapped()">
+              <span class="scrapped-toggle-label" data-en="View mission statement we scrapped" data-es="Ver declaración de misión que descartamos">View mission statement we scrapped</span>
+              <span class="scrapped-toggle-arrow">▼</span>
+            </button>
+            <div class="scrapped-list" id="scrappedList">
+              <div class="scrapped-item-body">
+                <p class="lang-swap" data-lang="en">Make New York give Japan clean. Or no — Singapore clean. Or no!!!!! Kigali, Rwanda clean.<br><br>Yeah, we scrapped this. But reframed:<br>&nbsp;&nbsp;• Coin "New York clean."<br>&nbsp;&nbsp;• Get "How is New York so clean" on Google autocomplete.</p>
+                <p class="lang-swap" data-lang="es" style="display:none">Que Nueva York logre el nivel de limpieza de Japón. O no — de Singapur. ¡¡¡¡¡O no!!!!! De Kigali, Ruanda.<br><br>Sí, lo descartamos.<br>Reformular:<br>&nbsp;&nbsp;• Acuñar "Nueva York limpia."<br>&nbsp;&nbsp;• Poner "¿Por qué Nueva York está tan limpia?" en el autocompletado de Google.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-rewind">
+        <span data-en="...but at first" data-es="...pero al principio">...but at first</span>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-marker">01</div>
+        <div class="tl-content">
+          <div class="tl-label" data-en="Clean-Up Videos = Satisfying = Algorithm Loves" data-es="Videos de limpieza = Satisfactorios = El algoritmo los ama">Clean-Up Videos = Satisfying = Algorithm Loves</div>
+          <p data-en="@trashtalk_nyc launches, posting neighborhood cleanups in Washington Heights. The videos hit over 100,000 views in 4 days." data-es="@trashtalk_nyc lanza publicaciones de limpiezas en Washington Heights. Los videos alcanzan más de 100,000 vistas en 4 días.">@trashtalk_nyc launches, posting neighborhood cleanups in Washington Heights. The videos hit over 100,000 views in 4 days.</p>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-marker">02</div>
+        <div class="tl-content">
+          <div class="tl-label" data-en="Interest explodes. Adapt!" data-es="¡El interés explota. ¡Adáptate!">Interest explodes. Adapt!</div>
+          <p data-en="A website is made the first week. 40 volunteers sign up the first day the site is live." data-es="Se crea un sitio web la primera semana. 40 voluntarios se registran el primer día que el sitio está activo.">A website is made the first week. 40 volunteers sign up the first day the site is live.</p>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-marker">03</div>
+        <div class="tl-content">
+          <div class="tl-label" data-en="Greetings, all." data-es="Saludos a todos.">Greetings, all.</div>
+          <p data-en="Trash Talk NYC writes to those first volunteers. Here's what we said." data-es="Trash Talk NYC escribe a esos primeros voluntarios. Esto es lo que dijimos.">Trash Talk NYC writes to those first volunteers. Here's what we said.</p>
+        </div>
+      </div>
+
+      <div class="tl-email">
+        <button class="email-toggle-btn" id="emailToggle" onclick="toggleEmail()">
+          <span class="toggle-dots">
+            <span class="email-dot"></span>
+            <span class="email-dot"></span>
+            <span class="email-dot"></span>
+          </span>
+          <span class="toggle-subject" data-en="That first email — Trash Talk NYC" data-es="Ese primer correo — Trash Talk NYC">That first email — Trash Talk NYC</span>
+          <span class="toggle-arrow">▼</span>
+        </button>
+        <div class="email-modal-overlay" id="emailModal">
+          <div class="email-modal-close">
+            <button onclick="closeEmailModal()" aria-label="Close email">✕</button>
+          </div>
+          <div class="email-card" id="firstEmail">
+            <div class="email-chrome">
+              <div class="email-dot"></div>
+              <div class="email-dot"></div>
+              <div class="email-dot"></div>
+            </div>
+            <div class="email-header">
+              <div class="email-meta">
+                <span class="email-meta-label" data-en="From" data-es="De">From</span>
+                <span class="email-meta-value">Trash Talk NYC</span>
+                <span class="email-meta-label" data-en="To" data-es="Para">To</span>
+                <span class="email-meta-value" data-en="The first 40 volunteers" data-es="Los primeros 40 voluntarios">The first 40 volunteers</span>
+                <span class="email-meta-label" data-en="Date" data-es="Fecha">Date</span>
+                <span class="email-meta-value" data-en="May 2026" data-es="Mayo de 2026">May 2026</span>
+              </div>
+            </div>
+            <div class="email-body">
+              <div class="email-lang" data-lang="en">
+                <p>Dear fellow volunteers,</p>
+                <p>Thank you for offering your time and energy for a cause that will improve lives. This email will describe the mission of Trash Talk, current organizational challenges, and upcoming events.</p>
+                <p>We started Trash Talk as a way to document cleaning our own neighborhood in Washington Heights. The goal was to show a small number of neighbors that someone cared about them. The account unexpectedly exploded.</p>
+                <p>Now, we are facing an incredible opportunity to take care of the communities we love. This project will span all of New York. Assembled here are 40 volunteers across Manhattan, the Bronx, Queens, and Brooklyn. We expect to grow to 1,000 over the next month. We can inspire change in our neighborhoods, our city, and maybe even our country.</p>
+                <p>The ultimate goal is to attain a robust volunteer network assigned to their own communities. We truly believe that your local knowledge and connection to the community is the only means for lasting cultural change.</p>
+                <p>Of course, infrastructure is an obvious challenge. There are clear shortcomings and discrepancies in waste management. Many of you have already pointed to the unequal distribution and types of trash cans that strongly, painfully correlate with wealth. This mission is going to demand accountability and go to City Hall, where we hope a receptive office will work alongside us to strengthen New York's trash infrastructure.</p>
+                <p>This project will need specialists and administration. We will grow the administration as needed. We currently need help with replying to comments, scouting locations, organizing with community leaders, making a logo, building the website, funding volunteer materials, and more. Reach out to us directly if you have a skill that you believe could be of service to the organization.</p>
+                <p>The Bronx, Manhattan, Queens, and Brooklyn will host community trash cleanups starting Saturday, May 23rd. We want our results to speak for themselves: clean streets for an entire week in the most problematic zones of New York. After the initial cleanup, we will maintain the area until the following Saturday. We want these communities to experience what life should and now could be. We need potential locations for these cleanups as soon as possible for Queens, the Bronx, and Brooklyn. Manhattan's hotspot will likely be Harlem 125th Street.</p>
+                <p>We will need leaders for each of these boroughs to handle logistics, publicity, and promotion. Funding may be available for materials. If you want to apply to lead an event, please reach out to us as soon as possible with your desired borough.</p>
+                <p>We want to meet all of you soon! We are filming every morning and working every evening except Thursday. We can meet at a central location for public transportation. Message us with suggestions for indoor/outdoor locations close to midtown Manhattan that would be ideal for gathering 50–100 people. Stay tuned for location and time. Looking forward to meeting you all! Now go pick up some trash!</p>
+                <p class="email-sig">— Trash Talk NYC</p>
+              </div>
+              <div class="email-lang" data-lang="es" style="display:none">
+                <p>Estimados compañeros voluntarios,</p>
+                <p>Gracias por ofrecer su tiempo y energía por una causa que mejorará vidas. Este correo describirá la misión de Trash Talk, los desafíos organizacionales actuales y los próximos eventos.</p>
+                <p>Comenzamos Trash Talk como una forma de documentar la limpieza de nuestro propio vecindario en Washington Heights. El objetivo era mostrarle a un pequeño número de vecinos que alguien se preocupaba por ellos. La cuenta explotó inesperadamente.</p>
+                <p>Ahora, estamos ante una increíble oportunidad de cuidar las comunidades que amamos. Este proyecto abarcará todo Nueva York. Aquí reunidos hay 40 voluntarios de Manhattan, el Bronx, Queens y Brooklyn. Esperamos crecer a 1,000 en el próximo mes. Podemos inspirar cambios en nuestros vecindarios, nuestra ciudad y quizás incluso en nuestro país.</p>
+                <p>El objetivo final es lograr una sólida red de voluntarios asignados a sus propias comunidades. Creemos firmemente que su conocimiento local y conexión con la comunidad es el único medio para un cambio cultural duradero.</p>
+                <p>Por supuesto, la infraestructura es un desafío evidente. Hay claras deficiencias y discrepancias en la gestión de residuos. Muchos de ustedes ya han señalado la distribución desigual y los tipos de papeleras que se correlacionan fuerte y dolorosamente con la riqueza. Esta misión exigirá responsabilidad y llegará al Ayuntamiento, donde esperamos que una oficina receptiva trabaje junto a nosotros para fortalecer la infraestructura de residuos de Nueva York.</p>
+                <p>Este proyecto necesitará especialistas y administración. Haremos crecer la administración según sea necesario. Actualmente necesitamos ayuda respondiendo comentarios, explorando ubicaciones, organizando con líderes comunitarios, creando un logo, construyendo el sitio web, financiando materiales para voluntarios y más. Contáctenos directamente si tiene una habilidad que crea que puede ser de utilidad para la organización.</p>
+                <p>El Bronx, Manhattan, Queens y Brooklyn organizarán limpiezas comunitarias de basura a partir del sábado 23 de mayo. Queremos que nuestros resultados hablen por sí mismos: calles limpias durante toda una semana en las zonas más problemáticas de Nueva York. Tras la limpieza inicial, mantendremos el área hasta el sábado siguiente. Queremos que estas comunidades experimenten cómo debería y ahora podría ser la vida. Necesitamos posibles ubicaciones para estas limpiezas lo antes posible para Queens, el Bronx y Brooklyn. El punto crítico de Manhattan probablemente será Harlem, la Calle 125.</p>
+                <p>Necesitaremos líderes para cada uno de estos condados para manejar la logística, publicidad y promoción. Puede haber financiamiento disponible para materiales. Si desea postularse para liderar un evento, comuníquese con nosotros lo antes posible indicando el condado deseado.</p>
+                <p>¡Queremos conocerlos a todos pronto! Filmamos todas las mañanas y trabajamos todas las tardes excepto los jueves. Podemos reunirnos en un lugar central para el transporte público. Envíenos sugerencias de ubicaciones cercanas al centro de Manhattan que sean ideales para reunir de 50 a 100 personas. Estén atentos a la ubicación y hora. ¡Esperamos conocerlos a todos! ¡Ahora vayan a recoger basura!</p>
+                <p class="email-sig">— Trash Talk NYC</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Trash Talk NYC</div>
+  <ul class="footer-links">
+    <li><a href="index.html#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="index.html#signup" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
+    <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
+    <li><a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">Instagram</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 Trash Talk NYC</div>
+</footer>
+
+<script>
+  function toggleMobileNav() {
+    document.getElementById('navHamburger').classList.toggle('open');
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav-links a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        document.getElementById('navHamburger').classList.remove('open');
+        document.getElementById('navLinks').classList.remove('open');
+      });
+    });
+  });
+
+  function toggleEmail() {
+    const overlay = document.getElementById('emailModal');
+    const btn = document.getElementById('emailToggle');
+    const open = overlay.classList.contains('open');
+    if (!open && window.innerWidth <= 768) {
+      overlay.classList.add('open');
+      btn.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      overlay.classList.toggle('open', !open);
+      btn.classList.toggle('open', !open);
+    }
+  }
+
+  function closeEmailModal() {
+    document.getElementById('emailModal').classList.remove('open');
+    document.getElementById('emailToggle').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // close modal on overlay background tap
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('emailModal').addEventListener('click', function(e) {
+      if (e.target === this && window.innerWidth <= 768) closeEmailModal();
+    });
+  });
+
+  function toggleScrapped() {
+    document.getElementById('scrappedList').classList.toggle('open');
+    document.getElementById('scrappedToggle').classList.toggle('open');
+  }
+
+  function toggleScrappedItem(btn) {
+    const body = btn.nextElementSibling;
+    const open = body.classList.contains('open');
+    body.classList.toggle('open', !open);
+    btn.classList.toggle('open', !open);
+  }
+
+  // ── LANGUAGE TOGGLE ──
+  let currentLang = 'en';
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+    document.getElementById('btnES').classList.toggle('active', lang === 'es');
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const text = el.getAttribute('data-' + lang);
+      if (!text) return;
+      el.textContent = text;
+    });
+    // toggle dual-language blocks (email body + mission quote)
+    document.querySelectorAll('.email-lang, .lang-swap').forEach(el => {
+      el.style.display = el.getAttribute('data-lang') === lang ? '' : 'none';
+    });
+    document.documentElement.lang = lang;
+  }
+</script>
+</body>
+</html>
