@@ -1,0 +1,6 @@
+# Local Netlify folder
+.netlify
+
+# Local env vars (never commit credentials)
+.env
+.env.local

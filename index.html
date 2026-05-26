@@ -607,6 +607,230 @@
     border-radius: 20px;
   }
 
+  /* ── EVENTS SECTION ── */
+  .events-section {
+    padding: 0;
+    background: var(--charcoal);
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid var(--yellow);
+  }
+
+  .events-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(107,63,160,0.06) 18px, rgba(107,63,160,0.06) 19px);
+    pointer-events: none;
+  }
+
+  .events-section::after {
+    content: '';
+    position: absolute;
+    right: -5%; top: -20%;
+    width: 40vw; height: 140%;
+    background: radial-gradient(ellipse at center, rgba(107,63,160,0.22) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .events-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 3rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .events-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--yellow);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .pulse-dot {
+    width: 8px; height: 8px;
+    background: var(--yellow);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulseDot 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulseDot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.65); }
+  }
+
+  .events-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.9rem, 3.5vw, 3rem);
+    color: var(--off-white);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.9rem;
+  }
+
+  .events-name span { color: var(--yellow); }
+
+  .events-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+
+  .events-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgba(247,244,237,0.65);
+  }
+
+  .events-chip svg {
+    width: 13px; height: 13px;
+    color: var(--purple-light);
+    flex-shrink: 0;
+  }
+
+  .events-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+
+  .countdown-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .cd-unit { text-align: center; }
+
+  .cd-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.75rem;
+    color: var(--off-white);
+    line-height: 1;
+    display: block;
+  }
+
+  .cd-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(247,244,237,0.3);
+    display: block;
+  }
+
+  .cd-sep {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: rgba(247,244,237,0.2);
+    margin-top: -6px;
+  }
+
+  .btn-eb-rsvp {
+    background: var(--yellow);
+    color: var(--charcoal);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.7rem 1.5rem;
+    border: 2px solid var(--yellow);
+    border-radius: 40px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.18s;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .btn-eb-rsvp:hover {
+    background: transparent;
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  .events-see-all {
+    grid-column: 1 / -1;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(247,244,237,0.1);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .events-see-all a {
+    color: rgba(247,244,237,0.5);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .events-see-all a:hover { color: var(--yellow); }
+
+  .events-loading {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(247,244,237,0.35);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2rem 0;
+  }
+
+  .events-loading span {
+    width: 6px; height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: loadDot 1.2s ease-in-out infinite;
+  }
+
+  .events-loading span:nth-child(2) { animation-delay: 0.2s; }
+  .events-loading span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes loadDot {
+    0%,100% { opacity: 0.2; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  .events-fallback {
+    grid-column: 1 / -1;
+    color: rgba(247,244,237,0.45);
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 2rem 0;
+  }
+
+  .events-fallback a {
+    color: var(--purple-light);
+    text-decoration: underline;
+  }
+
   /* ── SIGNUP ── */
   .signup {
     padding: 6rem 4rem;
@@ -1074,6 +1298,9 @@
     .hotspots { padding: 4rem 1.5rem; }
     .hotspot-grid { grid-template-columns: 1fr 1fr; }
 
+    .events-inner { grid-template-columns: 1fr; padding: 2.5rem 1.5rem; gap: 1.5rem; }
+    .events-right { align-items: flex-start; flex-direction: row; flex-wrap: wrap; gap: 1.25rem; }
+
     .signup { padding: 4rem 1.5rem; }
     .signup-inner { grid-template-columns: 1fr; gap: 3rem; }
 
@@ -1316,6 +1543,7 @@
   </div>
   <ul class="nav-links" id="navLinks">
     <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="events.html" data-en="Events" data-es="Eventos">Events</a></li>
     <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
     <li><a href="#signup" class="nav-cta" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
   </ul>
@@ -1333,6 +1561,7 @@
     <p class="hero-sub" data-en="We show up, we clean up. Join your neighbors in keeping New York's streets, parks, and public spaces clean — one hotspot at a time." data-es="Nos presentamos, limpiamos. Únete a tus vecinos para mantener las calles, parques y espacios públicos de Nueva York limpios — un punto a la vez.">We show up, we clean up. Join your neighbors in keeping New York's streets, parks, and public spaces clean — one hotspot at a time.</p>
     <div class="hero-btns">
       <a href="#signup" class="btn-primary" data-en="Sign Up" data-es="Regístrate abajo">Sign Up</a>
+      <a href="#events" class="btn-secondary" data-en="Next Event →" data-es="Próximo Evento →">Next Event →</a>
       <a href="#how" class="btn-secondary" data-en="How it works" data-es="Cómo funciona">How it works</a>
     </div>
   </div>
@@ -1405,6 +1634,15 @@
         <h2 data-en="Involve your circle" data-es="Involucra a tu círculo">Involve your circle</h2>
         <p data-en="Share Trash Talk NYC social media and events with friends." data-es="Comparte las redes sociales y eventos de Trash Talk NYC con tus amigos.">Share Trash Talk NYC social media and events with friends.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEXT EVENT -->
+<section class="events-section" id="events">
+  <div class="events-inner" id="eventsInner">
+    <div class="events-loading" id="eventsLoading">
+      <span></span><span></span><span></span>
     </div>
   </div>
 </section>
@@ -1584,6 +1822,7 @@
   <div class="footer-logo">Trash Talk NYC</div>
   <ul class="footer-links">
     <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="events.html" data-en="Events" data-es="Eventos">Events</a></li>
     <li><a href="#signup" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
     <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
     <li><a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">Instagram</a></li>
@@ -1716,6 +1955,81 @@
     // html lang attr
     document.documentElement.lang = lang;
   }
+</script>
+
+<script>
+  // ── NEXT EVENT FETCH ──
+  (function () {
+    var inner = document.getElementById('eventsInner');
+
+    function fmt(isoStr) {
+      var d = new Date(isoStr);
+      return {
+        date: d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+        time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+      };
+    }
+
+    function startCountdown(isoStr) {
+      function tick() {
+        var diff = new Date(isoStr) - new Date();
+        if (diff <= 0) { clearInterval(timer); return; }
+        var d = Math.floor(diff / 864e5);
+        var h = Math.floor((diff % 864e5) / 36e5);
+        var m = Math.floor((diff % 36e5) / 6e4);
+        var pad = function(n) { return String(n).padStart(2,'0'); };
+        var el = document.getElementById('evtCountdown');
+        if (el) el.innerHTML =
+          '<div class="cd-unit"><span class="cd-num">' + pad(d) + '</span><span class="cd-label">days</span></div>' +
+          '<span class="cd-sep">:</span>' +
+          '<div class="cd-unit"><span class="cd-num">' + pad(h) + '</span><span class="cd-label">hrs</span></div>' +
+          '<span class="cd-sep">:</span>' +
+          '<div class="cd-unit"><span class="cd-num">' + pad(m) + '</span><span class="cd-label">min</span></div>';
+      }
+      tick();
+      var timer = setInterval(tick, 30000);
+    }
+
+    function render(ev) {
+      if (!ev) {
+        inner.innerHTML =
+          '<div class="events-fallback">No upcoming events right now — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.</div>' +
+          '<div class="events-see-all"><a href="events.html">See all events →</a></div>';
+        return;
+      }
+      var s = fmt(ev.start.local || ev.start.utc);
+      var e = fmt(ev.end.local || ev.end.utc);
+      var parts = ev.name.split(/\s+/);
+      var half = Math.ceil(parts.length / 2);
+      var nameHtml = parts.slice(0, half).join(' ') + ' <span>' + parts.slice(half).join(' ') + '</span>';
+      var loc = ev.venue ? (ev.venue.name ? ev.venue.name + (ev.venue.city ? ', ' + ev.venue.city : '') : ev.venue.address || '') : '';
+
+      inner.innerHTML =
+        '<div>' +
+          '<div class="events-eyebrow"><span class="pulse-dot"></span> Next cleanup event</div>' +
+          '<div class="events-name">' + nameHtml + '</div>' +
+          '<div class="events-meta">' +
+            '<span class="events-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + s.date + '</span>' +
+            '<span class="events-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + s.time + ' – ' + e.time + '</span>' +
+            (loc ? '<span class="events-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="events-right">' +
+          '<div class="countdown-row" id="evtCountdown"></div>' +
+          '<a href="' + ev.url + '" target="_blank" rel="noopener" class="btn-eb-rsvp">RSVP on Eventbrite →</a>' +
+        '</div>' +
+        '<div class="events-see-all"><a href="events.html">See all events →</a></div>';
+
+      startCountdown(ev.start.utc || ev.start.local);
+    }
+
+    fetch('/.netlify/functions/next-event')
+      .then(function(r) { return r.json(); })
+      .then(render)
+      .catch(function() {
+        inner.innerHTML = '<div class="events-fallback">Could not load events. Check <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.</div><div class="events-see-all"><a href="events.html">See all events →</a></div>';
+      });
+  })();
 </script>
 
 </body>
