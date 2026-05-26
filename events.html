@@ -11,18 +11,16 @@
     --off-white: #f7f4ed;
     --cream: #ede9df;
     --yellow: #f5d000;
-    --yellow-dark: #c9a900;
     --purple: #6b3fa0;
     --purple-light: #9b5de5;
     --purple-pale: #f0e8ff;
     --green: #2a6b2a;
     --gray: #7a7a8a;
     --warm-gray: #b0aca2;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   }
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-
   body {
     background: var(--off-white);
     color: var(--charcoal);
@@ -31,27 +29,15 @@
     line-height: 1.6;
     overflow-x: hidden;
   }
-
   body::after {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.35;
+    pointer-events: none; z-index: 9999; opacity: 0.35;
   }
 
   /* ── SOCIAL BAR ── */
-  .social-bar {
-    background: var(--purple);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    padding: 0.45rem 2rem;
-    flex-wrap: wrap;
-  }
+  .social-bar { background: var(--purple); display: flex; align-items: center; justify-content: center; gap: 1.5rem; padding: 0.45rem 2rem; flex-wrap: wrap; }
   .social-bar-text { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.12em; }
   .social-bar a { display: flex; align-items: center; gap: 0.4rem; color: #fff; text-decoration: none; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; transition: opacity 0.15s; }
   .social-bar a:hover { opacity: 0.75; }
@@ -59,131 +45,156 @@
   .social-bar-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.3); }
 
   /* ── NAV ── */
-  nav {
-    position: sticky; top: 0; z-index: 200;
-    background: var(--charcoal);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2rem; height: 60px;
-    border-bottom: 3px solid var(--purple-light);
-  }
+  nav { position: sticky; top: 0; z-index: 200; background: var(--charcoal); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 60px; border-bottom: 3px solid var(--purple-light); }
   .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--yellow); letter-spacing: 0.06em; text-decoration: none; white-space: nowrap; }
   .nav-logo span { color: var(--purple-light); }
-  .nav-right { display: flex; align-items: center; gap: 2rem; order: 3; }
-  .lang-toggle { display: flex; align-items: center; gap: 0; border: 2px solid var(--purple-light); border-radius: 20px; overflow: hidden; }
+  .nav-right { display: flex; align-items: center; gap: 2rem; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+  .nav-links a { color: rgba(247,244,237,0.7); text-decoration: none; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.15s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--yellow); }
+  .nav-cta { background: var(--yellow) !important; color: var(--charcoal) !important; padding: 0.4rem 1.1rem !important; border-radius: 4px !important; font-weight: 800 !important; }
+  .nav-cta:hover { background: var(--purple-light) !important; color: #fff !important; }
+  .lang-toggle { display: flex; align-items: center; border: 2px solid var(--purple-light); border-radius: 20px; overflow: hidden; }
   .lang-btn { background: transparent; color: rgba(247,244,237,0.55); border: none; font-family: 'Space Mono', monospace; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.3rem 0.75rem; cursor: pointer; transition: background 0.15s, color 0.15s; }
   .lang-btn.active { background: var(--purple-light); color: #fff; }
-  .lang-btn:hover:not(.active) { color: var(--off-white); }
   .nav-hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
   .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--off-white); border-radius: 2px; transition: all 0.25s; }
   .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .nav-hamburger.open span:nth-child(2) { opacity: 0; }
   .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-  .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; order: 2; flex: 1; justify-content: center; }
-  .nav-links a { color: rgba(247,244,237,0.75); text-decoration: none; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.15s; }
-  .nav-links a:hover, .nav-links a.active { color: var(--yellow); }
-  .nav-cta { background: var(--yellow) !important; color: var(--charcoal) !important; padding: 0.4rem 1.1rem !important; border-radius: 4px !important; font-weight: 800 !important; }
-  .nav-cta:hover { background: var(--purple-light) !important; color: #fff !important; }
 
-  /* ── NEXT EVENT BANNER ── */
-  .next-event-banner {
+  /* ── HERO ── */
+  .hero {
     background: var(--charcoal);
+    position: relative; overflow: hidden;
+    padding: 4rem 3rem 4.5rem;
     border-bottom: 4px solid var(--yellow);
-    padding: 3rem;
-    position: relative;
-    overflow: hidden;
-    min-height: 180px;
-    display: flex;
-    align-items: center;
   }
-  .next-event-banner::before {
+  .hero::before {
     content: '';
     position: absolute; inset: 0;
-    background-image: repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(107,63,160,0.06) 18px, rgba(107,63,160,0.06) 19px);
+    background-image: repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(107,63,160,0.055) 18px, rgba(107,63,160,0.055) 19px);
     pointer-events: none;
   }
-  .next-event-banner::after {
+  .hero::after {
     content: '';
-    position: absolute;
-    right: -5%; top: -20%;
-    width: 40vw; height: 140%;
+    position: absolute; right: -5%; top: -10%;
+    width: 50vw; height: 120%;
     background: radial-gradient(ellipse at center, rgba(107,63,160,0.22) 0%, transparent 65%);
     pointer-events: none;
   }
-  .banner-inner {
-    max-width: 1000px; margin: 0 auto; width: 100%;
-    display: grid; grid-template-columns: 1fr auto;
-    gap: 2.5rem; align-items: center;
+  .hero-inner {
+    max-width: 1000px; margin: 0 auto;
     position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; align-items: center;
   }
-  .banner-eyebrow {
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em;
-    color: var(--yellow); margin-bottom: 0.6rem;
+  .hero-page-label {
+    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--purple-light); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .hero-page-label::before { content: ''; display: inline-block; width: 1.25rem; height: 3px; background: var(--purple-light); border-radius: 2px; }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 9vw, 8rem);
+    line-height: 0.88; letter-spacing: 0.02em;
+    color: var(--off-white); margin-bottom: 1.5rem;
+  }
+  .hero-title .accent { color: var(--yellow); display: block; }
+  .hero-title .outline { -webkit-text-stroke: 2px var(--purple-light); color: transparent; display: block; }
+  .hero-desc { font-size: 0.9rem; font-weight: 600; color: rgba(247,244,237,0.5); line-height: 1.7; max-width: 300px; }
+
+  /* ── NEXT EVENT CARD ── */
+  .next-event-card {
+    background: rgba(247,244,237,0.04);
+    border: 1px solid rgba(155,93,229,0.3);
+    border-radius: 18px; padding: 2rem 2.25rem;
+    position: relative; overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(155,93,229,0.2), 0 0 0 1px rgba(155,93,229,0.08);
+  }
+  .next-event-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--yellow) 40%, transparent);
+  }
+  .card-eyebrow {
+    font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--yellow); margin-bottom: 1rem;
     display: flex; align-items: center; gap: 0.5rem;
   }
   .pulse-dot {
-    width: 8px; height: 8px; background: var(--yellow); border-radius: 50%;
-    display: inline-block; animation: pulseDot 1.6s ease-in-out infinite;
+    width: 7px; height: 7px; background: var(--yellow); border-radius: 50%;
+    display: inline-block; flex-shrink: 0;
+    animation: pulseDot 1.6s ease-in-out infinite;
   }
-  @keyframes pulseDot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.35; transform:scale(0.65); } }
-  .banner-title {
+  @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.55)} }
+  .card-event-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.9rem, 3.5vw, 3rem);
-    color: var(--off-white); line-height: 1; letter-spacing: 0.02em; margin-bottom: 0.8rem;
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+    color: var(--off-white); line-height: 1; letter-spacing: 0.02em;
+    margin-bottom: 1.1rem;
   }
-  .banner-title span { color: var(--yellow); }
-  .banner-meta { display: flex; flex-wrap: wrap; gap: 1.25rem; }
-  .meta-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 700; color: rgba(247,244,237,0.65); }
-  .meta-chip svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
-  .banner-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 1rem; flex-shrink: 0; }
-  .countdown-row { display: flex; gap: 0.5rem; align-items: center; }
-  .cd-unit { text-align: center; }
-  .cd-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.75rem; color: var(--off-white); line-height: 1; display: block; }
-  .cd-label { font-family: 'Space Mono', monospace; font-size: 0.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(247,244,237,0.3); display: block; }
-  .cd-sep { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: rgba(247,244,237,0.2); margin-top: -6px; }
+  .card-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .card-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; color: rgba(247,244,237,0.55); }
+  .card-meta-row svg { width: 12px; height: 12px; color: var(--purple-light); flex-shrink: 0; }
+  .card-countdown {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.5rem; padding: 0.85rem 1rem;
+    background: rgba(247,244,237,0.04);
+    border: 1px solid rgba(247,244,237,0.07);
+    border-radius: 10px;
+  }
+  .cd-label-top { font-size: 0.55rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(247,244,237,0.25); margin-right: auto; white-space: nowrap; }
+  .cd-unit { text-align: center; min-width: 36px; }
+  .cd-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; color: var(--off-white); line-height: 1; display: block; }
+  .cd-sub { font-family: 'Space Mono', monospace; font-size: 0.44rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(247,244,237,0.28); display: block; margin-top: 1px; }
+  .cd-sep { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: rgba(247,244,237,0.15); margin-top: -4px; align-self: flex-start; padding-top: 2px; }
   .btn-rsvp {
     background: var(--yellow); color: var(--charcoal);
-    font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 0.85rem 1.75rem; border: 3px solid var(--yellow); border-radius: 4px;
-    text-decoration: none; display: inline-block;
-    transition: all 0.18s; white-space: nowrap; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 0.7rem 1.4rem; border: 2px solid var(--yellow); border-radius: 8px;
+    cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block;
+    transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 160ms var(--ease-out);
+    box-shadow: 0 3px 14px rgba(245,208,0,0.22);
   }
-  .btn-rsvp:hover { background: var(--purple-light); border-color: var(--purple-light); color: #fff; }
-  .banner-loading { display: flex; align-items: center; gap: 0.4rem; color: rgba(247,244,237,0.35); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2rem 0; }
-  .banner-loading span { width: 6px; height: 6px; background: currentColor; border-radius: 50%; animation: loadDot 1.2s ease-in-out infinite; }
-  .banner-loading span:nth-child(2) { animation-delay: 0.2s; }
-  .banner-loading span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes loadDot { 0%,100% { opacity:0.2; transform:scale(0.7); } 50% { opacity:1; transform:scale(1); } }
-  .banner-empty { color: rgba(247,244,237,0.45); font-size: 0.88rem; font-weight: 600; padding: 2rem 0; }
-  .banner-empty a { color: var(--purple-light); text-decoration: underline; }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-rsvp:hover { background: var(--purple-light); border-color: var(--purple-light); color: #fff; box-shadow: 0 5px 20px rgba(155,93,229,0.3); transform: translateY(-1px); }
+    .btn-rsvp:active { transform: scale(0.97); transition-duration: 80ms; }
+  }
 
-  /* ── EVENTS PAGE ── */
-  .events-page { max-width: 1000px; margin: 0 auto; padding: 3.5rem 2rem 5rem; }
-  .page-header { margin-bottom: 2.5rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .section-label {
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em;
-    color: var(--purple); margin-bottom: 0.4rem;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
+  /* ── PAGE HEADER BAND ── */
+  .page-header-band { background: var(--cream); border-bottom: 2px solid #d8d3c8; padding: 1.75rem 3rem; }
+  .page-header-band-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .section-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em; color: var(--purple); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
   .section-label::before { content: ''; display: inline-block; width: 1.1rem; height: 3px; background: var(--purple-light); border-radius: 2px; }
-  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem, 4vw, 3rem); line-height: 1; letter-spacing: 0.02em; }
-  .eb-note { font-size: 0.72rem; font-weight: 700; color: var(--gray); display: flex; align-items: center; gap: 0.4rem; }
-  .eb-badge { background: #f05537; color: #fff; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.55rem; border-radius: 20px; }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 3.5vw, 2.75rem); line-height: 1; letter-spacing: 0.02em; color: var(--charcoal); }
+  .eb-badge { background: #f05537; color: #fff; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.22rem 0.6rem; border-radius: 20px; }
 
-  /* ── EVENT CARDS ── */
+  /* ── EVENTS LIST ── */
+  .events-page { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
   .events-list { display: flex; flex-direction: column; gap: 0.85rem; }
   .event-card {
     background: white; border: 2px solid #e0dcd4; border-radius: 12px;
     padding: 1.5rem 1.75rem;
     display: grid; grid-template-columns: 72px 1fr auto;
     gap: 1.5rem; align-items: center;
-    transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
-    text-decoration: none; color: inherit;
+    opacity: 0; transform: translateY(8px);
+    animation: cardIn 260ms var(--ease-out) forwards;
   }
-  .event-card:hover { border-color: var(--purple-light); box-shadow: 0 4px 20px rgba(107,63,160,0.12); transform: translateY(-1px); }
+  @keyframes cardIn { to { opacity:1; transform:translateY(0); } }
+  .event-card:nth-child(1){animation-delay:0ms}
+  .event-card:nth-child(2){animation-delay:45ms}
+  .event-card:nth-child(3){animation-delay:90ms}
+  .event-card:nth-child(4){animation-delay:135ms}
+  .event-card:nth-child(5){animation-delay:180ms}
+  @media (prefers-reduced-motion: reduce) { .event-card { animation:none; opacity:1; transform:none; } }
+  @media (hover: hover) and (pointer: fine) {
+    .event-card:hover { border-color: rgba(155,93,229,0.45); box-shadow: 0 3px 18px rgba(107,63,160,0.08); transform: translateY(-1px); }
+  }
   .event-card.upcoming { border-left: 4px solid var(--purple-light); padding-left: calc(1.75rem - 2px); }
-  .event-card.past { opacity: 0.55; }
-  .event-card.past:hover { opacity: 0.75; }
+  .event-card.past { opacity: 0.5; animation: none; }
   .event-date-block { text-align: center; background: var(--purple-pale); border-radius: 8px; padding: 0.6rem 0.5rem; flex-shrink: 0; }
   .event-date-block .month { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--purple); display: block; }
   .event-date-block .day { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--charcoal); line-height: 1; display: block; }
@@ -195,53 +206,99 @@
   .event-detail svg { width: 12px; height: 12px; flex-shrink: 0; }
   .event-tags { display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap; }
   .event-tag { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.18rem 0.55rem; border-radius: 20px; border: 1.5px solid; }
-  .tag-brooklyn { color: #2563eb; border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.06); }
   .tag-manhattan { color: var(--purple); border-color: rgba(107,63,160,0.3); background: rgba(107,63,160,0.06); }
-  .tag-queens { color: var(--green); border-color: rgba(42,107,42,0.3); background: rgba(42,107,42,0.06); }
-  .tag-bronx { color: #c2410c; border-color: rgba(194,65,12,0.3); background: rgba(194,65,12,0.06); }
-  .tag-staten { color: #0891b2; border-color: rgba(8,145,178,0.3); background: rgba(8,145,178,0.06); }
+  .tag-brooklyn  { color: #2563eb; border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.06); }
+  .tag-queens    { color: var(--green); border-color: rgba(42,107,42,0.3); background: rgba(42,107,42,0.06); }
+  .tag-bronx     { color: #c2410c; border-color: rgba(194,65,12,0.3); background: rgba(194,65,12,0.06); }
+  .tag-staten    { color: #0891b2; border-color: rgba(8,145,178,0.3); background: rgba(8,145,178,0.06); }
   .event-cta { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
   .btn-card {
     display: inline-block; font-family: 'Nunito', sans-serif;
-    font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 0.55rem 1.1rem; border-radius: 5px; border: 2.5px solid;
-    cursor: pointer; text-decoration: none; transition: all 0.15s; white-space: nowrap;
+    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
+    padding: 0.4rem 1rem; border-radius: 40px; border: 1.5px solid;
+    cursor: pointer; text-decoration: none;
+    transition: background 150ms var(--ease-out), color 150ms var(--ease-out), transform 100ms var(--ease-out);
+    white-space: nowrap;
   }
-  .btn-card-purple { background: var(--purple); color: #fff; border-color: var(--purple); }
-  .btn-card-purple:hover { background: var(--purple-light); border-color: var(--purple-light); }
-  .btn-card-ghost { background: transparent; color: var(--gray); border-color: #d0ccd8; }
-  .btn-card-ghost:hover { border-color: var(--gray); color: var(--charcoal); }
-  .card-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-  .card-status.completed { color: var(--warm-gray); }
+  .btn-card-purple { background: transparent; color: var(--purple); border-color: var(--purple); }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-card-purple:hover { background: var(--purple); color: #fff; }
+    .btn-card-purple:active { transform: scale(0.96); }
+  }
+  .card-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--warm-gray); }
 
   /* ── PAST DIVIDER ── */
   .past-divider { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 1.25rem; }
   .past-divider-line { flex: 1; height: 1px; background: #ddd; }
   .past-divider-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.16em; color: var(--gray); white-space: nowrap; }
 
-  /* ── SKELETONS ── */
-  .skeleton-card { background: white; border: 2px solid #e0dcd4; border-radius: 12px; padding: 1.5rem 1.75rem; display: flex; gap: 1.5rem; align-items: center; }
+  /* ── SKELETON LOADER ── */
+  .skeleton-card { background: white; border: 2px solid #e0dcd4; border-radius: 12px; padding: 1.5rem 1.75rem; display: flex; align-items: center; gap: 1.5rem; }
   .skel { background: linear-gradient(90deg, #e8e4dc 25%, #f0ece4 50%, #e8e4dc 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   .skel-date { width: 72px; height: 80px; border-radius: 8px; flex-shrink: 0; }
   .skel-body { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
   .skel-title { height: 22px; width: 55%; }
-  .skel-meta { height: 14px; width: 80%; }
-  .skel-tags { height: 14px; width: 35%; }
-
-  /* ── EMPTY STATE ── */
-  .events-empty { text-align: center; padding: 4rem 2rem; color: var(--gray); }
-  .events-empty h3 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; margin-bottom: 0.5rem; color: var(--charcoal); }
-  .events-empty p { font-size: 0.9rem; font-weight: 600; }
-  .events-empty a { color: var(--purple); font-weight: 700; }
+  .skel-meta  { height: 14px; width: 80%; }
+  .skel-tags  { height: 14px; width: 35%; }
 
   /* ── FOOTER ── */
-  footer { background: var(--charcoal); color: rgba(247,244,237,0.5); padding: 2.5rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; border-top: 3px solid var(--purple-light); text-align: center; }
+  footer { background: var(--charcoal); padding: 2.5rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; border-top: 3px solid var(--purple-light); text-align: center; }
   .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--yellow); letter-spacing: 0.06em; }
   .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; list-style: none; }
-  .footer-links a { color: rgba(247,244,237,0.5); text-decoration: none; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.15s; }
+  .footer-links a { color: rgba(247,244,237,0.45); text-decoration: none; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.15s; }
   .footer-links a:hover { color: var(--yellow); }
-  .footer-copy { font-size: 0.7rem; }
+  .footer-copy { font-size: 0.7rem; color: rgba(247,244,237,0.22); }
+
+  /* ── RSVP MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 150ms var(--ease-out);
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal-box {
+    background: var(--charcoal); border: 1px solid rgba(155,93,229,0.4);
+    border-radius: 18px; padding: 2rem; width: 100%; max-width: 420px; margin: 1rem;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+  .modal-event-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.03em; color: var(--off-white); line-height: 1.1; }
+  .modal-close {
+    background: rgba(247,244,237,0.08); border: none; color: rgba(247,244,237,0.5);
+    font-size: 1rem; width: 30px; height: 30px; border-radius: 50%;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .modal-close:hover { background: rgba(247,244,237,0.15); color: var(--off-white); }
+  .modal-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .modal-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: rgba(247,244,237,0.55); }
+  .modal-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
+  .eb-sim { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
+  .eb-head { background: #f8623a; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; }
+  .eb-logo { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.85rem; color: #fff; letter-spacing: -0.02em; }
+  .eb-secure { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.85); }
+  .eb-ticket { padding: 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0ece4; }
+  .eb-ticket-name { font-size: 0.82rem; font-weight: 700; color: #333; }
+  .eb-ticket-price { font-size: 0.75rem; color: #666; }
+  .eb-qty { display: flex; align-items: center; gap: 0.5rem; }
+  .eb-qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #ccc; background: transparent; font-size: 1rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
+  .eb-qty-btn:hover { border-color: #f8623a; color: #f8623a; }
+  .eb-qty-num { font-size: 0.85rem; font-weight: 700; color: #333; min-width: 16px; text-align: center; }
+  .eb-cta-area { padding: 0.85rem 1rem; }
+  .eb-register {
+    display: block; width: 100%; background: #f8623a; color: #fff;
+    font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.1em; padding: 0.7rem;
+    border: none; border-radius: 8px; cursor: pointer;
+    text-decoration: none; text-align: center; transition: background 0.15s;
+  }
+  .eb-register:hover { background: #e54e28; }
+  .eb-powered { text-align: center; font-size: 0.6rem; color: #999; padding: 0 1rem 0.75rem; }
+  .modal-foot { font-size: 0.65rem; color: rgba(247,244,237,0.3); text-align: center; }
+  .no-more-events { text-align: center; padding: 2.5rem 1rem; color: var(--gray); font-size: 0.85rem; font-weight: 700; }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
@@ -253,21 +310,24 @@
     .nav-links a { display: block; padding: 0.75rem 0.5rem; font-size: 0.9rem; text-align: center; }
     .nav-links .nav-cta { margin: 0.6rem 0 0.25rem; padding: 0.7rem 1.25rem; border-radius: 6px; text-align: center; display: block; }
     .nav-right { gap: 0.5rem; }
-    .next-event-banner { padding: 2rem 1.5rem; }
-    .banner-inner { grid-template-columns: 1fr; }
-    .banner-actions { align-items: flex-start; flex-direction: row; flex-wrap: wrap; gap: 1rem; }
-    .events-page { padding: 2.5rem 1.25rem 4rem; }
+    .hero { padding: 3rem 1.5rem 3.5rem; }
+    .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    .hero-desc { display: none; }
+    .hero-title { font-size: clamp(4rem, 14vw, 5.5rem); }
+    .page-header-band { padding: 1.25rem 1.5rem; }
+    .events-page { padding: 2rem 1.25rem 4rem; }
     .event-card { grid-template-columns: 60px 1fr; }
-    .event-cta { display: none; }
-  }
-
-  @media (max-width: 480px) {
-    .event-card { grid-template-columns: 1fr; gap: 0.75rem; }
-    .event-date-block { display: flex; gap: 0.5rem; align-items: baseline; width: fit-content; padding: 0.4rem 0.75rem; }
-    .event-date-block .day { font-size: 1.4rem; }
-    .event-cta { display: flex; align-items: flex-start; }
+    .event-card.past .event-cta { display: none; }
+    .btn-rsvp { width: 100%; text-align: center; }
   }
 </style>
+<script>
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    var s = document.createElement('script');
+    s.src = 'https://www.eventbrite.com/static/widgets/eb_widgets.js';
+    document.head.appendChild(s);
+  }
+</script>
 </head>
 <body>
 
@@ -276,7 +336,7 @@
   <span class="social-bar-text">Join the movement</span>
   <div class="social-bar-divider"></div>
   <a href="https://www.instagram.com/trashtalk_nyc/" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
     @trashtalk_nyc
   </a>
 </div>
@@ -285,6 +345,12 @@
 <nav>
   <a class="nav-logo" href="index.html">Trash Talk <span>NYC</span></a>
   <div class="nav-right">
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html#how">How it works</a></li>
+      <li><a href="events.html" class="active" data-en="Events" data-es="Eventos">Events</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="index.html#signup" class="nav-cta">Sign up</a></li>
+    </ul>
     <div class="lang-toggle">
       <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
       <button class="lang-btn" id="btnES" onclick="setLang('es')">ES</button>
@@ -293,49 +359,136 @@
       <span></span><span></span><span></span>
     </button>
   </div>
-  <ul class="nav-links" id="navLinks">
-    <li><a href="index.html#how">How it works</a></li>
-    <li><a href="events.html" class="active">Events</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="index.html#signup" class="nav-cta">Sign up</a></li>
-  </ul>
 </nav>
 
-<!-- NEXT EVENT BANNER -->
-<div class="next-event-banner" id="bannerWrap">
-  <div style="position:relative;z-index:1;width:100%;max-width:1000px;margin:0 auto">
-    <div class="banner-loading" id="bannerLoading"><span></span><span></span><span></span></div>
+<!-- HERO: page identity left, next event card right -->
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-left">
+      <div class="hero-page-label" data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</div>
+      <h1 class="hero-title">
+        <span>Club</span>
+        <span class="accent">Events</span>
+      </h1>
+    </div>
+
+    <div class="next-event-card">
+      <div class="card-eyebrow">
+        <span class="pulse-dot"></span>
+        <span data-en="Next club event" data-es="Próximo evento">Next club event</span>
+      </div>
+      <div class="card-event-name" id="heroEventName">Trash Talk Meet &amp; Clean (Harlem)</div>
+
+      <div class="card-meta">
+        <div class="card-meta-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="heroEventDate">Friday, May 29, 2026</span>
+        </div>
+        <div class="card-meta-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="heroEventTime">6:00 PM – 8:00 PM</span>
+        </div>
+        <div class="card-meta-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="heroEventLoc">Apollo Theater, New York</span>
+        </div>
+      </div>
+
+      <div class="card-countdown">
+        <span class="cd-label-top" data-en="Time left" data-es="Tiempo restante">Time left</span>
+        <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub">days</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub">hrs</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub">min</span></div>
+      </div>
+
+      <button class="btn-rsvp" id="heroRsvpBtn" data-event-id=""
+        data-en="RSVP for this event" data-es="Regístrate aquí">
+        RSVP for this event
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- PAGE HEADER BAND -->
+<div class="page-header-band">
+  <div class="page-header-band-inner">
+    <div>
+      <div class="section-title" data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</div>
+    </div>
+    <span class="eb-badge">Eventbrite</span>
   </div>
 </div>
 
 <!-- EVENTS LIST -->
 <div class="events-page">
-  <div class="page-header">
-    <div>
-      <div class="section-label">All events</div>
-      <h1 class="section-title">Cleanups &amp; Events</h1>
-    </div>
-    <div class="eb-note">
-      <span class="eb-badge">Eventbrite</span>
-      RSVPs via Eventbrite
+
+  <div id="skeletons">
+    <div class="events-list">
+      <div class="skeleton-card"><div class="skel skel-date"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-meta"></div><div class="skel skel-tags"></div></div></div>
+      <div class="skeleton-card"><div class="skel skel-date"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-meta"></div><div class="skel skel-tags"></div></div></div>
     </div>
   </div>
 
-  <div id="upcomingList">
-    <!-- skeletons shown while loading -->
-    <div class="events-list" id="skeletons">
-      <div class="skeleton-card"><div class="skel skel-date"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-meta"></div><div class="skel skel-tags"></div></div></div>
-      <div class="skeleton-card"><div class="skel skel-date"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-meta"></div><div class="skel skel-tags"></div></div></div>
-    </div>
-  </div>
+  <div id="upcomingList"></div>
 
   <div id="pastSection" style="display:none">
     <div class="past-divider">
       <div class="past-divider-line"></div>
-      <div class="past-divider-label">Past events</div>
+      <div class="past-divider-label" data-en="Past club events" data-es="Eventos pasados del club">Past club events</div>
       <div class="past-divider-line"></div>
     </div>
     <div class="events-list" id="pastList"></div>
+  </div>
+
+</div>
+
+<!-- RSVP MODAL -->
+<div class="modal-overlay" id="rsvpModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-event-name" id="modalEventName"></div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-meta">
+      <div class="modal-meta-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="modalDate"></span>
+      </div>
+      <div class="modal-meta-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="modalTime"></span>
+      </div>
+      <div class="modal-meta-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="modalLoc"></span>
+      </div>
+    </div>
+    <div class="eb-sim">
+      <div class="eb-head">
+        <span class="eb-logo">eventbrite</span>
+        <span class="eb-secure">🔒 Secure checkout</span>
+      </div>
+      <div class="eb-ticket">
+        <div>
+          <div class="eb-ticket-name">General Admission</div>
+          <div class="eb-ticket-price">Free</div>
+        </div>
+        <div class="eb-qty">
+          <button class="eb-qty-btn" onclick="adjQty(-1)">−</button>
+          <span class="eb-qty-num" id="modalQty">1</span>
+          <button class="eb-qty-btn" onclick="adjQty(1)">+</button>
+        </div>
+      </div>
+      <div class="eb-cta-area">
+        <a class="eb-register" id="modalRegisterBtn" href="#" target="_blank" rel="noopener">Register Now</a>
+      </div>
+      <div class="eb-powered">Powered by Eventbrite</div>
+    </div>
+    <div class="modal-foot">Checkout handled securely by Eventbrite</div>
   </div>
 </div>
 
@@ -358,157 +511,205 @@
     document.getElementById('navHamburger').classList.toggle('open');
     document.getElementById('navLinks').classList.toggle('open');
   }
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.nav-links a').forEach(function(a) {
-      a.addEventListener('click', function() {
-        document.getElementById('navHamburger').classList.remove('open');
-        document.getElementById('navLinks').classList.remove('open');
-      });
-    });
-  });
 
-  // ── LANG TOGGLE ──
-  let currentLang = 'en';
+  // ── LANG ──
   function setLang(lang) {
-    currentLang = lang;
     document.getElementById('btnEN').classList.toggle('active', lang === 'en');
     document.getElementById('btnES').classList.toggle('active', lang === 'es');
     document.documentElement.lang = lang;
+    document.querySelectorAll('[data-en]').forEach(function(el) {
+      var text = el.getAttribute('data-' + lang);
+      if (!text) return;
+      if (el.tagName === 'BUTTON' || el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'P') {
+        el.textContent = text;
+      }
+    });
   }
 
   // ── HELPERS ──
   var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-  function parseDate(isoStr) {
-    return new Date(isoStr);
-  }
-
-  function fmtTime(d) {
-    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-  }
+  function parseDate(s) { return new Date(s); }
+  function fmtTime(d)   { return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }); }
 
   function boroughTag(text) {
     var t = (text || '').toLowerCase();
     if (t.includes('brooklyn'))  return '<span class="event-tag tag-brooklyn">Brooklyn</span>';
-    if (t.includes('manhattan') || t.includes('harlem') || t.includes('inwood') || t.includes('bronx') === false && t.includes('new york, ny')) return '<span class="event-tag tag-manhattan">Manhattan</span>';
+    if (t.includes('harlem') || t.includes('manhattan')) return '<span class="event-tag tag-manhattan">Manhattan</span>';
     if (t.includes('queens'))    return '<span class="event-tag tag-queens">Queens</span>';
     if (t.includes('bronx'))     return '<span class="event-tag tag-bronx">The Bronx</span>';
     if (t.includes('staten'))    return '<span class="event-tag tag-staten">Staten Island</span>';
     return '';
   }
 
+  // ── COUNTDOWN ──
+  function startCountdown(isoStr) {
+    function tick() {
+      var diff = new Date(isoStr) - new Date();
+      if (diff <= 0) { clearInterval(timer); return; }
+      var p = function(n) { return String(n).padStart(2, '0'); };
+      var dEl = document.getElementById('cdD');
+      if (!dEl) return;
+      dEl.textContent                              = p(Math.floor(diff / 864e5));
+      document.getElementById('cdH').textContent  = p(Math.floor((diff % 864e5) / 36e5));
+      document.getElementById('cdM').textContent  = p(Math.floor((diff % 36e5) / 6e4));
+    }
+    tick();
+    var timer = setInterval(tick, 30000);
+  }
+
+  // ── BUILD EVENT CARD ──
   function buildCard(ev, isPast) {
-    var start = parseDate(ev.start.local || ev.start.utc);
-    var end   = parseDate(ev.end.local   || ev.end.utc);
-    var loc   = ev.venue ? (ev.venue.name || ev.venue.address || '') : '';
-    var locFull = ev.venue ? (loc + (ev.venue.city ? ', ' + ev.venue.city : '')) : '';
-    var borough = boroughTag(locFull + ' ' + (ev.venue ? ev.venue.address || '' : ''));
+    var start  = parseDate(ev.start.local || ev.start.utc);
+    var end    = parseDate(ev.end.local   || ev.end.utc);
+    var venue  = ev.venue || {};
+    var loc    = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
+    var borough = boroughTag(loc + ' ' + (venue.address || '') + ' ' + ev.name);
+    var btnId  = 'eb-trigger-' + ev.id;
+
+    var dateStr = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    var timeStr = fmtTime(start) + ' – ' + fmtTime(end);
 
     var cta = isPast
-      ? '<div class="event-cta"><span class="card-status completed">Completed</span></div>'
-      : '<div class="event-cta"><a class="btn-card btn-card-purple" href="' + ev.url + '" target="_blank" rel="noopener">RSVP →</a></div>';
+      ? '<div class="event-cta"><span class="card-status" data-en="Past" data-es="Pasado">Past</span></div>'
+      : '<div class="event-cta"><button class="btn-card btn-card-purple" id="' + btnId + '"' +
+          ' data-event-id="' + ev.id + '"' +
+          ' data-url="' + (ev.url || '') + '"' +
+          ' data-name="' + (ev.name || '').replace(/"/g, '&quot;') + '"' +
+          ' data-date="' + dateStr + '"' +
+          ' data-time="' + timeStr + '"' +
+          ' data-loc="' + loc.replace(/"/g, '&quot;') + '"' +
+          '>RSVP &rarr;</button></div>';
 
-    return '<a class="event-card ' + (isPast ? 'past' : 'upcoming') + '" href="' + ev.url + '" target="_blank" rel="noopener">' +
+    return '<div class="event-card ' + (isPast ? 'past' : 'upcoming') + '">' +
       '<div class="event-date-block">' +
         '<span class="month">' + MONTHS[start.getMonth()] + '</span>' +
-        '<span class="day">' + start.getDate() + '</span>' +
-        '<span class="dow">' + DAYS[start.getDay()] + '</span>' +
+        '<span class="day">'   + start.getDate()          + '</span>' +
+        '<span class="dow">'   + DAYS[start.getDay()]     + '</span>' +
       '</div>' +
       '<div class="event-info">' +
         '<div class="event-name">' + ev.name + '</div>' +
         '<div class="event-details">' +
           '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + fmtTime(start) + ' – ' + fmtTime(end) + '</span>' +
-          (locFull ? '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + locFull + '</span>' : '') +
+          (loc ? '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</span>' : '') +
         '</div>' +
         (borough ? '<div class="event-tags">' + borough + '</div>' : '') +
       '</div>' +
       cta +
-    '</a>';
+    '</div>';
   }
 
-  function startCountdown(isoStr, el) {
-    function tick() {
-      var diff = new Date(isoStr) - new Date();
-      if (diff <= 0) { clearInterval(t); return; }
-      var d = Math.floor(diff / 864e5);
-      var h = Math.floor((diff % 864e5) / 36e5);
-      var m = Math.floor((diff % 36e5) / 6e4);
-      var p = function(n) { return String(n).padStart(2,'0'); };
-      el.innerHTML =
-        '<div class="cd-unit"><span class="cd-num">' + p(d) + '</span><span class="cd-label">days</span></div>' +
-        '<span class="cd-sep">:</span>' +
-        '<div class="cd-unit"><span class="cd-num">' + p(h) + '</span><span class="cd-label">hrs</span></div>' +
-        '<span class="cd-sep">:</span>' +
-        '<div class="cd-unit"><span class="cd-num">' + p(m) + '</span><span class="cd-label">min</span></div>';
-    }
-    tick();
-    var t = setInterval(tick, 30000);
+  // ── INIT EVENTBRITE WIDGETS ──
+  var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+  function initWidgets() {
+    document.querySelectorAll('[data-event-id]').forEach(function(btn) {
+      var id = btn.getAttribute('data-event-id');
+      if (!id || btn.dataset.widgetInit) return;
+      btn.dataset.widgetInit = '1';
+      if (!isLocalhost && window.EBWidgets) {
+        window.EBWidgets.createWidget({
+          widgetType: 'checkout',
+          eventId: id,
+          modal: true,
+          modalTriggerElementId: btn.id
+        });
+      } else {
+        btn.addEventListener('click', function() { openModal(btn); });
+      }
+    });
   }
 
-  function renderBanner(ev) {
-    var wrap = document.getElementById('bannerWrap');
-    if (!ev) {
-      wrap.innerHTML = '<div style="position:relative;z-index:1;width:100%;max-width:1000px;margin:0 auto"><div class="banner-empty">No upcoming events right now — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.</div></div>';
-      return;
-    }
-    var start = parseDate(ev.start.local || ev.start.utc);
-    var end   = parseDate(ev.end.local   || ev.end.utc);
-    var loc   = ev.venue ? ((ev.venue.name || '') + (ev.venue.city ? ', ' + ev.venue.city : '')) : '';
-    var parts = ev.name.split(/\s+/);
-    var half  = Math.ceil(parts.length / 2);
-    var nameHtml = parts.slice(0, half).join(' ') + ' <span>' + parts.slice(half).join(' ') + '</span>';
-    var dateStr = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-
-    wrap.innerHTML =
-      '<div class="banner-inner">' +
-        '<div>' +
-          '<div class="banner-eyebrow"><span class="pulse-dot"></span> Next cleanup event</div>' +
-          '<div class="banner-title">' + nameHtml + '</div>' +
-          '<div class="banner-meta">' +
-            '<span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + dateStr + '</span>' +
-            '<span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + fmtTime(start) + ' – ' + fmtTime(end) + '</span>' +
-            (loc ? '<span class="meta-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</span>' : '') +
-          '</div>' +
-        '</div>' +
-        '<div class="banner-actions">' +
-          '<div class="countdown-row" id="bannerCountdown"></div>' +
-          '<a class="btn-rsvp" href="' + ev.url + '" target="_blank" rel="noopener">RSVP on Eventbrite →</a>' +
-        '</div>' +
-      '</div>';
-
-    startCountdown(ev.start.utc || ev.start.local, document.getElementById('bannerCountdown'));
+  // ── MODAL ──
+  function openModal(btn) {
+    document.getElementById('modalEventName').textContent = btn.getAttribute('data-name') || '';
+    document.getElementById('modalDate').textContent      = btn.getAttribute('data-date') || '';
+    document.getElementById('modalTime').textContent      = btn.getAttribute('data-time') || '';
+    document.getElementById('modalLoc').textContent       = btn.getAttribute('data-loc')  || '';
+    document.getElementById('modalQty').textContent       = '1';
+    var reg = document.getElementById('modalRegisterBtn');
+    if (reg) reg.href = btn.getAttribute('data-url') || '#';
+    document.getElementById('rsvpModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
+  function closeModal() {
+    document.getElementById('rsvpModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function adjQty(delta) {
+    var el = document.getElementById('modalQty');
+    var n  = Math.max(1, parseInt(el.textContent, 10) + delta);
+    el.textContent = n;
+  }
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
-  // ── FETCH ALL EVENTS ──
+  // ── FETCH FROM NETLIFY ──
   fetch('/.netlify/functions/next-event?all=true')
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      document.getElementById('skeletons').remove();
-
       var upcoming = data.upcoming || [];
       var past     = data.past     || [];
 
-      renderBanner(upcoming[0] || null);
+      // update hero card with live data
+      if (upcoming[0]) {
+        var ev    = upcoming[0];
+        var start = parseDate(ev.start.local || ev.start.utc);
+        var end   = parseDate(ev.end.local   || ev.end.utc);
+        var venue = ev.venue || {};
+        var loc   = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
 
-      var upList = document.getElementById('upcomingList');
+        var nameEl = document.getElementById('heroEventName');
+        var dateEl = document.getElementById('heroEventDate');
+        var timeEl = document.getElementById('heroEventTime');
+        var locEl  = document.getElementById('heroEventLoc');
+        var rsvpEl = document.getElementById('heroRsvpBtn');
+
+        if (nameEl) nameEl.textContent = ev.name;
+        if (dateEl) dateEl.textContent = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        if (timeEl) timeEl.textContent = fmtTime(start) + ' – ' + fmtTime(end);
+        if (locEl && loc) locEl.textContent = loc;
+        if (rsvpEl) {
+          rsvpEl.id = 'eb-trigger-hero-' + ev.id;
+          rsvpEl.setAttribute('data-event-id', ev.id);
+          rsvpEl.setAttribute('data-url',  ev.url || '');
+          rsvpEl.setAttribute('data-name', ev.name || '');
+          rsvpEl.setAttribute('data-date', start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
+          rsvpEl.setAttribute('data-time', fmtTime(start) + ' – ' + fmtTime(end));
+          rsvpEl.setAttribute('data-loc',  loc || '');
+        }
+        startCountdown(ev.start.utc || ev.start.local);
+      }
+
+      // remove skeletons
+      var sk = document.getElementById('skeletons');
+      if (sk) sk.remove();
+
+      // render all upcoming cards (hero also shows [0], that's intentional)
+      var upcomingList = document.getElementById('upcomingList');
       if (upcoming.length === 0) {
-        upList.innerHTML = '<div class="events-empty"><h3>No Upcoming Events</h3><p>Follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for new dates.</p></div>';
+        upcomingList.innerHTML = '<p class="no-more-events">More events coming soon — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener" style="color:var(--purple)">@trashtalk_nyc</a> for updates.</p>';
       } else {
-        upList.innerHTML = '<div class="events-list">' + upcoming.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
+        upcomingList.innerHTML = '<div class="events-list">' + upcoming.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
       }
 
-      if (past.length > 0) {
-        document.getElementById('pastSection').style.display = 'block';
-        document.getElementById('pastList').innerHTML = past.map(function(e) { return buildCard(e, true); }).join('');
+      // render past cards
+      var pastSection = document.getElementById('pastSection');
+      var pastList    = document.getElementById('pastList');
+      if (past.length > 0 && pastSection && pastList) {
+        pastSection.style.display = 'block';
+        pastList.innerHTML = past.map(function(e) { return buildCard(e, true); }).join('');
       }
+
+      // wire up Eventbrite widgets on all RSVP buttons
+      setTimeout(initWidgets, 100);
     })
     .catch(function() {
-      document.getElementById('skeletons').remove();
-      document.getElementById('bannerWrap').innerHTML = '<div style="position:relative;z-index:1;width:100%;max-width:1000px;margin:0 auto"><div class="banner-empty">Could not load events. Visit <a href="https://www.eventbrite.com" target="_blank" rel="noopener">Eventbrite</a> directly.</div></div>';
-      document.getElementById('upcomingList').innerHTML = '<div class="events-empty"><h3>Could Not Load Events</h3><p>Please try again later or follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>.</p></div>';
+      var sk = document.getElementById('skeletons');
+      if (sk) sk.remove();
+      var upcomingList = document.getElementById('upcomingList');
+      if (upcomingList) upcomingList.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray);font-weight:700;font-size:0.85rem">Could not load events. Visit <a href="https://www.eventbrite.com" target="_blank" rel="noopener" style="color:var(--purple)">Eventbrite</a> directly.</div>';
     });
 </script>
-
 </body>
 </html>

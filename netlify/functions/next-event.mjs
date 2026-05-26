@@ -42,38 +42,8 @@ export const handler = async function (event) {
   const all = event.queryStringParameters?.all === 'true';
 
   try {
-    if (all) {
-      const [upRes, pastRes] = await Promise.all([
-        fetch(`${EB_API}/organizers/${EVENTBRITE_ORGANIZER_ID}/events/?status=live&order_by=start_asc&expand=venue&page_size=50`, { headers }),
-        fetch(`${EB_API}/organizers/${EVENTBRITE_ORGANIZER_ID}/events/?status=ended&order_by=start_desc&expand=venue&page_size=20`, { headers }),
-      ]);
-
-      if (!upRes.ok || !pastRes.ok) {
-        const failRes = upRes.ok ? pastRes : upRes;
-        const raw = await failRes.text();
-        let parsed;
-        try { parsed = JSON.parse(raw); } catch { parsed = { raw }; }
-        return {
-          statusCode: failRes.status,
-          headers: cors,
-          body: JSON.stringify({ error: 'eventbrite_api_error', status: failRes.status, detail: parsed }),
-        };
-      }
-
-      const [upData, pastData] = await Promise.all([upRes.json(), pastRes.json()]);
-
-      return {
-        statusCode: 200,
-        headers: cors,
-        body: JSON.stringify({
-          upcoming: (upData.events || []).map(mapEvent),
-          past: (pastData.events || []).map(mapEvent),
-        }),
-      };
-    }
-
     const res = await fetch(
-      `${EB_API}/organizers/${EVENTBRITE_ORGANIZER_ID}/events/?status=live&order_by=start_asc&expand=venue&page_size=1`,
+      `${EB_API}/organizations/${EVENTBRITE_ORGANIZER_ID}/events/?time_filter=all&order_by=start_asc&expand=venue&page_size=100`,
       { headers }
     );
 
@@ -89,9 +59,24 @@ export const handler = async function (event) {
     }
 
     const data = await res.json();
-    const next = data.events?.[0] ? mapEvent(data.events[0]) : null;
+    const now  = new Date().toISOString();
+    const events   = (data.events || []).filter(e => e.status !== 'draft');
+    const upcoming = events.filter(e => e.end.utc > now);
+    const past     = events.filter(e => e.end.utc <= now);
 
-    return { statusCode: 200, headers: cors, body: JSON.stringify(next) };
+    if (all) {
+      return {
+        statusCode: 200,
+        headers: cors,
+        body: JSON.stringify({ upcoming: upcoming.map(mapEvent), past: past.map(mapEvent) }),
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers: cors,
+      body: JSON.stringify(upcoming[0] ? mapEvent(upcoming[0]) : null),
+    };
   } catch (err) {
     return {
       statusCode: 500,
