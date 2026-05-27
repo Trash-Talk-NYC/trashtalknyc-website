@@ -852,15 +852,29 @@
   }
 
   .signup-inner {
-    max-width: 1100px;
+    max-width: 680px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 3.5rem;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
     position: relative;
     z-index: 1;
   }
+
+  .signup-header { width: 100%; }
+
+  .signup-subtitle {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgba(247,244,237,0.65);
+    margin-top: 0.4rem;
+    letter-spacing: 0.02em;
+  }
+
+  .form-wrap { width: 100%; text-align: left; }
 
   .signup .section-label { color: rgba(247,244,237,0.6); }
   .signup .section-label::before { background: rgba(247,244,237,0.6); }
@@ -1549,7 +1563,7 @@
     </button>
   </div>
   <ul class="nav-links" id="navLinks">
-    <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
     <li><a href="events.html" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
     <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
     <li><a href="#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
@@ -1565,11 +1579,9 @@
       <span class="accent">Talk</span>
       <span class="city">NYC</span>
     </h1>
-    <p class="hero-sub" data-en="We keep NYC clean." data-es="Mantenemos NYC limpio.">We keep NYC clean.</p>
     <div class="hero-btns">
       <a href="#signup" class="btn-primary" data-en="Join" data-es="Únete">Join</a>
       <a href="#events" class="btn-secondary" data-en="Next Club Event →" data-es="Próximo Evento del Club →">Next Club Event →</a>
-      <a href="#how" class="btn-secondary" data-en="How it works" data-es="Cómo funciona">How it works</a>
     </div>
   </div>
 
@@ -1657,8 +1669,9 @@
 <!-- SIGNUP -->
 <section class="signup" id="signup">
   <div class="signup-inner">
-    <div>
-      <h2 class="section-title" data-en="Membership form" data-es="Formulario de membresía">Membership form</h2>
+    <div class="signup-header">
+      <h2 class="section-title" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
+      <p class="signup-subtitle" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</p>
     </div>
 
     <div class="form-wrap">
@@ -1769,7 +1782,7 @@
 <!-- GOFUNDME -->
 <section class="gfm-section" id="donate">
   <div class="gfm-inner">
-    <h2 class="section-title" data-en="Help us keep NYC clean" data-es="Ayúdanos a mantener NYC limpia">Help us keep NYC clean</h2>
+    <h2 class="section-title" data-en="We are crushing it." data-es="Lo estamos logrando.">We are crushing it.</h2>
     <p data-en="Every dollar goes directly toward cleanup supplies, equipment, and organizing future events across all five boroughs." data-es="Cada dólar va directamente a materiales de limpieza, equipo y organización de eventos futuros en los cinco condados.">Every dollar goes directly toward cleanup supplies, equipment, and organizing future events across all five boroughs.</p>
 
     <div class="gfm-widget-wrap">
@@ -1779,11 +1792,6 @@
   </div>
 </section>
 
-<!-- IG CTA -->
-<section class="ig-cta">
-  <div class="big-text" data-en="Follow the movement<br>on Instagram" data-es="Sigue el movimiento<br>en Instagram">Follow the movement<br>on Instagram</div>
-  <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener" class="ig-handle">@trashtalk_nyc</a>
-</section>
 
 <!-- LITTER MAP TEASER -->
 
@@ -1791,11 +1799,12 @@
 <footer>
   <div class="footer-logo">Trash Talk NYC</div>
   <ul class="footer-links">
-    <li><a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
     <li><a href="events.html" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
     <li><a href="#signup" data-en="Join" data-es="Únete">Join</a></li>
     <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
     <li><a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">Instagram</a></li>
+    <li><a href="https://www.tiktok.com/@trashtalk_nyc" target="_blank" rel="noopener">TikTok</a></li>
   </ul>
   <div class="footer-copy">© 2025 Trash Talk NYC</div>
 </footer>
@@ -1988,7 +1997,7 @@
           '<div class="countdown-row" id="evtCountdown"></div>' +
           '<a href="' + ev.url + '" target="_blank" rel="noopener" class="btn-eb-rsvp">RSVP →</a>' +
         '</div>' +
-        '<div class="events-see-all"><a href="events.html">See all club events →</a></div>';
+        '<div class="events-see-all"><a href="events.html">Can\'t make this one? See all club events →</a></div>';
 
       startCountdown(ev.start.utc || ev.start.local);
     }
