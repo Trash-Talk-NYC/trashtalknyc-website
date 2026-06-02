@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Trash Talk NYC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #1c1c22;
+    --off-white: #f7f4ed;
+    --cream: #ede9df;
+    --yellow: #f5d000;
+    --yellow-dark: #c9a900;
+    --purple: #6b3fa0;
+    --purple-light: #9b5de5;
+    --purple-pale: #f0e8ff;
+    --green: #2a6b2a;
+    --green-light: #3d9e3d;
+    --gray: #7a7a8a;
+    --warm-gray: #b0aca2;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--off-white);
+    color: var(--charcoal);
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.35;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--charcoal);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 1rem;
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--off-white);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  .nav-logo span { color: var(--purple-light); }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: rgba(247,244,237,0.7);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: color 0.15s;
+  }
+
+  .nav-links a:hover { color: var(--yellow); }
+  .nav-links a.active { color: var(--yellow); }
+
+  .nav-cta {
+    background: var(--purple) !important;
+    color: #fff !important;
+    padding: 0.45rem 1.1rem !important;
+    border-radius: 6px;
+    transition: background 0.15s !important;
+  }
+  .nav-cta:hover { background: var(--purple-light) !important; color: #fff !important; }
+
+  .lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 2px solid var(--purple-light);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .lang-btn {
+    background: transparent;
+    color: rgba(247,244,237,0.55);
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .lang-btn.active { background: var(--purple-light); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--off-white); }
+
+  .nav-hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--off-white);
+    border-radius: 2px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+  .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ── CONTACT SECTION ── */
+  .contact-section {
+    padding: 4rem 2rem;
+  }
+
+  .contact-inner {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── FORM STYLES (matching index.html) ── */
+  .form-wrap {
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid var(--cream);
+    padding: 2.5rem 2rem;
+  }
+
+  .form-intro {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 1.75rem;
+    line-height: 1.5;
+  }
+
+  .form-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gray);
+    margin-bottom: 1.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--charcoal);
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid var(--cream);
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.92rem;
+    color: var(--charcoal);
+    background: var(--off-white);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--purple);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 130px;
+  }
+
+  .form-submit {
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    background: var(--yellow);
+    color: var(--charcoal);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 0.5rem;
+  }
+
+  .form-submit:hover { background: var(--yellow-dark); }
+  .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .form-note {
+    font-size: 0.75rem;
+    color: var(--warm-gray);
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+
+  /* ── SUCCESS STATE ── */
+  .form-success {
+    display: none;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .form-success .success-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-success h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.04em;
+    color: var(--charcoal);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-success p {
+    color: var(--gray);
+    font-size: 0.9rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--charcoal);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--off-white);
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    list-style: none;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-links a {
+    color: rgba(247,244,237,0.45);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: color 0.15s;
+  }
+
+  .footer-links a:hover { color: var(--yellow); }
+
+  .footer-copy {
+    font-size: 0.7rem;
+    color: rgba(247,244,237,0.25);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    nav { padding: 0 1.25rem; flex-wrap: wrap; height: auto; min-height: 60px; }
+    .nav-hamburger { display: flex; }
+    .nav-links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 0;
+      padding: 0.5rem 0 1rem;
+      order: 3;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links li { border-top: 1px solid rgba(247,244,237,0.1); }
+    .nav-links a { display: block; padding: 0.75rem 0.5rem; font-size: 0.9rem; text-align: center; }
+    .nav-links .nav-cta { margin: 0.6rem 0 0.25rem; padding: 0.7rem 1.25rem; border-radius: 6px; text-align: center; display: block; }
+    .nav-right { gap: 0.5rem; }
+    .nav-logo { font-size: 1.25rem; }
+
+    .form-row { grid-template-columns: 1fr; }
+    .form-wrap { padding: 1.75rem 1.25rem; }
+    .footer-links { flex-wrap: wrap; gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">Trash Talk <span>NYC</span></a>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="btnES" onclick="setLang('es')">ES</button>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="events.html" data-en="Events" data-es="Eventos">Events</a></li>
+    <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
+    <li><a href="contact.html" class="active" data-en="Contact" data-es="Contacto">Contact</a></li>
+    <li><a href="index.html#signup" class="nav-cta" data-en="Sign up" data-es="Únete">Sign up</a></li>
+  </ul>
+</nav>
+
+<section class="contact-section">
+  <div class="contact-inner">
+    <div class="form-wrap">
+      <p class="form-intro">Questions, concerns, partnerships, or report a bug — we typically respond within 24 hours.</p>
+
+      <div class="form-success" id="formSuccess">
+        <div class="success-icon">✓</div>
+        <h3>Message sent!</h3>
+        <p>We'll get back to you as soon as we can.</p>
+      </div>
+
+      <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="6e3345ab-051d-43aa-b274-ebc99bb4ec5e">
+        <input type="hidden" name="subject" value="New Contact Message — Trash Talk NYC">
+        <input type="hidden" name="from_name" value="Trash Talk NYC Website">
+        <input type="hidden" name="redirect" value="false">
+        <input type="hidden" name="botcheck" value="">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fname">First name *</label>
+            <input type="text" id="fname" name="fname" required placeholder="Jane">
+          </div>
+          <div class="form-group">
+            <label for="lname">Last name *</label>
+            <input type="text" id="lname" name="lname" required placeholder="Doe">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email address *</label>
+          <input type="email" id="email" name="email" required placeholder="jane@example.com">
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message *</label>
+          <textarea id="message" name="message" required placeholder="What's on your mind?"></textarea>
+        </div>
+
+        <button type="submit" class="form-submit" id="submitBtn">Send message →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Trash Talk NYC</div>
+  <ul class="footer-links">
+    <li><a href="index.html#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
+    <li><a href="events.html" data-en="Events" data-es="Eventos">Events</a></li>
+    <li><a href="index.html#signup" data-en="Sign up" data-es="Únete">Sign up</a></li>
+    <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
+    <li><a href="contact.html" data-en="Contact" data-es="Contacto">Contact</a></li>
+    <li><a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">Instagram</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 Trash Talk NYC</div>
+</footer>
+
+<script>
+  function toggleMobileNav() {
+    document.getElementById('navHamburger').classList.toggle('open');
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav-links a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        document.getElementById('navHamburger').classList.remove('open');
+        document.getElementById('navLinks').classList.remove('open');
+      });
+    });
+  });
+
+  let currentLang = 'en';
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+    document.getElementById('btnES').classList.toggle('active', lang === 'es');
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const text = el.getAttribute('data-' + lang);
+      if (!text) return;
+      el.textContent = text;
+    });
+    document.documentElement.lang = lang;
+  }
+
+  document.getElementById('contactForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const formData = new FormData(this);
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('formSuccess').style.display = 'block';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Send message →';
+        alert('Something went wrong. Please try again.');
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Send message →';
+      alert('Something went wrong. Please try again.');
+    }
+  });
+</script>
+
+</body>
+</html>
