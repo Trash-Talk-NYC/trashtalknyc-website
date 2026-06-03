@@ -13,6 +13,8 @@ function mapEvent(e) {
           name: e.venue.name,
           address: e.venue.address?.localized_address_display || null,
           city: e.venue.address?.city || null,
+          lat: e.venue.latitude  ? parseFloat(e.venue.latitude)  : null,
+          lng: e.venue.longitude ? parseFloat(e.venue.longitude) : null,
         }
       : null,
   };
