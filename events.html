@@ -471,6 +471,18 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <span id="heroEventLoc">Apollo Theater, New York</span>
         </div>
+        <div class="card-meta-row" id="heroMapRow" style="display:none">
+          <span class="map-links">
+            <a class="map-link" id="heroGoogleMap" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Google Maps
+            </a>
+            <a class="map-link" id="heroAppleMap" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Apple Maps
+            </a>
+          </span>
+        </div>
       </div>
 
       <div class="card-countdown">
@@ -884,7 +896,15 @@
         if (nameEl) nameEl.textContent = ev.name;
         if (dateEl) dateEl.textContent = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         if (timeEl) timeEl.textContent = fmtTime(start) + ' – ' + fmtTime(end);
-        if (locEl && loc) locEl.textContent = loc;
+        if (locEl && loc) {
+          locEl.textContent = loc;
+          var heroMaps = mapUrls(ev);
+          if (heroMaps) {
+            document.getElementById('heroGoogleMap').href = heroMaps.google;
+            document.getElementById('heroAppleMap').href  = heroMaps.apple;
+            document.getElementById('heroMapRow').style.display = '';
+          }
+        }
         if (rsvpEl) {
           rsvpEl.id = 'eb-trigger-hero-' + ev.id;
           rsvpEl.setAttribute('data-event-id', ev.id);
