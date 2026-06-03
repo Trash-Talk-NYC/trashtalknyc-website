@@ -204,16 +204,26 @@
 
   .page-hero-inner { position: relative; z-index: 1; }
 
+  .page-hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: rgba(247,244,237,0.45);
+    margin-bottom: 1rem;
+  }
+
   .page-hero h1 {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(3.5rem, 10vw, 6rem);
+    font-size: clamp(2.8rem, 7vw, 5rem);
     color: var(--off-white);
     letter-spacing: 0.06em;
-    line-height: 1;
+    line-height: 1.05;
     margin-bottom: 0;
   }
 
-  .page-hero h1 span { color: var(--yellow); }
+  .page-hero h1 .accent { color: var(--yellow); }
 
   /* ── ORIGIN TIMELINE ── */
   .origin {
@@ -670,6 +680,12 @@
   }
 
   .footer-links a:hover { color: var(--yellow); }
+  .footer-social { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .footer-social svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
+  .footer-socials { display: flex; justify-content: center; gap: 1.5rem; list-style: none; flex-wrap: wrap; padding-top: 0.75rem; border-top: 1px solid rgba(247,244,237,0.1); width: 100%; }
+  .footer-socials a { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700; color: rgba(247,244,237,0.45); text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.15s; }
+  .footer-socials a:hover { color: var(--yellow); }
+  .footer-socials svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
   .footer-copy { font-size: 0.7rem; }
 
   /* ── MOBILE ── */
@@ -751,6 +767,135 @@
       flex-shrink: 0;
     }
   }
+
+  /* ── EASING ── */
+  :root {
+    --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  }
+
+  /* ── DAVID SECTION ── */
+  .david-section {
+    background: var(--off-white);
+    padding: 5rem 3rem 5.5rem;
+    position: relative; overflow: hidden;
+    border-bottom: 1px solid #ddd9d0;
+  }
+  .david-section::before {
+    content: '';
+    position: absolute; left: -10%; top: -20%;
+    width: 55vw; height: 100%;
+    background: radial-gradient(ellipse at center, rgba(245,208,0,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .david-section::after {
+    content: '';
+    position: absolute; right: -5%; bottom: -20%;
+    width: 40vw; height: 80%;
+    background: radial-gradient(ellipse at center, rgba(155,93,229,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .david-inner {
+    max-width: 960px; margin: 0 auto;
+    display: grid; grid-template-columns: 280px 1fr;
+    gap: 4rem; align-items: flex-start;
+    position: relative; z-index: 1;
+  }
+  .david-photo {
+    width: 100%; aspect-ratio: 1 / 1;
+    border-radius: 18px; overflow: hidden;
+    position: relative; background: var(--cream);
+    border: 1px solid #d8d3c8;
+    box-shadow: 0 2px 4px rgba(28,28,34,0.04), 0 8px 24px rgba(28,28,34,0.08), 0 24px 48px rgba(28,28,34,0.06);
+    opacity: 0; transform: translateY(24px) scale(0.97);
+    transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
+  }
+  .david-photo.visible { opacity: 1; transform: translateY(0) scale(1); }
+  .david-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; display: block; transition: transform 600ms var(--ease-out); }
+  @media (hover: hover) and (pointer: fine) { .david-photo:hover img { transform: scale(1.03); } }
+  .david-photo-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 0.75rem;
+  }
+  .david-photo-placeholder svg { width: 52px; height: 52px; color: #c8c2b8; }
+  .david-photo-placeholder span { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: #c0bab0; }
+  .david-tag {
+    position: absolute; bottom: 1rem; left: 1rem;
+    background: var(--yellow); color: var(--charcoal);
+    font-family: 'Space Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    padding: 0.3rem 0.7rem; border-radius: 6px;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 300ms 200ms var(--ease-out), transform 300ms 200ms var(--ease-out);
+  }
+  .david-photo.visible .david-tag { opacity: 1; transform: translateY(0); }
+  .david-text { padding-top: 0.5rem; }
+  .david-eyebrow {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.22em; color: var(--purple);
+    margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.6rem;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
+  }
+  .david-eyebrow.visible { opacity: 1; transform: translateY(0); }
+  .david-eyebrow::before { content: ''; display: inline-block; width: 1.25rem; height: 2px; background: var(--purple-light); border-radius: 2px; flex-shrink: 0; }
+  .david-name {
+    font-family: 'Nunito', sans-serif; font-size: clamp(2.4rem, 4.5vw, 4rem); font-weight: 800;
+    color: var(--charcoal); line-height: 1; letter-spacing: -0.01em; margin-bottom: 0.25rem;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 440ms 60ms var(--ease-out), transform 440ms 60ms var(--ease-out);
+  }
+  .david-name.visible { opacity: 1; transform: translateY(0); }
+  .david-role {
+    font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--warm-gray); margin-bottom: 2rem;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 400ms 100ms var(--ease-out), transform 400ms 100ms var(--ease-out);
+  }
+  .david-role.visible { opacity: 1; transform: translateY(0); }
+  .david-divider {
+    height: 2px; background: linear-gradient(90deg, var(--purple-light), transparent);
+    border-radius: 2px; margin-bottom: 1.75rem;
+    opacity: 0; width: 0;
+    transition: opacity 400ms 130ms var(--ease-out), width 500ms 130ms var(--ease-out);
+  }
+  .david-divider.visible { opacity: 1; width: 2.5rem; }
+  .david-bio { display: flex; flex-direction: column; gap: 1rem; }
+  .david-bio p {
+    font-size: 0.97rem; font-weight: 600; color: #4a4850; line-height: 1.8;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 380ms var(--ease-out), transform 380ms var(--ease-out);
+  }
+  .david-bio p.visible { opacity: 1; transform: translateY(0); }
+  .david-bio p:nth-child(1) { transition-delay: 150ms; }
+  .david-bio p:nth-child(2) { transition-delay: 210ms; }
+  .david-bio p:nth-child(3) { transition-delay: 270ms; }
+  .david-socials {
+    display: flex; align-items: center; gap: 1.25rem; margin-top: 1.75rem; flex-wrap: wrap;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 360ms 300ms var(--ease-out), transform 360ms 300ms var(--ease-out);
+  }
+  .david-socials.visible { opacity: 1; transform: translateY(0); }
+  .david-ig {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Space Mono', monospace; font-size: 0.72rem; font-weight: 700;
+    color: var(--purple); text-decoration: none; letter-spacing: 0.06em;
+    border-bottom: 2px solid rgba(107,63,160,0.25); padding-bottom: 0.1rem;
+    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) { .david-ig:hover { color: var(--purple-light); border-color: var(--purple-light); } }
+  .david-ig svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
+
+  @media (max-width: 768px) {
+    .david-section { padding: 3.5rem 1.5rem 4rem; }
+    .david-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    .david-photo { max-width: 220px; aspect-ratio: 1/1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .david-photo, .david-eyebrow, .david-name, .david-role, .david-bio p, .david-socials { transform: none !important; opacity: 1 !important; }
+    .david-divider { width: 2.5rem !important; opacity: 1 !important; }
+  }
 </style>
 </head>
 <body>
@@ -768,155 +913,72 @@
     </button>
   </div>
   <ul class="nav-links" id="navLinks">
-    <li><a href="index.html#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
-    <li><a href="events.html" data-en="Events" data-es="Eventos">Events</a></li>
+    <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
+    <li><a href="events.html" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
     <li><a href="about.html" class="active" data-en="About" data-es="Nosotros">About</a></li>
-    <li><a href="index.html#signup" class="nav-cta" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
+    <li><a href="contact.html" data-en="Contact" data-es="Contacto">Contact</a></li>
+    <li><a href="index.html#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
   </ul>
 </nav>
 
 <!-- PAGE HERO -->
 <section class="page-hero">
   <div class="page-hero-inner">
-    <h1><span data-en="About" data-es="Sobre Nosotros">About</span></h1>
+    <p class="page-hero-eyebrow" data-en="About" data-es="Sobre Nosotros">About</p>
+    <h1><span data-en="WE KEEP" data-es="MANTENEMOS">WE KEEP</span><br><span class="accent" data-en="NYC CLEAN" data-es="NYC LIMPIA">NYC CLEAN</span></h1>
   </div>
 </section>
 
-<!-- ORIGIN + LETTER + MISSION -->
-<section class="origin">
-  <div class="origin-inner">
-    <div class="letter-title" data-en="Timeline" data-es="Cronología">Timeline</div>
-    <div class="timeline">
+<!-- DAVID -->
+<section class="david-section">
+  <div class="david-inner">
 
-      <!-- MISSION FIRST -->
-      <div class="tl-item">
-        <div class="tl-marker tl-marker--mission"></div>
-        <div class="mission-box">
-          <div class="section-label" data-en="Our mission" data-es="Nuestra misión">Our mission</div>
-          <div class="mission-quote">
-            <span class="lang-swap" data-lang="en" style="opacity: 0.45; font-style: italic;">We're still working on putting this into words. Check back soon.</span>
-            <span class="lang-swap" data-lang="es" style="display:none; opacity: 0.45; font-style: italic;">Todavía estamos trabajando en ponerlo en palabras. Vuelve pronto.</span>
-          </div>
-
-          <!--
-          <div class="scrapped-outer">
-            <button class="scrapped-toggle-btn" id="scrappedToggle" onclick="toggleScrapped()">
-              <span class="scrapped-toggle-label" data-en="View mission statement we scrapped" data-es="Ver declaración de misión que descartamos">View mission statement we scrapped</span>
-              <span class="scrapped-toggle-arrow">▼</span>
-            </button>
-            <div class="scrapped-list" id="scrappedList">
-              <div class="scrapped-item-body">
-                <p class="lang-swap" data-lang="en">Make New York give Japan clean. Or no — Singapore clean. Or no!!!!! Kigali, Rwanda clean.<br><br>Yeah, we scrapped this. But reframed:<br>&nbsp;&nbsp;• Coin "New York clean."<br>&nbsp;&nbsp;• Get "How is New York so clean" on Google autocomplete.</p>
-                <p class="lang-swap" data-lang="es" style="display:none">Que Nueva York logre el nivel de limpieza de Japón. O no — de Singapur. ¡¡¡¡¡O no!!!!! De Kigali, Ruanda.<br><br>Sí, lo descartamos.<br>Reformular:<br>&nbsp;&nbsp;• Acuñar "Nueva York limpia."<br>&nbsp;&nbsp;• Poner "¿Por qué Nueva York está tan limpia?" en el autocompletado de Google.</p>
-              </div>
-            </div>
-          </div>
-          -->
-        </div>
+    <div>
+      <div class="david-photo" id="davidPhoto">
+        <img src="assets/IMG_0952_Original.jpeg" alt="David, organizer of Trash Talk NYC">
+        <div class="david-tag" data-en="Organizer" data-es="Organizador">Organizer</div>
       </div>
-
-      <div class="tl-rewind">
-        <span data-en="...but at first" data-es="...pero al principio">...but at first</span>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-marker">01</div>
-        <div class="tl-content">
-          <div class="tl-label" data-en="Clean-Up Videos = Satisfying = Algorithm Loves" data-es="Videos de limpieza = Satisfactorios = El algoritmo los ama">Clean-Up Videos = Satisfying = Algorithm Loves</div>
-          <p data-en="@trashtalk_nyc launches, posting neighborhood cleanups in Washington Heights. The videos hit over 100,000 views in 4 days." data-es="@trashtalk_nyc lanza publicaciones de limpiezas en Washington Heights. Los videos alcanzan más de 100,000 vistas en 4 días.">@trashtalk_nyc launches, posting neighborhood cleanups in Washington Heights. The videos hit over 100,000 views in 4 days.</p>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-marker">02</div>
-        <div class="tl-content">
-          <div class="tl-label" data-en="Interest explodes. Adapt!" data-es="¡El interés explota. ¡Adáptate!">Interest explodes. Adapt!</div>
-          <p data-en="A website is made the first week. 40 volunteers sign up the first day the site is live." data-es="Se crea un sitio web la primera semana. 40 voluntarios se registran el primer día que el sitio está activo.">A website is made the first week. 40 volunteers sign up the first day the site is live.</p>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-marker">03</div>
-        <div class="tl-content">
-          <div class="tl-label" data-en="Greetings, all." data-es="Saludos a todos.">Greetings, all.</div>
-          <p data-en="Trash Talk NYC writes to those first volunteers. Here's what we said." data-es="Trash Talk NYC escribe a esos primeros voluntarios. Esto es lo que dijimos.">Trash Talk NYC writes to those first volunteers. Here's what we said.</p>
-        </div>
-      </div>
-
-      <div class="tl-email">
-        <button class="email-toggle-btn" id="emailToggle" onclick="toggleEmail()">
-          <span class="toggle-dots">
-            <span class="email-dot"></span>
-            <span class="email-dot"></span>
-            <span class="email-dot"></span>
-          </span>
-          <span class="toggle-subject" data-en="That first email — Trash Talk NYC" data-es="Ese primer correo — Trash Talk NYC">That first email — Trash Talk NYC</span>
-          <span class="toggle-arrow">▼</span>
-        </button>
-        <div class="email-modal-overlay" id="emailModal">
-          <div class="email-modal-close">
-            <button onclick="closeEmailModal()" aria-label="Close email">✕</button>
-          </div>
-          <div class="email-card" id="firstEmail">
-            <div class="email-chrome">
-              <div class="email-dot"></div>
-              <div class="email-dot"></div>
-              <div class="email-dot"></div>
-            </div>
-            <div class="email-header">
-              <div class="email-meta">
-                <span class="email-meta-label" data-en="From" data-es="De">From</span>
-                <span class="email-meta-value">Trash Talk NYC</span>
-                <span class="email-meta-label" data-en="To" data-es="Para">To</span>
-                <span class="email-meta-value" data-en="The first 40 volunteers" data-es="Los primeros 40 voluntarios">The first 40 volunteers</span>
-                <span class="email-meta-label" data-en="Date" data-es="Fecha">Date</span>
-                <span class="email-meta-value" data-en="May 2026" data-es="Mayo de 2026">May 2026</span>
-              </div>
-            </div>
-            <div class="email-body">
-              <div class="email-lang" data-lang="en">
-                <p>Dear fellow volunteers,</p>
-                <p>Thank you for offering your time and energy for a cause that will improve lives. This email will describe the mission of Trash Talk, current organizational challenges, and upcoming events.</p>
-                <p>We started Trash Talk as a way to document cleaning our own neighborhood in Washington Heights. The goal was to show a small number of neighbors that someone cared about them. The account unexpectedly exploded.</p>
-                <p>Now, we are facing an incredible opportunity to take care of the communities we love. This project will span all of New York. Assembled here are 40 volunteers across Manhattan, the Bronx, Queens, and Brooklyn. We expect to grow to 1,000 over the next month. We can inspire change in our neighborhoods, our city, and maybe even our country.</p>
-                <p>The ultimate goal is to attain a robust volunteer network assigned to their own communities. We truly believe that your local knowledge and connection to the community is the only means for lasting cultural change.</p>
-                <p>Of course, infrastructure is an obvious challenge. There are clear shortcomings and discrepancies in waste management. Many of you have already pointed to the unequal distribution and types of trash cans that strongly, painfully correlate with wealth. This mission is going to demand accountability and go to City Hall, where we hope a receptive office will work alongside us to strengthen New York's trash infrastructure.</p>
-                <p>This project will need specialists and administration. We will grow the administration as needed. We currently need help with replying to comments, scouting locations, organizing with community leaders, making a logo, building the website, funding volunteer materials, and more. Reach out to us directly if you have a skill that you believe could be of service to the organization.</p>
-                <p>The Bronx, Manhattan, Queens, and Brooklyn will host community trash cleanups starting Saturday, May 23rd. We want our results to speak for themselves: clean streets for an entire week in the most problematic zones of New York. After the initial cleanup, we will maintain the area until the following Saturday. We want these communities to experience what life should and now could be. We need potential locations for these cleanups as soon as possible for Queens, the Bronx, and Brooklyn. Manhattan's hotspot will likely be Harlem 125th Street.</p>
-                <p>We will need leaders for each of these boroughs to handle logistics, publicity, and promotion. Funding may be available for materials. If you want to apply to lead an event, please reach out to us as soon as possible with your desired borough.</p>
-                <p>We want to meet all of you soon! We are filming every morning and working every evening except Thursday. We can meet at a central location for public transportation. Message us with suggestions for indoor/outdoor locations close to midtown Manhattan that would be ideal for gathering 50–100 people. Stay tuned for location and time. Looking forward to meeting you all! Now go pick up some trash!</p>
-                <p class="email-sig">— Trash Talk NYC</p>
-              </div>
-              <div class="email-lang" data-lang="es" style="display:none">
-                <p>Estimados compañeros voluntarios,</p>
-                <p>Gracias por ofrecer su tiempo y energía por una causa que mejorará vidas. Este correo describirá la misión de Trash Talk, los desafíos organizacionales actuales y los próximos eventos.</p>
-                <p>Comenzamos Trash Talk como una forma de documentar la limpieza de nuestro propio vecindario en Washington Heights. El objetivo era mostrarle a un pequeño número de vecinos que alguien se preocupaba por ellos. La cuenta explotó inesperadamente.</p>
-                <p>Ahora, estamos ante una increíble oportunidad de cuidar las comunidades que amamos. Este proyecto abarcará todo Nueva York. Aquí reunidos hay 40 voluntarios de Manhattan, el Bronx, Queens y Brooklyn. Esperamos crecer a 1,000 en el próximo mes. Podemos inspirar cambios en nuestros vecindarios, nuestra ciudad y quizás incluso en nuestro país.</p>
-                <p>El objetivo final es lograr una sólida red de voluntarios asignados a sus propias comunidades. Creemos firmemente que su conocimiento local y conexión con la comunidad es el único medio para un cambio cultural duradero.</p>
-                <p>Por supuesto, la infraestructura es un desafío evidente. Hay claras deficiencias y discrepancias en la gestión de residuos. Muchos de ustedes ya han señalado la distribución desigual y los tipos de papeleras que se correlacionan fuerte y dolorosamente con la riqueza. Esta misión exigirá responsabilidad y llegará al Ayuntamiento, donde esperamos que una oficina receptiva trabaje junto a nosotros para fortalecer la infraestructura de residuos de Nueva York.</p>
-                <p>Este proyecto necesitará especialistas y administración. Haremos crecer la administración según sea necesario. Actualmente necesitamos ayuda respondiendo comentarios, explorando ubicaciones, organizando con líderes comunitarios, creando un logo, construyendo el sitio web, financiando materiales para voluntarios y más. Contáctenos directamente si tiene una habilidad que crea que puede ser de utilidad para la organización.</p>
-                <p>El Bronx, Manhattan, Queens y Brooklyn organizarán limpiezas comunitarias de basura a partir del sábado 23 de mayo. Queremos que nuestros resultados hablen por sí mismos: calles limpias durante toda una semana en las zonas más problemáticas de Nueva York. Tras la limpieza inicial, mantendremos el área hasta el sábado siguiente. Queremos que estas comunidades experimenten cómo debería y ahora podría ser la vida. Necesitamos posibles ubicaciones para estas limpiezas lo antes posible para Queens, el Bronx y Brooklyn. El punto crítico de Manhattan probablemente será Harlem, la Calle 125.</p>
-                <p>Necesitaremos líderes para cada uno de estos condados para manejar la logística, publicidad y promoción. Puede haber financiamiento disponible para materiales. Si desea postularse para liderar un evento, comuníquese con nosotros lo antes posible indicando el condado deseado.</p>
-                <p>¡Queremos conocerlos a todos pronto! Filmamos todas las mañanas y trabajamos todas las tardes excepto los jueves. Podemos reunirnos en un lugar central para el transporte público. Envíenos sugerencias de ubicaciones cercanas al centro de Manhattan que sean ideales para reunir de 50 a 100 personas. Estén atentos a la ubicación y hora. ¡Esperamos conocerlos a todos! ¡Ahora vayan a recoger basura!</p>
-                <p class="email-sig">— Trash Talk NYC</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
+
+    <div class="david-text">
+      <div class="david-name" id="davidName">David</div>
+      <div class="david-role" id="davidRole" data-en="Organizer" data-es="Organizador">Organizer</div>
+      <div class="david-divider" id="davidDivider"></div>
+
+      <div class="david-bio">
+        <p id="davidP1" data-en="Trash Talk is New York City's cleanup club for clean streets, parks, and public spaces. By publicly cleaning the streets of New York and advocating for needed infrastructure, we invite our neighbors to care for their streets." data-es="Trash Talk es el club de limpieza de la ciudad de Nueva York para calles, parques y espacios públicos limpios. Al limpiar públicamente las calles de Nueva York y abogar por la infraestructura necesaria, invitamos a nuestros vecinos a cuidar sus calles.">Trash Talk is New York City's cleanup club for clean streets, parks, and public spaces. By publicly cleaning the streets of New York and advocating for needed infrastructure, we invite our neighbors to care for their streets.</p>
+        <p id="davidP2" data-en="Each of us are the custodians of our communities, and we must advocate for solutions on our own streets. I will continue leading by example through daily cleaning, political advocacy, and social events designed to create more advocates for clean streets. Let's clean New York - together." data-es="Cada uno de nosotros somos los custodios de nuestras comunidades, y debemos abogar por soluciones en nuestras propias calles. Seguiré liderando con el ejemplo mediante la limpieza diaria, la defensa política y los eventos sociales diseñados para crear más defensores de calles limpias. Limpiemos Nueva York — juntos.">Each of us are the custodians of our communities, and we must advocate for solutions on our own streets. I will continue leading by example through daily cleaning, political advocacy, and social events designed to create more advocates for clean streets. Let's clean New York - together.</p>
+        <p id="davidP3" data-en="Join the movement by registering as a volunteer, attending our weekly events, or cleaning up your own neighborhood. Let's get out there and clean!" data-es="Únete al movimiento registrándote como voluntario, asistiendo a nuestros eventos semanales o limpiando tu propio vecindario. ¡Salgamos a limpiar!">Join the movement by registering as a volunteer, attending our weekly events, or cleaning up your own neighborhood. Let's get out there and clean!</p>
+      </div>
+
+      <div class="david-socials" id="davidIg">
+        <a class="david-ig" href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          Instagram
+        </a>
+        <a class="david-ig" href="https://www.tiktok.com/@trashtalk_nyc" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>
+          TikTok
+        </a>
+      </div>
+    </div>
+
   </div>
 </section>
+
 
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">Trash Talk NYC</div>
   <ul class="footer-links">
-    <li><a href="index.html#how" data-en="How it works" data-es="Cómo funciona">How it works</a></li>
-    <li><a href="index.html#signup" data-en="Sign up" data-es="Inscríbete">Sign up</a></li>
+    <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
+    <li><a href="index.html#signup" data-en="Join" data-es="Únete">Join</a></li>
     <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
-    <li><a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">Instagram</a></li>
+    <li><a href="contact.html" data-en="Contact" data-es="Contacto">Contact</a></li>
+  </ul>
+  <ul class="footer-socials">
+    <li><a href="https://www.instagram.com/trashtalk_nyc/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a></li>
+    <li><a href="https://www.tiktok.com/@trashtalk_nyc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>TikTok</a></li>
   </ul>
   <div class="footer-copy">© 2025 Trash Talk NYC</div>
 </footer>
@@ -936,45 +998,6 @@
     });
   });
 
-  function toggleEmail() {
-    const overlay = document.getElementById('emailModal');
-    const btn = document.getElementById('emailToggle');
-    const open = overlay.classList.contains('open');
-    if (!open && window.innerWidth <= 768) {
-      overlay.classList.add('open');
-      btn.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    } else {
-      overlay.classList.toggle('open', !open);
-      btn.classList.toggle('open', !open);
-    }
-  }
-
-  function closeEmailModal() {
-    document.getElementById('emailModal').classList.remove('open');
-    document.getElementById('emailToggle').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  // close modal on overlay background tap
-  document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('emailModal').addEventListener('click', function(e) {
-      if (e.target === this && window.innerWidth <= 768) closeEmailModal();
-    });
-  });
-
-  function toggleScrapped() {
-    document.getElementById('scrappedList').classList.toggle('open');
-    document.getElementById('scrappedToggle').classList.toggle('open');
-  }
-
-  function toggleScrappedItem(btn) {
-    const body = btn.nextElementSibling;
-    const open = body.classList.contains('open');
-    body.classList.toggle('open', !open);
-    btn.classList.toggle('open', !open);
-  }
-
   // ── LANGUAGE TOGGLE ──
   let currentLang = 'en';
 
@@ -987,12 +1010,38 @@
       if (!text) return;
       el.textContent = text;
     });
-    // toggle dual-language blocks (email body + mission quote)
-    document.querySelectorAll('.email-lang, .lang-swap').forEach(el => {
-      el.style.display = el.getAttribute('data-lang') === lang ? '' : 'none';
-    });
     document.documentElement.lang = lang;
   }
+</script>
+
+<script>
+  // Scroll-triggered reveals for David section
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  var photo = document.getElementById('davidPhoto');
+  if (photo) observer.observe(photo);
+
+  var textObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        textObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  ['davidName','davidRole','davidDivider','davidP1','davidP2','davidP3','davidIg']
+    .forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) textObserver.observe(el);
+    });
 </script>
 </body>
 </html>
