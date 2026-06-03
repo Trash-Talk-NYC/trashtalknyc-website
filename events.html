@@ -240,6 +240,14 @@
   .filter-pill:hover { border-color: var(--purple-light); color: var(--purple-light); }
   .filter-pill.active { background: var(--purple); border-color: var(--purple); color: #fff; }
 
+  /* ── DISTANCE SORT LABEL ── */
+  .dist-sort-label {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--green); margin-bottom: 1rem;
+  }
+  .dist-sort-label svg { width: 12px; height: 12px; stroke: var(--green); flex-shrink: 0; }
+
   /* ── MAPS LINK ── */
   .event-loc-link {
     display: inline-flex; align-items: center; gap: 0.35rem;
@@ -509,6 +517,11 @@
     <button class="filter-pill" data-borough="Staten Island" onclick="filterByBorough('Staten Island')" data-en="Staten Island" data-es="Staten Island">Staten Island</button>
   </div>
 
+  <div class="dist-sort-label" id="distSortLabel" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Sorted nearest to farthest
+  </div>
+
   <div id="upcomingList"></div>
 
   <div id="pastSection" style="display:none">
@@ -726,10 +739,31 @@
     '</div>';
   }
 
-  // ── BOROUGH FILTER ──
+  // ── DISTANCE SORT ──
   var allUpcomingEvents = [];
   var currentFilter = '';
 
+  function sortByDist(events) {
+    if (userLat === null) return events;
+    return events.slice().sort(function(a, b) {
+      var aLat = a.venue && a.venue.lat, bLat = b.venue && b.venue.lat;
+      if (!aLat && !bLat) return 0;
+      if (!aLat) return 1;
+      if (!bLat) return -1;
+      return haversineKm(userLat, userLng, a.venue.lat, a.venue.lng) -
+             haversineKm(userLat, userLng, b.venue.lat, b.venue.lng);
+    });
+  }
+
+  function renderList(events) {
+    var sorted = sortByDist(events);
+    var upcomingList = document.getElementById('upcomingList');
+    if (!upcomingList) return;
+    upcomingList.innerHTML = '<div class="events-list">' + sorted.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
+    setTimeout(initWidgets, 100);
+  }
+
+  // ── BOROUGH FILTER ──
   function filterByBorough(borough) {
     currentFilter = borough;
     document.querySelectorAll('.filter-pill').forEach(function(p) {
@@ -738,18 +772,10 @@
     var filtered = borough ? allUpcomingEvents.filter(function(e) { return detectBorough(e) === borough; }) : allUpcomingEvents;
     var upcomingList = document.getElementById('upcomingList');
     if (filtered.length === 0) {
-      upcomingList.innerHTML = '<p class="no-more-events">No upcoming events in ' + (borough || 'that area') + ' — check back soon.</p>';
+      upcomingList.innerHTML = '<p class="no-more-events">No upcoming events in ' + borough + ' — check back soon.</p>';
     } else {
-      upcomingList.innerHTML = '<div class="events-list">' + filtered.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
-      setTimeout(initWidgets, 100);
+      renderList(filtered);
     }
-  }
-
-  function renderUpcomingList(events) {
-    var upcomingList = document.getElementById('upcomingList');
-    if (!upcomingList) return;
-    if (events.length === 0) return;
-    upcomingList.innerHTML = '<div class="events-list">' + events.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
   }
 
   // ── PAST TOGGLE ──
@@ -758,20 +784,21 @@
     var toggle = document.getElementById('pastToggle');
     var isOpen = toggle.classList.contains('open');
     toggle.classList.toggle('open', !isOpen);
-    list.style.display = isOpen ? 'none' : '';
+    list.style.display = isOpen ? 'none' : 'flex';
   }
 
-  // ── PROXIMITY (re-renders cards once location is known) ──
+  // ── PROXIMITY ──
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function(pos) {
       userLat = pos.coords.latitude;
       userLng = pos.coords.longitude;
+      // Show sort indicator
+      var lbl = document.getElementById('distSortLabel');
+      if (lbl) lbl.style.display = 'flex';
+      // Re-render with distance sort applied (respecting current filter)
       if (allUpcomingEvents.length > 0) {
-        var upcomingList = document.getElementById('upcomingList');
-        if (upcomingList && upcomingList.querySelector('.events-list')) {
-          upcomingList.innerHTML = '<div class="events-list">' + allUpcomingEvents.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
-          setTimeout(initWidgets, 100);
-        }
+        var toRender = currentFilter ? allUpcomingEvents.filter(function(e) { return detectBorough(e) === currentFilter; }) : allUpcomingEvents;
+        renderList(toRender);
       }
     }, function() {});
   }
@@ -884,8 +911,7 @@
           document.getElementById('boroughFilter').style.display = 'flex';
         }
         // Render list
-        upcomingList.innerHTML = '<div class="events-list">' + upcoming.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
-        setTimeout(initWidgets, 100);
+        renderList(upcoming);
       }
 
       // render past cards (collapsed by default)
