@@ -248,15 +248,18 @@
   }
   .dist-sort-label svg { width: 12px; height: 12px; stroke: var(--green); flex-shrink: 0; }
 
-  /* ── MAPS LINK ── */
-  .event-loc-link {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    color: var(--gray); text-decoration: none;
-    transition: color 0.15s;
-    font-size: inherit; font-weight: inherit;
+  /* ── MAPS LINKS ── */
+  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .map-link {
+    display: inline-flex; align-items: center; gap: 0.2rem;
+    font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    color: rgba(122,122,138,0.7); text-decoration: none;
+    border: 1px solid rgba(122,122,138,0.3); border-radius: 4px;
+    padding: 0.1rem 0.4rem; transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
   }
-  .event-loc-link:hover { color: var(--purple); }
-  .event-loc-link .ext-icon { width: 9px; height: 9px; opacity: 0.5; flex-shrink: 0; }
+  .map-link:hover { color: var(--purple); border-color: var(--purple); }
+  .map-link svg { width: 9px; height: 9px; flex-shrink: 0; }
 
   /* ── DISTANCE BADGE ── */
   .dist-badge {
@@ -650,10 +653,15 @@
     return '<span class="event-tag ' + (cls[borough] || '') + '">' + borough + '</span>';
   }
 
-  function mapsUrl(ev) {
+  function mapUrls(ev) {
     var v = ev.venue || {};
     var q = v.address || ((v.name || '') + (v.city ? ', ' + v.city : ''));
-    return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : '';
+    if (!q) return null;
+    var enc = encodeURIComponent(q);
+    return {
+      google: 'https://www.google.com/maps/search/?api=1&query=' + enc,
+      apple:  'https://maps.apple.com/?q=' + enc
+    };
   }
 
   // ── PROXIMITY ──
@@ -693,21 +701,26 @@
     var venue   = ev.venue || {};
     var loc     = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
     var borough = detectBorough(ev);
-    var maps    = mapsUrl(ev);
+    var maps    = mapUrls(ev);
     var dist    = isPast ? '' : distLabel(ev);
     var btnId   = 'eb-trigger-' + ev.id;
 
     var dateStr = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
     var timeStr = fmtTime(start) + ' – ' + fmtTime(end);
 
+    var pinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
     var locHtml = loc
-      ? (maps
-          ? '<a class="event-detail event-loc-link" href="' + maps + '" target="_blank" rel="noopener">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
-              loc +
-              '<svg class="ext-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
-            '</a>'
-          : '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</span>')
+      ? '<span class="event-detail">' + pinSvg + loc + '</span>' +
+        (maps
+          ? '<span class="map-links">' +
+              '<a class="map-link" href="' + maps.google + '" target="_blank" rel="noopener">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+                'Google Maps</a>' +
+              '<a class="map-link" href="' + maps.apple + '" target="_blank" rel="noopener">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+                'Apple Maps</a>' +
+            '</span>'
+          : '')
       : '';
 
     var cta = isPast
