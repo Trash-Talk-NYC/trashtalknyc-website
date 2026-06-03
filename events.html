@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Events — Trash Talk NYC</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -45,7 +45,7 @@
   .social-bar-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.3); }
 
   /* ── NAV ── */
-  nav { position: sticky; top: 0; z-index: 200; background: var(--charcoal); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 60px; border-bottom: 3px solid var(--purple-light); }
+  nav { position: sticky; top: 0; z-index: 200; background: var(--charcoal); display: flex; align-items: center; justify-content: space-between; padding: env(safe-area-inset-top) 2rem 0; min-height: 60px; border-bottom: 3px solid var(--purple-light); }
   .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--yellow); letter-spacing: 0.06em; text-decoration: none; white-space: nowrap; }
   .nav-logo span { color: var(--purple-light); }
   .nav-right { display: flex; align-items: center; gap: 2rem; order: 3; }

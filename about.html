@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>About — Trash Talk NYC</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -52,8 +52,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 2rem;
-    height: 60px;
+    padding: env(safe-area-inset-top) 2rem 0;
+    min-height: 60px;
     border-bottom: 3px solid var(--purple-light);
   }
 
