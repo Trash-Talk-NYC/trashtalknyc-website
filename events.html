@@ -48,7 +48,8 @@
   nav { position: sticky; top: 0; z-index: 200; background: var(--charcoal); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 60px; border-bottom: 3px solid var(--purple-light); }
   .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--yellow); letter-spacing: 0.06em; text-decoration: none; white-space: nowrap; }
   .nav-logo span { color: var(--purple-light); }
-  .nav-right { display: flex; align-items: center; gap: 2rem; }
+  .nav-right { display: flex; align-items: center; gap: 2rem; order: 3; }
+  .nav-links { order: 2; }
   .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
   .nav-links a { color: rgba(247,244,237,0.7); text-decoration: none; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.15s; }
   .nav-links a:hover, .nav-links a.active { color: var(--yellow); }
@@ -227,10 +228,85 @@
   }
   .card-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--warm-gray); }
 
+  /* ── BOROUGH FILTER ── */
+  .borough-filter { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .filter-pill {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 0.35rem 0.9rem; border-radius: 20px;
+    border: 1.5px solid #d0ccc4; background: transparent; color: var(--gray);
+    cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .filter-pill:hover { border-color: var(--purple-light); color: var(--purple-light); }
+  .filter-pill.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+  /* ── DISTANCE SORT LABEL ── */
+  .dist-sort-label {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--green); margin-bottom: 1rem;
+  }
+  .dist-sort-label svg { width: 12px; height: 12px; stroke: var(--green); flex-shrink: 0; }
+
+  /* ── MAPS LINKS ── */
+  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
+  .map-link {
+    display: inline-flex; align-items: center; gap: 0.2rem;
+    font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    color: rgba(122,122,138,0.7); text-decoration: none;
+    border: 1px solid rgba(122,122,138,0.3); border-radius: 4px;
+    padding: 0.1rem 0.4rem; transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .map-link:hover { color: var(--purple); border-color: var(--purple); }
+  .map-link svg { width: 9px; height: 9px; flex-shrink: 0; }
+
+  /* Hero card — dark background variant */
+  .next-event-card .map-links { gap: 0.5rem; margin-top: 0.5rem; }
+  .next-event-card .map-link {
+    font-size: 0.65rem; padding: 0.3rem 0.7rem; border-radius: 6px;
+    color: rgba(247,244,237,0.7);
+    background: rgba(247,244,237,0.08); border: 1.5px solid rgba(247,244,237,0.2);
+  }
+  .next-event-card .map-link:hover { background: rgba(247,244,237,0.15); border-color: rgba(247,244,237,0.45); color: #fff; }
+  .next-event-card .map-link svg { width: 10px; height: 10px; }
+
+  /* ── DISTANCE BADGE ── */
+  .dist-badge {
+    font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--green); background: rgba(42,107,42,0.1); border: 1px solid rgba(42,107,42,0.25);
+    border-radius: 20px; padding: 0.1rem 0.5rem; white-space: nowrap;
+  }
+
+  /* ── NO EVENTS CTA ── */
+  .no-events-cta {
+    text-align: center; padding: 3rem 1rem;
+  }
+  .no-events-cta p { color: var(--gray); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.25rem; }
+  .no-events-cta .eb-cta-btn {
+    display: inline-block; background: var(--yellow); color: var(--charcoal);
+    font-family: 'Space Mono', monospace; font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s;
+  }
+  .no-events-cta .eb-cta-btn:hover { background: var(--yellow-dark); }
+
   /* ── PAST DIVIDER ── */
-  .past-divider { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 1.25rem; }
+  .past-divider { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 0; }
   .past-divider-line { flex: 1; height: 1px; background: #ddd; }
-  .past-divider-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.16em; color: var(--gray); white-space: nowrap; }
+  .past-toggle {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: none; border: 1.5px solid #d0ccc4; border-radius: 20px;
+    padding: 0.3rem 0.9rem; cursor: pointer;
+    font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: var(--gray);
+    white-space: nowrap; transition: border-color 0.15s, color 0.15s;
+  }
+  .past-toggle:hover { border-color: var(--purple-light); color: var(--purple-light); }
+  .past-toggle-arrow { font-size: 0.55rem; transition: transform 0.2s; display: inline-block; }
+  .past-toggle.open .past-toggle-arrow { transform: rotate(180deg); }
+  #pastList { display: none; margin-top: 1.25rem; }
 
   /* ── SKELETON LOADER ── */
   .skeleton-card { background: white; border: 2px solid #e0dcd4; border-radius: 12px; padding: 1.5rem 1.75rem; display: flex; align-items: center; gap: 1.5rem; }
@@ -356,14 +432,14 @@
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="index.html">Trash Talk <span>NYC</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
+    <li><a href="events.html" class="active" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
+    <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
+    <li><a href="contact.html" data-en="Contact" data-es="Contacto">Contact</a></li>
+    <li><a href="index.html#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
+  </ul>
   <div class="nav-right">
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
-      <li><a href="events.html" class="active" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-      <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
-      <li><a href="contact.html" data-en="Contact" data-es="Contacto">Contact</a></li>
-      <li><a href="index.html#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
-    </ul>
     <div class="lang-toggle">
       <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
       <button class="lang-btn" id="btnES" onclick="setLang('es')">ES</button>
@@ -406,15 +482,27 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <span id="heroEventLoc">Apollo Theater, New York</span>
         </div>
+        <div class="card-meta-row" id="heroMapRow" style="display:none">
+          <span class="map-links">
+            <a class="map-link" id="heroGoogleMap" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Google Maps
+            </a>
+            <a class="map-link" id="heroAppleMap" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Apple Maps
+            </a>
+          </span>
+        </div>
       </div>
 
       <div class="card-countdown">
         <span class="cd-label-top" data-en="Time left" data-es="Tiempo restante">Time left</span>
-        <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub">days</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub" data-en="days" data-es="días">days</span></div>
         <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub">hrs</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub" data-en="hrs" data-es="hrs">hrs</span></div>
         <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub">min</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub" data-en="min" data-es="min">min</span></div>
       </div>
 
       <button class="btn-rsvp" id="heroRsvpBtn" data-event-id=""
@@ -446,12 +534,29 @@
     </div>
   </div>
 
+  <div class="borough-filter" id="boroughFilter" style="display:none">
+    <button class="filter-pill active" data-borough="" onclick="filterByBorough('')" data-en="All" data-es="Todos">All</button>
+    <button class="filter-pill" data-borough="Manhattan" onclick="filterByBorough('Manhattan')">Manhattan</button>
+    <button class="filter-pill" data-borough="Brooklyn" onclick="filterByBorough('Brooklyn')">Brooklyn</button>
+    <button class="filter-pill" data-borough="Queens" onclick="filterByBorough('Queens')">Queens</button>
+    <button class="filter-pill" data-borough="The Bronx" onclick="filterByBorough('The Bronx')" data-en="The Bronx" data-es="El Bronx">The Bronx</button>
+    <button class="filter-pill" data-borough="Staten Island" onclick="filterByBorough('Staten Island')" data-en="Staten Island" data-es="Staten Island">Staten Island</button>
+  </div>
+
+  <div class="dist-sort-label" id="distSortLabel" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    <span data-en="Sorted nearest to farthest" data-es="Ordenado del más cercano al más lejano">Sorted nearest to farthest</span>
+  </div>
+
   <div id="upcomingList"></div>
 
   <div id="pastSection" style="display:none">
     <div class="past-divider">
       <div class="past-divider-line"></div>
-      <div class="past-divider-label" data-en="Past club events" data-es="Eventos pasados del club">Past club events</div>
+      <button class="past-toggle" id="pastToggle" onclick="togglePast()">
+        <span data-en="Past club events" data-es="Eventos pasados">Past club events</span>
+        <span class="past-toggle-arrow">▾</span>
+      </button>
       <div class="past-divider-line"></div>
     </div>
     <div class="events-list" id="pastList"></div>
@@ -530,34 +635,96 @@
   }
 
   // ── LANG ──
+  var currentLang = 'en';
+  var heroEventStart = null;
+
   function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('ttnyc-lang', lang);
     document.getElementById('btnEN').classList.toggle('active', lang === 'en');
     document.getElementById('btnES').classList.toggle('active', lang === 'es');
     document.documentElement.lang = lang;
     document.querySelectorAll('[data-en]').forEach(function(el) {
       var text = el.getAttribute('data-' + lang);
       if (!text) return;
-      if (el.tagName === 'BUTTON' || el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'P') {
+      // Only update leaf elements (no child elements) to avoid wiping nested HTML
+      if (!el.children.length && ['A','BUTTON','SPAN','DIV','P','H1','H2','H3','LABEL'].indexOf(el.tagName) !== -1) {
         el.textContent = text;
       }
     });
+    // Reformat hero date with correct locale
+    if (heroEventStart) {
+      var dateEl = document.getElementById('heroEventDate');
+      if (dateEl) dateEl.textContent = fmtDate(heroEventStart, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    }
   }
 
+  // Restore saved language on load
+  (function() {
+    var saved = localStorage.getItem('ttnyc-lang');
+    if (saved && saved !== 'en') setLang(saved);
+  })();
+
+  // ── CONFIG ──
+  // Update this to your Eventbrite organizer page URL
+  var EB_PAGE = 'https://www.eventbrite.com/o/trash-talk-nyc/';
+
   // ── HELPERS ──
-  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var DAYS      = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
   function parseDate(s) { return new Date(s); }
-  function fmtTime(d)   { return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }); }
 
-  function boroughTag(text) {
-    var t = (text || '').toLowerCase();
-    if (t.includes('brooklyn'))  return '<span class="event-tag tag-brooklyn">Brooklyn</span>';
-    if (t.includes('harlem') || t.includes('manhattan')) return '<span class="event-tag tag-manhattan">Manhattan</span>';
-    if (t.includes('queens'))    return '<span class="event-tag tag-queens">Queens</span>';
-    if (t.includes('bronx'))     return '<span class="event-tag tag-bronx">The Bronx</span>';
-    if (t.includes('staten'))    return '<span class="event-tag tag-staten">Staten Island</span>';
+  function fmtDate(d, opts) {
+    return d.toLocaleDateString(currentLang === 'es' ? 'es' : 'en-US', opts);
+  }
+
+  function fmtTime(d) {
+    return d.toLocaleTimeString(currentLang === 'es' ? 'es' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  function detectBorough(ev) {
+    var venue = ev.venue || {};
+    var t = ((venue.name || '') + ' ' + (venue.city || '') + ' ' + (venue.address || '') + ' ' + (ev.name || '')).toLowerCase();
+    if (t.includes('brooklyn'))                       return 'Brooklyn';
+    if (t.includes('harlem') || t.includes('manhattan')) return 'Manhattan';
+    if (t.includes('queens'))                         return 'Queens';
+    if (t.includes('bronx'))                          return 'The Bronx';
+    if (t.includes('staten'))                         return 'Staten Island';
     return '';
+  }
+
+  function boroughTag(borough) {
+    if (!borough) return '';
+    var cls = { 'Brooklyn':'tag-brooklyn', 'Manhattan':'tag-manhattan', 'Queens':'tag-queens', 'The Bronx':'tag-bronx', 'Staten Island':'tag-staten' };
+    return '<span class="event-tag ' + (cls[borough] || '') + '">' + borough + '</span>';
+  }
+
+  function mapUrls(ev) {
+    var v = ev.venue || {};
+    var q = v.address || ((v.name || '') + (v.city ? ', ' + v.city : ''));
+    if (!q) return null;
+    var enc = encodeURIComponent(q);
+    return {
+      google: 'https://www.google.com/maps/search/?api=1&query=' + enc,
+      apple:  'https://maps.apple.com/?q=' + enc
+    };
+  }
+
+  // ── PROXIMITY ──
+  var userLat = null, userLng = null;
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    var R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+  function kmToMiles(km) { return km * 0.621371; }
+  function distLabel(ev) {
+    if (userLat === null || !ev.venue || !ev.venue.lat) return '';
+    var mi = kmToMiles(haversineKm(userLat, userLng, ev.venue.lat, ev.venue.lng));
+    return '<span class="dist-badge">' + mi.toFixed(1) + ' mi away</span>';
   }
 
   // ── COUNTDOWN ──
@@ -578,15 +745,34 @@
 
   // ── BUILD EVENT CARD ──
   function buildCard(ev, isPast) {
-    var start  = parseDate(ev.start.local || ev.start.utc);
-    var end    = parseDate(ev.end.local   || ev.end.utc);
-    var venue  = ev.venue || {};
-    var loc    = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
-    var borough = boroughTag(loc + ' ' + (venue.address || '') + ' ' + ev.name);
-    var btnId  = 'eb-trigger-' + ev.id;
+    var start   = parseDate(ev.start.local || ev.start.utc);
+    var end     = parseDate(ev.end.local   || ev.end.utc);
+    var venue   = ev.venue || {};
+    var loc     = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
+    var borough = detectBorough(ev);
+    var maps    = mapUrls(ev);
+    var dist    = isPast ? '' : distLabel(ev);
+    var btnId   = 'eb-trigger-' + ev.id;
 
-    var dateStr = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    var months  = currentLang === 'es' ? MONTHS_ES : MONTHS;
+    var days    = currentLang === 'es' ? DAYS_ES   : DAYS;
+    var dateStr = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric' });
     var timeStr = fmtTime(start) + ' – ' + fmtTime(end);
+
+    var pinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+    var locHtml = loc
+      ? '<span class="event-detail">' + pinSvg + loc + '</span>' +
+        (maps
+          ? '<span class="map-links">' +
+              '<a class="map-link" href="' + maps.google + '" target="_blank" rel="noopener">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+                'Google Maps</a>' +
+              '<a class="map-link" href="' + maps.apple + '" target="_blank" rel="noopener">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+                'Apple Maps</a>' +
+            '</span>'
+          : '')
+      : '';
 
     var cta = isPast
       ? '<div class="event-cta"><span class="card-status" data-en="Past" data-es="Pasado">Past</span></div>'
@@ -597,24 +783,88 @@
           ' data-date="' + dateStr + '"' +
           ' data-time="' + timeStr + '"' +
           ' data-loc="' + loc.replace(/"/g, '&quot;') + '"' +
-          '>RSVP &rarr;</button></div>';
+          '>RSVP &rarr;</button>' + dist + '</div>';
 
     return '<div class="event-card ' + (isPast ? 'past' : 'upcoming') + '">' +
       '<div class="event-date-block">' +
-        '<span class="month">' + MONTHS[start.getMonth()] + '</span>' +
-        '<span class="day">'   + start.getDate()          + '</span>' +
-        '<span class="dow">'   + DAYS[start.getDay()]     + '</span>' +
+        '<span class="month" data-en="' + MONTHS[start.getMonth()] + '" data-es="' + MONTHS_ES[start.getMonth()] + '">' + months[start.getMonth()] + '</span>' +
+        '<span class="day">'   + start.getDate() + '</span>' +
+        '<span class="dow" data-en="' + DAYS[start.getDay()] + '" data-es="' + DAYS_ES[start.getDay()] + '">' + days[start.getDay()] + '</span>' +
       '</div>' +
       '<div class="event-info">' +
         '<div class="event-name">' + ev.name + '</div>' +
         '<div class="event-details">' +
           '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + fmtTime(start) + ' – ' + fmtTime(end) + '</span>' +
-          (loc ? '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</span>' : '') +
+          locHtml +
         '</div>' +
-        (borough ? '<div class="event-tags">' + borough + '</div>' : '') +
+        (borough ? '<div class="event-tags">' + boroughTag(borough) + '</div>' : '') +
       '</div>' +
       cta +
     '</div>';
+  }
+
+  // ── DISTANCE SORT ──
+  var allUpcomingEvents = [];
+  var currentFilter = '';
+
+  function sortByDist(events) {
+    if (userLat === null) return events;
+    return events.slice().sort(function(a, b) {
+      var aLat = a.venue && a.venue.lat, bLat = b.venue && b.venue.lat;
+      if (!aLat && !bLat) return 0;
+      if (!aLat) return 1;
+      if (!bLat) return -1;
+      return haversineKm(userLat, userLng, a.venue.lat, a.venue.lng) -
+             haversineKm(userLat, userLng, b.venue.lat, b.venue.lng);
+    });
+  }
+
+  function renderList(events) {
+    var sorted = sortByDist(events);
+    var upcomingList = document.getElementById('upcomingList');
+    if (!upcomingList) return;
+    upcomingList.innerHTML = '<div class="events-list">' + sorted.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
+    setTimeout(initWidgets, 100);
+  }
+
+  // ── BOROUGH FILTER ──
+  function filterByBorough(borough) {
+    currentFilter = borough;
+    document.querySelectorAll('.filter-pill').forEach(function(p) {
+      p.classList.toggle('active', p.getAttribute('data-borough') === borough);
+    });
+    var filtered = borough ? allUpcomingEvents.filter(function(e) { return detectBorough(e) === borough; }) : allUpcomingEvents;
+    var upcomingList = document.getElementById('upcomingList');
+    if (filtered.length === 0) {
+      upcomingList.innerHTML = '<p class="no-more-events">No upcoming events in ' + borough + ' — check back soon.</p>';
+    } else {
+      renderList(filtered);
+    }
+  }
+
+  // ── PAST TOGGLE ──
+  function togglePast() {
+    var list   = document.getElementById('pastList');
+    var toggle = document.getElementById('pastToggle');
+    var isOpen = toggle.classList.contains('open');
+    toggle.classList.toggle('open', !isOpen);
+    list.style.display = isOpen ? 'none' : 'flex';
+  }
+
+  // ── PROXIMITY ──
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      // Show sort indicator
+      var lbl = document.getElementById('distSortLabel');
+      if (lbl) lbl.style.display = 'flex';
+      // Re-render with distance sort applied (respecting current filter)
+      if (allUpcomingEvents.length > 0) {
+        var toRender = currentFilter ? allUpcomingEvents.filter(function(e) { return detectBorough(e) === currentFilter; }) : allUpcomingEvents;
+        renderList(toRender);
+      }
+    }, function() {});
   }
 
   // ── INIT EVENTBRITE WIDGETS ──
@@ -682,10 +932,19 @@
         var locEl  = document.getElementById('heroEventLoc');
         var rsvpEl = document.getElementById('heroRsvpBtn');
 
+        heroEventStart = start;
         if (nameEl) nameEl.textContent = ev.name;
-        if (dateEl) dateEl.textContent = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        if (dateEl) dateEl.textContent = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         if (timeEl) timeEl.textContent = fmtTime(start) + ' – ' + fmtTime(end);
-        if (locEl && loc) locEl.textContent = loc;
+        if (locEl && loc) {
+          locEl.textContent = loc;
+          var heroMaps = mapUrls(ev);
+          if (heroMaps) {
+            document.getElementById('heroGoogleMap').href = heroMaps.google;
+            document.getElementById('heroAppleMap').href  = heroMaps.apple;
+            document.getElementById('heroMapRow').style.display = '';
+          }
+        }
         if (rsvpEl) {
           rsvpEl.id = 'eb-trigger-hero-' + ev.id;
           rsvpEl.setAttribute('data-event-id', ev.id);
@@ -702,24 +961,39 @@
       var sk = document.getElementById('skeletons');
       if (sk) sk.remove();
 
-      // render all upcoming cards (hero also shows [0], that's intentional)
       var upcomingList = document.getElementById('upcomingList');
+
       if (upcoming.length === 0) {
-        upcomingList.innerHTML = '<p class="no-more-events">More events coming soon — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener" style="color:var(--purple)">@trashtalk_nyc</a> for updates.</p>';
+        // No upcoming events — hide hero card, show Eventbrite CTA
+        var heroCard = document.querySelector('.next-event-card');
+        if (heroCard) heroCard.style.display = 'none';
+        var countdown = document.querySelector('.card-countdown');
+        if (countdown) countdown.style.display = 'none';
+        upcomingList.innerHTML =
+          '<div class="no-events-cta">' +
+            '<p>No upcoming events right now — stay tuned on our Eventbrite page for new dates.</p>' +
+            '<a class="eb-cta-btn" href="' + EB_PAGE + '" target="_blank" rel="noopener">See us on Eventbrite &rarr;</a>' +
+          '</div>';
       } else {
-        upcomingList.innerHTML = '<div class="events-list">' + upcoming.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
+        // Store for filtering
+        allUpcomingEvents = upcoming;
+        // Show filter pills (only if events span >1 borough)
+        var boroughs = upcoming.map(detectBorough).filter(Boolean);
+        var uniqueBoroughs = boroughs.filter(function(b, i, arr) { return arr.indexOf(b) === i; });
+        if (uniqueBoroughs.length > 1) {
+          document.getElementById('boroughFilter').style.display = 'flex';
+        }
+        // Render list
+        renderList(upcoming);
       }
 
-      // render past cards
+      // render past cards (collapsed by default)
       var pastSection = document.getElementById('pastSection');
       var pastList    = document.getElementById('pastList');
       if (past.length > 0 && pastSection && pastList) {
         pastSection.style.display = 'block';
         pastList.innerHTML = past.map(function(e) { return buildCard(e, true); }).join('');
       }
-
-      // wire up Eventbrite widgets on all RSVP buttons
-      setTimeout(initWidgets, 100);
     })
     .catch(function() {
       var sk = document.getElementById('skeletons');
