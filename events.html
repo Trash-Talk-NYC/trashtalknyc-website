@@ -214,16 +214,16 @@
   .tag-staten    { color: #0891b2; border-color: rgba(8,145,178,0.3); background: rgba(8,145,178,0.06); }
   .event-cta { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
   .btn-card {
-    display: inline-block; font-family: 'Nunito', sans-serif;
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    padding: 0.4rem 1rem; border-radius: 40px; border: 1.5px solid;
+    display: inline-block; font-family: 'Space Mono', monospace;
+    font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 0.45rem 1rem; border-radius: 6px; border: none;
     cursor: pointer; text-decoration: none;
-    transition: background 150ms var(--ease-out), color 150ms var(--ease-out), transform 100ms var(--ease-out);
+    transition: background 150ms var(--ease-out), transform 100ms var(--ease-out);
     white-space: nowrap;
   }
-  .btn-card-purple { background: transparent; color: var(--purple); border-color: var(--purple); }
+  .btn-card-purple { background: var(--purple); color: #fff; }
   @media (hover: hover) and (pointer: fine) {
-    .btn-card-purple:hover { background: var(--purple); color: #fff; }
+    .btn-card-purple:hover { background: var(--purple-light); }
     .btn-card-purple:active { transform: scale(0.96); }
   }
   .card-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--warm-gray); }
@@ -274,9 +274,8 @@
 
   /* ── DISTANCE BADGE ── */
   .dist-badge {
-    font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--green); background: rgba(42,107,42,0.1); border: 1px solid rgba(42,107,42,0.25);
-    border-radius: 20px; padding: 0.1rem 0.5rem; white-space: nowrap;
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--warm-gray); white-space: nowrap;
   }
 
   /* ── NO EVENTS CTA ── */
@@ -724,7 +723,7 @@
   function distLabel(ev) {
     if (userLat === null || !ev.venue || !ev.venue.lat) return '';
     var mi = kmToMiles(haversineKm(userLat, userLng, ev.venue.lat, ev.venue.lng));
-    return '<span class="dist-badge">' + mi.toFixed(1) + ' mi away</span>';
+    return '<span class="dist-badge">~ ' + mi.toFixed(1) + ' mi away</span>';
   }
 
   // ── COUNTDOWN ──
