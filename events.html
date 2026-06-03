@@ -48,7 +48,8 @@
   nav { position: sticky; top: 0; z-index: 200; background: var(--charcoal); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 60px; border-bottom: 3px solid var(--purple-light); }
   .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--yellow); letter-spacing: 0.06em; text-decoration: none; white-space: nowrap; }
   .nav-logo span { color: var(--purple-light); }
-  .nav-right { display: flex; align-items: center; gap: 2rem; }
+  .nav-right { display: flex; align-items: center; gap: 2rem; order: 3; }
+  .nav-links { order: 2; }
   .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
   .nav-links a { color: rgba(247,244,237,0.7); text-decoration: none; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.15s; }
   .nav-links a:hover, .nav-links a.active { color: var(--yellow); }
@@ -249,7 +250,7 @@
   .dist-sort-label svg { width: 12px; height: 12px; stroke: var(--green); flex-shrink: 0; }
 
   /* ── MAPS LINKS ── */
-  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
   .map-link {
     display: inline-flex; align-items: center; gap: 0.2rem;
     font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
@@ -260,6 +261,16 @@
   }
   .map-link:hover { color: var(--purple); border-color: var(--purple); }
   .map-link svg { width: 9px; height: 9px; flex-shrink: 0; }
+
+  /* Hero card — dark background variant */
+  .next-event-card .map-links { gap: 0.5rem; margin-top: 0.5rem; }
+  .next-event-card .map-link {
+    font-size: 0.65rem; padding: 0.3rem 0.7rem; border-radius: 6px;
+    color: rgba(247,244,237,0.7);
+    background: rgba(247,244,237,0.08); border: 1.5px solid rgba(247,244,237,0.2);
+  }
+  .next-event-card .map-link:hover { background: rgba(247,244,237,0.15); border-color: rgba(247,244,237,0.45); color: #fff; }
+  .next-event-card .map-link svg { width: 10px; height: 10px; }
 
   /* ── DISTANCE BADGE ── */
   .dist-badge {
@@ -421,14 +432,14 @@
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="index.html">Trash Talk <span>NYC</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
+    <li><a href="events.html" class="active" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
+    <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
+    <li><a href="contact.html" data-en="Contact" data-es="Contacto">Contact</a></li>
+    <li><a href="index.html#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
+  </ul>
   <div class="nav-right">
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html" data-en="Home" data-es="Inicio">Home</a></li>
-      <li><a href="events.html" class="active" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-      <li><a href="about.html" data-en="About" data-es="Nosotros">About</a></li>
-      <li><a href="contact.html" data-en="Contact" data-es="Contacto">Contact</a></li>
-      <li><a href="index.html#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
-    </ul>
     <div class="lang-toggle">
       <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
       <button class="lang-btn" id="btnES" onclick="setLang('es')">ES</button>
@@ -487,11 +498,11 @@
 
       <div class="card-countdown">
         <span class="cd-label-top" data-en="Time left" data-es="Tiempo restante">Time left</span>
-        <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub">days</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub" data-en="days" data-es="días">days</span></div>
         <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub">hrs</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub" data-en="hrs" data-es="hrs">hrs</span></div>
         <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub">min</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub" data-en="min" data-es="min">min</span></div>
       </div>
 
       <button class="btn-rsvp" id="heroRsvpBtn" data-event-id=""
@@ -534,7 +545,7 @@
 
   <div class="dist-sort-label" id="distSortLabel" style="display:none">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    Sorted nearest to farthest
+    <span data-en="Sorted nearest to farthest" data-es="Ordenado del más cercano al más lejano">Sorted nearest to farthest</span>
   </div>
 
   <div id="upcomingList"></div>
@@ -624,29 +635,55 @@
   }
 
   // ── LANG ──
+  var currentLang = 'en';
+  var heroEventStart = null;
+
   function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('ttnyc-lang', lang);
     document.getElementById('btnEN').classList.toggle('active', lang === 'en');
     document.getElementById('btnES').classList.toggle('active', lang === 'es');
     document.documentElement.lang = lang;
     document.querySelectorAll('[data-en]').forEach(function(el) {
       var text = el.getAttribute('data-' + lang);
       if (!text) return;
-      if (el.tagName === 'BUTTON' || el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'P') {
+      // Only update leaf elements (no child elements) to avoid wiping nested HTML
+      if (!el.children.length && ['A','BUTTON','SPAN','DIV','P','H1','H2','H3','LABEL'].indexOf(el.tagName) !== -1) {
         el.textContent = text;
       }
     });
+    // Reformat hero date with correct locale
+    if (heroEventStart) {
+      var dateEl = document.getElementById('heroEventDate');
+      if (dateEl) dateEl.textContent = fmtDate(heroEventStart, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    }
   }
+
+  // Restore saved language on load
+  (function() {
+    var saved = localStorage.getItem('ttnyc-lang');
+    if (saved && saved !== 'en') setLang(saved);
+  })();
 
   // ── CONFIG ──
   // Update this to your Eventbrite organizer page URL
   var EB_PAGE = 'https://www.eventbrite.com/o/trash-talk-nyc/';
 
   // ── HELPERS ──
-  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var DAYS      = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
   function parseDate(s) { return new Date(s); }
-  function fmtTime(d)   { return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }); }
+
+  function fmtDate(d, opts) {
+    return d.toLocaleDateString(currentLang === 'es' ? 'es' : 'en-US', opts);
+  }
+
+  function fmtTime(d) {
+    return d.toLocaleTimeString(currentLang === 'es' ? 'es' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
 
   function detectBorough(ev) {
     var venue = ev.venue || {};
@@ -717,7 +754,9 @@
     var dist    = isPast ? '' : distLabel(ev);
     var btnId   = 'eb-trigger-' + ev.id;
 
-    var dateStr = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    var months  = currentLang === 'es' ? MONTHS_ES : MONTHS;
+    var days    = currentLang === 'es' ? DAYS_ES   : DAYS;
+    var dateStr = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric' });
     var timeStr = fmtTime(start) + ' – ' + fmtTime(end);
 
     var pinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
@@ -748,9 +787,9 @@
 
     return '<div class="event-card ' + (isPast ? 'past' : 'upcoming') + '">' +
       '<div class="event-date-block">' +
-        '<span class="month">' + MONTHS[start.getMonth()] + '</span>' +
-        '<span class="day">'   + start.getDate()          + '</span>' +
-        '<span class="dow">'   + DAYS[start.getDay()]     + '</span>' +
+        '<span class="month" data-en="' + MONTHS[start.getMonth()] + '" data-es="' + MONTHS_ES[start.getMonth()] + '">' + months[start.getMonth()] + '</span>' +
+        '<span class="day">'   + start.getDate() + '</span>' +
+        '<span class="dow" data-en="' + DAYS[start.getDay()] + '" data-es="' + DAYS_ES[start.getDay()] + '">' + days[start.getDay()] + '</span>' +
       '</div>' +
       '<div class="event-info">' +
         '<div class="event-name">' + ev.name + '</div>' +
@@ -893,8 +932,9 @@
         var locEl  = document.getElementById('heroEventLoc');
         var rsvpEl = document.getElementById('heroRsvpBtn');
 
+        heroEventStart = start;
         if (nameEl) nameEl.textContent = ev.name;
-        if (dateEl) dateEl.textContent = start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        if (dateEl) dateEl.textContent = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         if (timeEl) timeEl.textContent = fmtTime(start) + ' – ' + fmtTime(end);
         if (locEl && loc) {
           locEl.textContent = loc;

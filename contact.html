@@ -489,6 +489,7 @@
 
   function setLang(lang) {
     currentLang = lang;
+    localStorage.setItem('ttnyc-lang', lang);
     document.getElementById('btnEN').classList.toggle('active', lang === 'en');
     document.getElementById('btnES').classList.toggle('active', lang === 'es');
     document.querySelectorAll('[data-en]').forEach(el => {
@@ -501,6 +502,11 @@
     });
     document.documentElement.lang = lang;
   }
+
+  (function() {
+    var saved = localStorage.getItem('ttnyc-lang');
+    if (saved && saved !== 'en') setLang(saved);
+  })();
 
   document.getElementById('contactForm').addEventListener('submit', async function(e) {
     e.preventDefault();
