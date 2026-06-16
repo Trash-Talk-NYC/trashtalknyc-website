@@ -517,3 +517,16 @@ When proposing changes:
 * Ask questions before introducing complexity
 
 When uncertain, ask questions before introducing complexity.
+
+## Migration Principle
+
+When performing framework migrations or major refactors:
+
+1. Preserve existing functionality first.
+2. Preserve visual appearance first.
+3. Preserve integrations first.
+4. Improve architecture second.
+
+Avoid combining migration work with feature work whenever practical.
+
+Establish functional and visual parity before introducing behavioral changes.
