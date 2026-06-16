@@ -222,6 +222,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </div>
 </section>
 
+<script defer src="https://www.gofundme.com/static/js/embed.js"></script>
 </BaseLayout>
 
 <style is:global>
@@ -1693,13 +1694,4 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     });
   });
 
-  // ── GOFUNDME EMBED SCRIPT ──
-  // Dynamically loaded to avoid Astro bundling the external script tag.
-  // Processes all .gfm-embed elements on the page (hero embed + section embed).
-  (function () {
-    var s = document.createElement('script');
-    s.src = 'https://www.gofundme.com/static/js/embed.js';
-    s.defer = true;
-    document.body.appendChild(s);
-  })();
 </script>
