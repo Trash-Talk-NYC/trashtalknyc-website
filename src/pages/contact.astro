@@ -6,18 +6,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="contact-section">
     <div class="contact-inner">
       <div class="form-wrap">
-        <h2 class="form-heading" data-en="Message Trash Talk NYC" data-es="Escríbenos">Message Trash Talk NYC</h2>
-        <p class="form-intro" data-en="Questions, concerns, partnerships, or report a bug — we typically respond within 24 hours." data-es="Preguntas, comentarios, alianzas o reportar un error — solemos responder en 24 horas.">Questions, concerns, partnerships, or report a bug — we typically respond within 24 hours.</p>
+        <div class="contact-tabs" role="tablist">
+          <button type="button" class="contact-tab active" id="tabGeneral" data-type="general" role="tab" aria-selected="true">
+            <span data-en="General" data-es="General">General</span>
+          </button>
+          <button type="button" class="contact-tab" id="tabPartnership" data-type="partnership" role="tab" aria-selected="false">
+            <span data-en="Collaborate" data-es="Colaborar">Collaborate</span>
+          </button>
+        </div>
+
+        <h2 class="form-heading" id="formHeading">Message Trash Talk NYC</h2>
+        <p class="form-intro" id="formIntro">Questions, concerns, or a bug to report — we typically respond within 24 hours.</p>
 
         <div class="form-success" id="formSuccess">
           <div class="success-icon">✓</div>
-          <h3>Message sent!</h3>
-          <p>We'll get back to you as soon as we can.</p>
+          <h3 data-en="Message sent!" data-es="¡Mensaje enviado!">Message sent!</h3>
+          <p data-en="We'll get back to you as soon as we can." data-es="Te responderemos lo antes posible.">We'll get back to you as soon as we can.</p>
         </div>
 
         <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="6e3345ab-051d-43aa-b274-ebc99bb4ec5e" />
-          <input type="hidden" name="subject" value="New Contact Message — Trash Talk NYC" />
+          <input type="hidden" name="subject" id="subjectField" value="New Contact Message — Trash Talk NYC" />
           <input type="hidden" name="from_name" value="Trash Talk NYC Website" />
           <input type="hidden" name="redirect" value="false" />
           <input type="hidden" name="botcheck" value="" />
@@ -38,9 +47,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <input type="email" id="email" name="email" required placeholder="jane@example.com" data-placeholder-en="jane@example.com" data-placeholder-es="jane@ejemplo.com" />
           </div>
 
+          <div class="form-group" id="orgGroup" hidden>
+            <label for="organization" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
+            <input type="text" id="organization" name="organization" />
+          </div>
+
           <div class="form-group">
             <label for="message" data-en="Message *" data-es="Mensaje *">Message *</label>
-            <textarea id="message" name="message" required placeholder="What's on your mind?" data-placeholder-en="What's on your mind?" data-placeholder-es="¿Qué quieres decirnos?"></textarea>
+            <textarea id="message" name="message" required></textarea>
           </div>
 
           <button type="submit" class="form-submit" id="submitBtn" data-en="Send message →" data-es="Enviar mensaje →">Send message →</button>
@@ -72,6 +86,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .form-wrap .form-group,
   .form-wrap .form-row {
     text-align: left;
+  }
+
+  .contact-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-tab {
+    flex: 1;
+    background: var(--off-white);
+    border: 1.5px solid var(--cream);
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .contact-tab:hover {
+    border-color: var(--purple);
+    color: var(--charcoal);
+  }
+
+  .contact-tab.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: #fff;
   }
 
   .form-heading {
@@ -188,6 +233,69 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const form = document.getElementById('contactForm') as HTMLFormElement | null;
   const btn = document.getElementById('submitBtn') as HTMLButtonElement | null;
   const successDiv = document.getElementById('formSuccess') as HTMLElement | null;
+  const subjectField = document.getElementById('subjectField') as HTMLInputElement | null;
+  const orgGroup = document.getElementById('orgGroup') as HTMLElement | null;
+  const orgInput = document.getElementById('organization') as HTMLInputElement | null;
+  const tabGeneral = document.getElementById('tabGeneral') as HTMLButtonElement | null;
+  const tabPartnership = document.getElementById('tabPartnership') as HTMLButtonElement | null;
+  const headingEl = document.getElementById('formHeading') as HTMLElement | null;
+  const introEl = document.getElementById('formIntro') as HTMLElement | null;
+
+  type ContactType = 'general' | 'partnership';
+  let currentType: ContactType = 'general';
+
+  // formHeading/formIntro intentionally carry no data-en/data-es attributes —
+  // their text depends on tab type as well as language, so this object is the
+  // sole owner of their content (matches the #waiverText pattern in index.astro).
+  const copy: Record<ContactType, Record<'en' | 'es', { heading: string; intro: string }>> = {
+    general: {
+      en: { heading: 'Message Trash Talk NYC', intro: "Questions, concerns, or report a bug on the site." },
+      es: { heading: 'Escríbenos', intro: 'Preguntas, comentarios o reporta un error en el sitio.' },
+    },
+    partnership: {
+      en: { heading: 'Collaborate with Trash Talk NYC', intro: "Have an idea to create something together? Organizations, creators, and community partners — let's discuss!" },
+      es: { heading: 'Colabora con Trash Talk NYC', intro: '¿Tienes una idea para crear algo juntos? Organizaciones, creadores y aliados comunitarios — ¡hablemos!' },
+    },
+  };
+
+  function getLang(): 'en' | 'es' {
+    return document.documentElement.lang === 'es' ? 'es' : 'en';
+  }
+
+  function applyCopy() {
+    const c = copy[currentType][getLang()];
+    if (headingEl) headingEl.textContent = c.heading;
+    if (introEl) introEl.textContent = c.intro;
+  }
+
+  function setType(type: ContactType) {
+    currentType = type;
+    tabGeneral?.classList.toggle('active', type === 'general');
+    tabPartnership?.classList.toggle('active', type === 'partnership');
+    tabGeneral?.setAttribute('aria-selected', String(type === 'general'));
+    tabPartnership?.setAttribute('aria-selected', String(type === 'partnership'));
+
+    if (orgGroup) orgGroup.hidden = type !== 'partnership';
+    if (orgInput) orgInput.required = type === 'partnership';
+
+    if (subjectField) {
+      subjectField.value = type === 'partnership'
+        ? 'New Collaboration Inquiry — Trash Talk NYC'
+        : 'New Contact Message — Trash Talk NYC';
+    }
+
+    applyCopy();
+  }
+
+  tabGeneral?.addEventListener('click', () => setType('general'));
+  tabPartnership?.addEventListener('click', () => setType('partnership'));
+
+  // BaseLayout owns setLang(); we only listen so heading/intro stay in sync
+  // with both the active tab and the active language after every toggle.
+  document.getElementById('btnEN')?.addEventListener('click', applyCopy);
+  document.getElementById('btnES')?.addEventListener('click', applyCopy);
+
+  applyCopy();
 
   form?.addEventListener('submit', async (e: Event) => {
     e.preventDefault();
