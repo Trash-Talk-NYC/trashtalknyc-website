@@ -95,15 +95,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </div>
 
-    <div class="borough-filter" id="boroughFilter" style="display:none">
-      <button class="filter-pill active" data-borough="" onclick="filterByBorough('')" data-en="All" data-es="Todos">All</button>
-      <button class="filter-pill" data-borough="Manhattan" onclick="filterByBorough('Manhattan')">Manhattan</button>
-      <button class="filter-pill" data-borough="Brooklyn" onclick="filterByBorough('Brooklyn')">Brooklyn</button>
-      <button class="filter-pill" data-borough="Queens" onclick="filterByBorough('Queens')">Queens</button>
-      <button class="filter-pill" data-borough="The Bronx" onclick="filterByBorough('The Bronx')" data-en="The Bronx" data-es="El Bronx">The Bronx</button>
-      <button class="filter-pill" data-borough="Staten Island" onclick="filterByBorough('Staten Island')" data-en="Staten Island" data-es="Staten Island">Staten Island</button>
-    </div>
-
     <div class="dist-sort-label" id="distSortLabel" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <span data-en="Sorted nearest to farthest" data-es="Ordenado del más cercano al más lejano">Sorted nearest to farthest</span>
@@ -171,12 +162,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </div>
 
-  <!-- is:inline required: filterByBorough, togglePast, adjQty, openModal, closeModal
+  <!-- is:inline required: togglePast, adjQty, openModal, closeModal
        are called from onclick attributes in static HTML and dynamically-built card HTML -->
   <script is:inline>
     var heroEventStart = null;
     var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-    var EB_PAGE = 'https://www.eventbrite.com/o/trash-talk-nyc/';
+    var EB_PAGE = 'https://trashtalknyc.eventbrite.com';
     var MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     var DAYS      = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -191,23 +182,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     function fmtTime(d) {
       return d.toLocaleTimeString(currentLang === 'es' ? 'es' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    }
-
-    function detectBorough(ev) {
-      var venue = ev.venue || {};
-      var t = ((venue.name || '') + ' ' + (venue.city || '') + ' ' + (venue.address || '') + ' ' + (ev.name || '')).toLowerCase();
-      if (t.includes('brooklyn'))                           return 'Brooklyn';
-      if (t.includes('harlem') || t.includes('manhattan')) return 'Manhattan';
-      if (t.includes('queens'))                            return 'Queens';
-      if (t.includes('bronx'))                             return 'The Bronx';
-      if (t.includes('staten'))                            return 'Staten Island';
-      return '';
-    }
-
-    function boroughTag(borough) {
-      if (!borough) return '';
-      var cls = { 'Brooklyn':'tag-brooklyn', 'Manhattan':'tag-manhattan', 'Queens':'tag-queens', 'The Bronx':'tag-bronx', 'Staten Island':'tag-staten' };
-      return '<span class="event-tag ' + (cls[borough] || '') + '">' + borough + '</span>';
     }
 
     function mapUrls(ev) {
@@ -255,7 +229,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var end     = parseDate(ev.end.local   || ev.end.utc);
       var venue   = ev.venue || {};
       var loc     = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
-      var borough = detectBorough(ev);
       var maps    = mapUrls(ev);
       var dist    = isPast ? '' : distLabel(ev);
       var btnId   = 'eb-trigger-' + ev.id;
@@ -300,14 +273,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + fmtTime(start) + ' – ' + fmtTime(end) + '</span>' +
             locHtml +
           '</div>' +
-          (borough ? '<div class="event-tags">' + boroughTag(borough) + '</div>' : '') +
         '</div>' +
         cta +
       '</div>';
     }
 
     var allUpcomingEvents = [];
-    var currentFilter = '';
 
     function sortByDist(events) {
       if (userLat === null) return events;
@@ -329,22 +300,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       setTimeout(initWidgets, 100);
     }
 
-    function filterByBorough(borough) {
-      currentFilter = borough;
-      document.querySelectorAll('.filter-pill').forEach(function(p) {
-        p.classList.toggle('active', p.getAttribute('data-borough') === borough);
-      });
-      var filtered = borough
-        ? allUpcomingEvents.filter(function(e) { return detectBorough(e) === borough; })
-        : allUpcomingEvents;
-      var upcomingList = document.getElementById('upcomingList');
-      if (filtered.length === 0) {
-        upcomingList.innerHTML = '<p class="no-more-events">No upcoming events in ' + borough + ' — check back soon.</p>';
-      } else {
-        renderList(filtered);
-      }
-    }
-
     function togglePast() {
       var list   = document.getElementById('pastList');
       var toggle = document.getElementById('pastToggle');
@@ -360,10 +315,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         var lbl = document.getElementById('distSortLabel');
         if (lbl) lbl.style.display = 'flex';
         if (allUpcomingEvents.length > 0) {
-          var toRender = currentFilter
-            ? allUpcomingEvents.filter(function(e) { return detectBorough(e) === currentFilter; })
-            : allUpcomingEvents;
-          renderList(toRender);
+          renderList(allUpcomingEvents);
         }
       }, function() {});
     }
@@ -486,11 +438,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             '</div>';
         } else {
           allUpcomingEvents = upcoming;
-          var boroughs = upcoming.map(detectBorough).filter(Boolean);
-          var uniqueBoroughs = boroughs.filter(function(b, i, arr) { return arr.indexOf(b) === i; });
-          if (uniqueBoroughs.length > 1) {
-            document.getElementById('boroughFilter').style.display = 'flex';
-          }
           renderList(upcoming);
         }
 
@@ -677,13 +624,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .event-details { display: flex; flex-wrap: wrap; gap: 1rem; }
   .event-detail { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 700; color: var(--gray); }
   .event-detail svg { width: 12px; height: 12px; flex-shrink: 0; }
-  .event-tags { display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap; }
-  .event-tag { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.18rem 0.55rem; border-radius: 20px; border: 1.5px solid; }
-  .tag-manhattan { color: var(--purple); border-color: rgba(107,63,160,0.3); background: rgba(107,63,160,0.06); }
-  .tag-brooklyn  { color: #2563eb; border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.06); }
-  .tag-queens    { color: var(--green); border-color: rgba(42,107,42,0.3); background: rgba(42,107,42,0.06); }
-  .tag-bronx     { color: #c2410c; border-color: rgba(194,65,12,0.3); background: rgba(194,65,12,0.06); }
-  .tag-staten    { color: #0891b2; border-color: rgba(8,145,178,0.3); background: rgba(8,145,178,0.06); }
   .event-cta { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
   .btn-card {
     display: inline-block; font-family: 'Nunito', sans-serif;
@@ -699,18 +639,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .btn-card-purple:active { transform: scale(0.96); }
   }
   .card-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--warm-gray); }
-
-  /* ── BOROUGH FILTER ── */
-  .borough-filter { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-  .filter-pill {
-    font-family: 'Space Mono', monospace; font-size: 0.62rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 0.35rem 0.9rem; border-radius: 20px;
-    border: 1.5px solid #d0ccc4; background: transparent; color: var(--gray);
-    cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s; white-space: nowrap;
-  }
-  .filter-pill:hover { border-color: var(--purple-light); color: var(--purple-light); }
-  .filter-pill.active { background: var(--purple); border-color: var(--purple); color: #fff; }
 
   /* ── DISTANCE SORT ── */
   .dist-sort-label {
