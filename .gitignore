@@ -4,3 +4,12 @@
 # Local env vars (never commit credentials)
 .env
 .env.local
+
+# Dependencies
+node_modules/
+
+# Astro build output
+dist/
+
+# Astro type generation cache
+.astro/

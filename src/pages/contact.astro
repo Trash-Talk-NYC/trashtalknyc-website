@@ -1,0 +1,328 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Contact — Trash Talk NYC">
+  <section class="contact-section">
+    <div class="contact-inner">
+      <div class="form-wrap">
+        <div class="contact-tabs" role="tablist">
+          <button type="button" class="contact-tab active" id="tabGeneral" data-type="general" role="tab" aria-selected="true">
+            <span data-en="General" data-es="General">General</span>
+          </button>
+          <button type="button" class="contact-tab" id="tabPartnership" data-type="partnership" role="tab" aria-selected="false">
+            <span data-en="Collaborate" data-es="Colaborar">Collaborate</span>
+          </button>
+        </div>
+
+        <h2 class="form-heading" id="formHeading">Message Trash Talk NYC</h2>
+        <p class="form-intro" id="formIntro">Questions, concerns, or a bug to report — we typically respond within 24 hours.</p>
+
+        <div class="form-success" id="formSuccess">
+          <div class="success-icon">✓</div>
+          <h3 data-en="Message sent!" data-es="¡Mensaje enviado!">Message sent!</h3>
+          <p data-en="We'll get back to you as soon as we can." data-es="Te responderemos lo antes posible.">We'll get back to you as soon as we can.</p>
+        </div>
+
+        <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="6e3345ab-051d-43aa-b274-ebc99bb4ec5e" />
+          <input type="hidden" name="subject" id="subjectField" value="New Contact Message — Trash Talk NYC" />
+          <input type="hidden" name="from_name" value="Trash Talk NYC Website" />
+          <input type="hidden" name="redirect" value="false" />
+          <input type="hidden" name="botcheck" value="" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fname" data-en="First name *" data-es="Nombre *">First name *</label>
+              <input type="text" id="fname" name="fname" required placeholder="Jane" data-placeholder-en="Jane" data-placeholder-es="Jane" />
+            </div>
+            <div class="form-group">
+              <label for="lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
+              <input type="text" id="lname" name="lname" required placeholder="Doe" data-placeholder-en="Doe" data-placeholder-es="Doe" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
+            <input type="email" id="email" name="email" required placeholder="jane@example.com" data-placeholder-en="jane@example.com" data-placeholder-es="jane@ejemplo.com" />
+          </div>
+
+          <div class="form-group" id="orgGroup" hidden>
+            <label for="organization" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
+            <input type="text" id="organization" name="organization" />
+          </div>
+
+          <div class="form-group">
+            <label for="message" data-en="Message *" data-es="Mensaje *">Message *</label>
+            <textarea id="message" name="message" required></textarea>
+          </div>
+
+          <button type="submit" class="form-submit" id="submitBtn" data-en="Send message →" data-es="Enviar mensaje →">Send message →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-section {
+    padding: 4rem 2rem;
+  }
+
+  .contact-inner {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .form-wrap {
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid var(--cream);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+
+  .form-wrap :global(form),
+  .form-wrap .form-group,
+  .form-wrap .form-row {
+    text-align: left;
+  }
+
+  .contact-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-tab {
+    flex: 1;
+    background: var(--off-white);
+    border: 1.5px solid var(--cream);
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .contact-tab:hover {
+    border-color: var(--purple);
+    color: var(--charcoal);
+  }
+
+  .contact-tab.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: #fff;
+  }
+
+  .form-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.9rem;
+    letter-spacing: 0.04em;
+    color: var(--charcoal);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-intro {
+    font-size: 0.92rem;
+    color: var(--gray);
+    margin-bottom: 1.75rem;
+    line-height: 1.5;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--charcoal);
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid var(--cream);
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.92rem;
+    color: var(--charcoal);
+    background: var(--off-white);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--purple);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 130px;
+  }
+
+  .form-submit {
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    background: var(--yellow);
+    color: var(--charcoal);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 0.5rem;
+  }
+
+  .form-submit:hover { background: var(--yellow-dark); }
+  .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* ── SUCCESS STATE ── */
+  .form-success {
+    display: none;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .form-success .success-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-success h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.04em;
+    color: var(--charcoal);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-success p {
+    color: var(--gray);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    .form-wrap { padding: 1.75rem 1.25rem; }
+  }
+</style>
+
+<script>
+  const form = document.getElementById('contactForm') as HTMLFormElement | null;
+  const btn = document.getElementById('submitBtn') as HTMLButtonElement | null;
+  const successDiv = document.getElementById('formSuccess') as HTMLElement | null;
+  const subjectField = document.getElementById('subjectField') as HTMLInputElement | null;
+  const orgGroup = document.getElementById('orgGroup') as HTMLElement | null;
+  const orgInput = document.getElementById('organization') as HTMLInputElement | null;
+  const tabGeneral = document.getElementById('tabGeneral') as HTMLButtonElement | null;
+  const tabPartnership = document.getElementById('tabPartnership') as HTMLButtonElement | null;
+  const headingEl = document.getElementById('formHeading') as HTMLElement | null;
+  const introEl = document.getElementById('formIntro') as HTMLElement | null;
+
+  type ContactType = 'general' | 'partnership';
+  let currentType: ContactType = 'general';
+
+  // formHeading/formIntro intentionally carry no data-en/data-es attributes —
+  // their text depends on tab type as well as language, so this object is the
+  // sole owner of their content (matches the #waiverText pattern in index.astro).
+  const copy: Record<ContactType, Record<'en' | 'es', { heading: string; intro: string }>> = {
+    general: {
+      en: { heading: 'Message Trash Talk NYC', intro: "Questions, concerns, or report a bug on the site." },
+      es: { heading: 'Escríbenos', intro: 'Preguntas, comentarios o reporta un error en el sitio.' },
+    },
+    partnership: {
+      en: { heading: 'Collaborate with Trash Talk NYC', intro: "Have an idea to create something together? Organizations, creators, and community partners — let's discuss!" },
+      es: { heading: 'Colabora con Trash Talk NYC', intro: '¿Tienes una idea para crear algo juntos? Organizaciones, creadores y aliados comunitarios — ¡hablemos!' },
+    },
+  };
+
+  function getLang(): 'en' | 'es' {
+    return document.documentElement.lang === 'es' ? 'es' : 'en';
+  }
+
+  function applyCopy() {
+    const c = copy[currentType][getLang()];
+    if (headingEl) headingEl.textContent = c.heading;
+    if (introEl) introEl.textContent = c.intro;
+  }
+
+  function setType(type: ContactType) {
+    currentType = type;
+    tabGeneral?.classList.toggle('active', type === 'general');
+    tabPartnership?.classList.toggle('active', type === 'partnership');
+    tabGeneral?.setAttribute('aria-selected', String(type === 'general'));
+    tabPartnership?.setAttribute('aria-selected', String(type === 'partnership'));
+
+    if (orgGroup) orgGroup.hidden = type !== 'partnership';
+    if (orgInput) orgInput.required = type === 'partnership';
+
+    if (subjectField) {
+      subjectField.value = type === 'partnership'
+        ? 'New Collaboration Inquiry — Trash Talk NYC'
+        : 'New Contact Message — Trash Talk NYC';
+    }
+
+    applyCopy();
+  }
+
+  tabGeneral?.addEventListener('click', () => setType('general'));
+  tabPartnership?.addEventListener('click', () => setType('partnership'));
+
+  // BaseLayout owns setLang(); we only listen so heading/intro stay in sync
+  // with both the active tab and the active language after every toggle.
+  document.getElementById('btnEN')?.addEventListener('click', applyCopy);
+  document.getElementById('btnES')?.addEventListener('click', applyCopy);
+
+  applyCopy();
+
+  form?.addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    if (!form || !btn || !successDiv) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const formData = new FormData(form);
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json() as { success: boolean };
+      if (data.success) {
+        form.style.display = 'none';
+        successDiv.style.display = 'block';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Send message →';
+        alert('Something went wrong. Please try again.');
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Send message →';
+      alert('Something went wrong. Please try again.');
+    }
+  });
+</script>
