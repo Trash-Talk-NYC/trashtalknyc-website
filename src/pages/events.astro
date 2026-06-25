@@ -179,24 +179,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // so this is always the source of truth even before the module initialises.
     function getLang() { return localStorage.getItem('ttnyc-lang') === 'es' ? 'es' : 'en'; }
 
-    function fmtDate(d, opts) {
-      return d.toLocaleDateString(getLang() === 'es' ? 'es' : 'en-US', opts);
-    }
-    function fmtTime(d) {
-      return d.toLocaleTimeString(getLang() === 'es' ? 'es' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    }
-
-    function mapUrls(ev) {
-      var v = ev.venue || {};
-      var q = v.address || ((v.name || '') + (v.city ? ', ' + v.city : ''));
-      if (!q) return null;
-      var enc = encodeURIComponent(q);
-      return {
-        google: 'https://www.google.com/maps/search/?api=1&query=' + enc,
-        apple:  'https://maps.apple.com/?q=' + enc
-      };
-    }
-
     var userLat = null, userLng = null;
 
     function haversineKm(lat1, lng1, lat2, lng2) {
@@ -231,14 +213,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var end     = parseDate(ev.end.local   || ev.end.utc);
       var venue   = ev.venue || {};
       var loc     = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
-      var maps    = mapUrls(ev);
+      var maps    = window.getMapUrls(ev);
       var dist    = isPast ? '' : distLabel(ev);
       var btnId   = 'eb-trigger-' + ev.id;
 
-      var months  = getLang() === 'es' ? MONTHS_ES : MONTHS;
-      var days    = getLang() === 'es' ? DAYS_ES   : DAYS;
-      var dateStr = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric' });
-      var timeStr = fmtTime(start) + ' – ' + fmtTime(end);
+      var lang    = getLang();
+      var months  = lang === 'es' ? MONTHS_ES : MONTHS;
+      var days    = lang === 'es' ? DAYS_ES   : DAYS;
+      var dateStr = window.formatDate(start.toISOString(), lang);
+      var timeStr = window.formatTime(start.toISOString(), lang) + ' – ' + window.formatTime(end.toISOString(), lang);
 
       var pinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
       var extSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
@@ -272,7 +255,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         '<div class="event-info">' +
           '<div class="event-name">' + ev.name + '</div>' +
           '<div class="event-details">' +
-            '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + fmtTime(start) + ' – ' + fmtTime(end) + '</span>' +
+            '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + window.formatTime(start.toISOString(), lang) + ' – ' + window.formatTime(end.toISOString(), lang) + '</span>' +
             locHtml +
           '</div>' +
         '</div>' +
@@ -359,11 +342,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
-    fetch('/.netlify/functions/next-event?all=true')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var upcoming = data.upcoming || [];
-        var past     = data.past     || [];
+    // fetchEvents is set up by the module script before DOMContentLoaded fires
+    document.addEventListener('DOMContentLoaded', function() {
+      window.fetchEvents(true)
+      .then(function(events) {
+        var now = new Date().toISOString();
+        var upcoming = events.filter(function(e) { return e.end.utc > now; });
+        var past     = events.filter(function(e) { return e.end.utc <= now; });
 
         if (upcoming[0]) {
           var ev    = upcoming[0];
@@ -381,12 +366,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           var locEl  = document.getElementById('heroEventLoc');
           var rsvpEl = document.getElementById('heroRsvpBtn');
 
+          var heroLang = getLang();
           if (nameEl) nameEl.textContent = ev.name;
-          if (dateEl) dateEl.textContent = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-          if (timeEl) timeEl.textContent = fmtTime(start) + ' – ' + fmtTime(end);
+          if (dateEl) dateEl.textContent = window.formatDate(start.toISOString(), heroLang);
+          if (timeEl) timeEl.textContent = window.formatTime(start.toISOString(), heroLang) + ' – ' + window.formatTime(end.toISOString(), heroLang);
           if (locEl && loc) {
             locEl.textContent = loc;
-            var heroMaps = mapUrls(ev);
+            var heroMaps = window.getMapUrls(ev);
             if (heroMaps) {
               document.getElementById('heroGoogleMap').href = heroMaps.google;
               document.getElementById('heroAppleMap').href  = heroMaps.apple;
@@ -440,10 +426,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           '<div style="text-align:center;padding:3rem;color:var(--gray);font-weight:700;font-size:0.85rem">' +
           'Could not load events. Visit <a href="https://www.eventbrite.com" target="_blank" rel="noopener" style="color:var(--purple)">Eventbrite</a> directly.</div>';
       });
+    });
   </script>
 
   <script>
     import { onLanguageChange } from '../lib/language';
+    import { fetchEvents, formatDate, formatTime, getMapUrls } from '../lib/events';
+
+    // Expose to is:inline script (runs in DOMContentLoaded, after this module runs)
+    (window as unknown as Record<string, unknown>).fetchEvents = fetchEvents;
+    (window as unknown as Record<string, unknown>).formatDate = formatDate;
+    (window as unknown as Record<string, unknown>).formatTime = formatTime;
+    (window as unknown as Record<string, unknown>).getMapUrls = getMapUrls;
 
     // Reformat the hero card date when language switches
     onLanguageChange((lang) => {
@@ -451,10 +445,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!heroEventStart) return;
       const dateEl = document.getElementById('heroEventDate');
       if (dateEl) {
-        dateEl.textContent = heroEventStart.toLocaleDateString(
-          lang === 'es' ? 'es' : 'en-US',
-          { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
-        );
+        dateEl.textContent = formatDate(heroEventStart.toISOString(), lang);
       }
     });
   </script>
