@@ -175,13 +175,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     function parseDate(s) { return new Date(s); }
 
-    // currentLang is defined by BaseLayout's is:inline (runs after this script).
-    // These helpers reference it at call time, not at definition time, so they're safe.
+    // Read current language directly from localStorage — same key the module writes,
+    // so this is always the source of truth even before the module initialises.
+    function getLang() { return localStorage.getItem('ttnyc-lang') === 'es' ? 'es' : 'en'; }
+
     function fmtDate(d, opts) {
-      return d.toLocaleDateString(currentLang === 'es' ? 'es' : 'en-US', opts);
+      return d.toLocaleDateString(getLang() === 'es' ? 'es' : 'en-US', opts);
     }
     function fmtTime(d) {
-      return d.toLocaleTimeString(currentLang === 'es' ? 'es' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      return d.toLocaleTimeString(getLang() === 'es' ? 'es' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     }
 
     function mapUrls(ev) {
@@ -233,8 +235,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var dist    = isPast ? '' : distLabel(ev);
       var btnId   = 'eb-trigger-' + ev.id;
 
-      var months  = currentLang === 'es' ? MONTHS_ES : MONTHS;
-      var days    = currentLang === 'es' ? DAYS_ES   : DAYS;
+      var months  = getLang() === 'es' ? MONTHS_ES : MONTHS;
+      var days    = getLang() === 'es' ? DAYS_ES   : DAYS;
       var dateStr = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric' });
       var timeStr = fmtTime(start) + ' – ' + fmtTime(end);
 
@@ -357,25 +359,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
-    // Hero date reformat on language switch (BaseLayout's setLang handles everything else)
-    document.addEventListener('DOMContentLoaded', function() {
-      ['btnEN', 'btnES'].forEach(function(id) {
-        var btn = document.getElementById(id);
-        if (!btn) return;
-        btn.addEventListener('click', function() {
-          if (!heroEventStart) return;
-          var lang = id === 'btnEN' ? 'en' : 'es';
-          var dateEl = document.getElementById('heroEventDate');
-          if (dateEl) {
-            dateEl.textContent = heroEventStart.toLocaleDateString(
-              lang === 'es' ? 'es' : 'en-US',
-              { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
-            );
-          }
-        });
-      });
-    });
-
     fetch('/.netlify/functions/next-event?all=true')
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -390,6 +373,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           var loc   = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
 
           heroEventStart = start;
+          window._heroEventStart = start;
 
           var nameEl = document.getElementById('heroEventName');
           var dateEl = document.getElementById('heroEventDate');
@@ -456,6 +440,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           '<div style="text-align:center;padding:3rem;color:var(--gray);font-weight:700;font-size:0.85rem">' +
           'Could not load events. Visit <a href="https://www.eventbrite.com" target="_blank" rel="noopener" style="color:var(--purple)">Eventbrite</a> directly.</div>';
       });
+  </script>
+
+  <script>
+    import { onLanguageChange } from '../lib/language';
+
+    // Reformat the hero card date when language switches
+    onLanguageChange((lang) => {
+      const heroEventStart: Date | null = (window as { _heroEventStart?: Date })._heroEventStart ?? null;
+      if (!heroEventStart) return;
+      const dateEl = document.getElementById('heroEventDate');
+      if (dateEl) {
+        dateEl.textContent = heroEventStart.toLocaleDateString(
+          lang === 'es' ? 'es' : 'en-US',
+          { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
+        );
+      }
+    });
   </script>
 
   <!-- Custom footer: flex-column centered with purple-light border (differs from global flex-row footer) -->

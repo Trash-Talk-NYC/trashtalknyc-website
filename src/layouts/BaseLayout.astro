@@ -96,7 +96,7 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
   </footer>
   </slot>
 
-  <!-- is:inline required: onclick handlers (setLang, toggleMobileNav) need global scope -->
+  <!-- is:inline required: toggleMobileNav is called from an onclick attribute -->
   <script is:inline>
     function toggleMobileNav() {
       document.getElementById('navHamburger').classList.toggle('open');
@@ -111,33 +111,30 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
         });
       });
     });
+  </script>
 
-    var currentLang = 'en';
+  <script>
+    import { getCurrentLang, setLang, onLanguageChange } from '../lib/language';
 
-    function setLang(lang) {
-      currentLang = lang;
-      localStorage.setItem('ttnyc-lang', lang);
-      document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-      document.getElementById('btnES').classList.toggle('active', lang === 'es');
-
-      document.querySelectorAll('[data-en]').forEach(function(el) {
-        var text = el.getAttribute('data-' + lang);
-        if (!text) return;
-        if (!el.children.length) el.textContent = text;
-      });
-
-      document.querySelectorAll('[data-placeholder-en], [data-placeholder-es]').forEach(function(el) {
-        var ph = el.getAttribute('data-placeholder-' + lang);
-        if (ph !== null) el.placeholder = ph;
-      });
-
-      document.documentElement.lang = lang;
+    function updateNavButtons(lang: string) {
+      document.getElementById('btnEN')?.classList.toggle('active', lang === 'en');
+      document.getElementById('btnES')?.classList.toggle('active', lang === 'es');
     }
 
-    (function() {
-      var saved = localStorage.getItem('ttnyc-lang');
-      if (saved && saved !== 'en') setLang(saved);
-    })();
+    // Expose globally so onclick handlers and is:inline scripts can call these
+    window.setLang = setLang;
+    window.getCurrentLang = getCurrentLang;
+
+    // Keep nav buttons in sync whenever lang changes (from any source)
+    onLanguageChange(updateNavButtons);
+
+    // Apply saved language on load
+    const saved = getCurrentLang();
+    if (saved !== 'en') {
+      setLang(saved);
+    } else {
+      updateNavButtons('en');
+    }
   </script>
 
 </body>

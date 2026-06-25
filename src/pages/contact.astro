@@ -230,6 +230,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </style>
 
 <script>
+  import { getCurrentLang, onLanguageChange } from '../lib/language';
+
   const form = document.getElementById('contactForm') as HTMLFormElement | null;
   const btn = document.getElementById('submitBtn') as HTMLButtonElement | null;
   const successDiv = document.getElementById('formSuccess') as HTMLElement | null;
@@ -259,7 +261,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   };
 
   function getLang(): 'en' | 'es' {
-    return document.documentElement.lang === 'es' ? 'es' : 'en';
+    return getCurrentLang();
   }
 
   function applyCopy() {
@@ -290,10 +292,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   tabGeneral?.addEventListener('click', () => setType('general'));
   tabPartnership?.addEventListener('click', () => setType('partnership'));
 
-  // BaseLayout owns setLang(); we only listen so heading/intro stay in sync
-  // with both the active tab and the active language after every toggle.
-  document.getElementById('btnEN')?.addEventListener('click', applyCopy);
-  document.getElementById('btnES')?.addEventListener('click', applyCopy);
+  // Keep heading/intro in sync when the user switches language
+  onLanguageChange(() => applyCopy());
 
   applyCopy();
 
