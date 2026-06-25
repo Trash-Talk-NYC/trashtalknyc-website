@@ -24,11 +24,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <p data-en="We'll get back to you as soon as we can." data-es="Te responderemos lo antes posible.">We'll get back to you as soon as we can.</p>
         </div>
 
-        <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
-          <input type="hidden" name="access_key" value="6e3345ab-051d-43aa-b274-ebc99bb4ec5e" />
-          <input type="hidden" name="subject" id="subjectField" value="New Contact Message — Trash Talk NYC" />
-          <input type="hidden" name="from_name" value="Trash Talk NYC Website" />
-          <input type="hidden" name="redirect" value="false" />
+        <form id="contactForm">
           <input type="hidden" name="botcheck" value="" />
 
           <div class="form-row">
@@ -235,7 +231,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const form = document.getElementById('contactForm') as HTMLFormElement | null;
   const btn = document.getElementById('submitBtn') as HTMLButtonElement | null;
   const successDiv = document.getElementById('formSuccess') as HTMLElement | null;
-  const subjectField = document.getElementById('subjectField') as HTMLInputElement | null;
   const orgGroup = document.getElementById('orgGroup') as HTMLElement | null;
   const orgInput = document.getElementById('organization') as HTMLInputElement | null;
   const tabGeneral = document.getElementById('tabGeneral') as HTMLButtonElement | null;
@@ -280,12 +275,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (orgGroup) orgGroup.hidden = type !== 'partnership';
     if (orgInput) orgInput.required = type === 'partnership';
 
-    if (subjectField) {
-      subjectField.value = type === 'partnership'
-        ? 'New Collaboration Inquiry — Trash Talk NYC'
-        : 'New Contact Message — Trash Talk NYC';
-    }
-
     applyCopy();
   }
 
@@ -304,11 +293,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     btn.disabled = true;
     btn.textContent = 'Sending…';
 
-    const formData = new FormData(form);
+    const fd = new FormData(form);
+    const payload = {
+      formType: currentType === 'partnership' ? 'partnership' : 'contact',
+      fname: fd.get('fname') as string,
+      lname: fd.get('lname') as string,
+      email: fd.get('email') as string,
+      message: fd.get('message') as string,
+      organization: fd.get('organization') as string | null ?? undefined,
+    };
+
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('/.netlify/functions/submit-form', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
       const data = await res.json() as { success: boolean };
       if (data.success) {
@@ -316,13 +315,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         successDiv.style.display = 'block';
       } else {
         btn.disabled = false;
-        btn.textContent = 'Send message →';
-        alert('Something went wrong. Please try again.');
+        btn.textContent = btn.getAttribute('data-en') ?? 'Send message →';
       }
     } catch {
       btn.disabled = false;
-      btn.textContent = 'Send message →';
-      alert('Something went wrong. Please try again.');
+      btn.textContent = btn.getAttribute('data-en') ?? 'Send message →';
     }
   });
 </script>
