@@ -5,12 +5,19 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "astro": "^5.0.0"
   },
   "engines": {
     "node": ">=20.3.0"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^4.1.9",
+    "happy-dom": "^20.10.6",
+    "vitest": "^4.1.9"
   }
 }
