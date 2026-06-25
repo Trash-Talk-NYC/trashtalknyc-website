@@ -1,5 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroEventCard from '../components/HeroEventCard.astro';
+import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
+
+const { upcoming } = await fetchEventsAtBuildTime();
+const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
 ---
 
 <BaseLayout title="Trash Talk NYC — Community Cleanup">
@@ -91,9 +96,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <!-- NEXT EVENT -->
 <section class="events-section" id="events">
   <div class="events-inner" id="eventsInner">
-    <div class="events-loading" id="eventsLoading">
-      <span></span><span></span><span></span>
-    </div>
+    {nextEvent ? (
+      <>
+        <HeroEventCard {...nextEvent} />
+        <div class="events-see-all">
+          <a href="/events" data-en="Can't make this one? See all club events →" data-es="¿No puedes? Ve todos los eventos →">Can't make this one? See all club events →</a>
+        </div>
+      </>
+    ) : (
+      <div class="events-fallback">
+        No upcoming events right now — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.
+      </div>
+    )}
   </div>
 </section>
 
@@ -1491,128 +1505,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script>
   import { getCurrentLang, onLanguageChange } from '../lib/language';
-  import { fetchEvents, formatDate, formatTime, getMapUrls } from '../lib/events';
-  import type { EventData } from '../lib/events';
+  import { formatDate } from '../lib/events';
 
   // ── WAIVER TEXT (bilingual) ──
   const waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br><br>I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.';
 
   const waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.<br><br>Doy permiso a Trash Talk NYC para fotografiarme o filmarme durante el evento para su uso en redes sociales, incluido Instagram (@trashtalk_nyc), con fines promocionales y comunitarios. Notifique al organizador el día del evento si no da su consentimiento.';
 
-  // ── NEXT EVENT FETCH ──
-  let evtStartIso: string | null = null;
-  let evtEndIso: string | null = null;
-  let countdownTick: (() => void) | null = null;
-
-  const inner = document.getElementById('eventsInner')!;
-
-  const extSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-
-  function startCountdown(isoStr: string) {
-    function tick() {
-      const diff = new Date(isoStr).getTime() - Date.now();
-      if (diff <= 0) { clearInterval(timer); return; }
-      const d = Math.floor(diff / 864e5);
-      const h = Math.floor((diff % 864e5) / 36e5);
-      const m = Math.floor((diff % 36e5) / 6e4);
-      const pad = (n: number) => String(n).padStart(2, '0');
-      const el = document.getElementById('evtCountdown');
-      const dayLbl = getCurrentLang() === 'es' ? 'días' : 'days';
-      if (el) el.innerHTML =
-        '<div class="cd-unit"><span class="cd-num">' + pad(d) + '</span><span class="cd-label">' + dayLbl + '</span></div>' +
-        '<span class="cd-sep">:</span>' +
-        '<div class="cd-unit"><span class="cd-num">' + pad(h) + '</span><span class="cd-label">hrs</span></div>' +
-        '<span class="cd-sep">:</span>' +
-        '<div class="cd-unit"><span class="cd-num">' + pad(m) + '</span><span class="cd-label">min</span></div>';
-    }
-    countdownTick = tick;
-    tick();
-    const timer = setInterval(tick, 30000);
-  }
-
-  function render(ev: EventData | null) {
-    if (!ev) {
-      inner.innerHTML =
-        '<div class="events-fallback">No upcoming events right now — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.</div>' +
-        '<div class="events-see-all"><a href="/events">See all club events →</a></div>';
-      return;
-    }
-    evtStartIso = ev.start.local || ev.start.utc;
-    evtEndIso   = ev.end.local   || ev.end.utc;
-    const lang = getCurrentLang();
-    const sDate = formatDate(evtStartIso!, lang);
-    const sTime = formatTime(evtStartIso!, lang);
-    const eTime = formatTime(evtEndIso!, lang);
-    const parts = ev.name.split(/\s+/);
-    const half = Math.ceil(parts.length / 2);
-    const nameHtml = parts.slice(0, half).join(' ') + ' <span>' + parts.slice(half).join(' ') + '</span>';
-    const loc = ev.venue ? (ev.venue.name ? ev.venue.name + (ev.venue.city ? ', ' + ev.venue.city : '') : ev.venue.address || '') : '';
-
-    const maps = getMapUrls(ev);
-    const mapLinksHtml = maps
-      ? '<div class="map-links" style="margin-top:0.5rem">' +
-          '<a class="map-link" href="' + maps.google + '" target="_blank" rel="noopener">' + extSvg + 'Google Maps</a>' +
-          '<a class="map-link" href="' + maps.apple  + '" target="_blank" rel="noopener">' + extSvg + 'Apple Maps</a>' +
-        '</div>'
-      : '';
-
-    inner.innerHTML =
-      '<div>' +
-        '<div class="events-eyebrow"><span class="pulse-dot"></span> <span data-en="Next cleanup event" data-es="Próximo evento del club">Next cleanup event</span></div>' +
-        '<div class="events-name">' + nameHtml + '</div>' +
-        '<div class="events-meta">' +
-          '<span class="events-chip" id="evtDateChip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + sDate + '</span>' +
-          '<span class="events-chip" id="evtTimeChip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + sTime + ' – ' + eTime + '</span>' +
-          (loc ? '<span class="events-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</span>' : '') +
-        '</div>' +
-        mapLinksHtml +
-      '</div>' +
-      '<div class="events-right">' +
-        '<div class="countdown-row" id="evtCountdown"></div>' +
-        '<a href="' + ev.url + '" target="_blank" rel="noopener" class="btn-eb-rsvp" data-en="RSVP →" data-es="Regístrate →">RSVP →</a>' +
-      '</div>' +
-      '<div class="events-see-all"><a href="/events" data-en="Can\'t make this one? See all club events →" data-es="¿No puedes? Ve todos los eventos →">Can\'t make this one? See all club events →</a></div>';
-
-    // Re-apply saved language to newly rendered dynamic HTML
-    if (lang !== 'en') {
-      document.querySelectorAll<HTMLElement>('[data-en]').forEach((el) => {
-        const text = el.getAttribute(`data-${lang}`);
-        if (text && !el.children.length) el.textContent = text;
-      });
-    }
-
-    startCountdown(ev.start.utc || ev.start.local);
-  }
-
-  fetchEvents()
-    .then((events) => render(events[0] ?? null))
-    .catch(() => {
-      inner.innerHTML = '<div class="events-fallback">Could not load events. Check <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.</div><div class="events-see-all"><a href="/events">See all club events →</a></div>';
-    });
-
   // ── LANGUAGE CHANGE HANDLER ──
-  // Handles page-specific dynamic updates that the DOM walk can't cover
   onLanguageChange((lang) => {
     const wt = document.getElementById('waiverText');
     if (wt) wt.innerHTML = lang === 'es' ? waiverES : waiverEN;
 
-    if (evtStartIso) {
-      const sd = document.getElementById('evtDateChip');
-      const st = document.getElementById('evtTimeChip');
-      if (sd) (sd.lastChild as Text).textContent = formatDate(evtStartIso, lang);
-      if (st) (st.lastChild as Text).textContent =
-        formatTime(evtStartIso, lang) + ' – ' + formatTime(evtEndIso!, lang);
-    }
-
-    if (countdownTick) countdownTick();
+    const dateEl = document.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
+    if (dateEl) dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
   });
 
-  // Apply saved language to waiver on load (chips aren't rendered yet at this point)
-  const initLang = getCurrentLang();
-  if (initLang !== 'en') {
+  // Apply saved language to waiver on load
+  if (getCurrentLang() !== 'en') {
     const wt = document.getElementById('waiverText');
     if (wt) wt.innerHTML = waiverES;
   }
+
 
   // ── VOLUNTEER FORM SUBMIT ──
   document.getElementById('volunteerForm')?.addEventListener('submit', async (e) => {

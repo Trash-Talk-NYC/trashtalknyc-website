@@ -26,6 +26,42 @@ export type EventCardProps = {
   mapUrls: { google: string; apple: string } | null;
 };
 
+export function toEventCardProps(ev: EventData): EventCardProps {
+  const startIso = ev.start.local || ev.start.utc;
+  const endIso = ev.end.local || ev.end.utc;
+  const v = ev.venue;
+  const location = v ? (v.name || '') + (v.city ? `, ${v.city}` : '') : '';
+  return {
+    id: ev.id,
+    name: ev.name,
+    url: ev.url,
+    startIso,
+    endIso,
+    location,
+    mapUrls: getMapUrls(ev),
+  };
+}
+
+export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[]; past: EventData[] }> {
+  const token = import.meta.env.EVENTBRITE_TOKEN as string | undefined;
+  const orgId = import.meta.env.EVENTBRITE_ORGANIZER_ID as string | undefined;
+  if (!token || !orgId) return { upcoming: [], past: [] };
+
+  const res = await fetch(
+    `https://www.eventbriteapi.com/v3/organizations/${orgId}/events/?time_filter=all&order_by=start_asc&expand=venue&page_size=100`,
+    { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
+  );
+  if (!res.ok) return { upcoming: [], past: [] };
+
+  const data = await res.json() as { events?: unknown[] };
+  const now = new Date().toISOString();
+  const events = ((data.events ?? []) as EventData[]).filter(e => e.status !== 'draft');
+  return {
+    upcoming: events.filter(e => e.end.utc > now),
+    past: events.filter(e => e.end.utc <= now),
+  };
+}
+
 export async function fetchEvents(all?: boolean): Promise<EventData[]> {
   const url = all
     ? '/.netlify/functions/next-event?all=true'
