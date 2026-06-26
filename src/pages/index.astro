@@ -105,7 +105,9 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
       </>
     ) : (
       <div class="events-fallback">
-        No upcoming events right now — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.
+        <span data-en="No upcoming events right now — follow" data-es="No hay eventos próximos — síguenos en">No upcoming events right now — follow</span>
+        {' '}<a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
+        <span data-en="for updates." data-es="para actualizaciones.">for updates.</span>
       </div>
     )}
   </div>
