@@ -13,3 +13,9 @@ dist/
 
 # Astro type generation cache
 .astro/
+
+# Claude Code session memory (machine-local)
+.claude/
+
+# macOS metadata
+.DS_Store

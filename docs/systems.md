@@ -93,6 +93,8 @@ High:
 
 Shipped:
 - Contact form redesign / partnership intake flow (single form, tabbed General/Partnerships, shared Web3Forms key)
+- Eventbrite organizer link fix (`/events` empty-state fallback pointed to a 404ing guessed slug)
+- Mobile overscroll bounce fix (transparent html background during bounce)
 
 Medium:
 - CRM/database
