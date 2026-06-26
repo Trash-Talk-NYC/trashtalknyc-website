@@ -99,21 +99,22 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
 </div>
 
 <script>
+  import { createCountdown } from '../lib/countdown';
+
   const card = document.querySelector<HTMLElement>('.next-event-card[data-start]');
   if (card) {
     const startIso = card.dataset.start!;
-    function tick() {
-      const diff = new Date(startIso).getTime() - Date.now();
-      if (diff <= 0) return;
-      const pad = (n: number) => String(n).padStart(2, '0');
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    const cleanup = createCountdown(startIso, ({ days, hours, minutes }) => {
       const dEl = document.getElementById('cdD');
       if (!dEl) return;
-      dEl.textContent = pad(Math.floor(diff / 864e5));
-      document.getElementById('cdH')!.textContent = pad(Math.floor((diff % 864e5) / 36e5));
-      document.getElementById('cdM')!.textContent = pad(Math.floor((diff % 36e5) / 6e4));
-    }
-    tick();
-    setInterval(tick, 30000);
+      dEl.textContent = pad(days);
+      document.getElementById('cdH')!.textContent = pad(hours);
+      document.getElementById('cdM')!.textContent = pad(minutes);
+    });
+
+    document.addEventListener('astro:before-swap', cleanup, { once: true });
   }
 </script>
 
