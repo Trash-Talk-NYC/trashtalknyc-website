@@ -132,17 +132,17 @@ Always treat subjective reactions as valid product feedback.
 
 ## Developer Experience (DX)
 
-Any feature that changes the user experience must end with a Developer Experience section.
+Any UI change must end with a Developer Experience section.
 
 Required outputs:
 
-1. Where to view the change
-2. Whether it exists locally, in a deploy preview, or in production
-3. What visually changed
-4. What interactions/screen sizes should be verified
-5. Which verification layers have already been completed
-6. Which verification layers still require human review
-7. What screenshots/artifacts should be produced
+1. How do I see it?
+2. Where do I see it?
+3. Is it local only, committed, pushed, or in a deploy preview?
+4. What should visually change?
+5. What interactions should I test?
+6. What screen sizes should I verify?
+7. What screenshots/artifacts should be produced?
 
 A feature is not considered complete until a human can easily verify it.
 
@@ -206,4 +206,17 @@ Avoid language that implies employment when the intent is collaboration.
 
 Always explain WHY language changes are proposed.
 
-Do not consider a feature "complete" without explaining how the developer can experience it (see "Developer Experience (DX)" above).
+## Developer Experience Requirements
+
+Any feature that changes the user experience must end with a Developer Experience section.
+
+Include:
+
+1. Where to view the change
+2. Whether it exists locally, in a deploy preview, or in production
+3. What visually changed
+4. What should be verified
+5. Which verification layers have already been completed
+6. Which verification layers still require human review
+
+Do not consider a feature "complete" without explaining how the developer can experience it.
