@@ -17,5 +17,9 @@ dist/
 # Claude Code session memory (machine-local)
 .claude/
 
+# Agent skills and lock (tooling, not project files)
+.agents/
+skills-lock.json
+
 # macOS metadata
 .DS_Store
