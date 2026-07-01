@@ -26,6 +26,44 @@ export type EventCardProps = {
   mapUrls: { google: string; apple: string } | null;
 };
 
+// Shape returned by the Eventbrite API itself — distinct from EventData
+// because Eventbrite nests/stringifies fields (name.text, venue.address as
+// an object, latitude/longitude as strings) that EventData flattens.
+type EventbriteApiEvent = {
+  id: string;
+  name?: { text?: string | null } | null;
+  url: string;
+  status: string;
+  start: { local: string | null; utc: string };
+  end: { local: string | null; utc: string };
+  venue?: {
+    name: string | null;
+    address?: { localized_address_display?: string | null; city?: string | null } | null;
+    latitude?: string | null;
+    longitude?: string | null;
+  } | null;
+};
+
+export function mapEventbriteEvent(e: EventbriteApiEvent): EventData {
+  return {
+    id: e.id,
+    name: e.name?.text || '',
+    url: e.url,
+    status: e.status,
+    start: e.start,
+    end: e.end,
+    venue: e.venue
+      ? {
+          name: e.venue.name,
+          address: e.venue.address?.localized_address_display || null,
+          city: e.venue.address?.city || null,
+          lat: e.venue.latitude ? parseFloat(e.venue.latitude) : null,
+          lng: e.venue.longitude ? parseFloat(e.venue.longitude) : null,
+        }
+      : null,
+  };
+}
+
 export function toEventCardProps(ev: EventData): EventCardProps {
   const startIso = ev.start.local || ev.start.utc;
   const endIso = ev.end.local || ev.end.utc;
@@ -64,9 +102,11 @@ export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[];
     return { upcoming: [], past: [] };
   }
 
-  const data = await res.json() as { events?: unknown[] };
+  const data = await res.json() as { events?: EventbriteApiEvent[] };
   const now = new Date().toISOString();
-  const events = ((data.events ?? []) as EventData[]).filter(e => e.status !== 'draft');
+  const events = (data.events ?? [])
+    .filter(e => e.status !== 'draft')
+    .map(mapEventbriteEvent);
   return {
     upcoming: events.filter(e => e.end.utc > now),
     past: events.filter(e => e.end.utc <= now),
