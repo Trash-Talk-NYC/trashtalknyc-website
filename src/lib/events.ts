@@ -45,13 +45,24 @@ export function toEventCardProps(ev: EventData): EventCardProps {
 export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[]; past: EventData[] }> {
   const token = import.meta.env.EVENTBRITE_TOKEN as string | undefined;
   const orgId = import.meta.env.EVENTBRITE_ORGANIZER_ID as string | undefined;
-  if (!token || !orgId) return { upcoming: [], past: [] };
+  if (!token || !orgId) {
+    // Silent in the rendered page (falls back to "no upcoming events"), so
+    // this is the only signal that Eventbrite env vars are missing for this
+    // deploy context.
+    console.warn(
+      `[events] Eventbrite build-time fetch skipped — missing ${!token ? 'EVENTBRITE_TOKEN ' : ''}${!orgId ? 'EVENTBRITE_ORGANIZER_ID' : ''}`.trim(),
+    );
+    return { upcoming: [], past: [] };
+  }
 
   const res = await fetch(
     `https://www.eventbriteapi.com/v3/organizations/${orgId}/events/?time_filter=all&order_by=start_asc&expand=venue&page_size=100`,
     { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
   );
-  if (!res.ok) return { upcoming: [], past: [] };
+  if (!res.ok) {
+    console.warn(`[events] Eventbrite API request failed at build time: ${res.status} ${res.statusText}`);
+    return { upcoming: [], past: [] };
+  }
 
   const data = await res.json() as { events?: unknown[] };
   const now = new Date().toISOString();
