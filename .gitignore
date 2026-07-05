@@ -15,12 +15,21 @@ dist/
 .astro/
 
 # Claude Code session memory (machine-local)
-.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/e2e-testing
 
 # Agent skills, lock, and superpowers specs (tooling, not project files)
-.agents/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/e2e-testing/
 skills-lock.json
 docs/superpowers/
 
 # macOS metadata
 .DS_Store
+
+# Session handoff notes (local only)
+handoff-files/
