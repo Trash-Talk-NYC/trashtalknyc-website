@@ -15,7 +15,7 @@ He reached out to me, Fabi, to make the website.
 
 ## Current Stack
 
-* HTML/CSS/JS & Astro
+* Astro framework
 * Netlify hosting
 * Netlify Functions
 * Brevo for emailing tens of thousands of people
@@ -35,23 +35,7 @@ Prioritize:
 
 1. Simplicity
 2. Maintainability
-3. Reusable components
+3. Modular, reusable code, and avoid writing "spaghetti" code
 4. Accessibility
 5. Performance
 6. Clear architecture
-7. Keeping users engaged on-site whenever practical
-
-Avoid:
-
-* Premature complexity
-* Unnecessary dependencies
-* User accounts unless there is a strong business need
-* Overengineering
-* User flows that unnecessarily redirect visitors away from the website
-
-When proposing solutions:
-
-* Prefer Astro conventions
-* Prefer composition over inheritance
-* Prefer self-documenting code
-* Prefer named exports, never default exports
