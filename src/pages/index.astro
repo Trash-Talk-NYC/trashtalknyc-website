@@ -1,5 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroEventCard from '../components/HeroEventCard.astro';
+import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
+
+const { upcoming } = await fetchEventsAtBuildTime();
+const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
 ---
 
 <BaseLayout title="Trash Talk NYC — Community Cleanup">
@@ -91,9 +96,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <!-- NEXT EVENT -->
 <section class="events-section" id="events">
   <div class="events-inner" id="eventsInner">
-    <div class="events-loading" id="eventsLoading">
-      <span></span><span></span><span></span>
-    </div>
+    {nextEvent ? (
+      <>
+        <HeroEventCard {...nextEvent} />
+        <div class="events-see-all">
+          <a href="/events" data-en="Can't make this one? See all club events →" data-es="¿No puedes? Ve todos los eventos →">Can't make this one? See all club events →</a>
+        </div>
+      </>
+    ) : (
+      <div class="events-fallback">
+        <span data-en="No upcoming events right now — follow" data-es="No hay eventos próximos — síguenos en">No upcoming events right now — follow</span>
+        {' '}<a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
+        <span data-en="for updates." data-es="para actualizaciones.">for updates.</span>
+      </div>
+    )}
   </div>
 </section>
 
@@ -106,11 +122,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
 
     <div class="form-wrap">
-      <form id="volunteerForm" action="https://api.web3forms.com/submit" method="POST">
-        <input type="hidden" name="access_key" value="c25d8285-267a-4aef-b520-524d8baed839">
-        <input type="hidden" name="subject" value="New Trash Talk NYC Volunteer Signup">
-        <input type="hidden" name="from_name" value="Trash Talk NYC Website">
-        <input type="hidden" name="redirect" value="false">
+      <form id="volunteerForm">
         <input type="hidden" name="botcheck" value="">
         <div class="form-row">
           <div class="form-group">
@@ -1484,214 +1496,103 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 </style>
 
+<!-- is:inline required: selectBorough is called from onclick attributes on borough pills -->
 <script is:inline>
-  // ── NEXT EVENT FETCH ──
-  // evtStartIso / evtEndIso / countdownTick are global so handleIndexLangChange can reach them
-  var evtStartIso = null;
-  var evtEndIso   = null;
-  var countdownTick = null;
-
-  (function () {
-    var inner = document.getElementById('eventsInner');
-
-    function fmt(isoStr) {
-      var d = new Date(isoStr);
-      var locale = currentLang === 'es' ? 'es' : 'en-US';
-      return {
-        date: d.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-        time: d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true }),
-      };
-    }
-
-    function eventMapUrls(ev) {
-      var v = ev.venue || {};
-      var q = v.address || ((v.name || '') + (v.city ? ', ' + v.city : ''));
-      if (!q) return null;
-      var enc = encodeURIComponent(q);
-      return {
-        google: 'https://www.google.com/maps/search/?api=1&query=' + enc,
-        apple:  'https://maps.apple.com/?q=' + enc
-      };
-    }
-
-    var extSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-
-    function startCountdown(isoStr) {
-      countdownTick = tick;
-      function tick() {
-        var diff = new Date(isoStr) - new Date();
-        if (diff <= 0) { clearInterval(timer); return; }
-        var d = Math.floor(diff / 864e5);
-        var h = Math.floor((diff % 864e5) / 36e5);
-        var m = Math.floor((diff % 36e5) / 6e4);
-        var pad = function(n) { return String(n).padStart(2,'0'); };
-        var el = document.getElementById('evtCountdown');
-        var dayLbl = currentLang === 'es' ? 'días' : 'days';
-        var minLbl = currentLang === 'es' ? 'min' : 'min';
-        if (el) el.innerHTML =
-          '<div class="cd-unit"><span class="cd-num">' + pad(d) + '</span><span class="cd-label">' + dayLbl + '</span></div>' +
-          '<span class="cd-sep">:</span>' +
-          '<div class="cd-unit"><span class="cd-num">' + pad(h) + '</span><span class="cd-label">hrs</span></div>' +
-          '<span class="cd-sep">:</span>' +
-          '<div class="cd-unit"><span class="cd-num">' + pad(m) + '</span><span class="cd-label">' + minLbl + '</span></div>';
-      }
-      tick();
-      var timer = setInterval(tick, 30000);
-    }
-
-    function render(ev) {
-      if (!ev) {
-        inner.innerHTML =
-          '<div class="events-fallback">No upcoming events right now — follow <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.</div>' +
-          '<div class="events-see-all"><a href="/events">See all club events →</a></div>';
-        return;
-      }
-      evtStartIso = ev.start.local || ev.start.utc;
-      evtEndIso   = ev.end.local   || ev.end.utc;
-      var s = fmt(evtStartIso);
-      var e = fmt(evtEndIso);
-      var parts = ev.name.split(/\s+/);
-      var half = Math.ceil(parts.length / 2);
-      var nameHtml = parts.slice(0, half).join(' ') + ' <span>' + parts.slice(half).join(' ') + '</span>';
-      var loc = ev.venue ? (ev.venue.name ? ev.venue.name + (ev.venue.city ? ', ' + ev.venue.city : '') : ev.venue.address || '') : '';
-
-      var maps = eventMapUrls(ev);
-      var mapLinksHtml = maps
-        ? '<div class="map-links" style="margin-top:0.5rem">' +
-            '<a class="map-link" href="' + maps.google + '" target="_blank" rel="noopener">' + extSvg + 'Google Maps</a>' +
-            '<a class="map-link" href="' + maps.apple  + '" target="_blank" rel="noopener">' + extSvg + 'Apple Maps</a>' +
-          '</div>'
-        : '';
-
-      inner.innerHTML =
-        '<div>' +
-          '<div class="events-eyebrow"><span class="pulse-dot"></span> <span data-en="Next cleanup event" data-es="Próximo evento del club">Next cleanup event</span></div>' +
-          '<div class="events-name">' + nameHtml + '</div>' +
-          '<div class="events-meta">' +
-            '<span class="events-chip" id="evtDateChip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + s.date + '</span>' +
-            '<span class="events-chip" id="evtTimeChip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + s.time + ' – ' + e.time + '</span>' +
-            (loc ? '<span class="events-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + loc + '</span>' : '') +
-          '</div>' +
-          mapLinksHtml +
-        '</div>' +
-        '<div class="events-right">' +
-          '<div class="countdown-row" id="evtCountdown"></div>' +
-          '<a href="' + ev.url + '" target="_blank" rel="noopener" class="btn-eb-rsvp" data-en="RSVP →" data-es="Regístrate →">RSVP →</a>' +
-        '</div>' +
-        '<div class="events-see-all"><a href="/events" data-en="Can\'t make this one? See all club events →" data-es="¿No puedes? Ve todos los eventos →">Can\'t make this one? See all club events →</a></div>';
-
-      // Re-apply saved language to newly rendered elements
-      if (currentLang !== 'en') {
-        document.querySelectorAll('[data-en]').forEach(function(el) {
-          var text = el.getAttribute('data-' + currentLang);
-          if (text && !el.children.length) el.textContent = text;
-        });
-      }
-
-      startCountdown(ev.start.utc || ev.start.local);
-    }
-
-    fetch('/.netlify/functions/next-event')
-      .then(function(r) { return r.json(); })
-      .then(render)
-      .catch(function() {
-        inner.innerHTML = '<div class="events-fallback">Could not load events. Check <a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a> for updates.</div><div class="events-see-all"><a href="/events">See all club events →</a></div>';
-      });
-  })();
-
-  // ── BOROUGH PICKER ── (global scope: called via onclick attribute)
   function selectBorough(el) {
     document.querySelectorAll('.borough-pill').forEach(function(p) { p.classList.remove('selected'); });
     el.classList.add('selected');
     document.getElementById('borough').value = el.getAttribute('data-borough');
   }
+</script>
+
+<script>
+  import { getCurrentLang, onLanguageChange } from '../lib/language';
+  import { formatDate } from '../lib/events';
 
   // ── WAIVER TEXT (bilingual) ──
-  var waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br><br>I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.';
+  const waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br><br>I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.';
 
-  var waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.<br><br>Doy permiso a Trash Talk NYC para fotografiarme o filmarme durante el evento para su uso en redes sociales, incluido Instagram (@trashtalk_nyc), con fines promocionales y comunitarios. Notifique al organizador el día del evento si no da su consentimiento.';
+  const waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.<br><br>Doy permiso a Trash Talk NYC para fotografiarme o filmarme durante el evento para su uso en redes sociales, incluido Instagram (@trashtalk_nyc), con fines promocionales y comunitarios. Notifique al organizador el día del evento si no da su consentimiento.';
 
-  // ── INDEX PAGE LANG EXTENSION ──
-  // Fires after BaseLayout's onclick setLang() has updated currentLang.
-  // Handles: waiver swap, event chip re-render, countdown re-tick.
-  function handleIndexLangChange(lang) {
-    var wt = document.getElementById('waiverText');
+  // ── LANGUAGE CHANGE HANDLER ──
+  onLanguageChange((lang) => {
+    const wt = document.getElementById('waiverText');
     if (wt) wt.innerHTML = lang === 'es' ? waiverES : waiverEN;
 
-    if (evtStartIso) {
-      var locale = lang === 'es' ? 'es' : 'en-US';
-      var dateOpts = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-      var timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
-      var sd = document.getElementById('evtDateChip');
-      var st = document.getElementById('evtTimeChip');
-      if (sd) sd.lastChild.textContent = new Date(evtStartIso).toLocaleDateString(locale, dateOpts);
-      if (st) st.lastChild.textContent = new Date(evtStartIso).toLocaleTimeString(locale, timeOpts) + ' – ' + new Date(evtEndIso).toLocaleTimeString(locale, timeOpts);
-    }
-
-    if (countdownTick) countdownTick();
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    // Apply stored lang to page-specific elements (waiver text only; chips not rendered yet)
-    if (currentLang !== 'en') handleIndexLangChange(currentLang);
-
-    // Hook lang buttons — fires after BaseLayout onclick setLang() has already run
-    var btnEN = document.getElementById('btnEN');
-    var btnES = document.getElementById('btnES');
-    if (btnEN) btnEN.addEventListener('click', function () { handleIndexLangChange('en'); });
-    if (btnES) btnES.addEventListener('click', function () { handleIndexLangChange('es'); });
-
-    // ── VOLUNTEER FORM SUBMIT ──
-    document.getElementById('volunteerForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      if (!document.getElementById('borough').value) {
-        var group = document.getElementById('boroughPickerGroup');
-        group.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        group.querySelectorAll('.borough-pill').forEach(function (p) {
-          p.style.borderColor = '#c0392b';
-          setTimeout(function () { p.style.borderColor = ''; }, 1800);
-        });
-        return;
-      }
-
-      var submitBtn = this.querySelector('.form-submit');
-      var originalText = submitBtn.textContent;
-      submitBtn.textContent = currentLang === 'es' ? 'Enviando…' : 'Submitting…';
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.7';
-
-      try {
-        var formData = new FormData(this);
-
-        var response = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          body: formData
-        });
-
-        var data = await response.json();
-
-        if (data.success) {
-          this.style.display = 'none';
-          document.getElementById('formSuccess').style.display = 'block';
-        } else {
-          throw new Error(data.message || 'Submission failed');
-        }
-      } catch (err) {
-        submitBtn.textContent = currentLang === 'es' ? '¡Algo salió mal! Inténtalo de nuevo.' : 'Something went wrong — please try again.';
-        submitBtn.style.background = '#c0392b';
-        submitBtn.style.borderColor = '#c0392b';
-        submitBtn.style.color = '#fff';
-        submitBtn.disabled = false;
-        setTimeout(function () {
-          submitBtn.textContent = originalText;
-          submitBtn.style.background = '';
-          submitBtn.style.borderColor = '';
-          submitBtn.style.color = '';
-          submitBtn.style.opacity = '';
-        }, 3500);
-      }
-    });
+    const dateEl = document.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
+    if (dateEl) dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
   });
 
+  // Apply saved language to waiver on load
+  if (getCurrentLang() !== 'en') {
+    const wt = document.getElementById('waiverText');
+    if (wt) wt.innerHTML = waiverES;
+  }
+
+
+  // ── VOLUNTEER FORM SUBMIT ──
+  document.getElementById('volunteerForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+
+    const boroughInput = document.getElementById('borough') as HTMLInputElement;
+    if (!boroughInput?.value) {
+      const group = document.getElementById('boroughPickerGroup')!;
+      group.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      group.querySelectorAll<HTMLElement>('.borough-pill').forEach((p) => {
+        p.style.borderColor = '#c0392b';
+        setTimeout(() => { p.style.borderColor = ''; }, 1800);
+      });
+      return;
+    }
+
+    const submitBtn = form.querySelector<HTMLButtonElement>('.form-submit')!;
+    const originalText = submitBtn.textContent ?? '';
+    submitBtn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Submitting…';
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
+
+    const fd = new FormData(form);
+    const payload = {
+      formType: 'signup',
+      fname: fd.get('fname') as string,
+      lname: fd.get('lname') as string,
+      email: fd.get('email') as string,
+      borough: fd.get('borough') as string,
+      phone: fd.get('phone') as string,
+      experience: fd.get('experience') as string,
+      hear: fd.get('hear') as string,
+    };
+
+    try {
+      const response = await fetch('/.netlify/functions/submit-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        form.style.display = 'none';
+        (document.getElementById('formSuccess') as HTMLElement).style.display = 'block';
+      } else {
+        throw new Error(data.message || 'Submission failed');
+      }
+    } catch {
+      submitBtn.textContent = getCurrentLang() === 'es'
+        ? '¡Algo salió mal! Inténtalo de nuevo.'
+        : 'Something went wrong — please try again.';
+      submitBtn.style.background = '#c0392b';
+      submitBtn.style.borderColor = '#c0392b';
+      submitBtn.style.color = '#fff';
+      submitBtn.disabled = false;
+      setTimeout(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.style.background = '';
+        submitBtn.style.borderColor = '';
+        submitBtn.style.color = '';
+        submitBtn.style.opacity = '';
+      }, 3500);
+    }
+  });
 </script>

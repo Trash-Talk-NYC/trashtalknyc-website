@@ -160,11 +160,11 @@ Current forms:
 
 * General contact
 * Volunteer signup
+* Partnership inquiry — shipped as a tab on `/contact` (General / Partnerships), sharing one Web3Forms key with the general contact recipients; differentiated only by the `subject` field. No dedicated partnerships inbox exists.
 
-Planned forms:
+Deferred:
 
-* Host an event
-* Partnership inquiry
+* Host an event — considered as a third `/contact` tab, explicitly deferred. Do not recreate without a fresh decision.
 
 Future contact architecture should support clear pathways for:
 
@@ -185,7 +185,7 @@ Existing embed should be preserved during migration.
 
 Any refactor involving donations should explicitly verify that donation functionality remains operational.
 
-Future donation architecture may also include Buy Me a Coffee or similar lightweight donation platforms.
+Buy Me a Coffee already exists as a donation channel, currently linked from Instagram only — it is not yet on-site. Bringing it on-site (alongside or instead of relying on Instagram) is an open product question, not a build-from-scratch feature.
 
 Donation opportunities should remain visible and easily accessible throughout key user journeys.
 
@@ -317,13 +317,13 @@ For migrations and major features:
 
 ## Testing Requirements
 
-Testing is not optional.
+Testing is not optional, but exhaustiveness is not the goal — proportionate confidence is. Choose the smallest set of checks below needed for confidence in the specific change; do not run every section just because it exists. See `docs/systems.md` → "Verification Layers" and "Attention Allocation" for the governing principle and for explaining *why* a given check is or isn't included.
 
-For every meaningful change:
+The checklist below is a reference menu of what's available to verify, not a mandatory checklist for every change.
 
 ### Functional Testing
 
-Verify:
+Select from, based on what the change actually touches:
 
 * Navigation works
 * Internal links work
@@ -501,6 +501,8 @@ For significant changes, include:
 ---
 
 ## When Assisting
+
+This project also defines an advisory role system in `docs/agent-protocol.md` and `docs/agents/*.md` (Product Manager, Website Engineer, Brand & Growth, Infrastructure & Security, Operations Memory). Read it before non-trivial work — it defines how to label recommendations (`[CODE]`/`[CONFIG]`/`[EXTERNAL]`/`[HUMAN DECISION]`), when to avoid creating human work, the Developer Experience reporting requirement, and the "debrief" trigger phrase.
 
 Act like a senior engineer helping evolve this project into a maintainable long-term platform.
 

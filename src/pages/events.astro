@@ -1,5 +1,19 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import EventCard from '../components/EventCard.astro';
+import HeroEventCard from '../components/HeroEventCard.astro';
+import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
+import { formatDate } from '../lib/events';
+
+const { upcoming: upcomingRaw, past: pastRaw } = await fetchEventsAtBuildTime();
+const upcoming = upcomingRaw.map(ev => ({
+  props: toEventCardProps(ev),
+  latLng: ev.venue?.lat != null ? { lat: ev.venue.lat, lng: ev.venue.lng! } : null,
+}));
+const past = pastRaw.map(ev => ({
+  props: toEventCardProps(ev),
+}));
+const nextEvent = upcoming[0]?.props ?? null;
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -25,54 +39,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </h1>
       </div>
 
-      <div class="next-event-card">
-        <div class="card-eyebrow">
-          <span class="pulse-dot"></span>
-          <span data-en="Next club event" data-es="Próximo evento">Next club event</span>
+      {nextEvent ? (
+        <HeroEventCard {...nextEvent} />
+      ) : (
+        <div class="next-event-card-empty">
+          <p data-en="No upcoming events right now. Check back soon!" data-es="No hay eventos próximos. ¡Vuelve pronto!">
+            No upcoming events right now. Check back soon!
+          </p>
         </div>
-        <div class="card-event-name" id="heroEventName">Loading…</div>
-
-        <div class="card-meta">
-          <div class="card-meta-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span id="heroEventDate"></span>
-          </div>
-          <div class="card-meta-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span id="heroEventTime"></span>
-          </div>
-          <div class="card-meta-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span id="heroEventLoc"></span>
-          </div>
-          <div class="card-meta-row" id="heroMapRow" style="display:none">
-            <span class="map-links">
-              <a class="map-link" id="heroGoogleMap" href="#" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Google Maps
-              </a>
-              <a class="map-link" id="heroAppleMap" href="#" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Apple Maps
-              </a>
-            </span>
-          </div>
-        </div>
-
-        <div class="card-countdown">
-          <span class="cd-label-top" data-en="Time left" data-es="Tiempo restante">Time left</span>
-          <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub" data-en="days" data-es="días">days</span></div>
-          <span class="cd-sep">:</span>
-          <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub" data-en="hrs" data-es="hrs">hrs</span></div>
-          <span class="cd-sep">:</span>
-          <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub" data-en="min" data-es="min">min</span></div>
-        </div>
-
-        <button class="btn-rsvp" id="heroRsvpBtn" data-event-id=""
-          data-en="RSVP for this event" data-es="Regístrate aquí">
-          RSVP for this event
-        </button>
-      </div>
+      )}
 
     </div>
   </section>
@@ -88,31 +63,43 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <!-- EVENTS LIST -->
   <div class="events-page">
 
-    <div id="skeletons">
-      <div class="events-list">
-        <div class="skeleton-card"><div class="skel skel-date"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-meta"></div><div class="skel skel-tags"></div></div></div>
-        <div class="skeleton-card"><div class="skel skel-date"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-meta"></div><div class="skel skel-tags"></div></div></div>
-      </div>
-    </div>
-
     <div class="dist-sort-label" id="distSortLabel" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <span data-en="Sorted nearest to farthest" data-es="Ordenado del más cercano al más lejano">Sorted nearest to farthest</span>
     </div>
 
-    <div id="upcomingList"></div>
-
-    <div id="pastSection" style="display:none">
-      <div class="past-divider">
-        <div class="past-divider-line"></div>
-        <button class="past-toggle" id="pastToggle" onclick="togglePast()">
-          <span data-en="Past club events" data-es="Eventos pasados">Past club events</span>
-          <span class="past-toggle-arrow">▾</span>
-        </button>
-        <div class="past-divider-line"></div>
-      </div>
-      <div class="events-list" id="pastList"></div>
+    <div id="upcomingList">
+      {upcoming.length > 0 ? (
+        <div class="events-list" id="eventsListInner">
+          {upcoming.map(({ props, latLng }) => (
+            <EventCard {...props} latLng={latLng} />
+          ))}
+        </div>
+      ) : (
+        <div class="no-events-cta">
+          <p data-en="No upcoming events right now — stay tuned on our Eventbrite page for new dates." data-es="No hay eventos próximos. ¡Síguenos en Eventbrite para nuevas fechas!">No upcoming events right now — stay tuned on our Eventbrite page for new dates.</p>
+          <a class="eb-cta-btn" href="https://trashtalknyc.eventbrite.com" target="_blank" rel="noopener" data-en="See us on Eventbrite →" data-es="Vernos en Eventbrite →">See us on Eventbrite →</a>
+        </div>
+      )}
     </div>
+
+    {past.length > 0 && (
+      <div id="pastSection">
+        <div class="past-divider">
+          <div class="past-divider-line"></div>
+          <button class="past-toggle" id="pastToggle" onclick="togglePast()">
+            <span data-en="Past club events" data-es="Eventos pasados">Past club events</span>
+            <span class="past-toggle-arrow">▾</span>
+          </button>
+          <div class="past-divider-line"></div>
+        </div>
+        <div class="events-list" id="pastList" style="display:none">
+          {past.map(({ props }) => (
+            <EventCard {...props} isPast />
+          ))}
+        </div>
+      </div>
+    )}
 
   </div>
 
@@ -162,143 +149,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </div>
 
-  <!-- is:inline required: togglePast, adjQty, openModal, closeModal
-       are called from onclick attributes in static HTML and dynamically-built card HTML -->
+  <!-- is:inline required: togglePast, adjQty, openModal, closeModal, initWidgets
+       are called from onclick attributes in static HTML and event card markup -->
   <script is:inline>
-    var heroEventStart = null;
     var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-    var EB_PAGE = 'https://trashtalknyc.eventbrite.com';
-    var MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    var DAYS      = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-
-    function parseDate(s) { return new Date(s); }
-
-    // currentLang is defined by BaseLayout's is:inline (runs after this script).
-    // These helpers reference it at call time, not at definition time, so they're safe.
-    function fmtDate(d, opts) {
-      return d.toLocaleDateString(currentLang === 'es' ? 'es' : 'en-US', opts);
-    }
-    function fmtTime(d) {
-      return d.toLocaleTimeString(currentLang === 'es' ? 'es' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    }
-
-    function mapUrls(ev) {
-      var v = ev.venue || {};
-      var q = v.address || ((v.name || '') + (v.city ? ', ' + v.city : ''));
-      if (!q) return null;
-      var enc = encodeURIComponent(q);
-      return {
-        google: 'https://www.google.com/maps/search/?api=1&query=' + enc,
-        apple:  'https://maps.apple.com/?q=' + enc
-      };
-    }
-
-    var userLat = null, userLng = null;
-
-    function haversineKm(lat1, lng1, lat2, lng2) {
-      var R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
-      var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-    function kmToMiles(km) { return km * 0.621371; }
-    function distLabel(ev) {
-      if (userLat === null || !ev.venue || !ev.venue.lat) return '';
-      var mi = kmToMiles(haversineKm(userLat, userLng, ev.venue.lat, ev.venue.lng));
-      return '<span class="dist-badge">' + mi.toFixed(1) + ' mi away</span>';
-    }
-
-    function startCountdown(isoStr) {
-      function tick() {
-        var diff = new Date(isoStr) - new Date();
-        if (diff <= 0) { clearInterval(timer); return; }
-        var p = function(n) { return String(n).padStart(2, '0'); };
-        var dEl = document.getElementById('cdD');
-        if (!dEl) return;
-        dEl.textContent                             = p(Math.floor(diff / 864e5));
-        document.getElementById('cdH').textContent = p(Math.floor((diff % 864e5) / 36e5));
-        document.getElementById('cdM').textContent = p(Math.floor((diff % 36e5) / 6e4));
-      }
-      tick();
-      var timer = setInterval(tick, 30000);
-    }
-
-    function buildCard(ev, isPast) {
-      var start   = parseDate(ev.start.local || ev.start.utc);
-      var end     = parseDate(ev.end.local   || ev.end.utc);
-      var venue   = ev.venue || {};
-      var loc     = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
-      var maps    = mapUrls(ev);
-      var dist    = isPast ? '' : distLabel(ev);
-      var btnId   = 'eb-trigger-' + ev.id;
-
-      var months  = currentLang === 'es' ? MONTHS_ES : MONTHS;
-      var days    = currentLang === 'es' ? DAYS_ES   : DAYS;
-      var dateStr = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric' });
-      var timeStr = fmtTime(start) + ' – ' + fmtTime(end);
-
-      var pinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
-      var extSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-      var locHtml = loc
-        ? '<span class="event-detail">' + pinSvg + loc + '</span>' +
-          (maps
-            ? '<span class="map-links">' +
-                '<a class="map-link" href="' + maps.google + '" target="_blank" rel="noopener">' + extSvg + 'Google Maps</a>' +
-                '<a class="map-link" href="' + maps.apple  + '" target="_blank" rel="noopener">' + extSvg + 'Apple Maps</a>' +
-              '</span>'
-            : '')
-        : '';
-
-      var cta = isPast
-        ? '<div class="event-cta"><span class="card-status" data-en="Past" data-es="Pasado">Past</span></div>'
-        : '<div class="event-cta"><button class="btn-card btn-card-purple" id="' + btnId + '"' +
-            ' data-event-id="' + ev.id + '"' +
-            ' data-url="'      + (ev.url  || '') + '"' +
-            ' data-name="'     + (ev.name || '').replace(/"/g, '&quot;') + '"' +
-            ' data-date="'     + dateStr + '"' +
-            ' data-time="'     + timeStr + '"' +
-            ' data-loc="'      + loc.replace(/"/g, '&quot;') + '"' +
-            '>RSVP &rarr;</button>' + dist + '</div>';
-
-      return '<div class="event-card ' + (isPast ? 'past' : 'upcoming') + '">' +
-        '<div class="event-date-block">' +
-          '<span class="month" data-en="' + MONTHS[start.getMonth()] + '" data-es="' + MONTHS_ES[start.getMonth()] + '">' + months[start.getMonth()] + '</span>' +
-          '<span class="day">'  + start.getDate() + '</span>' +
-          '<span class="dow" data-en="' + DAYS[start.getDay()] + '" data-es="' + DAYS_ES[start.getDay()] + '">' + days[start.getDay()] + '</span>' +
-        '</div>' +
-        '<div class="event-info">' +
-          '<div class="event-name">' + ev.name + '</div>' +
-          '<div class="event-details">' +
-            '<span class="event-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + fmtTime(start) + ' – ' + fmtTime(end) + '</span>' +
-            locHtml +
-          '</div>' +
-        '</div>' +
-        cta +
-      '</div>';
-    }
-
-    var allUpcomingEvents = [];
-
-    function sortByDist(events) {
-      if (userLat === null) return events;
-      return events.slice().sort(function(a, b) {
-        var aLat = a.venue && a.venue.lat, bLat = b.venue && b.venue.lat;
-        if (!aLat && !bLat) return 0;
-        if (!aLat) return 1;
-        if (!bLat) return -1;
-        return haversineKm(userLat, userLng, a.venue.lat, a.venue.lng) -
-               haversineKm(userLat, userLng, b.venue.lat, b.venue.lng);
-      });
-    }
-
-    function renderList(events) {
-      var sorted = sortByDist(events);
-      var upcomingList = document.getElementById('upcomingList');
-      if (!upcomingList) return;
-      upcomingList.innerHTML = '<div class="events-list">' + sorted.map(function(e) { return buildCard(e, false); }).join('') + '</div>';
-      setTimeout(initWidgets, 100);
-    }
 
     function togglePast() {
       var list   = document.getElementById('pastList');
@@ -306,31 +160,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       var isOpen = toggle.classList.contains('open');
       toggle.classList.toggle('open', !isOpen);
       list.style.display = isOpen ? 'none' : 'flex';
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        userLat = pos.coords.latitude;
-        userLng = pos.coords.longitude;
-        var lbl = document.getElementById('distSortLabel');
-        if (lbl) lbl.style.display = 'flex';
-        if (allUpcomingEvents.length > 0) {
-          renderList(allUpcomingEvents);
-        }
-      }, function() {});
-    }
-
-    function initWidgets() {
-      document.querySelectorAll('[data-event-id]').forEach(function(btn) {
-        var id = btn.getAttribute('data-event-id');
-        if (!id || btn.dataset.widgetInit) return;
-        btn.dataset.widgetInit = '1';
-        if (!isLocalhost && window.EBWidgets) {
-          window.EBWidgets.createWidget({ widgetType: 'checkout', eventId: id, modal: true, modalTriggerElementId: btn.id });
-        } else {
-          btn.addEventListener('click', function() { openModal(btn); });
-        }
-      });
     }
 
     function openModal(btn) {
@@ -355,110 +184,99 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       el.textContent = Math.max(1, parseInt(el.textContent, 10) + delta);
     }
 
+    function initWidgets() {
+      document.querySelectorAll('[data-event-id]').forEach(function(btn) {
+        var id = btn.getAttribute('data-event-id');
+        if (!id || btn.dataset.widgetInit) return;
+        btn.dataset.widgetInit = '1';
+        if (!isLocalhost && window.EBWidgets) {
+          window.EBWidgets.createWidget({ widgetType: 'checkout', eventId: id, modal: true, modalTriggerElementId: btn.id });
+        } else {
+          btn.addEventListener('click', function() { openModal(btn); });
+        }
+      });
+    }
+
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
-    // Hero date reformat on language switch (BaseLayout's setLang handles everything else)
-    document.addEventListener('DOMContentLoaded', function() {
-      ['btnEN', 'btnES'].forEach(function(id) {
-        var btn = document.getElementById(id);
-        if (!btn) return;
-        btn.addEventListener('click', function() {
-          if (!heroEventStart) return;
-          var lang = id === 'btnEN' ? 'en' : 'es';
-          var dateEl = document.getElementById('heroEventDate');
-          if (dateEl) {
-            dateEl.textContent = heroEventStart.toLocaleDateString(
-              lang === 'es' ? 'es' : 'en-US',
-              { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
-            );
-          }
-        });
+    // ── GEOLOCATION SORT (DOM re-order, no HTML rebuild) ──
+    var userLat = null, userLng = null;
+
+    function haversineKm(lat1, lng1, lat2, lng2) {
+      var R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+      var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+    function kmToMiles(km) { return km * 0.621371; }
+
+    function sortListByDist() {
+      var list = document.getElementById('eventsListInner');
+      if (!list) return;
+      var cards = Array.from(list.querySelectorAll('.event-card[data-lat]'));
+      if (!cards.length) return;
+      cards.sort(function(a, b) {
+        var aLat = parseFloat(a.dataset.lat), aLng = parseFloat(a.dataset.lng);
+        var bLat = parseFloat(b.dataset.lat), bLng = parseFloat(b.dataset.lng);
+        if (isNaN(aLat) && isNaN(bLat)) return 0;
+        if (isNaN(aLat)) return 1;
+        if (isNaN(bLat)) return -1;
+        return haversineKm(userLat, userLng, aLat, aLng) - haversineKm(userLat, userLng, bLat, bLng);
       });
+      cards.forEach(function(card) { list.appendChild(card); });
+      // Add distance badges
+      cards.forEach(function(card) {
+        var lat = parseFloat(card.dataset.lat), lng = parseFloat(card.dataset.lng);
+        if (isNaN(lat)) return;
+        var mi = kmToMiles(haversineKm(userLat, userLng, lat, lng));
+        var existing = card.querySelector('.dist-badge');
+        if (existing) { existing.textContent = mi.toFixed(1) + ' mi away'; return; }
+        var cta = card.querySelector('.event-cta');
+        if (cta) {
+          var badge = document.createElement('span');
+          badge.className = 'dist-badge';
+          badge.textContent = mi.toFixed(1) + ' mi away';
+          cta.appendChild(badge);
+        }
+      });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        var lbl = document.getElementById('distSortLabel');
+        if (lbl) lbl.style.display = 'flex';
+        sortListByDist();
+      }, function() {});
+    }
+
+    // ── STALENESS: mark events whose end date has passed since build time ──
+    document.querySelectorAll('.event-card.upcoming[data-end]').forEach(function(card) {
+      if (new Date(card.dataset.end) < new Date()) {
+        card.classList.remove('upcoming');
+        card.classList.add('past');
+      }
     });
 
-    fetch('/.netlify/functions/next-event?all=true')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var upcoming = data.upcoming || [];
-        var past     = data.past     || [];
-
-        if (upcoming[0]) {
-          var ev    = upcoming[0];
-          var start = parseDate(ev.start.local || ev.start.utc);
-          var end   = parseDate(ev.end.local   || ev.end.utc);
-          var venue = ev.venue || {};
-          var loc   = (venue.name || '') + (venue.city ? ', ' + venue.city : '');
-
-          heroEventStart = start;
-
-          var nameEl = document.getElementById('heroEventName');
-          var dateEl = document.getElementById('heroEventDate');
-          var timeEl = document.getElementById('heroEventTime');
-          var locEl  = document.getElementById('heroEventLoc');
-          var rsvpEl = document.getElementById('heroRsvpBtn');
-
-          if (nameEl) nameEl.textContent = ev.name;
-          if (dateEl) dateEl.textContent = fmtDate(start, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-          if (timeEl) timeEl.textContent = fmtTime(start) + ' – ' + fmtTime(end);
-          if (locEl && loc) {
-            locEl.textContent = loc;
-            var heroMaps = mapUrls(ev);
-            if (heroMaps) {
-              document.getElementById('heroGoogleMap').href = heroMaps.google;
-              document.getElementById('heroAppleMap').href  = heroMaps.apple;
-              document.getElementById('heroMapRow').style.display = '';
-            }
-          }
-          if (rsvpEl) {
-            rsvpEl.id = 'eb-trigger-hero-' + ev.id;
-            rsvpEl.setAttribute('data-event-id', ev.id);
-            rsvpEl.setAttribute('data-url',  ev.url || '');
-            rsvpEl.setAttribute('data-name', ev.name || '');
-            rsvpEl.setAttribute('data-date', start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
-            rsvpEl.setAttribute('data-time', fmtTime(start) + ' – ' + fmtTime(end));
-            rsvpEl.setAttribute('data-loc',  loc || '');
-          }
-          startCountdown(ev.start.utc || ev.start.local);
-        }
-
-        var sk = document.getElementById('skeletons');
-        if (sk) sk.remove();
-
-        var upcomingList = document.getElementById('upcomingList');
-
-        if (upcoming.length === 0) {
-          var heroCard = document.querySelector('.next-event-card');
-          if (heroCard) heroCard.style.display = 'none';
-          var countdown = document.querySelector('.card-countdown');
-          if (countdown) countdown.style.display = 'none';
-          upcomingList.innerHTML =
-            '<div class="no-events-cta">' +
-              '<p>No upcoming events right now — stay tuned on our Eventbrite page for new dates.</p>' +
-              '<a class="eb-cta-btn" href="' + EB_PAGE + '" target="_blank" rel="noopener">See us on Eventbrite →</a>' +
-            '</div>';
-        } else {
-          allUpcomingEvents = upcoming;
-          renderList(upcoming);
-        }
-
-        var pastSection = document.getElementById('pastSection');
-        var pastList    = document.getElementById('pastList');
-        if (past.length > 0 && pastSection && pastList) {
-          pastSection.style.display = 'block';
-          pastList.innerHTML = past.map(function(e) { return buildCard(e, true); }).join('');
-        }
-      })
-      .catch(function() {
-        var sk = document.getElementById('skeletons');
-        if (sk) sk.remove();
-        var upcomingList = document.getElementById('upcomingList');
-        if (upcomingList) upcomingList.innerHTML =
-          '<div style="text-align:center;padding:3rem;color:var(--gray);font-weight:700;font-size:0.85rem">' +
-          'Could not load events. Visit <a href="https://www.eventbrite.com" target="_blank" rel="noopener" style="color:var(--purple)">Eventbrite</a> directly.</div>';
-      });
+    document.addEventListener('DOMContentLoaded', function() {
+      initWidgets();
+    });
   </script>
 
-  <!-- Custom footer: flex-column centered with purple-light border (differs from global flex-row footer) -->
+  <script>
+    import { onLanguageChange } from '../lib/language';
+    import { formatDate } from '../lib/events';
+
+    // Update hero card date text when language switches
+    onLanguageChange((lang) => {
+      const dateEl = document.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
+      if (dateEl) {
+        dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
+      }
+    });
+  </script>
+
+  <!-- Custom footer: flex-column centered with purple-light border -->
   <footer class="events-footer" slot="footer">
     <div class="footer-logo">Trash Talk NYC</div>
     <ul class="footer-links">
@@ -487,9 +305,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 </BaseLayout>
 
-<!-- is:global required: dynamically-built event card HTML (innerHTML) won't carry
-     data-astro-cid attributes, so scoped selectors would never match those elements -->
-<style is:global>
+<style>
   /* ── EVENTS HERO ── */
   .events-hero {
     background: var(--charcoal);
@@ -529,61 +345,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--off-white); margin-bottom: 1.5rem;
   }
   .hero-title .accent { color: var(--yellow); display: block; }
-
-  /* ── NEXT EVENT CARD ── */
-  .next-event-card {
-    background: rgba(247,244,237,0.04);
-    border: 1px solid rgba(155,93,229,0.3);
-    border-radius: 18px; padding: 2rem 2.25rem;
-    position: relative; overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(155,93,229,0.2), 0 0 0 1px rgba(155,93,229,0.08);
-  }
-  .next-event-card::after {
-    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--yellow) 40%, transparent);
-  }
-  .card-eyebrow {
-    font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em;
-    color: var(--yellow); margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .pulse-dot {
-    width: 7px; height: 7px; background: var(--yellow); border-radius: 50%;
-    display: inline-block; flex-shrink: 0;
-    animation: pulseDot 1.6s ease-in-out infinite;
-  }
-  @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.55)} }
-  .card-event-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
-    color: var(--off-white); line-height: 1; letter-spacing: 0.02em; margin-bottom: 1.1rem;
-  }
-  .card-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .card-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; color: rgba(247,244,237,0.55); }
-  .card-meta-row svg { width: 12px; height: 12px; color: var(--purple-light); flex-shrink: 0; }
-  .card-countdown {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; padding: 0.85rem 1rem;
-    background: rgba(247,244,237,0.04);
-    border: 1px solid rgba(247,244,237,0.07); border-radius: 10px;
-  }
-  .cd-label-top { font-size: 0.55rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(247,244,237,0.25); margin-right: auto; white-space: nowrap; }
-  .cd-unit { text-align: center; min-width: 36px; }
-  .cd-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; color: var(--off-white); line-height: 1; display: block; }
-  .cd-sub { font-family: 'Space Mono', monospace; font-size: 0.44rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(247,244,237,0.28); display: block; margin-top: 1px; }
-  .cd-sep { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: rgba(247,244,237,0.15); margin-top: -4px; align-self: flex-start; padding-top: 2px; }
-  .btn-rsvp {
-    background: var(--yellow); color: var(--charcoal);
-    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.14em;
-    padding: 0.7rem 1.4rem; border: 2px solid var(--yellow); border-radius: 8px;
-    cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block;
-    transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 160ms var(--ease-out);
-    box-shadow: 0 3px 14px rgba(245,208,0,0.22);
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .btn-rsvp:hover { background: var(--purple-light); border-color: var(--purple-light); color: #fff; box-shadow: 0 5px 20px rgba(155,93,229,0.3); transform: translateY(-1px); }
-    .btn-rsvp:active { transform: scale(0.97); transition-duration: 80ms; }
+  .next-event-card-empty {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 200px; color: rgba(247,244,237,0.45);
+    font-size: 0.85rem; font-weight: 600; text-align: center;
+    border: 1px solid rgba(155,93,229,0.2); border-radius: 18px; padding: 2rem;
   }
 
   /* ── PAGE HEADER BAND ── */
@@ -595,50 +361,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /* ── EVENTS LIST ── */
   .events-page { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
   .events-list { display: flex; flex-direction: column; gap: 0.85rem; }
-  .event-card {
-    background: white; border: 2px solid #e0dcd4; border-radius: 12px;
-    padding: 1.5rem 1.75rem;
-    display: grid; grid-template-columns: 72px 1fr auto;
-    gap: 1.5rem; align-items: center;
-    opacity: 0; transform: translateY(8px);
-    animation: cardIn 260ms var(--ease-out) forwards;
-  }
-  @keyframes cardIn { to { opacity:1; transform:translateY(0); } }
-  .event-card:nth-child(1){animation-delay:0ms}
-  .event-card:nth-child(2){animation-delay:45ms}
-  .event-card:nth-child(3){animation-delay:90ms}
-  .event-card:nth-child(4){animation-delay:135ms}
-  .event-card:nth-child(5){animation-delay:180ms}
-  @media (prefers-reduced-motion: reduce) { .event-card { animation:none; opacity:1; transform:none; } }
-  @media (hover: hover) and (pointer: fine) {
-    .event-card:hover { border-color: rgba(155,93,229,0.45); box-shadow: 0 3px 18px rgba(107,63,160,0.08); transform: translateY(-1px); }
-  }
-  .event-card.upcoming { border-left: 4px solid var(--purple-light); padding-left: calc(1.75rem - 2px); }
-  .event-card.past { opacity: 0.5; animation: none; }
-  .event-date-block { text-align: center; background: var(--purple-pale); border-radius: 8px; padding: 0.6rem 0.5rem; flex-shrink: 0; }
-  .event-date-block .month { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--purple); display: block; }
-  .event-date-block .day { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--charcoal); line-height: 1; display: block; }
-  .event-date-block .dow { font-size: 0.58rem; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; display: block; }
-  .event-info { min-width: 0; }
-  .event-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 0.03em; margin-bottom: 0.3rem; }
-  .event-details { display: flex; flex-wrap: wrap; gap: 1rem; }
-  .event-detail { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 700; color: var(--gray); }
-  .event-detail svg { width: 12px; height: 12px; flex-shrink: 0; }
-  .event-cta { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
-  .btn-card {
-    display: inline-block; font-family: 'Nunito', sans-serif;
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    padding: 0.4rem 1rem; border-radius: 40px; border: 1.5px solid;
-    cursor: pointer; text-decoration: none; background: none;
-    transition: background 150ms var(--ease-out), color 150ms var(--ease-out), transform 100ms var(--ease-out);
-    white-space: nowrap;
-  }
-  .btn-card-purple { color: var(--purple); border-color: var(--purple); }
-  @media (hover: hover) and (pointer: fine) {
-    .btn-card-purple:hover { background: var(--purple); color: #fff; }
-    .btn-card-purple:active { transform: scale(0.96); }
-  }
-  .card-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--warm-gray); }
 
   /* ── DISTANCE SORT ── */
   .dist-sort-label {
@@ -652,27 +374,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--green); background: rgba(42,107,42,0.1); border: 1px solid rgba(42,107,42,0.25);
     border-radius: 20px; padding: 0.1rem 0.5rem; white-space: nowrap;
   }
-
-  /* ── MAPS LINKS ── */
-  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
-  .map-link {
-    display: inline-flex; align-items: center; gap: 0.2rem;
-    font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-    color: rgba(122,122,138,0.7); text-decoration: none;
-    border: 1px solid rgba(122,122,138,0.3); border-radius: 4px;
-    padding: 0.1rem 0.4rem; transition: border-color 0.15s, color 0.15s; white-space: nowrap;
-  }
-  .map-link:hover { color: var(--purple); border-color: var(--purple); }
-  .map-link svg { width: 9px; height: 9px; flex-shrink: 0; }
-  /* Dark card variant */
-  .next-event-card .map-links { gap: 0.5rem; margin-top: 0.5rem; }
-  .next-event-card .map-link {
-    font-size: 0.65rem; padding: 0.3rem 0.7rem; border-radius: 6px;
-    color: rgba(247,244,237,0.7);
-    background: rgba(247,244,237,0.08); border: 1.5px solid rgba(247,244,237,0.2);
-  }
-  .next-event-card .map-link:hover { background: rgba(247,244,237,0.15); border-color: rgba(247,244,237,0.45); color: #fff; }
-  .next-event-card .map-link svg { width: 10px; height: 10px; }
 
   /* ── NO EVENTS CTA ── */
   .no-events-cta { text-align: center; padding: 3rem 1rem; }
@@ -699,16 +400,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .past-toggle-arrow { font-size: 0.55rem; transition: transform 0.2s; display: inline-block; }
   .past-toggle.open .past-toggle-arrow { transform: rotate(180deg); }
   #pastList { display: none; margin-top: 1.25rem; }
-
-  /* ── SKELETON LOADER ── */
-  .skeleton-card { background: white; border: 2px solid #e0dcd4; border-radius: 12px; padding: 1.5rem 1.75rem; display: flex; align-items: center; gap: 1.5rem; }
-  .skel { background: linear-gradient(90deg, #e8e4dc 25%, #f0ece4 50%, #e8e4dc 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
-  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-  .skel-date { width: 72px; height: 80px; border-radius: 8px; flex-shrink: 0; }
-  .skel-body { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-  .skel-title { height: 22px; width: 55%; }
-  .skel-meta  { height: 14px; width: 80%; }
-  .skel-tags  { height: 14px; width: 35%; }
 
   /* ── RSVP MODAL ── */
   .modal-overlay {
@@ -758,7 +449,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .eb-register:hover { background: #e54e28; }
   .eb-powered { text-align: center; font-size: 0.6rem; color: #999; padding: 0 1rem 0.75rem; }
   .modal-foot { font-size: 0.65rem; color: rgba(247,244,237,0.3); text-align: center; }
-  .no-more-events { text-align: center; padding: 2.5rem 1rem; color: var(--gray); font-size: 0.85rem; font-weight: 700; }
 
   /* ── EVENTS FOOTER ── */
   .events-footer {
@@ -787,8 +477,5 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .hero-title { font-size: clamp(4rem, 14vw, 5.5rem); }
     .page-header-band { padding: 1.25rem 1.5rem; }
     .events-page { padding: 2rem 1.25rem 4rem; }
-    .event-card { grid-template-columns: 60px 1fr; }
-    .event-cta { grid-column: 1 / -1; display: flex; justify-content: flex-start; padding-top: 0.25rem; }
-    .event-card.past .event-cta { display: none; }
   }
 </style>

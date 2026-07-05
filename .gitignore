@@ -13,3 +13,14 @@ dist/
 
 # Astro type generation cache
 .astro/
+
+# Claude Code session memory (machine-local)
+.claude/
+
+# Agent skills, lock, and superpowers specs (tooling, not project files)
+.agents/
+skills-lock.json
+docs/superpowers/
+
+# macOS metadata
+.DS_Store
