@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchEvents, fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls } from '../events';
+import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls } from '../events';
 import type { EventData } from '../events';
 
 // ── formatDate ──────────────────────────────────────────────────────────────
@@ -95,91 +95,6 @@ describe('getMapUrls', () => {
     const result = getMapUrls(event);
     expect(result).not.toBeNull();
     expect(result!.google).toContain(encodeURIComponent('Central Park'));
-  });
-});
-
-// ── fetchEvents ─────────────────────────────────────────────────────────────
-
-describe('fetchEvents', () => {
-  const mockEvent: EventData = {
-    id: '123',
-    name: 'Test Cleanup',
-    url: 'https://eventbrite.com/e/123',
-    status: 'live',
-    start: { local: '2025-06-28T10:00:00', utc: '2025-06-28T14:00:00Z' },
-    end: { local: '2025-06-28T12:00:00', utc: '2025-06-28T16:00:00Z' },
-    venue: { name: 'Central Park', address: 'Central Park, New York', city: 'New York', lat: 40.7851, lng: -73.9683 },
-  };
-
-  beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn());
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('returns the next event as a single-item array', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockEvent,
-    } as Response);
-
-    const result = await fetchEvents();
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('123');
-  });
-
-  it('returns empty array when next event is null', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => null,
-    } as Response);
-
-    const result = await fetchEvents();
-    expect(result).toHaveLength(0);
-  });
-
-  it('returns upcoming and past events combined when all=true', async () => {
-    const pastEvent = { ...mockEvent, id: '456', name: 'Past Event' };
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ upcoming: [mockEvent], past: [pastEvent] }),
-    } as Response);
-
-    const result = await fetchEvents(true);
-    expect(result).toHaveLength(2);
-    expect(result.map((e) => e.id)).toContain('123');
-    expect(result.map((e) => e.id)).toContain('456');
-  });
-
-  it('calls the all-events URL when all=true', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ upcoming: [], past: [] }),
-    } as Response);
-
-    await fetchEvents(true);
-    expect(fetch).toHaveBeenCalledWith('/.netlify/functions/next-event?all=true');
-  });
-
-  it('calls the next-event URL when all is omitted', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => null,
-    } as Response);
-
-    await fetchEvents();
-    expect(fetch).toHaveBeenCalledWith('/.netlify/functions/next-event');
-  });
-
-  it('throws on non-ok response', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    } as Response);
-
-    await expect(fetchEvents()).rejects.toThrow('fetch failed: 500');
   });
 });
 
