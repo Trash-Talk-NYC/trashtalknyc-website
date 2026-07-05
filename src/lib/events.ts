@@ -113,20 +113,6 @@ export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[];
   };
 }
 
-export async function fetchEvents(all?: boolean): Promise<EventData[]> {
-  const url = all
-    ? '/.netlify/functions/next-event?all=true'
-    : '/.netlify/functions/next-event';
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-  const data = await res.json() as unknown;
-  if (all) {
-    const { upcoming = [], past = [] } = data as { upcoming?: EventData[]; past?: EventData[] };
-    return [...upcoming, ...past];
-  }
-  return data ? [data as EventData] : [];
-}
-
 export function formatDate(iso: string, lang: Lang): string {
   return new Date(iso).toLocaleDateString(
     lang === 'es' ? 'es-419' : 'en-US',
