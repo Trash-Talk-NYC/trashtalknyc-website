@@ -706,6 +706,12 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     box-shadow: 0 4px 18px rgba(155,93,229,0.35);
   }
 
+  .btn-eb-rsvp:disabled {
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
+  }
+
   /* Donate box */
   .donate-box {
     background: #fff;
@@ -1555,8 +1561,9 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     el.textContent = Math.max(1, parseInt(el.textContent, 10) + delta);
   }
 
-  function initWidgets() {
+  function initWidgets(skipEl) {
     document.querySelectorAll('[data-event-id]').forEach(function(btn) {
+      if (skipEl && btn === skipEl) return;
       var id = btn.getAttribute('data-event-id');
       if (!id || !btn.id || btn.dataset.widgetInit) return;
       btn.dataset.widgetInit = '1';
@@ -1638,19 +1645,37 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    initWidgets();
-
+    var dcBtn = document.getElementById('dcRsvpBtn');
     var hasCoords = document.querySelector('#dcEventsData .dc-event-data[data-lat]');
-    if (hasCoords && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          var nearest = findNearestEvent(pos.coords.latitude, pos.coords.longitude);
-          if (nearest) renderDcEvent(nearest);
-        },
-        function() { /* denied/unavailable — keep the next-upcoming-event fallback already rendered */ },
-        { timeout: 6000 },
-      );
+    var deferDc = !!(dcBtn && hasCoords && navigator.geolocation);
+
+    initWidgets(deferDc ? dcBtn : null);
+    if (!deferDc) return;
+
+    var origEn = dcBtn.getAttribute('data-en');
+    var origEs = dcBtn.getAttribute('data-es');
+    var isEs = typeof window.getCurrentLang === 'function' && window.getCurrentLang() === 'es';
+    dcBtn.disabled = true;
+    dcBtn.setAttribute('data-en', 'Loading…');
+    dcBtn.setAttribute('data-es', 'Cargando…');
+    dcBtn.textContent = isEs ? 'Cargando…' : 'Loading…';
+
+    function settleDc(nearest) {
+      if (nearest) renderDcEvent(nearest);
+      dcBtn.setAttribute('data-en', origEn);
+      dcBtn.setAttribute('data-es', origEs);
+      dcBtn.textContent = (typeof window.getCurrentLang === 'function' && window.getCurrentLang() === 'es') ? origEs : origEn;
+      dcBtn.disabled = false;
+      initWidgets();
     }
+
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        settleDc(findNearestEvent(pos.coords.latitude, pos.coords.longitude));
+      },
+      function() { settleDc(null); /* denied/unavailable — keep the next-upcoming-event fallback already rendered */ },
+      { timeout: 6000 },
+    );
   });
 </script>
 
