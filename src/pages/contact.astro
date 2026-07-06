@@ -1,8 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { actions } from 'astro:actions';
 ---
 
 <BaseLayout title="Contact — Trash Talk NYC">
+
+  <PageHero eyebrowEn="Contact" eyebrowEs="Contacto">
+    <span data-en="TALK TO" data-es="HABLA CON">TALK TO</span><br /><span class="accent" data-en="TRASH TALK" data-es="TRASH TALK">TRASH TALK</span>
+  </PageHero>
+
   <section class="contact-section">
     <div class="contact-inner">
       <div class="form-wrap">
@@ -24,28 +31,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <p data-en="We'll get back to you as soon as we can." data-es="Te responderemos lo antes posible.">We'll get back to you as soon as we can.</p>
         </div>
 
-        <form id="contactForm">
+        <form id="contactForm" method="POST" action={actions.contact}>
           <input type="hidden" name="botcheck" value="" />
+          <input type="hidden" name="startedAt" id="contactStartedAt" value="" />
+          <input type="hidden" name="inquiryType" id="inquiryType" value="general" />
 
           <div class="form-row">
             <div class="form-group">
               <label for="fname" data-en="First name *" data-es="Nombre *">First name *</label>
-              <input type="text" id="fname" name="fname" required placeholder="Jane" data-placeholder-en="Jane" data-placeholder-es="Jane" />
+              <input type="text" id="fname" name="fname" required placeholder="Jane" autocomplete="given-name" data-placeholder-en="Jane" data-placeholder-es="Jane" />
             </div>
             <div class="form-group">
               <label for="lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
-              <input type="text" id="lname" name="lname" required placeholder="Doe" data-placeholder-en="Doe" data-placeholder-es="Doe" />
+              <input type="text" id="lname" name="lname" required placeholder="Doe" autocomplete="family-name" data-placeholder-en="Doe" data-placeholder-es="Doe" />
             </div>
           </div>
 
           <div class="form-group">
             <label for="email" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
-            <input type="email" id="email" name="email" required placeholder="jane@example.com" data-placeholder-en="jane@example.com" data-placeholder-es="jane@ejemplo.com" />
+            <input type="email" id="email" name="email" required placeholder="jane@example.com" autocomplete="email" data-placeholder-en="jane@example.com" data-placeholder-es="jane@ejemplo.com" />
           </div>
 
           <div class="form-group" id="orgGroup" hidden>
             <label for="organization" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
-            <input type="text" id="organization" name="organization" />
+            <input type="text" id="organization" name="organization" autocomplete="organization" />
           </div>
 
           <div class="form-group">
@@ -62,7 +71,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <style>
   .contact-section {
-    padding: 4rem 2rem;
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
   }
 
   .contact-inner {
@@ -72,9 +81,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .form-wrap {
     background: #fff;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     border: 1.5px solid var(--cream);
-    padding: 2.5rem 2rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3.5vw, 2rem);
     text-align: center;
   }
 
@@ -96,12 +105,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1.5px solid var(--cream);
     border-radius: 8px;
     padding: 0.65rem 1rem;
+    min-height: var(--tap);
     font-family: 'Nunito', sans-serif;
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--gray);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
   }
 
   .contact-tab:hover {
@@ -117,7 +127,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .form-heading {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.9rem;
+    font-size: var(--step-2);
     letter-spacing: 0.04em;
     color: var(--charcoal);
     margin-bottom: 0.5rem;
@@ -136,8 +146,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .form-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 0 1rem;
   }
 
   .form-group label {
@@ -150,14 +160,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin-bottom: 0.4rem;
   }
 
+  /* 16px input text so iOS Safari doesn't zoom the page on focus */
   .form-group input,
   .form-group textarea {
     width: 100%;
     padding: 0.7rem 0.9rem;
+    min-height: var(--tap);
     border: 1.5px solid var(--cream);
     border-radius: 8px;
     font-family: 'Nunito', sans-serif;
-    font-size: 0.92rem;
+    font-size: 1rem;
     color: var(--charcoal);
     background: var(--off-white);
     transition: border-color 0.15s;
@@ -177,6 +189,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .form-submit {
     width: 100%;
     padding: 0.85rem 1.5rem;
+    min-height: 52px;
     background: var(--yellow);
     color: var(--charcoal);
     border: none;
@@ -218,14 +231,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--gray);
     font-size: 0.9rem;
   }
-
-  @media (max-width: 600px) {
-    .form-row { grid-template-columns: 1fr; }
-    .form-wrap { padding: 1.75rem 1.25rem; }
-  }
 </style>
 
 <script>
+  import { actions } from 'astro:actions';
   import { getCurrentLang, onLanguageChange } from '../lib/language';
 
   const form = document.getElementById('contactForm') as HTMLFormElement | null;
@@ -233,10 +242,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const successDiv = document.getElementById('formSuccess') as HTMLElement | null;
   const orgGroup = document.getElementById('orgGroup') as HTMLElement | null;
   const orgInput = document.getElementById('organization') as HTMLInputElement | null;
+  const inquiryTypeInput = document.getElementById('inquiryType') as HTMLInputElement | null;
   const tabGeneral = document.getElementById('tabGeneral') as HTMLButtonElement | null;
   const tabPartnership = document.getElementById('tabPartnership') as HTMLButtonElement | null;
   const headingEl = document.getElementById('formHeading') as HTMLElement | null;
   const introEl = document.getElementById('formIntro') as HTMLElement | null;
+  const startedAtInput = document.getElementById('contactStartedAt') as HTMLInputElement | null;
+
+  if (startedAtInput) startedAtInput.value = String(Date.now());
 
   type ContactType = 'general' | 'partnership';
   let currentType: ContactType = 'general';
@@ -255,12 +268,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     },
   };
 
-  function getLang(): 'en' | 'es' {
-    return getCurrentLang();
-  }
-
   function applyCopy() {
-    const c = copy[currentType][getLang()];
+    const c = copy[currentType][getCurrentLang()];
     if (headingEl) headingEl.textContent = c.heading;
     if (introEl) introEl.textContent = c.intro;
   }
@@ -274,6 +283,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     if (orgGroup) orgGroup.hidden = type !== 'partnership';
     if (orgInput) orgInput.required = type === 'partnership';
+    if (inquiryTypeInput) inquiryTypeInput.value = type;
 
     applyCopy();
   }
@@ -291,35 +301,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (!form || !btn || !successDiv) return;
 
     btn.disabled = true;
-    btn.textContent = 'Sending…';
+    btn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Sending…';
 
-    const fd = new FormData(form);
-    const payload = {
-      formType: currentType === 'partnership' ? 'partnership' : 'contact',
-      fname: fd.get('fname') as string,
-      lname: fd.get('lname') as string,
-      email: fd.get('email') as string,
-      message: fd.get('message') as string,
-      organization: fd.get('organization') as string | null ?? undefined,
-    };
+    const { error } = await actions.contact(new FormData(form));
 
-    try {
-      const res = await fetch('/.netlify/functions/submit-form', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json() as { success: boolean };
-      if (data.success) {
-        form.style.display = 'none';
-        successDiv.style.display = 'block';
-      } else {
-        btn.disabled = false;
-        btn.textContent = btn.getAttribute('data-en') ?? 'Send message →';
-      }
-    } catch {
-      btn.disabled = false;
-      btn.textContent = btn.getAttribute('data-en') ?? 'Send message →';
+    if (!error) {
+      form.style.display = 'none';
+      successDiv.style.display = 'block';
+      return;
     }
+
+    btn.disabled = false;
+    btn.textContent = getCurrentLang() === 'es'
+      ? btn.getAttribute('data-es') ?? 'Enviar mensaje →'
+      : btn.getAttribute('data-en') ?? 'Send message →';
   });
 </script>

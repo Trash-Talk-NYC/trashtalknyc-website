@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import HeroEventCard from '../components/HeroEventCard.astro';
 import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
-import { formatDate } from '../lib/events';
 
 const { upcoming: upcomingRaw, past: pastRaw } = await fetchEventsAtBuildTime();
 const upcoming = upcomingRaw.map(ev => ({
@@ -28,7 +27,7 @@ const nextEvent = upcoming[0]?.props ?? null;
   </script>
 
   <!-- HERO -->
-  <section class="events-hero">
+  <section class="events-hero diag-texture">
     <div class="events-hero-inner">
 
       <div class="events-hero-left">
@@ -51,6 +50,8 @@ const nextEvent = upcoming[0]?.props ?? null;
 
     </div>
   </section>
+
+  <div class="tape-seam" aria-hidden="true"></div>
 
   <!-- PAGE HEADER BAND -->
   <div class="page-header-band">
@@ -263,61 +264,15 @@ const nextEvent = upcoming[0]?.props ?? null;
     });
   </script>
 
-  <script>
-    import { onLanguageChange } from '../lib/language';
-    import { formatDate } from '../lib/events';
-
-    // Update hero card date text when language switches
-    onLanguageChange((lang) => {
-      const dateEl = document.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
-      if (dateEl) {
-        dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
-      }
-    });
-  </script>
-
-  <!-- Custom footer: flex-column centered with purple-light border -->
-  <footer class="events-footer" slot="footer">
-    <div class="footer-logo">Trash Talk NYC</div>
-    <ul class="footer-links">
-      <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
-      <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-      <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
-      <li><a href="/about" data-en="About" data-es="Nosotros">About</a></li>
-      <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
-    </ul>
-    <ul class="footer-socials">
-      <li>
-        <a href="https://www.instagram.com/trashtalk_nyc/" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-          @trashtalk_nyc
-        </a>
-      </li>
-      <li>
-        <a href="https://www.tiktok.com/@trashtalk_nyc" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>
-          TikTok
-        </a>
-      </li>
-    </ul>
-    <div class="footer-copy">© 2025 Trash Talk NYC</div>
-  </footer>
-
 </BaseLayout>
 
 <style>
   /* ── EVENTS HERO ── */
   .events-hero {
     background: var(--charcoal);
-    position: relative; overflow: hidden;
-    padding: 4rem 3rem 4.5rem;
-    border-bottom: 4px solid var(--yellow);
-  }
-  .events-hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background-image: repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(107,63,160,0.055) 18px, rgba(107,63,160,0.055) 19px);
-    pointer-events: none;
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
   }
   .events-hero::after {
     content: '';
@@ -329,8 +284,9 @@ const nextEvent = upcoming[0]?.props ?? null;
   .events-hero-inner {
     max-width: 1000px; margin: 0 auto;
     position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 4rem; align-items: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    gap: var(--space-lg); align-items: center;
   }
   .hero-page-label {
     font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em;
@@ -340,26 +296,34 @@ const nextEvent = upcoming[0]?.props ?? null;
   .hero-page-label::before { content: ''; display: inline-block; width: 1.25rem; height: 3px; background: var(--purple-light); border-radius: 2px; }
   .hero-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(5rem, 9vw, 8rem);
+    font-size: var(--step-display);
     line-height: 0.88; letter-spacing: 0.02em;
-    color: var(--off-white); margin-bottom: 1.5rem;
+    color: var(--off-white); margin-bottom: 0.5rem;
   }
   .hero-title .accent { color: var(--yellow); display: block; }
   .next-event-card-empty {
     display: flex; align-items: center; justify-content: center;
-    min-height: 200px; color: rgba(247,244,237,0.45);
+    min-height: 200px; color: var(--paper-a55);
     font-size: 0.85rem; font-weight: 600; text-align: center;
-    border: 1px solid rgba(155,93,229,0.2); border-radius: 18px; padding: 2rem;
+    border: 1px solid var(--purple-lt-a30); border-radius: var(--radius-lg); padding: 2rem;
   }
 
   /* ── PAGE HEADER BAND ── */
-  .page-header-band { background: var(--cream); border-bottom: 2px solid #d8d3c8; padding: 1.75rem 3rem; }
+  .page-header-band {
+    background: var(--cream);
+    border-bottom: 2px solid #d8d3c8;
+    padding: var(--space-md) max(var(--gutter), var(--safe-right)) var(--space-md) max(var(--gutter), var(--safe-left));
+  }
   .page-header-band-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 3.5vw, 2.75rem); line-height: 1; letter-spacing: 0.02em; color: var(--charcoal); }
+  .page-header-band .section-title { font-size: var(--step-3); margin-bottom: 0; }
   .eb-badge { background: #f05537; color: #fff; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.22rem 0.6rem; border-radius: 20px; }
 
   /* ── EVENTS LIST ── */
-  .events-page { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+  .events-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
   .events-list { display: flex; flex-direction: column; gap: 0.85rem; }
 
   /* ── DISTANCE SORT ── */
@@ -369,17 +333,18 @@ const nextEvent = upcoming[0]?.props ?? null;
     color: var(--green); margin-bottom: 1rem;
   }
   .dist-sort-label svg { width: 12px; height: 12px; stroke: var(--green); flex-shrink: 0; }
-  .dist-badge {
+  :global(.dist-badge) {
     font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
     color: var(--green); background: rgba(42,107,42,0.1); border: 1px solid rgba(42,107,42,0.25);
     border-radius: 20px; padding: 0.1rem 0.5rem; white-space: nowrap;
   }
 
   /* ── NO EVENTS CTA ── */
-  .no-events-cta { text-align: center; padding: 3rem 1rem; }
+  .no-events-cta { text-align: center; padding: var(--space-lg) 1rem; }
   .no-events-cta p { color: var(--gray); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.25rem; }
   .no-events-cta .eb-cta-btn {
-    display: inline-block; background: var(--yellow); color: var(--charcoal);
+    display: inline-flex; align-items: center; min-height: var(--tap);
+    background: var(--yellow); color: var(--charcoal);
     font-family: 'Space Mono', monospace; font-size: 0.75rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.1em;
     padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; transition: background 0.15s;
@@ -391,8 +356,8 @@ const nextEvent = upcoming[0]?.props ?? null;
   .past-divider-line { flex: 1; height: 1px; background: #ddd; }
   .past-toggle {
     display: inline-flex; align-items: center; gap: 0.45rem;
-    background: none; border: 1.5px solid #d0ccc4; border-radius: 20px;
-    padding: 0.3rem 0.9rem; cursor: pointer;
+    background: none; border: 1.5px solid #d0ccc4; border-radius: 22px;
+    padding: 0.45rem 1rem; min-height: 40px; cursor: pointer;
     font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: var(--gray);
     white-space: nowrap; transition: border-color 0.15s, color 0.15s;
   }
@@ -406,26 +371,29 @@ const nextEvent = upcoming[0]?.props ?? null;
     position: fixed; inset: 0; z-index: 500;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
     display: flex; align-items: center; justify-content: center;
+    padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
     opacity: 0; pointer-events: none;
     transition: opacity 150ms var(--ease-out);
   }
   .modal-overlay.open { opacity: 1; pointer-events: auto; }
   .modal-box {
     background: var(--charcoal); border: 1px solid rgba(155,93,229,0.4);
-    border-radius: 18px; padding: 2rem; width: 100%; max-width: 420px; margin: 1rem;
+    border-radius: var(--radius-lg); padding: clamp(1.25rem, 4vw, 2rem);
+    width: 100%; max-width: 420px;
+    max-height: 100dvh; overflow-y: auto;
     box-shadow: 0 24px 64px rgba(0,0,0,0.5);
   }
   .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
   .modal-event-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.03em; color: var(--off-white); line-height: 1.1; }
   .modal-close {
-    background: rgba(247,244,237,0.08); border: none; color: rgba(247,244,237,0.5);
-    font-size: 1rem; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--paper-a08); border: none; color: var(--paper-a55);
+    font-size: 1rem; width: 40px; height: 40px; border-radius: 50%;
     cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
     transition: background 0.15s, color 0.15s;
   }
-  .modal-close:hover { background: rgba(247,244,237,0.15); color: var(--off-white); }
+  .modal-close:hover { background: var(--paper-a12); color: var(--off-white); }
   .modal-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .modal-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: rgba(247,244,237,0.55); }
+  .modal-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: var(--paper-a55); }
   .modal-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
   .eb-sim { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
   .eb-head { background: #f8623a; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; }
@@ -435,12 +403,13 @@ const nextEvent = upcoming[0]?.props ?? null;
   .eb-ticket-name { font-size: 0.82rem; font-weight: 700; color: #333; }
   .eb-ticket-price { font-size: 0.75rem; color: #666; }
   .eb-qty { display: flex; align-items: center; gap: 0.5rem; }
-  .eb-qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #ccc; background: transparent; font-size: 1rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
+  .eb-qty-btn { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #ccc; background: transparent; font-size: 1rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
   .eb-qty-btn:hover { border-color: #f8623a; color: #f8623a; }
   .eb-qty-num { font-size: 0.85rem; font-weight: 700; color: #333; min-width: 16px; text-align: center; }
   .eb-cta-area { padding: 0.85rem 1rem; }
   .eb-register {
-    display: block; width: 100%; background: #f8623a; color: #fff;
+    display: flex; align-items: center; justify-content: center; width: 100%;
+    background: #f8623a; color: #fff; min-height: 44px;
     font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.1em; padding: 0.7rem;
     border: none; border-radius: 8px; cursor: pointer;
@@ -449,33 +418,4 @@ const nextEvent = upcoming[0]?.props ?? null;
   .eb-register:hover { background: #e54e28; }
   .eb-powered { text-align: center; font-size: 0.6rem; color: #999; padding: 0 1rem 0.75rem; }
   .modal-foot { font-size: 0.65rem; color: rgba(247,244,237,0.3); text-align: center; }
-
-  /* ── EVENTS FOOTER ── */
-  .events-footer {
-    background: var(--charcoal);
-    padding: 2.5rem 2rem;
-    display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
-    border-top: 3px solid var(--purple-light);
-    text-align: center;
-  }
-  .events-footer .footer-links { justify-content: center; }
-  .events-footer .footer-links a { color: rgba(247,244,237,0.45); }
-  .events-footer .footer-links a:hover { color: var(--yellow); }
-  .events-footer .footer-socials {
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba(247,244,237,0.1);
-    width: 100%; justify-content: center;
-  }
-  .events-footer .footer-socials a { color: rgba(247,244,237,0.45); }
-  .events-footer .footer-socials a:hover { color: var(--yellow); }
-  .events-footer .footer-copy { font-size: 0.7rem; color: rgba(247,244,237,0.22); }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    .events-hero { padding: 3rem 1.5rem 3.5rem; }
-    .events-hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
-    .hero-title { font-size: clamp(4rem, 14vw, 5.5rem); }
-    .page-header-band { padding: 1.25rem 1.5rem; }
-    .events-page { padding: 2rem 1.25rem 4rem; }
-  }
 </style>

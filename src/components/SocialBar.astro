@@ -1,0 +1,51 @@
+---
+/**
+ * Purple strip above the nav pointing at club socials.
+ * Hidden on small screens (decision: docs/decisions — mobile keeps
+ * chrome minimal; socials remain reachable in the footer).
+ */
+import SocialLinks from './SocialLinks.astro';
+---
+
+<div class="social-bar">
+  <span class="social-bar-text" data-en="Keep up with club socials" data-es="Síguenos en redes">Keep up with club socials</span>
+  <div class="social-bar-divider" aria-hidden="true"></div>
+  <SocialLinks />
+</div>
+
+<style>
+  .social-bar {
+    background: var(--purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    padding: 0.45rem max(var(--gutter), var(--safe-right)) 0.45rem max(var(--gutter), var(--safe-left));
+    flex-wrap: wrap;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+
+  .social-bar :global(.social-link:hover) { opacity: 0.75; }
+
+  .social-bar-text {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .social-bar-divider {
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Mobile keeps top chrome minimal; socials stay in the footer */
+  @media (max-width: 768px) {
+    .social-bar { display: none; }
+  }
+</style>

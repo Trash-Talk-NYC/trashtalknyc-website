@@ -46,14 +46,18 @@ Current behavior:
 
 ## Forms
 
+Both forms submit through Astro Actions (`src/actions/index.ts`) running as an on-demand Netlify function via `@astrojs/netlify`.
+Each action validates with zod, runs spam heuristics (honeypot + timing + content patterns), rate limits per IP via Netlify Blobs, and upserts the submitter as a Brevo contact with a raw `fetch()` call (no Brevo SDK).
+Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign.
+
 Volunteer form:
-- Web3Forms
+- Home page `#signup` → Brevo list `signups_list` (`BREVO_LIST_ID_SIGNUP`)
+- Message-style fields land as Brevo contact attributes (BOROUGH, PHONE, EXPERIENCE, HEAR_ABOUT) — these attributes must exist in Brevo before go-live
 
 Contact form:
-- Web3Forms
-- Single page (`/contact`), tabbed: General / Partnerships
-- Both tabs share one Web3Forms access key — recipients are identical for both, differentiated only by the `subject` field ("New Contact Message" vs. "New Partnership Inquiry")
-- No dedicated partnerships inbox exists; routes to the same recipients as General Contact below
+- Single page (`/contact`), tabbed: General / Collaborate → Brevo list via `BREVO_LIST_ID_CONTACT`
+- Tab choice is sent as `inquiryType` (`general` | `partnership`); partnership requires `organization`
+- Message text is stored as a Brevo contact attribute (MESSAGE) — nothing emails the team directly anymore; a transactional-email notification is a known follow-up
 - "Host an Event" as a third inquiry type was considered and deferred — not built
 
 ## Email
@@ -78,7 +82,8 @@ Current contact form recipients:
 ## Data
 
 Current volunteer database:
-- No database per se, Web3Forms routes to Google Sheet that we mail merge according to.
+- Brevo contact lists (form submissions upsert contacts directly; see Forms above).
+- Historical signups live in the old Web3Forms-fed Google Sheet and predate Brevo.
 
 Known pain points:
 - Duplicate emails

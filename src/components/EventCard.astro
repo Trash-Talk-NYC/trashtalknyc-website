@@ -108,10 +108,10 @@ const btnId = `eb-trigger-${id}`;
     background: white;
     border: 2px solid #e0dcd4;
     border-radius: 12px;
-    padding: 1.5rem 1.75rem;
+    padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3.5vw, 1.75rem);
     display: grid;
     grid-template-columns: 72px 1fr auto;
-    gap: 1.5rem;
+    gap: clamp(0.9rem, 2.5vw, 1.5rem);
     align-items: center;
     opacity: 0;
     transform: translateY(8px);
@@ -127,7 +127,7 @@ const btnId = `eb-trigger-${id}`;
   @media (hover: hover) and (pointer: fine) {
     .event-card:hover { border-color: rgba(155,93,229,0.45); box-shadow: 0 3px 18px rgba(107,63,160,0.08); transform: translateY(-1px); }
   }
-  .event-card.upcoming { border-left: 4px solid var(--purple-light); padding-left: calc(1.75rem - 2px); }
+  .event-card.upcoming { border-left: 4px solid var(--purple-light); }
   .event-card.past { opacity: 0.5; animation: none; }
 
   .event-date-block {
@@ -178,9 +178,9 @@ const btnId = `eb-trigger-${id}`;
     display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;
   }
   .btn-card {
-    display: inline-block; font-family: 'Nunito', sans-serif;
+    display: inline-flex; align-items: center; font-family: 'Nunito', sans-serif;
     font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    padding: 0.4rem 1rem; border-radius: 40px; border: 1.5px solid;
+    padding: 0.4rem 1.1rem; min-height: 40px; border-radius: 40px; border: 1.5px solid;
     cursor: pointer; text-decoration: none; background: none;
     transition: background 150ms var(--ease-out), color 150ms var(--ease-out), transform 100ms var(--ease-out);
     white-space: nowrap;

@@ -1,0 +1,54 @@
+---
+/**
+ * Compact dark page header used by secondary pages (About, Contact).
+ * Pass the eyebrow via props; the heading goes in the default slot so
+ * pages control line breaks and accent spans.
+ */
+interface Props {
+  eyebrowEn: string;
+  eyebrowEs: string;
+}
+
+const { eyebrowEn, eyebrowEs } = Astro.props;
+---
+
+<section class="page-hero diag-texture">
+  <div class="page-hero-inner">
+    <p class="page-hero-eyebrow" data-en={eyebrowEn} data-es={eyebrowEs}>{eyebrowEn}</p>
+    <h1><slot /></h1>
+  </div>
+</section>
+
+<div class="tape-seam" aria-hidden="true"></div>
+
+<style>
+  .page-hero {
+    background: var(--charcoal);
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-hero-inner { position: relative; z-index: 1; }
+
+  .page-hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: rgba(247, 244, 237, 0.45);
+    margin-bottom: 1rem;
+  }
+
+  .page-hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-4);
+    color: var(--off-white);
+    letter-spacing: 0.06em;
+    line-height: 1.05;
+  }
+
+  .page-hero h1 :global(.accent) { color: var(--yellow); }
+</style>
