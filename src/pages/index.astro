@@ -40,6 +40,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 <section class="hero" id="top">
   <div class="hero-text">
     <div class="hero-eyebrow" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
+    <h1 class="sr-only">Trash Talk NYC</h1>
     <img src="/assets/logo-v1.jpg" alt="Trash Talk NYC" class="hero-logo" width="472" height="328" />
     <div class="hero-btns">
       <a href="#signup" class="btn-primary" data-en="Join" data-es="Únete">Join</a>
@@ -411,6 +412,18 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     height: auto;
     display: block;
     margin-bottom: 0.75rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .hero-sub {
@@ -1547,10 +1560,15 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
       var id = btn.getAttribute('data-event-id');
       if (!id || !btn.id || btn.dataset.widgetInit) return;
       btn.dataset.widgetInit = '1';
+      if (btn._ebFallbackHandler) {
+        btn.removeEventListener('click', btn._ebFallbackHandler);
+        btn._ebFallbackHandler = null;
+      }
       if (!isLocalhost && window.EBWidgets) {
         window.EBWidgets.createWidget({ widgetType: 'checkout', eventId: id, modal: true, modalTriggerElementId: btn.id });
       } else {
-        btn.addEventListener('click', function() { openModal(btn); });
+        btn._ebFallbackHandler = function() { openModal(btn); };
+        btn.addEventListener('click', btn._ebFallbackHandler);
       }
     });
   }
