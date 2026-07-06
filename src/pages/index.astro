@@ -1,26 +1,50 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroEventCard from '../components/HeroEventCard.astro';
-import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
+import { fetchEventsAtBuildTime, formatDate, formatTime } from '../lib/events';
 
 const { upcoming } = await fetchEventsAtBuildTime();
-const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
+
+const deepCleanEvents = upcoming.map((ev) => {
+  const startIso = ev.start.local || ev.start.utc;
+  const endIso = ev.end.local || ev.end.utc;
+  const location = ev.venue ? (ev.venue.name || '') + (ev.venue.city ? `, ${ev.venue.city}` : '') : '';
+  return {
+    id: ev.id,
+    name: ev.name,
+    url: ev.url,
+    startIso,
+    endIso,
+    dateStr: formatDate(startIso, 'en'),
+    timeStr: `${formatTime(startIso, 'en')} – ${formatTime(endIso, 'en')}`,
+    location,
+    lat: ev.venue?.lat ?? undefined,
+    lng: ev.venue?.lng ?? undefined,
+  };
+});
+const defaultEvent = deepCleanEvents[0] ?? null;
+const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != null);
 ---
 
 <BaseLayout title="Trash Talk NYC — Community Cleanup">
+
+<!-- Load Eventbrite widget JS early; skipped on localhost so local dev doesn't depend on it -->
+<script is:inline>
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    var s = document.createElement('script');
+    s.src = 'https://www.eventbrite.com/static/widgets/eb_widgets.js';
+    document.head.appendChild(s);
+  }
+</script>
 
 <!-- HERO -->
 <section class="hero" id="top">
   <div class="hero-text">
     <div class="hero-eyebrow" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
-    <h1 class="hero-title">
-      <span>Trash</span>
-      <span class="accent">Talk</span>
-      <span class="city">NYC</span>
-    </h1>
+    <h1 class="sr-only">Trash Talk NYC</h1>
+    <img src="/assets/primary-logo.png" alt="Trash Talk NYC" class="hero-logo" width="400" height="400" />
     <div class="hero-btns">
       <a href="#signup" class="btn-primary" data-en="Join" data-es="Únete">Join</a>
-      <a href="#events" class="btn-secondary" data-en="Next Club Event →" data-es="Próximo Evento del Club →">Next Club Event →</a>
+      <a href="#deep-clean" class="btn-secondary" data-en="Next Club Event →" data-es="Próximo Evento del Club →">Next Club Event →</a>
     </div>
   </div>
 
@@ -35,83 +59,98 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
         <line x1="60" y1="30" x2="60" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
       </svg>
     </div>
-    <div class="hero-gfm">
-      <div class="gfm-embed-wrap">
+  </div>
+</section>
+
+<!-- BENTO: DEEP CLEAN + DONATE -->
+<section class="bento">
+  <div class="bento-inner">
+
+    <div class="bento-box deepclean-box" id="deep-clean">
+      <div class="bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
+      {defaultEvent ? (
+        <div class="dc-body" id="dcBody">
+          <div class="dc-eyebrow">
+            <span class="pulse-dot"></span>
+            <span data-en="Nearest cleanup" data-es="Limpieza más cercana">Nearest cleanup</span>
+          </div>
+          <h3 class="dc-event-name" id="dcEventName">{defaultEvent.name}</h3>
+          <div class="dc-meta">
+            <div class="dc-meta-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span class="hero-date-text" id="dcDate" data-start-iso={defaultEvent.startIso}>{defaultEvent.dateStr}</span>
+            </div>
+            <div class="dc-meta-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span id="dcTime">{defaultEvent.timeStr}</span>
+            </div>
+            <div class="dc-meta-row" id="dcLocRow" style={defaultEvent.location ? '' : 'display:none'}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="dcLoc">{defaultEvent.location}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn-eb-rsvp"
+            id="dcRsvpBtn"
+            data-event-id={defaultEvent.id}
+            data-url={defaultEvent.url}
+            data-name={defaultEvent.name}
+            data-date={defaultEvent.dateStr}
+            data-time={defaultEvent.timeStr}
+            data-loc={defaultEvent.location}
+            data-en="RSVP →" data-es="Regístrate →"
+          >
+            RSVP &rarr;
+          </button>
+        </div>
+      ) : (
+        <div class="dc-fallback">
+          <span data-en="No upcoming events right now — follow" data-es="No hay eventos próximos — síguenos en">No upcoming events right now — follow</span>
+          {' '}<a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
+          <span data-en="for updates." data-es="para actualizaciones.">for updates.</span>
+        </div>
+      )}
+      {hasEventCoords && (
+        <div id="dcEventsData" hidden>
+          {deepCleanEvents.map((ev) => (
+            <div
+              class="dc-event-data"
+              data-event-id={ev.id}
+              data-url={ev.url}
+              data-name={ev.name}
+              data-date={ev.dateStr}
+              data-time={ev.timeStr}
+              data-loc={ev.location}
+              data-start-iso={ev.startIso}
+              data-lat={ev.lat}
+              data-lng={ev.lng}
+            ></div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div class="bento-box donate-box" id="donate">
+      <div class="bento-label" data-en="Donate" data-es="Donar">Donate</div>
+      <h3 class="donate-title" data-en="We are crushing it." data-es="Lo estamos logrando.">We are crushing it.</h3>
+      <div class="gfm-widget-wrap">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
+      <a href="/about" class="donate-subtle-link" data-en="Where does our money go?" data-es="¿A dónde va nuestro dinero?">Where does our money go?</a>
     </div>
+
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="how" id="how">
-  <div class="how-inner">
-    <div class="section-label" data-en="The process" data-es="El proceso">The process</div>
-    <h2 class="section-title" data-en="How it works" data-es="Cómo funciona">How it works</h2>
-
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <div class="step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
-            <rect x="9" y="3" width="6" height="4" rx="1"/>
-            <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
-          </svg>
-        </div>
-        <h2 data-en="Join the club" data-es="Únete al club">Join the club</h2>
-        <p data-en="Fill out a quick form below." data-es="Llena el formulario">Fill out a quick form.</p>
-      </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <div class="step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8v-1a2 2 0 0 1 2-2h.5"/>
-          </svg>
-        </div>
-        <h2 data-en="Attend club events" data-es="Asiste a eventos del club">Attend club events</h2>
-        <p data-en="Cleanups &amp; socials — all across NYC." data-es="Limpiezas y sociales por toda NYC.">Cleanups &amp; socials — all across NYC.</p>
-      </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <div class="step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-        </div>
-        <h2 data-en="Bring your friends and family!" data-es="¡Trae a tus amigos y familia!">Bring your friends and family!</h2>
-        <p data-en="Club events are gratifying, impactful, and social. Don't gatekeep." data-es="Los eventos del club son gratificantes, impactantes y sociales. No te los guardes.">Club events are gratifying, impactful, and social. Don't gatekeep.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- NEXT EVENT -->
-<section class="events-section" id="events">
-  <div class="events-inner" id="eventsInner">
-    {nextEvent ? (
-      <>
-        <HeroEventCard {...nextEvent} />
-        <div class="events-see-all">
-          <a href="/events" data-en="Can't make this one? See all club events →" data-es="¿No puedes? Ve todos los eventos →">Can't make this one? See all club events →</a>
-        </div>
-      </>
-    ) : (
-      <div class="events-fallback">
-        <span data-en="No upcoming events right now — follow" data-es="No hay eventos próximos — síguenos en">No upcoming events right now — follow</span>
-        {' '}<a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
-        <span data-en="for updates." data-es="para actualizaciones.">for updates.</span>
-      </div>
-    )}
-  </div>
-</section>
+<!-- CAN'T ATTEND CTA -->
+<div class="cant-attend-cta">
+  <a href="#signup" class="cant-attend-link">
+    <span class="cta-arrow" aria-hidden="true">&darr;</span>
+    <span data-en="Can't attend just yet?" data-es="¿Aún no puedes asistir?">Can't attend just yet?</span>
+    <span class="cta-arrow" aria-hidden="true">&darr;</span>
+  </a>
+</div>
 
 <!-- SIGNUP -->
 <section class="signup" id="signup">
@@ -222,45 +261,57 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
   </div>
 </section>
 
-<!-- GOFUNDME -->
-<section class="gfm-section" id="donate">
-  <div class="gfm-inner">
-    <h2 class="section-title" data-en="We are crushing it." data-es="Lo estamos logrando.">We are crushing it.</h2>
-    <p data-en="Every dollar goes directly toward cleanup supplies, equipment, and organizing future events across all five boroughs." data-es="Cada dólar va directamente a materiales de limpieza, equipo y organización de eventos futuros en los cinco condados.">Every dollar goes directly toward cleanup supplies, equipment, and organizing future events across all five boroughs.</p>
-
-    <div class="gfm-widget-wrap">
-      <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
+<!-- RSVP MODAL: fallback on localhost; Eventbrite widget used in production -->
+<div class="modal-overlay" id="rsvpModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-event-name" id="modalEventName"></div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
     </div>
+    <div class="modal-meta">
+      <div class="modal-meta-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="modalDate"></span>
+      </div>
+      <div class="modal-meta-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="modalTime"></span>
+      </div>
+      <div class="modal-meta-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="modalLoc"></span>
+      </div>
+    </div>
+    <div class="eb-sim">
+      <div class="eb-head">
+        <span class="eb-logo">eventbrite</span>
+        <span class="eb-secure">🔒 Secure checkout</span>
+      </div>
+      <div class="eb-ticket">
+        <div>
+          <div class="eb-ticket-name">General Admission</div>
+          <div class="eb-ticket-price">Free</div>
+        </div>
+        <div class="eb-qty">
+          <button class="eb-qty-btn" onclick="adjQty(-1)">−</button>
+          <span class="eb-qty-num" id="modalQty">1</span>
+          <button class="eb-qty-btn" onclick="adjQty(1)">+</button>
+        </div>
+      </div>
+      <div class="eb-cta-area">
+        <a class="eb-register" id="modalRegisterBtn" href="#" target="_blank" rel="noopener">Register Now</a>
+      </div>
+      <div class="eb-powered">Powered by Eventbrite</div>
+    </div>
+    <div class="modal-foot">Checkout handled securely by Eventbrite</div>
   </div>
-</section>
+</div>
 
 <script defer src="https://www.gofundme.com/static/js/embed.js"></script>
 </BaseLayout>
 
 <style is:global>
   /* ── SHARED SECTION UTILITIES ── */
-  .section-label {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--purple);
-    margin-bottom: 0.6rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .section-label::before {
-    content: '';
-    display: inline-block;
-    width: 1.25rem;
-    height: 3px;
-    background: var(--purple-light);
-    border-radius: 2px;
-  }
-
   .section-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(2.5rem, 5vw, 4rem);
@@ -334,30 +385,24 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
     border-radius: 2px;
   }
 
-  .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(5rem, 9.5vw, 9rem);
-    line-height: 0.9;
-    color: var(--off-white);
-    margin-bottom: 0.2rem;
-    letter-spacing: 0.02em;
-  }
-
-  .hero-title .accent { color: var(--yellow); display: block; }
-
-  .hero-title .city {
-    -webkit-text-stroke: 2px var(--purple-light);
-    color: transparent;
+  .hero-logo {
+    width: clamp(280px, 34vw, 460px);
+    height: auto;
     display: block;
+    margin-bottom: 0.75rem;
+    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.45));
   }
 
-  .hero-sub {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: rgba(247,244,237,0.65);
-    margin: 1.5rem 0 2.5rem;
-    max-width: 390px;
-    line-height: 1.75;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .hero-btns {
@@ -426,296 +471,90 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
   }
   .hero-big-emoji svg { width: 100%; height: 100%; }
 
-  .hero-gfm {
-    display: none;
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: 420px;
-  }
-  .hero-gfm .gfm-embed-wrap {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 32px rgba(107,63,160,0.18);
-    padding: 1.5rem;
-    overflow: hidden;
-  }
   @media (min-width: 1024px) {
-    .hero-gfm { display: block; }
     .hero-big-emoji { opacity: 0.05; }
   }
 
-  .hero-cards {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 2rem;
-  }
-
-  .stat-card {
-    background: rgba(247,244,237,0.06);
-    border: 1px solid rgba(155,93,229,0.3);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
-    min-width: 220px;
-    transition: border-color 0.2s, background 0.2s;
-  }
-
-  .stat-card:hover {
-    background: rgba(155,93,229,0.12);
-    border-color: var(--purple-light);
-  }
-
-  .stat-card .num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3rem;
-    color: var(--yellow);
-    line-height: 1;
-  }
-
-  .stat-card .label {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: rgba(247,244,237,0.5);
-    margin-top: 0.2rem;
-  }
-
-  /* ── HOW IT WORKS ── */
-  .how {
+  /* ── BENTO: DEEP CLEAN + DONATE ── */
+  .bento {
     padding: 4.5rem 4rem;
     background: var(--off-white);
   }
 
-  .how-inner { max-width: 1100px; margin: 0 auto; }
-
-  .steps {
+  .bento-inner {
+    max-width: 1100px;
+    margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 0;
-    margin-top: 3rem;
-    border: 2.5px solid var(--charcoal);
-    border-radius: 12px;
-    overflow: hidden;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.75rem;
+    align-items: stretch;
   }
 
-  .step {
-    padding: 2.5rem 2rem;
-    background: var(--off-white);
-    border-right: 2.5px solid var(--charcoal);
-    position: relative;
-    transition: background 0.2s;
+  .bento-box {
+    border-radius: 18px;
+    padding: 2.25rem 2rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 380px;
   }
 
-  .step:last-child { border-right: none; }
-
-  .step:hover { background: var(--purple-pale); }
-
-  .step-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 5rem;
-    line-height: 1;
-    color: rgba(107,63,160,0.1);
-    position: absolute;
-    top: 0.75rem;
-    right: 1.25rem;
+  .bento-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
 
-  .step-icon { width: 2.25rem; height: 2.25rem; margin-bottom: 1rem; color: var(--purple); }
-  .step-icon svg { width: 100%; height: 100%; }
-
-  .step h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    letter-spacing: 0.03em;
-    color: var(--charcoal);
+  .bento-label::before {
+    content: '';
+    display: inline-block;
+    width: 1.25rem;
+    height: 3px;
+    border-radius: 2px;
   }
 
-  .step p { font-size: 0.9rem; color: #555; line-height: 1.65; }
-
-  /* ── HOTSPOTS ── */
-  .hotspots {
-    padding: 6rem 4rem;
+  /* Deep Clean box */
+  .deepclean-box {
     background: var(--charcoal);
     color: var(--off-white);
     position: relative;
     overflow: hidden;
   }
 
-  .hotspots::before {
+  .deepclean-box::after {
     content: '';
     position: absolute;
-    left: -10%;
-    bottom: -10%;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(ellipse at center, rgba(107,63,160,0.2) 0%, transparent 65%);
+    right: -10%;
+    top: -20%;
+    width: 60%;
+    height: 80%;
+    background: radial-gradient(ellipse at center, rgba(107,63,160,0.25) 0%, transparent 65%);
     pointer-events: none;
   }
 
-  .hotspots-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+  .deepclean-box .bento-label { color: var(--purple-light); }
+  .deepclean-box .bento-label::before { background: var(--purple-light); }
 
-  .hotspots .section-label { color: var(--purple-light); }
-  .hotspots .section-label::before { background: var(--purple-light); }
-  .hotspots .section-title { color: var(--off-white); }
-
-  .map-links { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
-  .map-link {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-    color: rgba(247,244,237,0.7); text-decoration: none;
-    background: rgba(247,244,237,0.08); border: 1.5px solid rgba(247,244,237,0.2); border-radius: 6px;
-    padding: 0.35rem 0.75rem; transition: background 0.15s, border-color 0.15s, color 0.15s;
-    white-space: nowrap;
-  }
-  .map-link:hover { background: rgba(247,244,237,0.15); border-color: rgba(247,244,237,0.45); color: #fff; }
-  .map-link svg { width: 11px; height: 11px; flex-shrink: 0; }
-
-  .map-cta-btn {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    background: rgba(155,93,229,0.1);
-    border: 1.5px solid rgba(155,93,229,0.4);
-    border-radius: 10px;
-    padding: 1.25rem 1.75rem;
-    margin-bottom: 2rem;
-    text-decoration: none;
-    transition: background 0.2s, border-color 0.2s;
-    cursor: pointer;
-  }
-
-  .map-cta-btn:hover {
-    background: rgba(155,93,229,0.2);
-    border-color: var(--purple-light);
-  }
-
-  .map-cta-icon { font-size: 1.75rem; flex-shrink: 0; }
-
-  .map-cta-text {
+  .dc-body {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
     flex: 1;
   }
 
-  .map-cta-text strong {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.25rem;
-    color: var(--yellow);
-    letter-spacing: 0.03em;
-  }
-
-  .map-cta-text span {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: rgba(247,244,237,0.5);
-  }
-
-  .map-cta-arrow { font-size: 1.5rem; color: var(--purple-light); flex-shrink: 0; }
-
-  .hotspot-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 12px;
-    margin-top: 0;
-  }
-
-  .hotspot-card {
-    padding: 1.75rem 1.5rem;
-    border: 1.5px solid rgba(247,244,237,0.12);
-    border-radius: 10px;
-    transition: background 0.2s, border-color 0.2s;
-    cursor: default;
-    background: rgba(247,244,237,0.03);
-  }
-
-  .hotspot-card:hover {
-    background: rgba(155,93,229,0.12);
-    border-color: rgba(155,93,229,0.5);
-  }
-
-  .hotspot-letter {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-bottom: 0.6rem;
-    color: var(--purple-light);
-  }
-  .hotspot-letter svg { width: 100%; height: 100%; }
-
-  .hotspot-name {
-    font-size: 0.82rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--off-white);
-    margin-bottom: 0.25rem;
-  }
-
-  .hotspot-area { font-size: 0.8rem; font-weight: 600; color: rgba(247,244,237,0.42); }
-
-  .hotspot-badge {
-    display: inline-block;
-    margin-top: 0.9rem;
-    font-size: 0.65rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.22rem 0.6rem;
-    background: rgba(155,93,229,0.18);
-    color: var(--purple-light);
-    border: 1px solid rgba(155,93,229,0.4);
-    border-radius: 20px;
-  }
-
-  /* ── EVENTS SECTION ── */
-  .events-section {
-    padding: 0;
-    background: var(--charcoal);
-    position: relative;
-    overflow: hidden;
-    border-bottom: 4px solid var(--yellow);
-  }
-
-  .events-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(107,63,160,0.06) 18px, rgba(107,63,160,0.06) 19px);
-    pointer-events: none;
-  }
-
-  .events-section::after {
-    content: '';
-    position: absolute;
-    right: -5%; top: -20%;
-    width: 40vw; height: 140%;
-    background: radial-gradient(ellipse at center, rgba(107,63,160,0.22) 0%, transparent 65%);
-    pointer-events: none;
-  }
-
-  .events-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 5rem 4rem;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 3rem;
-    align-items: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .events-eyebrow {
-    font-size: 0.68rem;
+  .dc-eyebrow {
+    font-size: 0.62rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.2em;
     color: var(--yellow);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -734,80 +573,47 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
     50% { opacity: 0.35; transform: scale(0.65); }
   }
 
-  .events-name {
+  .dc-event-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.9rem, 3.5vw, 3rem);
-    color: var(--off-white);
-    line-height: 1;
+    font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+    line-height: 1.05;
+    margin-bottom: 1rem;
     letter-spacing: 0.02em;
-    margin-bottom: 0.9rem;
   }
 
-  .events-name span { color: var(--yellow); }
-
-  .events-meta {
+  .dc-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
   }
 
-  .events-chip {
+  .dc-meta-row {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.78rem;
+    gap: 0.5rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: rgba(247,244,237,0.65);
   }
 
-  .events-chip svg {
-    width: 13px; height: 13px;
-    color: var(--purple-light);
-    flex-shrink: 0;
+  .dc-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
+
+  .dc-fallback {
+    color: rgba(247,244,237,0.55);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.7;
+    margin-top: auto;
+    position: relative;
+    z-index: 1;
   }
 
-  .events-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 1rem;
-    flex-shrink: 0;
-  }
-
-  .countdown-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .cd-unit { text-align: center; }
-
-  .cd-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.75rem;
-    color: var(--off-white);
-    line-height: 1;
-    display: block;
-  }
-
-  .cd-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.5rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: rgba(247,244,237,0.3);
-    display: block;
-  }
-
-  .cd-sep {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    color: rgba(247,244,237,0.2);
-    margin-top: -6px;
-  }
+  .dc-fallback a { color: var(--purple-light); text-decoration: underline; }
 
   .btn-eb-rsvp {
+    margin-top: auto;
+    align-self: flex-start;
     background: var(--yellow);
     color: var(--charcoal);
     font-family: 'Nunito', sans-serif;
@@ -832,69 +638,131 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
     box-shadow: 0 4px 18px rgba(155,93,229,0.35);
   }
 
-  .events-see-all {
-    grid-column: 1 / -1;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(247,244,237,0.1);
-    display: flex;
-    justify-content: flex-end;
+  .btn-eb-rsvp:disabled {
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
   }
 
-  .events-see-all a {
-    color: rgba(247,244,237,0.5);
-    font-size: 0.78rem;
-    font-weight: 700;
+  /* Donate box */
+  .donate-box {
+    background: #fff;
+    border: 2px solid var(--cream);
+    box-shadow: 0 4px 32px rgba(107,63,160,0.08);
+  }
+
+  .donate-box .bento-label { color: var(--purple); }
+  .donate-box .bento-label::before { background: var(--purple-light); }
+
+  .donate-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+    color: var(--charcoal);
+    line-height: 1.05;
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.02em;
+  }
+
+  .donate-box .gfm-widget-wrap {
+    flex: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .donate-subtle-link {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--gray);
+    text-decoration: none;
+    align-self: flex-start;
+    margin-top: auto;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .donate-subtle-link:hover { color: var(--purple); border-color: var(--purple-light); }
+
+  /* ── CAN'T ATTEND CTA ── */
+  .cant-attend-cta {
+    background: var(--off-white);
+    padding: 0 2rem 3.5rem;
+    text-align: center;
+  }
+
+  .cant-attend-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    color: var(--charcoal);
     text-decoration: none;
     transition: color 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
   }
 
-  .events-see-all a:hover { color: var(--yellow); }
+  .cant-attend-link:hover { color: var(--purple); }
 
-  .events-loading {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: rgba(247,244,237,0.35);
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 2rem 0;
-  }
-
-  .events-loading span {
-    width: 6px; height: 6px;
-    background: currentColor;
-    border-radius: 50%;
-    animation: loadDot 1.2s ease-in-out infinite;
-  }
-
-  .events-loading span:nth-child(2) { animation-delay: 0.2s; }
-  .events-loading span:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes loadDot {
-    0%,100% { opacity: 0.2; transform: scale(0.7); }
-    50% { opacity: 1; transform: scale(1); }
-  }
-
-  .events-fallback {
-    grid-column: 1 / -1;
-    color: rgba(247,244,237,0.45);
-    font-size: 0.88rem;
-    font-weight: 600;
-    padding: 2rem 0;
-  }
-
-  .events-fallback a {
+  .cta-arrow {
+    font-size: 1.1rem;
     color: var(--purple-light);
-    text-decoration: underline;
+    transition: transform 0.15s;
+    display: inline-block;
   }
+
+  .cant-attend-link:hover .cta-arrow { transform: translateY(3px); }
+
+  /* ── RSVP MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 150ms var(--ease-out);
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal-box {
+    background: var(--charcoal); border: 1px solid rgba(155,93,229,0.4);
+    border-radius: 18px; padding: 2rem; width: 100%; max-width: 420px; margin: 1rem;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+  .modal-event-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.03em; color: var(--off-white); line-height: 1.1; }
+  .modal-close {
+    background: rgba(247,244,237,0.08); border: none; color: rgba(247,244,237,0.5);
+    font-size: 1rem; width: 30px; height: 30px; border-radius: 50%;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .modal-close:hover { background: rgba(247,244,237,0.15); color: var(--off-white); }
+  .modal-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .modal-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: rgba(247,244,237,0.55); }
+  .modal-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
+  .eb-sim { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
+  .eb-head { background: #f8623a; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; }
+  .eb-logo { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.85rem; color: #fff; letter-spacing: -0.02em; }
+  .eb-secure { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.85); }
+  .eb-ticket { padding: 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0ece4; }
+  .eb-ticket-name { font-size: 0.82rem; font-weight: 700; color: #333; }
+  .eb-ticket-price { font-size: 0.75rem; color: #666; }
+  .eb-qty { display: flex; align-items: center; gap: 0.5rem; }
+  .eb-qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #ccc; background: transparent; font-size: 1rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
+  .eb-qty-btn:hover { border-color: #f8623a; color: #f8623a; }
+  .eb-qty-num { font-size: 0.85rem; font-weight: 700; color: #333; min-width: 16px; text-align: center; }
+  .eb-cta-area { padding: 0.85rem 1rem; }
+  .eb-register {
+    display: block; width: 100%; background: #f8623a; color: #fff;
+    font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.1em; padding: 0.7rem;
+    border: none; border-radius: 8px; cursor: pointer;
+    text-decoration: none; text-align: center; transition: background 0.15s;
+  }
+  .eb-register:hover { background: #e54e28; }
+  .eb-powered { text-align: center; font-size: 0.6rem; color: #999; padding: 0 1rem 0.75rem; }
+  .modal-foot { font-size: 0.65rem; color: rgba(247,244,237,0.3); text-align: center; }
 
   /* ── SIGNUP ── */
   .signup {
@@ -940,41 +808,7 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
 
   .form-wrap { width: 100%; text-align: left; }
 
-  .signup .section-label { color: rgba(247,244,237,0.6); }
-  .signup .section-label::before { background: rgba(247,244,237,0.6); }
   .signup .section-title { color: var(--off-white); }
-
-  .signup-desc {
-    color: rgba(247,244,237,0.78);
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.8;
-    margin-top: 0.75rem;
-  }
-
-  .signup-meta {
-    margin-top: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .meta-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: rgba(247,244,237,0.65);
-  }
-
-  .meta-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--yellow);
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
 
   /* ── BOROUGH PICKER ── */
   .borough-picker {
@@ -1035,14 +869,6 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
     box-shadow: 0 8px 40px rgba(0,0,0,0.25);
   }
 
-  .form-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.75rem;
-    margin-bottom: 1.75rem;
-    letter-spacing: 0.03em;
-    color: var(--charcoal);
-  }
-
   .form-group { margin-bottom: 1.2rem; }
 
   .form-group label {
@@ -1094,31 +920,6 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-  }
-
-  .checkbox-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.4rem;
-  }
-
-  .checkbox-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .checkbox-row input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    padding: 0;
-    cursor: pointer;
-    accent-color: var(--purple);
-    flex-shrink: 0;
   }
 
   .form-optional { font-size: 0.7rem; color: var(--gray); margin-left: 0.2rem; font-weight: 400; }
@@ -1198,15 +999,6 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
     accent-color: var(--purple);
   }
 
-  .form-note {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--gray);
-    margin-top: 0.75rem;
-    text-align: center;
-    line-height: 1.5;
-  }
-
   /* ── SUCCESS STATE ── */
   .form-success {
     display: none;
@@ -1225,227 +1017,6 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
 
   .form-success p { font-size: 0.9rem; color: #555; line-height: 1.6; font-weight: 600; }
 
-  /* ── IG CTA ── */
-  .ig-cta {
-    padding: 4.5rem 4rem;
-    background: var(--yellow);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ig-cta::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(107,63,160,0.07) 12px, rgba(107,63,160,0.07) 13px);
-    pointer-events: none;
-  }
-
-  .ig-cta .big-text {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    line-height: 1.05;
-    color: var(--charcoal);
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ig-cta .ig-handle {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--purple);
-    text-decoration: none;
-    border-bottom: 3px solid var(--purple);
-    padding-bottom: 0.1rem;
-    letter-spacing: 0.05em;
-    transition: opacity 0.15s;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ig-cta .ig-handle:hover { opacity: 0.65; }
-
-  /* ── GOFUNDME SECTION ── */
-  .gfm-section {
-    background: var(--cream);
-    padding: 5rem 2rem;
-    text-align: center;
-  }
-
-  .gfm-inner {
-    max-width: 680px;
-    margin: 0 auto;
-  }
-
-  .gfm-section .section-label {
-    margin-bottom: 0.75rem;
-  }
-
-  .gfm-section .section-title {
-    margin-bottom: 1rem;
-  }
-
-  .gfm-section p {
-    color: var(--gray);
-    font-size: 1rem;
-    margin-bottom: 2rem;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .gfm-widget-wrap {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 32px rgba(107,63,160,0.13);
-    padding: 2rem;
-    max-width: 500px;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-
-  /* ── LITTER MAP TEASER ── */
-  .map-teaser {
-    position: relative;
-    height: 460px;
-    overflow: hidden;
-    background: var(--charcoal);
-  }
-
-  .map-teaser-bg {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-  }
-  .map-teaser-bg img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center top;
-    opacity: 0.18;
-    filter: saturate(0.5) brightness(0.8);
-  }
-
-  .map-teaser-bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
-    pointer-events: none;
-  }
-
-  .map-teaser-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      160deg,
-      rgba(28,28,34,0.55) 0%,
-      rgba(107,63,160,0.12) 50%,
-      rgba(28,28,34,0.7) 100%
-    );
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1.1rem;
-    z-index: 2;
-  }
-
-  .map-teaser-badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.62rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.22em;
-    color: var(--yellow);
-    border: 1.5px solid rgba(245,208,0,0.35);
-    border-radius: 30px;
-    padding: 0.38rem 1.1rem;
-    background: rgba(245,208,0,0.07);
-    animation: pulseBadge 2.8s ease-in-out infinite;
-  }
-
-  @keyframes pulseBadge {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
-  }
-
-  .map-teaser-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.8rem, 6vw, 5rem);
-    line-height: 0.95;
-    color: var(--off-white);
-    letter-spacing: 0.03em;
-    text-align: center;
-  }
-
-  .map-teaser-title span {
-    color: var(--purple-light);
-  }
-
-  .map-teaser-sub {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: rgba(247,244,237,0.45);
-    text-align: center;
-    letter-spacing: 0.04em;
-    max-width: 340px;
-    line-height: 1.7;
-  }
-
-  .map-teaser-pins {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  .map-pin {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #e74c3c;
-    border: 2px solid rgba(255,255,255,0.3);
-    box-shadow: 0 0 0 0 rgba(231,76,60,0.5);
-    animation: pingPin 2.5s ease-out infinite;
-  }
-
-  .map-pin::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid #e74c3c;
-  }
-
-  @keyframes pingPin {
-    0%   { box-shadow: 0 0 0 0 rgba(231,76,60,0.55); }
-    70%  { box-shadow: 0 0 0 10px rgba(231,76,60,0); }
-    100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
-  }
-
-  .map-pin:nth-child(2) { animation-delay: 0.6s; }
-  .map-pin:nth-child(3) { animation-delay: 1.1s; }
-  .map-pin:nth-child(4) { animation-delay: 1.7s; }
-  .map-pin:nth-child(5) { animation-delay: 0.3s; }
-  .map-pin:nth-child(6) { animation-delay: 2.0s; }
-
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -1453,10 +1024,8 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
   }
 
   .hero-eyebrow { animation: fadeUp 0.5s ease both; }
-  .hero-title   { animation: fadeUp 0.5s 0.1s ease both; }
-  .hero-sub     { animation: fadeUp 0.5s 0.2s ease both; }
+  .hero-logo    { animation: fadeUp 0.5s 0.1s ease both; }
   .hero-btns    { animation: fadeUp 0.5s 0.3s ease both; }
-  .hero-cards   { animation: fadeUp 0.5s 0.4s ease both; }
 
   /* ── MOBILE (768px) — index-specific overrides ── */
   @media (max-width: 768px) {
@@ -1468,26 +1037,19 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
 
     .hero-text { padding: 3.5rem 1.5rem 2rem; }
     .hero-visual { display: none; }
+    .hero-logo { width: min(75vw, 320px); }
 
-    .how { padding: 4rem 1.5rem; }
+    .bento { padding: 3rem 1.5rem; }
+    .bento-inner { grid-template-columns: 1fr; gap: 1.25rem; }
+    .bento-box { min-height: 0; }
 
-    .steps { grid-template-columns: 1fr; }
-    .step { border-right: none; border-bottom: 2.5px solid var(--charcoal); }
-    .step:last-child { border-bottom: none; }
-
-    .hotspots { padding: 4rem 1.5rem; }
-    .hotspot-grid { grid-template-columns: 1fr 1fr; }
-
-    .events-inner { grid-template-columns: 1fr; padding: 2.5rem 1.5rem; gap: 1.5rem; }
-    .events-right { align-items: flex-start; flex-direction: row; flex-wrap: wrap; gap: 1.25rem; }
+    .cant-attend-cta { padding: 0 1.5rem 2.5rem; }
 
     .signup { padding: 4rem 1.5rem; }
     .signup-inner { grid-template-columns: 1fr; gap: 3rem; }
 
     .form-wrap { padding: 1.75rem 1.25rem; }
     .form-row { grid-template-columns: 1fr; }
-
-    .ig-cta { padding: 3rem 1.5rem; }
   }
 
   @media (max-width: 480px) {
@@ -1503,6 +1065,150 @@ const nextEvent = upcoming[0] ? toEventCardProps(upcoming[0]) : null;
     el.classList.add('selected');
     document.getElementById('borough').value = el.getAttribute('data-borough');
   }
+</script>
+
+<!-- is:inline required: openModal/closeModal/adjQty are called from onclick attributes on the RSVP modal -->
+<script is:inline>
+  var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+  function openModal(btn) {
+    document.getElementById('modalEventName').textContent = btn.getAttribute('data-name') || '';
+    document.getElementById('modalDate').textContent      = btn.getAttribute('data-date') || '';
+    document.getElementById('modalTime').textContent      = btn.getAttribute('data-time') || '';
+    document.getElementById('modalLoc').textContent       = btn.getAttribute('data-loc')  || '';
+    document.getElementById('modalQty').textContent       = '1';
+    var reg = document.getElementById('modalRegisterBtn');
+    if (reg) reg.href = btn.getAttribute('data-url') || '#';
+    document.getElementById('rsvpModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('rsvpModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function adjQty(delta) {
+    var el = document.getElementById('modalQty');
+    el.textContent = Math.max(1, parseInt(el.textContent, 10) + delta);
+  }
+
+  function initWidgets(skipEl) {
+    document.querySelectorAll('[data-event-id]').forEach(function(btn) {
+      if (skipEl && btn === skipEl) return;
+      var id = btn.getAttribute('data-event-id');
+      if (!id || !btn.id || btn.dataset.widgetInit) return;
+      btn.dataset.widgetInit = '1';
+      if (btn._ebFallbackHandler) {
+        btn.removeEventListener('click', btn._ebFallbackHandler);
+        btn._ebFallbackHandler = null;
+      }
+      if (!isLocalhost && window.EBWidgets) {
+        window.EBWidgets.createWidget({ widgetType: 'checkout', eventId: id, modal: true, modalTriggerElementId: btn.id });
+      } else {
+        btn._ebFallbackHandler = function() { openModal(btn); };
+        btn.addEventListener('click', btn._ebFallbackHandler);
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+  // ── DEEP CLEAN: nearest-event lookup via geolocation, falls back to the next upcoming event ──
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    var R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function findNearestEvent(lat, lng) {
+    var container = document.getElementById('dcEventsData');
+    if (!container) return null;
+    var candidates = Array.from(container.querySelectorAll('.dc-event-data[data-lat][data-lng]'));
+    if (!candidates.length) return null;
+
+    var nearest = null, nearestDist = Infinity;
+    candidates.forEach(function(el) {
+      var d = haversineKm(lat, lng, parseFloat(el.dataset.lat), parseFloat(el.dataset.lng));
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearest = el;
+      }
+    });
+    if (!nearest) return null;
+    return {
+      eventId: nearest.dataset.eventId,
+      url: nearest.dataset.url,
+      name: nearest.dataset.name,
+      date: nearest.dataset.date,
+      time: nearest.dataset.time,
+      loc: nearest.dataset.loc,
+      startIso: nearest.dataset.startIso,
+    };
+  }
+
+  function renderDcEvent(data) {
+    var btn = document.getElementById('dcRsvpBtn');
+    if (!btn || !data || btn.getAttribute('data-event-id') === data.eventId) return;
+
+    document.getElementById('dcEventName').textContent = data.name;
+    var dateEl = document.getElementById('dcDate');
+    dateEl.textContent = data.date;
+    if (data.startIso) dateEl.setAttribute('data-start-iso', data.startIso);
+    document.getElementById('dcTime').textContent = data.time;
+
+    var locRow = document.getElementById('dcLocRow');
+    var locSpan = document.getElementById('dcLoc');
+    if (data.loc) {
+      if (locSpan) locSpan.textContent = data.loc;
+      if (locRow) locRow.style.display = '';
+    } else if (locRow) {
+      locRow.style.display = 'none';
+    }
+
+    btn.setAttribute('data-event-id', data.eventId);
+    btn.setAttribute('data-url', data.url);
+    btn.setAttribute('data-name', data.name);
+    btn.setAttribute('data-date', data.date);
+    btn.setAttribute('data-time', data.time);
+    btn.setAttribute('data-loc', data.loc);
+    delete btn.dataset.widgetInit;
+    initWidgets();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var dcBtn = document.getElementById('dcRsvpBtn');
+    var hasCoords = document.querySelector('#dcEventsData .dc-event-data[data-lat]');
+    var deferDc = !!(dcBtn && hasCoords && navigator.geolocation);
+
+    initWidgets(deferDc ? dcBtn : null);
+    if (!deferDc) return;
+
+    var origEn = dcBtn.getAttribute('data-en');
+    var origEs = dcBtn.getAttribute('data-es');
+    var isEs = typeof window.getCurrentLang === 'function' && window.getCurrentLang() === 'es';
+    dcBtn.disabled = true;
+    dcBtn.setAttribute('data-en', 'Loading…');
+    dcBtn.setAttribute('data-es', 'Cargando…');
+    dcBtn.textContent = isEs ? 'Cargando…' : 'Loading…';
+
+    function settleDc(nearest) {
+      if (nearest) renderDcEvent(nearest);
+      dcBtn.setAttribute('data-en', origEn);
+      dcBtn.setAttribute('data-es', origEs);
+      dcBtn.textContent = (typeof window.getCurrentLang === 'function' && window.getCurrentLang() === 'es') ? origEs : origEn;
+      dcBtn.disabled = false;
+      initWidgets();
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        settleDc(findNearestEvent(pos.coords.latitude, pos.coords.longitude));
+      },
+      function() { settleDc(null); /* denied/unavailable — keep the next-upcoming-event fallback already rendered */ },
+      { timeout: 6000 },
+    );
+  });
 </script>
 
 <script>
