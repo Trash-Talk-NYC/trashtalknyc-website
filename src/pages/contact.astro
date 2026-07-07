@@ -300,6 +300,7 @@ import { actions } from 'astro:actions';
     e.preventDefault();
     if (!form || !btn || !successDiv) return;
 
+    const originalText = btn.textContent ?? '';
     btn.disabled = true;
     btn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Sending…';
 
@@ -311,9 +312,18 @@ import { actions } from 'astro:actions';
       return;
     }
 
-    btn.disabled = false;
     btn.textContent = getCurrentLang() === 'es'
-      ? btn.getAttribute('data-es') ?? 'Enviar mensaje →'
-      : btn.getAttribute('data-en') ?? 'Send message →';
+      ? '¡Algo salió mal! Inténtalo de nuevo.'
+      : 'Something went wrong — please try again.';
+    btn.style.background = '#c0392b';
+    btn.style.borderColor = '#c0392b';
+    btn.style.color = '#fff';
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 3500);
   });
 </script>
