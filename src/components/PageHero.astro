@@ -1,20 +1,24 @@
 ---
 /**
- * Compact dark page header used by secondary pages (About, Contact).
- * Pass the eyebrow via props; the heading goes in the default slot so
- * pages control line breaks and accent spans.
+ * Dark poster-style page header used by secondary pages (About, Contact).
+ * A giant outlined word sits behind the heading; the eyebrow is a tilted
+ * sticker chip. Pass the heading in the default slot so pages control
+ * line breaks and accent spans.
  */
 interface Props {
   eyebrowEn: string;
   eyebrowEs: string;
+  /** Oversized outlined word rendered behind the heading (decorative). */
+  word: string;
 }
 
-const { eyebrowEn, eyebrowEs } = Astro.props;
+const { eyebrowEn, eyebrowEs, word } = Astro.props;
 ---
 
 <section class="page-hero diag-texture">
+  <div class="page-hero-word" aria-hidden="true">{word}</div>
   <div class="page-hero-inner">
-    <p class="page-hero-eyebrow" data-en={eyebrowEn} data-es={eyebrowEs}>{eyebrowEn}</p>
+    <p class="sticker page-hero-eyebrow" data-en={eyebrowEn} data-es={eyebrowEs}>{eyebrowEn}</p>
     <h1><slot /></h1>
   </div>
 </section>
@@ -24,22 +28,33 @@ const { eyebrowEn, eyebrowEs } = Astro.props;
 <style>
   .page-hero {
     background: var(--charcoal);
-    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
     text-align: center;
     position: relative;
     overflow: hidden;
   }
 
+  .page-hero-word {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(6rem, 24vw, 20rem);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--purple-lt-a30);
+    user-select: none;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
   .page-hero-inner { position: relative; z-index: 1; }
 
   .page-hero-eyebrow {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.62rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.22em;
-    color: rgba(247, 244, 237, 0.45);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .page-hero h1 {
@@ -48,6 +63,7 @@ const { eyebrowEn, eyebrowEs } = Astro.props;
     color: var(--off-white);
     letter-spacing: 0.06em;
     line-height: 1.05;
+    text-shadow: 4px 4px 0 rgba(107, 63, 160, 0.55);
   }
 
   .page-hero h1 :global(.accent) { color: var(--yellow); }

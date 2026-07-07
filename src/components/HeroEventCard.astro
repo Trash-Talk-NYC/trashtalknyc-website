@@ -13,7 +13,7 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
 ---
 
 <div class="next-event-card" data-start={startIso}>
-  <div class="card-eyebrow">
+  <div class="sticker card-eyebrow">
     <span class="pulse-dot"></span>
     <span data-en="Next club event" data-es="Próximo evento">Next club event</span>
   </div>
@@ -132,28 +132,25 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
 </script>
 
 <style>
+  /* Bulletin card: light card pinned onto the dark hero, sticker label
+     over the top edge, hard press shadow */
   .next-event-card {
-    background: rgba(247,244,237,0.04);
-    border: 1px solid rgba(155,93,229,0.3);
-    border-radius: 18px;
-    padding: clamp(1.25rem, 3.5vw, 2rem) clamp(1.25rem, 4vw, 2.25rem);
+    background: var(--off-white);
+    border: 2.5px solid var(--charcoal);
+    border-radius: var(--radius-md);
+    padding: clamp(1.75rem, 3.5vw, 2.25rem) clamp(1.25rem, 4vw, 2.25rem) clamp(1.25rem, 3.5vw, 2rem);
     position: relative;
-    overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(155,93,229,0.2), 0 0 0 1px rgba(155,93,229,0.08);
-  }
-  .next-event-card::after {
-    content: '';
-    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--yellow) 40%, transparent);
+    box-shadow: 6px 6px 0 var(--purple-light);
+    color: var(--charcoal);
   }
 
   .card-eyebrow {
-    font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em;
-    color: var(--yellow); margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 0.5rem;
+    position: absolute;
+    top: -1rem;
+    left: 1.25rem;
   }
   .pulse-dot {
-    width: 7px; height: 7px; background: var(--yellow); border-radius: 50%;
+    width: 7px; height: 7px; background: var(--charcoal); border-radius: 50%;
     display: inline-block; flex-shrink: 0;
     animation: pulseDot 1.6s ease-in-out infinite;
   }
@@ -161,69 +158,73 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.3; transform: scale(0.55); }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-dot { animation: none; }
+  }
 
   .card-event-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
-    color: var(--off-white); line-height: 1; letter-spacing: 0.02em; margin-bottom: 1.1rem;
+    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+    color: var(--charcoal); line-height: 1; letter-spacing: 0.02em; margin-bottom: 1.1rem;
   }
 
   .card-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
   .card-meta-row {
     display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.75rem; font-weight: 700; color: rgba(247,244,237,0.55);
+    font-size: 0.78rem; font-weight: 700; color: var(--gray);
   }
-  .card-meta-row svg { width: 12px; height: 12px; color: var(--purple-light); flex-shrink: 0; }
+  .card-meta-row svg { width: 12px; height: 12px; color: var(--purple); flex-shrink: 0; }
 
   .map-links { gap: 0.5rem; margin-top: 0.5rem; }
   .map-link {
     font-size: 0.65rem; padding: 0.5rem 0.8rem; border-radius: 6px; min-height: 36px;
-    color: rgba(247,244,237,0.7);
-    background: rgba(247,244,237,0.08); border: 1.5px solid rgba(247,244,237,0.2);
+    color: var(--charcoal);
+    background: #fff; border: 1.5px solid var(--charcoal);
     display: inline-flex; align-items: center; gap: 0.2rem;
     text-decoration: none; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-    white-space: nowrap; transition: background 0.15s, border-color 0.15s, color 0.15s;
+    white-space: nowrap; box-shadow: 2px 2px 0 var(--warm-gray);
+    transition: box-shadow 0.15s, transform 0.15s, color 0.15s;
   }
-  .map-link:hover { background: rgba(247,244,237,0.15); border-color: rgba(247,244,237,0.45); color: #fff; }
+  .map-link:hover { color: var(--purple); transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--warm-gray); }
   .map-link svg { width: 10px; height: 10px; flex-shrink: 0; }
 
   .card-countdown {
     display: flex; align-items: center; gap: 0.5rem;
     margin-bottom: 1.5rem; padding: 0.85rem 1rem;
-    background: rgba(247,244,237,0.04);
-    border: 1px solid rgba(247,244,237,0.07); border-radius: 10px;
+    background: var(--charcoal);
+    border-radius: 8px;
   }
   .cd-label-top {
     font-size: 0.55rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em;
-    color: rgba(247,244,237,0.25); margin-right: auto; white-space: nowrap;
+    color: var(--paper-a55); margin-right: auto; white-space: nowrap;
   }
   .cd-unit { text-align: center; min-width: 36px; }
   .cd-num {
     font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem;
-    color: var(--off-white); line-height: 1; display: block;
+    color: var(--yellow); line-height: 1; display: block;
   }
   .cd-sub {
     font-family: 'Space Mono', monospace; font-size: 0.44rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.14em;
-    color: rgba(247,244,237,0.28); display: block; margin-top: 1px;
+    color: var(--paper-a55); display: block; margin-top: 1px;
   }
   .cd-sep {
     font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
-    color: rgba(247,244,237,0.15); margin-top: -4px; align-self: flex-start; padding-top: 2px;
+    color: var(--paper-a35); margin-top: -4px; align-self: flex-start; padding-top: 2px;
   }
 
   .btn-rsvp {
     background: var(--yellow); color: var(--charcoal);
     font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.14em;
-    padding: 0.7rem 1.4rem; border: 2px solid var(--yellow); border-radius: 8px;
+    padding: 0.7rem 1.4rem; border: 2.5px solid var(--charcoal); border-radius: 6px;
     cursor: pointer; white-space: nowrap; text-decoration: none;
     display: inline-flex; align-items: center; justify-content: center; min-height: 48px;
-    transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 160ms var(--ease-out);
-    box-shadow: 0 3px 14px rgba(245,208,0,0.22);
+    box-shadow: 4px 4px 0 var(--charcoal);
+    transition: transform 120ms var(--ease-out), box-shadow 160ms var(--ease-out);
   }
   @media (hover: hover) and (pointer: fine) {
-    .btn-rsvp:hover { background: var(--purple-light); border-color: var(--purple-light); color: #fff; box-shadow: 0 5px 20px rgba(155,93,229,0.3); transform: translateY(-1px); }
-    .btn-rsvp:active { transform: scale(0.97); transition-duration: 80ms; }
+    .btn-rsvp:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--charcoal); }
+    .btn-rsvp:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--charcoal); transition-duration: 80ms; }
   }
 </style>

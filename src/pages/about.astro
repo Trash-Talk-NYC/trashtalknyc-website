@@ -6,7 +6,7 @@ import SocialLinks from '../components/SocialLinks.astro';
 
 <BaseLayout title="About — Trash Talk NYC" showSocialBar={false}>
 
-  <PageHero eyebrowEn="About" eyebrowEs="Sobre Nosotros">
+  <PageHero eyebrowEn="About" eyebrowEs="Sobre Nosotros" word="ABOUT">
     <span data-en="WE KEEP" data-es="MANTENEMOS">WE KEEP</span><br /><span class="accent" data-en="NYC CLEAN" data-es="NYC LIMPIA">NYC CLEAN</span>
   </PageHero>
 
@@ -22,7 +22,7 @@ import SocialLinks from '../components/SocialLinks.astro';
       </div>
 
       <div class="david-text">
-        <div class="david-name" id="davidName">David</div>
+        <div class="david-name" id="davidName"><mark>David</mark></div>
         <div class="david-role" id="davidRole" data-en="Organizer" data-es="Organizador">Organizer</div>
         <div class="david-divider" id="davidDivider"></div>
 
@@ -90,54 +90,62 @@ import SocialLinks from '../components/SocialLinks.astro';
     .david-photo { max-width: min(280px, 70vw); }
   }
 
+  /* Polaroid treatment: white frame with a deep bottom lip, tilted,
+     pinned to the page with two tape strips */
   .david-photo {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
     position: relative;
-    background: var(--cream);
+    background: #fff;
     border: 1px solid #d8d3c8;
-    box-shadow: 0 2px 4px rgba(28, 28, 34, 0.04), 0 8px 24px rgba(28, 28, 34, 0.08), 0 24px 48px rgba(28, 28, 34, 0.06);
+    border-radius: 4px;
+    padding: 0.7rem 0.7rem 3rem;
+    box-shadow: var(--press);
     opacity: 0;
-    transform: translateY(24px) scale(0.97);
+    transform: rotate(-2deg) translateY(24px) scale(0.97);
     transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
   }
 
-  .david-photo.visible { opacity: 1; transform: translateY(0) scale(1); }
+  .david-photo.visible { opacity: 1; transform: rotate(-2deg) translateY(0) scale(1); }
+
+  .david-photo::before,
+  .david-photo::after {
+    content: '';
+    position: absolute;
+    top: -0.8rem;
+    width: 4.5rem;
+    height: 1.6rem;
+    background: rgba(245, 208, 0, 0.75);
+    border: 1px solid rgba(201, 169, 0, 0.4);
+  }
+
+  .david-photo::before { left: 8%; transform: rotate(-6deg); }
+  .david-photo::after { right: 8%; transform: rotate(5deg); }
 
   .david-photo img {
     width: 100%;
-    height: 100%;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
     object-position: center 20%;
     display: block;
-    transition: transform 600ms var(--ease-out);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .david-photo:hover img { transform: scale(1.03); }
   }
 
   .david-tag {
     position: absolute;
-    bottom: 1rem;
-    left: 1rem;
-    background: var(--yellow);
+    bottom: 0.85rem;
+    left: 50%;
+    background: transparent;
     color: var(--charcoal);
     font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 0.3rem 0.7rem;
-    border-radius: 6px;
+    letter-spacing: 0.18em;
     opacity: 0;
-    transform: translateY(6px);
+    transform: translate(-50%, 6px);
     transition: opacity 300ms 200ms var(--ease-out), transform 300ms 200ms var(--ease-out);
   }
 
-  .david-photo.visible .david-tag { opacity: 1; transform: translateY(0); }
+  .david-photo.visible .david-tag { opacity: 1; transform: translate(-50%, 0); }
 
   .david-text { padding-top: 0.5rem; }
 
@@ -152,6 +160,13 @@ import SocialLinks from '../components/SocialLinks.astro';
     opacity: 0;
     transform: translateY(16px);
     transition: opacity 440ms 60ms var(--ease-out), transform 440ms 60ms var(--ease-out);
+  }
+
+  /* Marker-highlight swipe behind the name */
+  .david-name mark {
+    color: inherit;
+    background: linear-gradient(transparent 52%, var(--yellow) 52%, var(--yellow) 94%, transparent 94%);
+    padding-inline: 0.08em;
   }
 
   .david-name.visible { opacity: 1; transform: translateY(0); }

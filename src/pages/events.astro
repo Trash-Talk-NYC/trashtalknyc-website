@@ -56,12 +56,13 @@ const nextEvent = upcoming[0]?.props ?? null;
   <!-- PAGE HEADER BAND -->
   <div class="page-header-band">
     <div class="page-header-band-inner">
-      <div class="section-title" data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</div>
+      <div class="sign-plate" data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</div>
       <span class="eb-badge">Eventbrite</span>
     </div>
   </div>
 
   <!-- EVENTS LIST -->
+  <div class="events-page-bg grid-paper">
   <div class="events-page">
 
     <div class="dist-sort-label" id="distSortLabel" style="display:none">
@@ -102,6 +103,7 @@ const nextEvent = upcoming[0]?.props ?? null;
       </div>
     )}
 
+  </div>
   </div>
 
   <!-- RSVP MODAL: fallback on localhost; Eventbrite widget used in production -->
@@ -299,13 +301,14 @@ const nextEvent = upcoming[0]?.props ?? null;
     font-size: var(--step-display);
     line-height: 0.88; letter-spacing: 0.02em;
     color: var(--off-white); margin-bottom: 0.5rem;
+    text-shadow: 5px 5px 0 rgba(107, 63, 160, 0.55);
   }
   .hero-title .accent { color: var(--yellow); display: block; }
   .next-event-card-empty {
     display: flex; align-items: center; justify-content: center;
     min-height: 200px; color: var(--paper-a55);
     font-size: 0.85rem; font-weight: 600; text-align: center;
-    border: 1px solid var(--purple-lt-a30); border-radius: var(--radius-lg); padding: 2rem;
+    border: 2px dashed var(--paper-a35); border-radius: var(--radius-md); padding: 2rem;
   }
 
   /* ── PAGE HEADER BAND ── */
@@ -315,7 +318,7 @@ const nextEvent = upcoming[0]?.props ?? null;
     padding: var(--space-md) max(var(--gutter), var(--safe-right)) var(--space-md) max(var(--gutter), var(--safe-left));
   }
   .page-header-band-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .page-header-band .section-title { font-size: var(--step-3); margin-bottom: 0; }
+  .page-header-band .sign-plate { font-size: var(--step-2); }
   .eb-badge { background: #f05537; color: #fff; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.22rem 0.6rem; border-radius: 20px; }
 
   /* ── EVENTS LIST ── */

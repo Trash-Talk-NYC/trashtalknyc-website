@@ -69,6 +69,11 @@
   /* Minimum touch target (WCAG 2.5.5-ish; applied on coarse pointers) */
   --tap: 44px;
 
+  /* Hard offset "press" shadows — the riso-print/street-poster device
+     shared by cards, stickers, and buttons across pages */
+  --press-sm: 3px 3px 0 var(--charcoal);
+  --press: 6px 6px 0 var(--charcoal);
+
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -177,4 +182,48 @@ body::after {
     var(--purple-a06) 19px
   );
   pointer-events: none;
+}
+
+/* Faint graph-paper texture for light sections (bento, event list, forms) */
+.grid-paper {
+  background-image:
+    linear-gradient(rgba(28, 28, 34, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 28, 34, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Street-sign title plate — charcoal plate, yellow Bebas text, pressed
+   shadow; used for section titles that should read as NYC signage */
+.sign-plate {
+  display: inline-block;
+  background: var(--charcoal);
+  color: var(--yellow);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: var(--step-3);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  padding: 0.45em 0.75em 0.35em;
+  border-radius: 6px;
+  box-shadow: 4px 4px 0 var(--purple-light);
+  transform: rotate(-1deg);
+}
+
+/* Sticker chip — Space Mono label with border + small press shadow,
+   tilted like a slapped-on sticker. Tilt via --tilt custom property. */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  background: var(--yellow);
+  color: var(--charcoal);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.45em 0.9em;
+  border: 2px solid var(--charcoal);
+  border-radius: 4px;
+  box-shadow: var(--press-sm);
+  transform: rotate(var(--tilt, -2deg));
 }

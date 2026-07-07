@@ -6,11 +6,11 @@ import { actions } from 'astro:actions';
 
 <BaseLayout title="Contact — Trash Talk NYC">
 
-  <PageHero eyebrowEn="Contact" eyebrowEs="Contacto">
+  <PageHero eyebrowEn="Contact" eyebrowEs="Contacto" word="HELLO">
     <span data-en="TALK TO" data-es="HABLA CON">TALK TO</span><br /><span class="accent" data-en="TRASH TALK" data-es="TRASH TALK">TRASH TALK</span>
   </PageHero>
 
-  <section class="contact-section">
+  <section class="contact-section grid-paper">
     <div class="contact-inner">
       <div class="form-wrap">
         <div class="contact-tabs" role="tablist">
@@ -82,7 +82,8 @@ import { actions } from 'astro:actions';
   .form-wrap {
     background: #fff;
     border-radius: var(--radius-md);
-    border: 1.5px solid var(--cream);
+    border: 2.5px solid var(--charcoal);
+    box-shadow: var(--press);
     padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3.5vw, 2rem);
     text-align: center;
   }
@@ -99,30 +100,33 @@ import { actions } from 'astro:actions';
     margin-bottom: 1.5rem;
   }
 
+  /* Tabs styled as pressable sign plates: the active tab sits "pressed
+     down" (translated into its shadow) in charcoal + yellow */
   .contact-tab {
     flex: 1;
     background: var(--off-white);
-    border: 1.5px solid var(--cream);
+    border: 2px solid var(--charcoal);
     border-radius: 8px;
     padding: 0.65rem 1rem;
     min-height: var(--tap);
     font-family: 'Nunito', sans-serif;
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--gray);
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    box-shadow: var(--press-sm);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.15s, color 0.15s;
   }
 
-  .contact-tab:hover {
-    border-color: var(--purple);
-    color: var(--charcoal);
-  }
+  .contact-tab:hover { color: var(--charcoal); }
 
   .contact-tab.active {
-    background: var(--purple);
-    border-color: var(--purple);
-    color: #fff;
+    background: var(--charcoal);
+    color: var(--yellow);
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--charcoal);
   }
 
   .form-heading {
@@ -192,7 +196,7 @@ import { actions } from 'astro:actions';
     min-height: 52px;
     background: var(--yellow);
     color: var(--charcoal);
-    border: none;
+    border: 2.5px solid var(--charcoal);
     border-radius: 8px;
     font-family: 'Space Mono', monospace;
     font-size: 0.8rem;
@@ -200,12 +204,16 @@ import { actions } from 'astro:actions';
     text-transform: uppercase;
     letter-spacing: 0.08em;
     cursor: pointer;
-    transition: background 0.15s;
-    margin-top: 0.5rem;
+    box-shadow: 4px 4px 0 var(--charcoal);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.15s;
+    margin-top: 0.75rem;
   }
 
-  .form-submit:hover { background: var(--yellow-dark); }
-  .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+  .form-submit:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--charcoal);
+  }
+  .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: var(--press-sm); }
 
   /* ── SUCCESS STATE ── */
   .form-success {

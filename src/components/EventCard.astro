@@ -104,18 +104,20 @@ const btnId = `eb-trigger-${id}`;
 </div>
 
 <style>
+  /* Ticket-stub card: charcoal date stub + dashed perforation line */
   .event-card {
     background: white;
-    border: 2px solid #e0dcd4;
-    border-radius: 12px;
+    border: 2px solid var(--charcoal);
+    border-radius: 10px;
     padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3.5vw, 1.75rem);
     display: grid;
-    grid-template-columns: 72px 1fr auto;
+    grid-template-columns: 84px 1fr auto;
     gap: clamp(0.9rem, 2.5vw, 1.5rem);
     align-items: center;
     opacity: 0;
     transform: translateY(8px);
     animation: cardIn 260ms var(--ease-out) forwards;
+    transition: box-shadow 150ms var(--ease-out);
   }
   @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
   .event-card:nth-child(1) { animation-delay: 0ms; }
@@ -125,28 +127,40 @@ const btnId = `eb-trigger-${id}`;
   .event-card:nth-child(5) { animation-delay: 180ms; }
   @media (prefers-reduced-motion: reduce) { .event-card { animation: none; opacity: 1; transform: none; } }
   @media (hover: hover) and (pointer: fine) {
-    .event-card:hover { border-color: rgba(155,93,229,0.45); box-shadow: 0 3px 18px rgba(107,63,160,0.08); transform: translateY(-1px); }
+    .event-card:hover { box-shadow: 5px 5px 0 var(--purple-light); }
   }
-  .event-card.upcoming { border-left: 4px solid var(--purple-light); }
-  .event-card.past { opacity: 0.5; animation: none; }
+  .event-card.past { opacity: 0.5; animation: none; border-color: var(--warm-gray); }
+  .event-card.past .event-date-block { background: var(--warm-gray); }
 
   .event-date-block {
     text-align: center;
-    background: var(--purple-pale);
-    border-radius: 8px;
+    background: var(--charcoal);
+    border-radius: 6px;
     padding: 0.6rem 0.5rem;
     flex-shrink: 0;
+    position: relative;
+  }
+  /* perforation between the stub and the rest of the ticket */
+  .event-date-block::after {
+    content: '';
+    position: absolute;
+    top: 8%;
+    bottom: 8%;
+    right: calc(clamp(0.9rem, 2.5vw, 1.5rem) / -2);
+    border-right: 2px dashed #d8d3c8;
   }
   .event-date-block .month {
-    font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    color: var(--purple); display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--yellow); display: block;
   }
   .event-date-block .day {
-    font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--charcoal);
+    font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--off-white);
     line-height: 1; display: block;
   }
   .event-date-block .dow {
-    font-size: 0.58rem; font-weight: 700; color: var(--gray);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem; font-weight: 700; color: var(--paper-a55);
     text-transform: uppercase; letter-spacing: 0.1em; display: block;
   }
 
@@ -180,15 +194,18 @@ const btnId = `eb-trigger-${id}`;
   .btn-card {
     display: inline-flex; align-items: center; font-family: 'Nunito', sans-serif;
     font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    padding: 0.4rem 1.1rem; min-height: 40px; border-radius: 40px; border: 1.5px solid;
+    padding: 0.4rem 1.1rem; min-height: 40px; border-radius: 6px; border: 2px solid;
     cursor: pointer; text-decoration: none; background: none;
-    transition: background 150ms var(--ease-out), color 150ms var(--ease-out), transform 100ms var(--ease-out);
+    transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), background 150ms var(--ease-out), color 150ms var(--ease-out);
     white-space: nowrap;
   }
-  .btn-card-purple { color: var(--purple); border-color: var(--purple); }
+  .btn-card-purple {
+    color: var(--charcoal); border-color: var(--charcoal); background: var(--yellow);
+    box-shadow: 3px 3px 0 var(--charcoal);
+  }
   @media (hover: hover) and (pointer: fine) {
-    .btn-card-purple:hover { background: var(--purple); color: #fff; }
-    .btn-card-purple:active { transform: scale(0.96); }
+    .btn-card-purple:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--charcoal); }
+    .btn-card-purple:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--charcoal); }
   }
   .card-status {
     font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
@@ -196,7 +213,8 @@ const btnId = `eb-trigger-${id}`;
   }
 
   @media (max-width: 768px) {
-    .event-card { grid-template-columns: 60px 1fr; }
+    .event-card { grid-template-columns: 72px 1fr; }
+    .event-date-block::after { display: none; }
     .event-cta { grid-column: 1 / -1; display: flex; justify-content: flex-start; padding-top: 0.25rem; }
     .event-card.past .event-cta { display: none; }
   }

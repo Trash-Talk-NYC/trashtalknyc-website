@@ -39,8 +39,9 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
 <!-- HERO -->
 <section class="hero diag-texture" id="top">
-  <div class="hero-text">
-    <div class="hero-eyebrow" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
+  <div class="hero-bg-word" aria-hidden="true">TRASH&nbsp;TALK</div>
+  <div class="hero-core">
+    <div class="sticker hero-chip" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
     <h1 class="sr-only">Trash Talk NYC</h1>
     <img src="/assets/primary-logo.png" alt="Trash Talk NYC" class="hero-logo" width="400" height="400" />
     <div class="hero-btns">
@@ -49,28 +50,30 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     </div>
   </div>
 
-  <div class="hero-visual">
-    <div class="hero-big-emoji" aria-hidden="true">
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-        <rect x="30" y="20" width="40" height="55" rx="4"/>
-        <rect x="20" y="15" width="60" height="8" rx="3"/>
-        <rect x="38" y="8" width="24" height="10" rx="3"/>
-        <line x1="40" y1="30" x2="40" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
-        <line x1="50" y1="30" x2="50" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
-        <line x1="60" y1="30" x2="60" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
-      </svg>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-group">
+        <span data-en="Keep NYC clean" data-es="Mantén NYC limpia">Keep NYC clean</span>
+        <span data-en="Join the club" data-es="Únete al club">Join the club</span>
+        <span data-en="Every block counts" data-es="Cada cuadra cuenta">Every block counts</span>
+        <span data-en="All five boroughs" data-es="Los cinco condados">All five boroughs</span>
+      </div>
+      <div class="ticker-group">
+        <span data-en="Keep NYC clean" data-es="Mantén NYC limpia">Keep NYC clean</span>
+        <span data-en="Join the club" data-es="Únete al club">Join the club</span>
+        <span data-en="Every block counts" data-es="Cada cuadra cuenta">Every block counts</span>
+        <span data-en="All five boroughs" data-es="Los cinco condados">All five boroughs</span>
+      </div>
     </div>
   </div>
 </section>
 
-<div class="tape-seam" aria-hidden="true"></div>
-
 <!-- BENTO: DEEP CLEAN + DONATE -->
-<section class="bento">
+<section class="bento grid-paper">
   <div class="bento-inner">
 
     <div class="bento-box deepclean-box" id="deep-clean">
-      <div class="bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
+      <div class="sticker bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
       {defaultEvent ? (
         <div class="dc-body" id="dcBody">
           <div class="dc-eyebrow">
@@ -135,7 +138,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     </div>
 
     <div class="bento-box donate-box" id="donate">
-      <div class="bento-label" data-en="Donate" data-es="Donar">Donate</div>
+      <div class="sticker bento-label bento-label-purple" data-en="Donate" data-es="Donar">Donate</div>
       <h3 class="donate-title" data-en="We are crushing it." data-es="Lo estamos logrando.">We are crushing it.</h3>
       <div class="gfm-widget-wrap">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
@@ -147,7 +150,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 </section>
 
 <!-- CAN'T ATTEND CTA -->
-<div class="cant-attend-cta">
+<div class="cant-attend-cta grid-paper">
   <a href="#signup" class="cant-attend-link">
     <span class="cta-arrow" aria-hidden="true">&darr;</span>
     <span data-en="Can't attend just yet?" data-es="¿Aún no puedes asistir?">Can't attend just yet?</span>
@@ -159,7 +162,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 <section class="signup" id="signup">
   <div class="signup-inner">
     <div class="signup-header">
-      <h2 class="section-title" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
+      <h2 class="sign-plate" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
       <p class="signup-subtitle" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</p>
     </div>
 
@@ -315,63 +318,69 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 </BaseLayout>
 
 <style>
-  /* ── HERO ── */
+  /* ── HERO — centered street-poster composition ── */
   .hero {
     min-height: calc(100svh - var(--nav-h));
     background: var(--charcoal);
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
     align-items: center;
+    justify-content: center;
     position: relative;
     overflow: hidden;
-    padding-block: var(--space-lg);
+    padding:
+      var(--space-lg)
+      max(var(--gutter), var(--safe-right))
+      calc(var(--space-lg) + 3.25rem)
+      max(var(--gutter), var(--safe-left));
   }
 
   .hero::after {
     content: '';
     position: absolute;
-    right: -5%;
-    top: 15%;
-    width: 45vw;
-    height: 60%;
-    background: radial-gradient(ellipse at center, rgba(107, 63, 160, 0.18) 0%, transparent 70%);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(90vw, 60rem);
+    height: 70%;
+    background: radial-gradient(ellipse at center, rgba(107, 63, 160, 0.22) 0%, transparent 70%);
     pointer-events: none;
   }
 
-  .hero-text {
-    padding-inline: max(var(--gutter), var(--safe-left)) var(--space-lg);
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-eyebrow {
-    font-family: 'Nunito', sans-serif;
-    font-size: var(--step--1);
-    font-weight: 800;
-    color: var(--purple-light);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    margin-bottom: 1.25rem;
+  /* Giant outlined wordmark behind the logo — poster texture, not content */
+  .hero-bg-word {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(7rem, 26vw, 24rem);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(155, 93, 229, 0.22);
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
   }
 
-  .hero-eyebrow::before {
-    content: '';
-    display: inline-block;
-    width: 1.5rem;
-    height: 3px;
-    background: var(--purple-light);
-    border-radius: 2px;
+  .hero-core {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
+
+  .hero-chip { margin-bottom: 0.5rem; }
 
   .hero-logo {
-    width: clamp(260px, min(34vw, 55svh), 460px);
+    width: clamp(270px, min(46vw, 52svh), 500px);
     height: auto;
     display: block;
-    margin-bottom: 0.75rem;
-    filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
+    margin-bottom: var(--space-sm);
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
   }
 
   .sr-only {
@@ -388,10 +397,12 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
   .hero-btns {
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
+    justify-content: center;
   }
 
+  /* Sticker buttons: hard press shadow, tiny tilt, press-down on hover */
   .btn-primary,
   .btn-secondary {
     font-family: 'Nunito', sans-serif;
@@ -400,60 +411,93 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 0.9rem 1.9rem;
-    border-radius: 4px;
+    border-radius: 6px;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 48px;
-    transition: background 0.18s, border-color 0.18s, color 0.18s;
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
   }
 
   .btn-primary {
     background: var(--yellow);
     color: var(--charcoal);
-    border: 3px solid var(--yellow);
+    border: 3px solid var(--charcoal);
+    box-shadow: 5px 5px 0 var(--purple-light);
+    transform: rotate(-1deg);
   }
 
   .btn-primary:hover {
-    background: var(--purple-light);
-    border-color: var(--purple-light);
-    color: #fff;
+    transform: rotate(0deg) translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--purple-light);
   }
 
   .btn-secondary {
     background: transparent;
     color: var(--off-white);
-    border: 3px solid rgba(247, 244, 237, 0.3);
+    border: 3px solid var(--off-white);
+    box-shadow: 5px 5px 0 rgba(155, 93, 229, 0.55);
+    transform: rotate(1deg);
   }
 
-  .btn-secondary:hover { border-color: var(--purple-light); color: var(--purple-light); }
-
-  .hero-visual {
-    position: relative;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-    height: 100%;
+  .btn-secondary:hover {
+    transform: rotate(0deg) translate(3px, 3px);
+    box-shadow: 2px 2px 0 rgba(155, 93, 229, 0.55);
+    color: var(--yellow);
   }
 
-  .hero-big-emoji {
-    width: clamp(10rem, 18vw, 17rem);
-    height: clamp(10rem, 18vw, 17rem);
-    opacity: 0.05;
+  /* ── TICKER — caution-tape marquee pinned to the hero's bottom edge ── */
+  .ticker {
     position: absolute;
-    user-select: none;
-    color: var(--off-white);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--yellow);
+    border-top: 3px solid var(--charcoal);
+    overflow: hidden;
+    padding-block: 0.5rem;
+    z-index: 2;
   }
-  .hero-big-emoji svg { width: 100%; height: 100%; }
 
-  @media (min-width: 1024px) {
-    .hero { grid-template-columns: 1fr 1fr; }
-    .hero-visual {
-      display: flex;
-      padding-right: max(var(--gutter), var(--safe-right));
-    }
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: tickerScroll 26s linear infinite;
+  }
+
+  .ticker-group {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .ticker-group span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.12em;
+    color: var(--charcoal);
+    white-space: nowrap;
+    padding-inline: 1.5rem;
+  }
+
+  /* diamond separators between phrases */
+  .ticker-group span::after {
+    content: '';
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    background: var(--charcoal);
+    transform: rotate(45deg) translateY(-0.1em);
+    margin-left: 3rem;
+  }
+
+  @keyframes tickerScroll {
+    to { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; }
   }
 
   /* ── BENTO: DEEP CLEAN + DONATE ── */
@@ -471,55 +515,50 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     align-items: stretch;
   }
 
+  /* Club cards: hard charcoal border + press shadow, sticker label
+     pinned over the top edge */
   .bento-box {
-    border-radius: var(--radius-lg);
-    padding: clamp(1.5rem, 3.5vw, 2.25rem) clamp(1.25rem, 3vw, 2rem);
+    border-radius: var(--radius-md);
+    border: 2.5px solid var(--charcoal);
+    box-shadow: var(--press);
+    padding: clamp(1.75rem, 3.5vw, 2.5rem) clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 3.5vw, 2.25rem);
     display: flex;
     flex-direction: column;
     min-height: 380px;
+    position: relative;
   }
 
   .bento-label {
-    font-family: 'Nunito', sans-serif;
-    font-size: var(--step--1);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    margin-bottom: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+    position: absolute;
+    top: -1rem;
+    left: 1.25rem;
+    z-index: 2;
   }
 
-  .bento-label::before {
-    content: '';
-    display: inline-block;
-    width: 1.25rem;
-    height: 3px;
-    border-radius: 2px;
+  .bento-label-purple {
+    background: var(--purple);
+    color: #fff;
+    --tilt: 1.5deg;
   }
 
   /* Deep Clean box */
   .deepclean-box {
     background: var(--charcoal);
     color: var(--off-white);
-    position: relative;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .deepclean-box::after {
     content: '';
     position: absolute;
-    right: -10%;
-    top: -20%;
+    right: 0;
+    top: 0;
     width: 60%;
     height: 80%;
-    background: radial-gradient(ellipse at center, rgba(107, 63, 160, 0.25) 0%, transparent 65%);
+    border-radius: inherit;
+    background: radial-gradient(ellipse at top right, rgba(107, 63, 160, 0.3) 0%, transparent 65%);
     pointer-events: none;
   }
-
-  .deepclean-box .bento-label { color: var(--purple-light); }
-  .deepclean-box .bento-label::before { background: var(--purple-light); }
 
   .dc-body {
     position: relative;
@@ -609,38 +648,33 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     letter-spacing: 0.12em;
     padding: 0.7rem 1.5rem;
     min-height: 44px;
-    border: none;
-    border-radius: 40px;
+    border: 2.5px solid var(--off-white);
+    border-radius: 6px;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
     white-space: nowrap;
     cursor: pointer;
-    box-shadow: 0 3px 14px rgba(245, 208, 0, 0.35);
+    box-shadow: 4px 4px 0 var(--purple-light);
   }
 
   .btn-eb-rsvp:hover {
-    background: var(--purple-light);
-    color: #fff;
-    box-shadow: 0 4px 18px rgba(155, 93, 229, 0.35);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--purple-light);
   }
 
   .btn-eb-rsvp:disabled {
     opacity: 0.6;
     cursor: default;
     box-shadow: none;
+    transform: none;
   }
 
   /* Donate box */
   .donate-box {
     background: #fff;
-    border: 2px solid var(--cream);
-    box-shadow: 0 4px 32px rgba(107, 63, 160, 0.08);
   }
-
-  .donate-box .bento-label { color: var(--purple); }
-  .donate-box .bento-label::before { background: var(--purple-light); }
 
   .donate-title {
     font-family: 'Bebas Neue', sans-serif;
@@ -793,25 +827,25 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   }
 
   .signup-header { width: 100%; }
-  .signup .section-title { color: var(--off-white); margin-bottom: 0; }
 
   .signup-subtitle {
     font-family: 'Nunito', sans-serif;
     font-size: 1rem;
     font-weight: 700;
-    color: rgba(247, 244, 237, 0.65);
-    margin-top: 0.4rem;
+    color: rgba(247, 244, 237, 0.75);
+    margin-top: 1.1rem;
     letter-spacing: 0.02em;
   }
 
-  /* ── FORM ── */
+  /* ── FORM — club-card treatment ── */
   .form-wrap {
     width: 100%;
     text-align: left;
     background: var(--off-white);
     padding: clamp(1.25rem, 4vw, 2.5rem);
-    border-radius: 14px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+    border: 2.5px solid var(--charcoal);
+    border-radius: var(--radius-md);
+    box-shadow: var(--press);
   }
 
   .form-group { margin-bottom: 1.2rem; }
@@ -989,17 +1023,19 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     letter-spacing: 0.12em;
     padding: 1rem;
     min-height: 52px;
-    border: 3px solid var(--purple);
+    border: 3px solid var(--charcoal);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    margin-top: 0.5rem;
-    transition: background 0.18s, border-color 0.18s, color 0.18s;
+    margin-top: 0.75rem;
+    box-shadow: 4px 4px 0 var(--charcoal);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
   }
 
   .form-submit:hover {
     background: var(--yellow);
-    border-color: var(--yellow);
     color: var(--charcoal);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--charcoal);
   }
 
   /* ── SUCCESS STATE ── */
