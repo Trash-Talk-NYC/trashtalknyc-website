@@ -31,7 +31,7 @@ Platform:
 - Eventbrite
 
 Current behavior:
-- Netlify function fetches next upcoming event
+- Build-time fetch (`fetchEventsAtBuildTime()` in `src/lib/events.ts`) pulls upcoming/past events directly from Eventbrite
 - Events page consumes Eventbrite data
 
 ## Donations
@@ -74,7 +74,7 @@ Shared inboxes:
 - team@trashtalknyc.org
 - volunteers@ (unused)
 
-Current contact form recipients:
+Former contact form recipients (pre-Brevo, no longer routed automatically — see Forms above):
 - fabiola@trashtalknyc.org
 - david@trashtalknyc.org
 - team@trashtalknyc.org
@@ -97,7 +97,8 @@ High:
 - Test fixture standards
 
 Shipped:
-- Contact form redesign / partnership intake flow (single form, tabbed General/Partnerships, shared Web3Forms key)
+- Contact form redesign / partnership intake flow (single form, tabbed General/Collaborate)
+- Signup and contact forms migrated from Netlify Function + Web3Forms to Astro Actions + Brevo (2026-07 redesign)
 
 Medium:
 - CRM/database
@@ -159,7 +160,7 @@ Possible verification layers:
 
 - Local verification: confirm the feature works in local development.
 - Deploy preview verification: confirm the feature works in a Netlify deploy preview after pushing changes.
-- Production dependency verification: confirm external systems behave correctly (Web3Forms, Eventbrite, Google Workspace, Netlify Forms, etc.).
+- Production dependency verification: confirm external systems behave correctly (Brevo, Eventbrite, Google Workspace, Netlify Blobs, etc.).
 - Human perception verification: ask a human to review visuals, wording, UX flow, or subjective product decisions.
 
 For every verification layer, Claude must explain:
