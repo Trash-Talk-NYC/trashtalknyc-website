@@ -55,7 +55,7 @@ Volunteer form:
 - Message-style fields land as Brevo contact attributes (BOROUGH, PHONE, EXPERIENCE, HEAR_ABOUT) — these attributes must exist in Brevo before go-live
 
 Contact form:
-- Single page (`/contact`), tabbed: General / Collaborate → Brevo list via `BREVO_LIST_ID_CONTACT`
+- Single page (`/contact`), tabbed: General / Collaborate → separate Brevo lists per tab (`CONTACT_GENERAL` / `CONTACT_COLLAB`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
 - Tab choice is sent as `inquiryType` (`general` | `partnership`); partnership requires `organization`
 - Message text is stored as a Brevo contact attribute (MESSAGE) — nothing emails the team directly anymore; a transactional-email notification is a known follow-up
 - "Host an Event" as a third inquiry type was considered and deferred — not built

@@ -39,7 +39,7 @@ Either reuse it (if it's serving the same repo/branch you need) or start yours o
 2. **UI changes rendering integration data** (event cards): still just `astro dev` — event data bypasses the server entirely, fetched from Eventbrite at build/dev time. Run `npm run test` to confirm `src/lib/__tests__/events.test.ts` still passes (mapping, upcoming/past split, missing-env warnings).
 3. **Form changes** (signup on `/`, general/partnership tabs on `/contact`): `astro dev` serves the actions.
    - Without Brevo env vars, a submission exercises the full client → action → validation → spam-check chain and then fails gracefully: server logs `{"evt":"form_env_missing",...}` and the UI shows the generic error with the form intact. That's the expected local result and confirms the wiring.
-   - With `BREVO_API_KEY` + `BREVO_LIST_ID_SIGNUP` / `BREVO_LIST_ID_CONTACT` in `.env`, a submission upserts a real Brevo contact — use a test list, not `signups_list`, when doing this.
+   - With `BREVO_API_KEY` + `BREVO_LIST_ID_SIGNUP` / `CONTACT_GENERAL` / `CONTACT_COLLAB` in `.env`, a submission upserts a real Brevo contact — use a test list, not `signups_list`, when doing this.
    - Test the contact form in **both** tab states (General and Collaborate — the latter reveals and requires `organization`).
    - Submissions faster than ~3s after page load are rejected as spam (`too_fast`) — wait a beat before programmatically submitting, or you'll test the spam path by accident.
 4. **Server-logic changes** (schemas, spam heuristics, rate limiting, Brevo client in `src/lib/server/`): these are plain modules with unit tests in `src/lib/server/__tests__/` — extend those first; they run without any server.

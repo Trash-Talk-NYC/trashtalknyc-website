@@ -123,6 +123,11 @@ export const server = {
       });
       if (dropped) return { ok: true };
 
+      // Each tab routes to its own Brevo list. These env-var names are
+      // short (no BREVO_LIST_ID_ prefix) because Netlify rejected the
+      // longer names when the captain configured them — keep as-is.
+      const listIdVar = input.inquiryType === 'partnership' ? 'CONTACT_COLLAB' : 'CONTACT_GENERAL';
+
       await upsertOrThrow(
         'contact',
         input.email,
@@ -133,7 +138,7 @@ export const server = {
           ORGANIZATION: input.organization,
           MESSAGE: input.message,
         }),
-        'BREVO_LIST_ID_CONTACT',
+        listIdVar,
       );
 
       return { ok: true };
