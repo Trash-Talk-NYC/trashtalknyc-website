@@ -22,6 +22,26 @@ He reached out to me, Fabi, to make the website.
 * Eventbrite integration 
 * GoFundMe embeds
 
+## Brevo integration — sharp edges
+
+Full form/attribute detail lives in `docs/systems.md` (Forms section); these are the things that bite.
+
+* **Authorized IPs must stay OFF** in Brevo's security settings.
+Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermittently block production form submissions (this caused a real incident).
+* **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact.
+Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
+All are set identically across all Netlify deploy contexts (verified 2026-07).
+* **Custom attribute map** (each must exist in the Brevo dashboard first or the upsert payload is rejected): `PHONE`, `INQUIRY_TYPE`, `WAIVER_ACCEPTED`, `MESSAGE`, `BOROUGH`, `HEAR_ABOUT_US`, `ORGANIZATION` (+ standard `FIRSTNAME`/`LASTNAME`).
+Signup sends FIRSTNAME, LASTNAME, BOROUGH, PHONE, MESSAGE (experience text), HEAR_ABOUT_US, WAIVER_ACCEPTED.
+Contact sends FIRSTNAME, LASTNAME, PHONE, INQUIRY_TYPE, ORGANIZATION (collab tab only), MESSAGE.
+Empty-string fields are dropped before upsert so updates never blank existing values (`buildAttributes` in `src/lib/server/brevo.ts`).
+* **`PHONE` is a custom text attribute, not Brevo's native SMS/phone field.**
+The Brevo UI shows the native field prominently and shows custom attributes only in the contact's attribute panel (or as manually added list columns), so `PHONE`/`ORGANIZATION` can look "missing" in the UI while being present via API.
+This exact misreading was reported as a production bug after the 2026-07 redesign launch; Netlify function logs (`netlify logs --source functions --function ssr`) proved every production submission had upserted successfully with all attributes.
+Before debugging "missing Brevo fields", check the contact's custom attributes via API or the attribute panel, not the list view.
+* **Attributes are last-write-wins.**
+Full submission history is preserved as Brevo CRM notes with a queryable header (`form=… | field=… | submitted=<ISO>` then the raw content) — see `buildNoteText` in `src/lib/server/brevo.ts`.
+
 ## E2E Testing
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.

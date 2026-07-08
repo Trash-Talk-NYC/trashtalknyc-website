@@ -42,4 +42,5 @@ Either reuse it (if it's serving the same repo/branch you need) or start yours o
    - With `BREVO_API_KEY` + `BREVO_LIST_ID_SIGNUP` / `CONTACT_GENERAL` / `CONTACT_COLLAB` in `.env`, a submission upserts a real Brevo contact — use a test list, not `signups_list`, when doing this.
    - Test the contact form in **both** tab states (General and Collaborate — the latter reveals and requires `organization`).
    - Submissions faster than ~3s after page load are rejected as spam (`too_fast`) — wait a beat before programmatically submitting, or you'll test the spam path by accident.
+   - After a successful submission, switch tabs and confirm the form reappears (not the stale success view) — `restoreFormAfterSuccess()` in `contact.astro` handles this.
 4. **Server-logic changes** (schemas, spam heuristics, rate limiting, Brevo client in `src/lib/server/`): these are plain modules with unit tests in `src/lib/server/__tests__/` — extend those first; they run without any server.

@@ -289,6 +289,25 @@ import { actions } from 'astro:actions';
     if (introEl) introEl.textContent = c.intro;
   }
 
+  /**
+   * A submission hides the form behind the success view; switching tabs
+   * afterwards must bring the form back or the new tab appears dead. The
+   * message is cleared (it belonged to the previous inquiry) but identity
+   * fields are kept so the sender doesn't retype them.
+   */
+  function restoreFormAfterSuccess() {
+    if (!form || !successDiv || successDiv.style.display !== 'block') return;
+
+    successDiv.style.display = '';
+    form.style.display = '';
+    const messageInput = form.elements.namedItem('message') as HTMLTextAreaElement | null;
+    if (messageInput) messageInput.value = '';
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = btn.getAttribute(`data-${getCurrentLang()}`) ?? btn.textContent;
+    }
+  }
+
   function setType(type: ContactType) {
     currentType = type;
     tabGeneral?.classList.toggle('active', type === 'general');
@@ -300,6 +319,7 @@ import { actions } from 'astro:actions';
     if (orgInput) orgInput.required = type === 'partnership';
     if (inquiryTypeInput) inquiryTypeInput.value = type;
 
+    restoreFormAfterSuccess();
     applyCopy();
   }
 
