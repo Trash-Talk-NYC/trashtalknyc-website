@@ -47,6 +47,10 @@ Full submission history is preserved as Brevo CRM notes with a queryable header 
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.
 
+## Visual QA
+
+See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling any UI change done: breakpoint matrix, per-width state checklist (including the EN/ES toggle), translating subjective feedback, and the closing report format.
+
 ---
 
 ## Frontend architecture
