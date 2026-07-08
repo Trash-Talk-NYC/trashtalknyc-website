@@ -24,6 +24,9 @@ Pages:
 - Events -> (Club Events)
 - About
 - Contact
+- Wallet (`/wallet`) -> live GoFundMe total plus Cleanups/Tree Guards initiative cards; deploy-preview review only, deliberately not linked from nav
+- Cleanups (`/cleanups`) -> minimal placeholder initiative page, linked from Wallet
+- Tree Guards (`/tree-guards`) -> minimal placeholder initiative page, linked from Wallet
 - 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
 
 SEO & share metadata (2026-07 overhaul):
@@ -50,6 +53,8 @@ Platform:
 Current behavior:
 - GoFundMe embedded in site
 - BuyMeACoffee linked on Instagram
+- Live raised total also fetched server-side from GoFundMe's public web gateway (`src/lib/server/gofundme.ts`, same campaign as the embed) for the Wallet page — no official GoFundMe API, and the gateway sends no CORS header so browsers can't call it directly
+- Wallet page bakes the total in at build time (graceful fallback if the gateway is unreachable) and refreshes it client-side via the on-demand `/api/donation-total.json` route (`s-maxage=300`, mirroring GoFundMe's own cache)
 
 ## Forms
 
@@ -117,6 +122,7 @@ Shipped:
 - Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
 - Cloudflare Turnstile bot check on both forms (security audit X1); dormant until the captain provisions real keys — see Forms above
 - SEO & share-metadata overhaul (2026-07): complete OG/Twitter tags, favicon set + share card generated from the hero logo, JSON-LD Organization schema, sitemap + robots.txt + canonicals — see Website above
+- Wallet page (`/wallet`) with live GoFundMe total and Cleanups/Tree Guards initiative cards; deploy-preview review only, not yet linked from nav
 
 Medium:
 - CRM/database
