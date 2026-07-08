@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { fetchEventsAtBuildTime, formatDate, formatTime } from '../lib/events';
+import { actions } from 'astro:actions';
 
 const { upcoming } = await fetchEventsAtBuildTime();
 
@@ -37,9 +38,10 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 </script>
 
 <!-- HERO -->
-<section class="hero" id="top">
-  <div class="hero-text">
-    <div class="hero-eyebrow" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
+<section class="hero diag-texture" id="top">
+  <div class="hero-bg-word" aria-hidden="true">TRASH&nbsp;TALK</div>
+  <div class="hero-core">
+    <div class="sticker hero-chip" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
     <h1 class="sr-only">Trash Talk NYC</h1>
     <img src="/assets/primary-logo.png" alt="Trash Talk NYC" class="hero-logo" width="400" height="400" />
     <div class="hero-btns">
@@ -48,26 +50,30 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     </div>
   </div>
 
-  <div class="hero-visual">
-    <div class="hero-big-emoji">
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-        <rect x="30" y="20" width="40" height="55" rx="4"/>
-        <rect x="20" y="15" width="60" height="8" rx="3"/>
-        <rect x="38" y="8" width="24" height="10" rx="3"/>
-        <line x1="40" y1="30" x2="40" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
-        <line x1="50" y1="30" x2="50" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
-        <line x1="60" y1="30" x2="60" y2="68" stroke="white" stroke-width="3" stroke-linecap="round"/>
-      </svg>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-group">
+        <span data-en="Keep NYC clean" data-es="Mantén NYC limpia">Keep NYC clean</span>
+        <span data-en="Join the club" data-es="Únete al club">Join the club</span>
+        <span data-en="Every block counts" data-es="Cada cuadra cuenta">Every block counts</span>
+        <span data-en="All five boroughs" data-es="Los cinco condados">All five boroughs</span>
+      </div>
+      <div class="ticker-group">
+        <span data-en="Keep NYC clean" data-es="Mantén NYC limpia">Keep NYC clean</span>
+        <span data-en="Join the club" data-es="Únete al club">Join the club</span>
+        <span data-en="Every block counts" data-es="Cada cuadra cuenta">Every block counts</span>
+        <span data-en="All five boroughs" data-es="Los cinco condados">All five boroughs</span>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- BENTO: DEEP CLEAN + DONATE -->
-<section class="bento">
+<section class="bento grid-paper">
   <div class="bento-inner">
 
     <div class="bento-box deepclean-box" id="deep-clean">
-      <div class="bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
+      <div class="sticker bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
       {defaultEvent ? (
         <div class="dc-body" id="dcBody">
           <div class="dc-eyebrow">
@@ -132,7 +138,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     </div>
 
     <div class="bento-box donate-box" id="donate">
-      <div class="bento-label" data-en="Donate" data-es="Donar">Donate</div>
+      <div class="sticker bento-label bento-label-purple" data-en="Donate" data-es="Donar">Donate</div>
       <h3 class="donate-title" data-en="We are crushing it." data-es="Lo estamos logrando.">We are crushing it.</h3>
       <div class="gfm-widget-wrap">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
@@ -144,7 +150,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 </section>
 
 <!-- CAN'T ATTEND CTA -->
-<div class="cant-attend-cta">
+<div class="cant-attend-cta grid-paper">
   <a href="#signup" class="cant-attend-link">
     <span class="cta-arrow" aria-hidden="true">&darr;</span>
     <span data-en="Can't attend just yet?" data-es="¿Aún no puedes asistir?">Can't attend just yet?</span>
@@ -156,55 +162,56 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 <section class="signup" id="signup">
   <div class="signup-inner">
     <div class="signup-header">
-      <h2 class="section-title" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
+      <h2 class="sign-plate" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
       <p class="signup-subtitle" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</p>
     </div>
 
     <div class="form-wrap">
-      <form id="volunteerForm">
+      <form id="volunteerForm" method="POST" action={actions.signup}>
         <input type="hidden" name="botcheck" value="">
+        <input type="hidden" name="startedAt" id="signupStartedAt" value="">
         <div class="form-row">
           <div class="form-group">
             <label for="fname" data-en="First name *" data-es="Nombre *">First name *</label>
-            <input type="text" id="fname" name="fname" required placeholder="Jane">
+            <input type="text" id="fname" name="fname" required placeholder="Jane" autocomplete="given-name">
           </div>
           <div class="form-group">
             <label for="lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
-            <input type="text" id="lname" name="lname" required placeholder="Doe">
+            <input type="text" id="lname" name="lname" required placeholder="Doe" autocomplete="family-name">
           </div>
         </div>
 
         <div class="form-group">
           <label for="email" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
-          <input type="email" id="email" name="email" required placeholder="jane@example.com">
+          <input type="email" id="email" name="email" required placeholder="jane@example.com" autocomplete="email">
         </div>
 
         <div class="form-group">
           <label for="phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
-          <input type="tel" id="phone" name="phone" placeholder="(212) 555-0100">
+          <input type="tel" id="phone" name="phone" placeholder="(212) 555-0100" autocomplete="tel">
         </div>
 
         <div class="form-group borough-picker" id="boroughPickerGroup">
           <label class="borough-picker-label" data-en="Which borough do you live in? *" data-es="¿En qué condado vives? *">Which borough do you live in? *</label>
           <div class="borough-pills">
-            <button type="button" class="borough-pill" data-borough="Manhattan" onclick="selectBorough(this)">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px"><rect x="2" y="10" width="3" height="11"/><rect x="6" y="6" width="4" height="15"/><rect x="11" y="4" width="3" height="17"/><rect x="15" y="8" width="4" height="13"/><rect x="20" y="12" width="2" height="9"/><line x1="1" y1="21" x2="23" y2="21"/></svg></span>
+            <button type="button" class="borough-pill" data-borough="Manhattan">
+              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="10" width="3" height="11"/><rect x="6" y="6" width="4" height="15"/><rect x="11" y="4" width="3" height="17"/><rect x="15" y="8" width="4" height="13"/><rect x="20" y="12" width="2" height="9"/><line x1="1" y1="21" x2="23" y2="21"/></svg></span>
               <span data-en="Manhattan" data-es="Manhattan">Manhattan</span>
             </button>
-            <button type="button" class="borough-pill" data-borough="Brooklyn" onclick="selectBorough(this)">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px"><line x1="2" y1="18" x2="22" y2="18"/><line x1="4" y1="18" x2="4" y2="8"/><line x1="20" y1="18" x2="20" y2="8"/><path d="M4 8 Q12 2 20 8"/><line x1="10" y1="8" x2="10" y2="18"/><line x1="14" y1="8" x2="14" y2="18"/></svg></span>
+            <button type="button" class="borough-pill" data-borough="Brooklyn">
+              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><line x1="2" y1="18" x2="22" y2="18"/><line x1="4" y1="18" x2="4" y2="8"/><line x1="20" y1="18" x2="20" y2="8"/><path d="M4 8 Q12 2 20 8"/><line x1="10" y1="8" x2="10" y2="18"/><line x1="14" y1="8" x2="14" y2="18"/></svg></span>
               <span data-en="Brooklyn" data-es="Brooklyn">Brooklyn</span>
             </button>
-            <button type="button" class="borough-pill" data-borough="Queens" onclick="selectBorough(this)">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px"><circle cx="12" cy="12" r="9"/><polygon points="12 3 14.5 9.5 21 12 14.5 14.5 12 21 9.5 14.5 3 12 9.5 9.5"/></svg></span>
+            <button type="button" class="borough-pill" data-borough="Queens">
+              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><polygon points="12 3 14.5 9.5 21 12 14.5 14.5 12 21 9.5 14.5 3 12 9.5 9.5"/></svg></span>
               <span data-en="Queens" data-es="Queens">Queens</span>
             </button>
-            <button type="button" class="borough-pill" data-borough="The Bronx" onclick="selectBorough(this)">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px"><path d="M12 2L8 10h3v10h2V10h3L12 2z"/><rect x="2" y="14" width="5" height="7"/><rect x="17" y="11" width="5" height="10"/><line x1="1" y1="21" x2="23" y2="21"/></svg></span>
+            <button type="button" class="borough-pill" data-borough="The Bronx">
+              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L8 10h3v10h2V10h3L12 2z"/><rect x="2" y="14" width="5" height="7"/><rect x="17" y="11" width="5" height="10"/><line x1="1" y1="21" x2="23" y2="21"/></svg></span>
               <span data-en="The Bronx" data-es="El Bronx">The Bronx</span>
             </button>
-            <button type="button" class="borough-pill" data-borough="Staten Island" onclick="selectBorough(this)">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px"><path d="M2 20h20"/><path d="M5 17L3 9h18l-2 8H5z"/><rect x="9" y="5" width="6" height="5" rx="1"/><line x1="12" y1="5" x2="12" y2="2"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>
+            <button type="button" class="borough-pill" data-borough="Staten Island">
+              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M2 20h20"/><path d="M5 17L3 9h18l-2 8H5z"/><rect x="9" y="5" width="6" height="5" rx="1"/><line x1="12" y1="5" x2="12" y2="2"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>
               <span data-en="Staten Island" data-es="Staten Island">Staten Island</span>
             </button>
           </div>
@@ -218,13 +225,21 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
         <div class="form-group">
           <label for="hear"><span data-en="How'd you hear about us?" data-es="¿Cómo nos conociste?">How'd you hear about us?</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+          <!-- value attributes must exactly match the HEAR_ABOUT_US enum
+               options configured in Brevo; display text is friendlier -->
           <select id="hear" name="hear">
             <option value="" selected data-en="Select one" data-es="Selecciona una opción">Select one</option>
-            <option data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
-            <option data-en="Friend or neighbor" data-es="Un amigo o vecino">Friend or neighbor</option>
-            <option data-en="Flyer / QR code" data-es="Volante / código QR">Flyer / QR code</option>
-            <option data-en="Local community board" data-es="Junta comunitaria local">Local community board</option>
-            <option data-en="Other" data-es="Otro">Other</option>
+            <option value="Saw Tree Guard" data-en="Saw a Tree Guard" data-es="Vi un Tree Guard">Saw a Tree Guard</option>
+            <option value="Saw the Purple Vests" data-en="Saw the Purple Vests" data-es="Vi los chalecos morados">Saw the Purple Vests</option>
+            <option value="My Block Entered the Clean Zone" data-en="My block entered the Clean Zone" data-es="Mi cuadra entró a la Zona Limpia">My block entered the Clean Zone</option>
+            <option value="Word of Mouth" data-en="Word of mouth" data-es="De boca en boca">Word of mouth</option>
+            <option value="Instagram" data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
+            <option value="TikTok" data-en="TikTok" data-es="TikTok">TikTok</option>
+            <option value="LinkedIn" data-en="LinkedIn" data-es="LinkedIn">LinkedIn</option>
+            <option value="Facebook" data-en="Facebook" data-es="Facebook">Facebook</option>
+            <option value="YouTube" data-en="YouTube" data-es="YouTube">YouTube</option>
+            <option value="Flyer / QR Code" data-en="Flyer / QR code" data-es="Volante / código QR">Flyer / QR code</option>
+            <option value="Local Community Board" data-en="Local community board" data-es="Junta comunitaria local">Local community board</option>
           </select>
         </div>
 
@@ -238,11 +253,11 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
             I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.
           </div>
           <label class="waiver-check-row">
-            <input type="checkbox" id="waiverCheck" required>
+            <input type="checkbox" id="waiverCheck" name="waiverCheck" required>
             <span data-en="I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior. Entiendo que este es un documento legalmente vinculante y firmo voluntariamente. *">I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. <strong>*</strong></span>
           </label>
-          <label class="waiver-check-row" style="margin-top: 0.5rem;">
-            <input type="checkbox" id="ageCheck" required>
+          <label class="waiver-check-row">
+            <input type="checkbox" id="ageCheck" name="ageCheck" required>
             <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. <strong>*</strong></span>
           </label>
         </div>
@@ -307,90 +322,73 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   </div>
 </div>
 
-<script defer src="https://www.gofundme.com/static/js/embed.js"></script>
+<script is:inline defer src="https://www.gofundme.com/static/js/embed.js"></script>
 </BaseLayout>
 
-<style is:global>
-  /* ── SHARED SECTION UTILITIES ── */
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    line-height: 1;
-    margin-bottom: 1rem;
-    letter-spacing: 0.02em;
-  }
-
-  /* ── HERO ── */
+<style>
+  /* ── HERO — centered street-poster composition ── */
   .hero {
-    min-height: 90vh;
+    min-height: calc(100svh - var(--nav-h));
     background: var(--charcoal);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     align-items: center;
+    justify-content: center;
     position: relative;
     overflow: hidden;
-  }
-
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 18px,
-        rgba(107,63,160,0.06) 18px,
-        rgba(107,63,160,0.06) 19px
-      );
-    pointer-events: none;
+    padding:
+      var(--space-lg)
+      max(var(--gutter), var(--safe-right))
+      calc(var(--space-lg) + 3.25rem)
+      max(var(--gutter), var(--safe-left));
   }
 
   .hero::after {
     content: '';
     position: absolute;
-    right: -5%;
-    top: 15%;
-    width: 45vw;
-    height: 60vh;
-    background: radial-gradient(ellipse at center, rgba(107,63,160,0.18) 0%, transparent 70%);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(90vw, 60rem);
+    height: 70%;
+    background: radial-gradient(ellipse at center, rgba(107, 63, 160, 0.22) 0%, transparent 70%);
     pointer-events: none;
   }
 
-  .hero-text {
-    padding: 5rem 3rem 5rem 4rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-eyebrow {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 800;
-    color: var(--purple-light);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    margin-bottom: 1.25rem;
+  /* Giant outlined wordmark behind the logo — poster texture, not content */
+  .hero-bg-word {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(7rem, 26vw, 24rem);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(155, 93, 229, 0.22);
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
   }
 
-  .hero-eyebrow::before {
-    content: '';
-    display: inline-block;
-    width: 1.5rem;
-    height: 3px;
-    background: var(--purple-light);
-    border-radius: 2px;
+  .hero-core {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
+
+  .hero-chip { margin-bottom: 0.5rem; }
 
   .hero-logo {
-    width: clamp(280px, 34vw, 460px);
+    width: clamp(270px, min(46vw, 52svh), 500px);
     height: auto;
     display: block;
-    margin-bottom: 0.75rem;
-    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.45));
+    margin-bottom: var(--space-sm);
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
   }
 
   .sr-only {
@@ -407,138 +405,168 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
   .hero-btns {
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Sticker buttons: hard press shadow, tiny tilt, press-down on hover */
+  .btn-primary,
+  .btn-secondary {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.9rem 1.9rem;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
   }
 
   .btn-primary {
     background: var(--yellow);
     color: var(--charcoal);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.9rem 1.9rem;
-    border: 3px solid var(--yellow);
-    border-radius: 4px;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.18s;
+    border: 3px solid var(--charcoal);
+    box-shadow: 5px 5px 0 var(--purple-light);
+    transform: rotate(-1deg);
   }
 
   .btn-primary:hover {
-    background: var(--purple-light);
-    border-color: var(--purple-light);
-    color: #fff;
+    transform: rotate(0deg) translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--purple-light);
   }
 
   .btn-secondary {
     background: transparent;
     color: var(--off-white);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.9rem 1.9rem;
-    border: 3px solid rgba(247,244,237,0.3);
-    border-radius: 4px;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.18s;
+    border: 3px solid var(--off-white);
+    box-shadow: 5px 5px 0 rgba(155, 93, 229, 0.55);
+    transform: rotate(1deg);
   }
 
-  .btn-secondary:hover { border-color: var(--purple-light); color: var(--purple-light); }
+  .btn-secondary:hover {
+    transform: rotate(0deg) translate(3px, 3px);
+    box-shadow: 2px 2px 0 rgba(155, 93, 229, 0.55);
+    color: var(--yellow);
+  }
 
-  .hero-visual {
-    position: relative;
-    height: 100%;
-    min-height: 90vh;
+  /* ── TICKER — caution-tape marquee pinned to the hero's bottom edge ── */
+  .ticker {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--yellow);
+    border-top: 3px solid var(--charcoal);
+    overflow: hidden;
+    padding-block: 0.5rem;
+    z-index: 2;
+  }
+
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: tickerScroll 26s linear infinite;
+  }
+
+  .ticker-group {
     display: flex;
     align-items: center;
-    justify-content: center;
-    z-index: 1;
+    flex-shrink: 0;
   }
 
-  .hero-big-emoji {
-    width: clamp(10rem, 18vw, 17rem);
-    height: clamp(10rem, 18vw, 17rem);
-    opacity: 0.1;
-    position: absolute;
-    user-select: none;
-    color: var(--off-white);
+  .ticker-group span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.12em;
+    color: var(--charcoal);
+    white-space: nowrap;
+    padding-inline: 1.5rem;
   }
-  .hero-big-emoji svg { width: 100%; height: 100%; }
 
-  @media (min-width: 1024px) {
-    .hero-big-emoji { opacity: 0.05; }
+  /* diamond separators between phrases */
+  .ticker-group span::after {
+    content: '';
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    background: var(--charcoal);
+    transform: rotate(45deg) translateY(-0.1em);
+    margin-left: 3rem;
+  }
+
+  @keyframes tickerScroll {
+    to { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; }
   }
 
   /* ── BENTO: DEEP CLEAN + DONATE ── */
   .bento {
-    padding: 4.5rem 4rem;
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
     background: var(--off-white);
   }
 
   .bento-inner {
-    max-width: 1100px;
+    max-width: var(--container);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: clamp(1.25rem, 2.5vw, 1.75rem);
     align-items: stretch;
   }
 
+  /* Club cards: hard charcoal border + press shadow, sticker label
+     pinned over the top edge */
   .bento-box {
-    border-radius: 18px;
-    padding: 2.25rem 2rem;
+    border-radius: var(--radius-md);
+    border: 2.5px solid var(--charcoal);
+    box-shadow: var(--press);
+    padding: clamp(1.75rem, 3.5vw, 2.5rem) clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 3.5vw, 2.25rem);
     display: flex;
     flex-direction: column;
     min-height: 380px;
+    position: relative;
   }
 
   .bento-label {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    margin-bottom: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+    position: absolute;
+    top: -1rem;
+    left: 1.25rem;
+    z-index: 2;
   }
 
-  .bento-label::before {
-    content: '';
-    display: inline-block;
-    width: 1.25rem;
-    height: 3px;
-    border-radius: 2px;
+  .bento-label-purple {
+    background: var(--purple);
+    color: #fff;
+    --tilt: 1.5deg;
   }
 
   /* Deep Clean box */
   .deepclean-box {
     background: var(--charcoal);
     color: var(--off-white);
-    position: relative;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .deepclean-box::after {
     content: '';
     position: absolute;
-    right: -10%;
-    top: -20%;
+    right: 0;
+    top: 0;
     width: 60%;
     height: 80%;
-    background: radial-gradient(ellipse at center, rgba(107,63,160,0.25) 0%, transparent 65%);
+    border-radius: inherit;
+    background: radial-gradient(ellipse at top right, rgba(107, 63, 160, 0.3) 0%, transparent 65%);
     pointer-events: none;
   }
-
-  .deepclean-box .bento-label { color: var(--purple-light); }
-  .deepclean-box .bento-label::before { background: var(--purple-light); }
 
   .dc-body {
     position: relative;
@@ -569,13 +597,18 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   }
 
   @keyframes pulseDot {
-    0%,100% { opacity: 1; transform: scale(1); }
+    0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.35; transform: scale(0.65); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-dot { animation: none; }
   }
 
   .dc-event-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+    font-size: var(--step-2);
+    font-weight: 400;
     line-height: 1.05;
     margin-bottom: 1rem;
     letter-spacing: 0.02em;
@@ -594,13 +627,13 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     gap: 0.5rem;
     font-size: 0.8rem;
     font-weight: 700;
-    color: rgba(247,244,237,0.65);
+    color: rgba(247, 244, 237, 0.65);
   }
 
   .dc-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
 
   .dc-fallback {
-    color: rgba(247,244,237,0.55);
+    color: var(--paper-a55);
     font-size: 0.9rem;
     font-weight: 600;
     line-height: 1.7;
@@ -622,41 +655,39 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     text-transform: uppercase;
     letter-spacing: 0.12em;
     padding: 0.7rem 1.5rem;
-    border: none;
-    border-radius: 40px;
+    min-height: 44px;
+    border: 2.5px solid var(--off-white);
+    border-radius: 6px;
     text-decoration: none;
-    display: inline-block;
-    transition: all 0.18s;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
     white-space: nowrap;
     cursor: pointer;
-    box-shadow: 0 3px 14px rgba(245,208,0,0.35);
+    box-shadow: 4px 4px 0 var(--purple-light);
   }
 
   .btn-eb-rsvp:hover {
-    background: var(--purple-light);
-    color: #fff;
-    box-shadow: 0 4px 18px rgba(155,93,229,0.35);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--purple-light);
   }
 
   .btn-eb-rsvp:disabled {
     opacity: 0.6;
     cursor: default;
     box-shadow: none;
+    transform: none;
   }
 
   /* Donate box */
   .donate-box {
     background: #fff;
-    border: 2px solid var(--cream);
-    box-shadow: 0 4px 32px rgba(107,63,160,0.08);
   }
-
-  .donate-box .bento-label { color: var(--purple); }
-  .donate-box .bento-label::before { background: var(--purple-light); }
 
   .donate-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+    font-size: var(--step-2);
+    font-weight: 400;
     color: var(--charcoal);
     line-height: 1.05;
     margin-bottom: 1.25rem;
@@ -665,7 +696,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
   .donate-box .gfm-widget-wrap {
     flex: 1;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     margin-bottom: 1rem;
   }
@@ -677,6 +708,9 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     text-decoration: none;
     align-self: flex-start;
     margin-top: auto;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
     border-bottom: 1px solid transparent;
     transition: border-color 0.15s, color 0.15s;
   }
@@ -686,7 +720,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   /* ── CAN'T ATTEND CTA ── */
   .cant-attend-cta {
     background: var(--off-white);
-    padding: 0 2rem 3.5rem;
+    padding: 0 max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
     text-align: center;
   }
 
@@ -694,6 +728,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     display: inline-flex;
     align-items: center;
     gap: 0.85rem;
+    min-height: var(--tap);
     font-family: 'Nunito', sans-serif;
     font-size: 0.85rem;
     font-weight: 800;
@@ -720,26 +755,29 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     position: fixed; inset: 0; z-index: 500;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
     display: flex; align-items: center; justify-content: center;
+    padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
     opacity: 0; pointer-events: none;
     transition: opacity 150ms var(--ease-out);
   }
   .modal-overlay.open { opacity: 1; pointer-events: auto; }
   .modal-box {
     background: var(--charcoal); border: 1px solid rgba(155,93,229,0.4);
-    border-radius: 18px; padding: 2rem; width: 100%; max-width: 420px; margin: 1rem;
+    border-radius: var(--radius-lg); padding: clamp(1.25rem, 4vw, 2rem);
+    width: 100%; max-width: 420px;
+    max-height: 100dvh; overflow-y: auto;
     box-shadow: 0 24px 64px rgba(0,0,0,0.5);
   }
   .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
   .modal-event-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.03em; color: var(--off-white); line-height: 1.1; }
   .modal-close {
-    background: rgba(247,244,237,0.08); border: none; color: rgba(247,244,237,0.5);
-    font-size: 1rem; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--paper-a08); border: none; color: var(--paper-a55);
+    font-size: 1rem; width: 40px; height: 40px; border-radius: 50%;
     cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
     transition: background 0.15s, color 0.15s;
   }
-  .modal-close:hover { background: rgba(247,244,237,0.15); color: var(--off-white); }
+  .modal-close:hover { background: var(--paper-a12); color: var(--off-white); }
   .modal-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .modal-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: rgba(247,244,237,0.55); }
+  .modal-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: var(--paper-a55); }
   .modal-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
   .eb-sim { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
   .eb-head { background: #f8623a; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; }
@@ -749,12 +787,13 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   .eb-ticket-name { font-size: 0.82rem; font-weight: 700; color: #333; }
   .eb-ticket-price { font-size: 0.75rem; color: #666; }
   .eb-qty { display: flex; align-items: center; gap: 0.5rem; }
-  .eb-qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #ccc; background: transparent; font-size: 1rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
+  .eb-qty-btn { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #ccc; background: transparent; font-size: 1rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
   .eb-qty-btn:hover { border-color: #f8623a; color: #f8623a; }
   .eb-qty-num { font-size: 0.85rem; font-weight: 700; color: #333; min-width: 16px; text-align: center; }
   .eb-cta-area { padding: 0.85rem 1rem; }
   .eb-register {
-    display: block; width: 100%; background: #f8623a; color: #fff;
+    display: flex; align-items: center; justify-content: center; width: 100%;
+    background: #f8623a; color: #fff; min-height: 44px;
     font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.1em; padding: 0.7rem;
     border: none; border-radius: 8px; cursor: pointer;
@@ -766,7 +805,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
   /* ── SIGNUP ── */
   .signup {
-    padding: 4rem;
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
     background: var(--green);
     position: relative;
     overflow: hidden;
@@ -778,8 +817,8 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     right: -5%;
     top: -20%;
     width: 45vw;
-    height: 80vh;
-    background: radial-gradient(ellipse at center, rgba(107,63,160,0.2) 0%, transparent 65%);
+    height: 80%;
+    background: radial-gradient(ellipse at center, var(--purple-a20) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -790,7 +829,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 2rem;
+    gap: var(--space-md);
     position: relative;
     z-index: 1;
   }
@@ -801,20 +840,80 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     font-family: 'Nunito', sans-serif;
     font-size: 1rem;
     font-weight: 700;
-    color: rgba(247,244,237,0.65);
-    margin-top: 0.4rem;
+    color: rgba(247, 244, 237, 0.75);
+    margin-top: 1.1rem;
     letter-spacing: 0.02em;
   }
 
-  .form-wrap { width: 100%; text-align: left; }
-
-  .signup .section-title { color: var(--off-white); }
-
-  /* ── BOROUGH PICKER ── */
-  .borough-picker {
-    margin-bottom: 1.5rem;
+  /* ── FORM — club-card treatment ── */
+  .form-wrap {
+    width: 100%;
+    text-align: left;
+    background: var(--off-white);
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border: 2.5px solid var(--charcoal);
+    border-radius: var(--radius-md);
+    box-shadow: var(--press);
   }
 
+  .form-group { margin-bottom: 1.2rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #4a4a5a;
+    margin-bottom: 0.4rem;
+  }
+
+  /* 16px input text so iOS Safari doesn't zoom the page on focus */
+  .form-group input:not([type="checkbox"]),
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #d0ccc4;
+    border-radius: var(--radius-sm);
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    min-height: var(--tap);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .form-group input:not([type="checkbox"]):focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--purple-light);
+    box-shadow: 0 0 0 3px rgba(155, 93, 229, 0.15);
+  }
+
+  .form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231c1c22' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+
+  .form-group textarea { resize: vertical; min-height: 90px; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 0 1rem;
+  }
+
+  .form-optional { font-size: 0.7rem; color: var(--gray); margin-left: 0.2rem; font-weight: 400; }
+
+  /* ── BOROUGH PICKER ── */
   .borough-picker-label {
     display: block;
     font-size: 0.72rem;
@@ -841,10 +940,11 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     font-weight: 700;
     color: #4a4a5a;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    min-height: var(--tap);
   }
 
   .borough-pill:hover {
@@ -856,100 +956,19 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     background: var(--purple);
     border-color: var(--purple);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(107,63,160,0.3);
+    box-shadow: 0 2px 8px rgba(107, 63, 160, 0.3);
   }
 
-  .borough-pill .pill-emoji { font-size: 1rem; }
-
-  /* ── FORM ── */
-  .form-wrap {
-    background: var(--off-white);
-    padding: 2.5rem;
-    border-radius: 14px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  .borough-pill .pill-emoji {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
   }
 
-  .form-group { margin-bottom: 1.2rem; }
-
-  .form-group label {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #4a4a5a;
-    margin-bottom: 0.4rem;
-  }
-
-  .form-group input:not([type="checkbox"]),
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #d0ccc4;
-    border-radius: 7px;
-    background: white;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--charcoal);
-    appearance: none;
-    -webkit-appearance: none;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-
-  .form-group input:not([type="checkbox"]):focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--purple-light);
-    box-shadow: 0 0 0 3px rgba(155,93,229,0.15);
-  }
-
-  .form-group select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231c1c22' stroke-width='2' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    padding-right: 2.5rem;
-    cursor: pointer;
-  }
-
-  .form-group textarea { resize: vertical; min-height: 90px; }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  .form-optional { font-size: 0.7rem; color: var(--gray); margin-left: 0.2rem; font-weight: 400; }
-
-  .form-submit {
-    width: 100%;
-    background: var(--purple);
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 1rem;
-    border: 3px solid var(--purple);
-    border-radius: 7px;
-    cursor: pointer;
-    margin-top: 0.5rem;
-    transition: all 0.18s;
-  }
-
-  .form-submit:hover {
-    background: var(--yellow);
-    border-color: var(--yellow);
-    color: var(--charcoal);
-  }
-
+  /* ── WAIVER ── */
   .waiver-block {
     background: #f0edf8;
-    border: 2px solid rgba(107,63,160,0.3);
+    border: 2px solid rgba(107, 63, 160, 0.3);
     border-radius: 8px;
     padding: 1.25rem;
     margin-top: 0.5rem;
@@ -986,17 +1005,45 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     color: var(--charcoal);
     cursor: pointer;
     line-height: 1.5;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    text-transform: none;
+    letter-spacing: normal;
   }
 
   .waiver-check-row input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     margin-top: 2px;
     padding: 0;
     flex-shrink: 0;
     cursor: pointer;
     accent-color: var(--purple);
+  }
+
+  .form-submit {
+    width: 100%;
+    background: var(--purple);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 1rem;
+    min-height: 52px;
+    border: 3px solid var(--charcoal);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-top: 0.75rem;
+    box-shadow: 4px 4px 0 var(--charcoal);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
+  }
+
+  .form-submit:hover {
+    background: var(--yellow);
+    color: var(--charcoal);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--charcoal);
   }
 
   /* ── SUCCESS STATE ── */
@@ -1006,7 +1053,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     padding: 3rem 2rem;
   }
 
-  .form-success .check { font-size: 3rem; margin-bottom: 1rem; }
+  .form-success .check { margin-bottom: 1rem; }
 
   .form-success h3 {
     font-family: 'Bebas Neue', sans-serif;
@@ -1017,7 +1064,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
   .form-success p { font-size: 0.9rem; color: #555; line-height: 1.6; font-weight: 600; }
 
-  /* ── ANIMATIONS ── */
+  /* ── ENTRANCE ANIMATION ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -1027,45 +1074,10 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   .hero-logo    { animation: fadeUp 0.5s 0.1s ease both; }
   .hero-btns    { animation: fadeUp 0.5s 0.3s ease both; }
 
-  /* ── MOBILE (768px) — index-specific overrides ── */
-  @media (max-width: 768px) {
-    .hero {
-      grid-template-columns: 1fr;
-      min-height: auto;
-      padding-bottom: 3rem;
-    }
-
-    .hero-text { padding: 3.5rem 1.5rem 2rem; }
-    .hero-visual { display: none; }
-    .hero-logo { width: min(75vw, 320px); }
-
-    .bento { padding: 3rem 1.5rem; }
-    .bento-inner { grid-template-columns: 1fr; gap: 1.25rem; }
-    .bento-box { min-height: 0; }
-
-    .cant-attend-cta { padding: 0 1.5rem 2.5rem; }
-
-    .signup { padding: 4rem 1.5rem; }
-    .signup-inner { grid-template-columns: 1fr; gap: 3rem; }
-
-    .form-wrap { padding: 1.75rem 1.25rem; }
-    .form-row { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 480px) {
-    .hero-btns { flex-direction: column; align-items: flex-start; }
-    .btn-primary, .btn-secondary { font-size: 0.78rem; padding: 0.8rem 1.4rem; width: 100%; text-align: center; }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-eyebrow, .hero-logo, .hero-btns { animation: none; }
   }
 </style>
-
-<!-- is:inline required: selectBorough is called from onclick attributes on borough pills -->
-<script is:inline>
-  function selectBorough(el) {
-    document.querySelectorAll('.borough-pill').forEach(function(p) { p.classList.remove('selected'); });
-    el.classList.add('selected');
-    document.getElementById('borough').value = el.getAttribute('data-borough');
-  }
-</script>
 
 <!-- is:inline required: openModal/closeModal/adjQty are called from onclick attributes on the RSVP modal -->
 <script is:inline>
@@ -1212,6 +1224,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 </script>
 
 <script>
+  import { actions } from 'astro:actions';
   import { getCurrentLang, onLanguageChange } from '../lib/language';
   import { formatDate } from '../lib/events';
 
@@ -1235,13 +1248,25 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     if (wt) wt.innerHTML = waiverES;
   }
 
+  // ── SPAM-TIMING FIELD ──
+  const startedAtInput = document.getElementById('signupStartedAt') as HTMLInputElement | null;
+  if (startedAtInput) startedAtInput.value = String(Date.now());
+
+  // ── BOROUGH PICKER ──
+  const boroughInput = document.getElementById('borough') as HTMLInputElement | null;
+  document.querySelectorAll<HTMLButtonElement>('.borough-pill').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.borough-pill').forEach((p) => p.classList.remove('selected'));
+      pill.classList.add('selected');
+      if (boroughInput) boroughInput.value = pill.dataset.borough ?? '';
+    });
+  });
 
   // ── VOLUNTEER FORM SUBMIT ──
   document.getElementById('volunteerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
 
-    const boroughInput = document.getElementById('borough') as HTMLInputElement;
     if (!boroughInput?.value) {
       const group = document.getElementById('boroughPickerGroup')!;
       group.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1258,47 +1283,27 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.7';
 
-    const fd = new FormData(form);
-    const payload = {
-      formType: 'signup',
-      fname: fd.get('fname') as string,
-      lname: fd.get('lname') as string,
-      email: fd.get('email') as string,
-      borough: fd.get('borough') as string,
-      phone: fd.get('phone') as string,
-      experience: fd.get('experience') as string,
-      hear: fd.get('hear') as string,
-    };
+    const { error } = await actions.signup(new FormData(form));
 
-    try {
-      const response = await fetch('/.netlify/functions/submit-form', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        form.style.display = 'none';
-        (document.getElementById('formSuccess') as HTMLElement).style.display = 'block';
-      } else {
-        throw new Error(data.message || 'Submission failed');
-      }
-    } catch {
-      submitBtn.textContent = getCurrentLang() === 'es'
-        ? '¡Algo salió mal! Inténtalo de nuevo.'
-        : 'Something went wrong — please try again.';
-      submitBtn.style.background = '#c0392b';
-      submitBtn.style.borderColor = '#c0392b';
-      submitBtn.style.color = '#fff';
-      submitBtn.disabled = false;
-      setTimeout(() => {
-        submitBtn.textContent = originalText;
-        submitBtn.style.background = '';
-        submitBtn.style.borderColor = '';
-        submitBtn.style.color = '';
-        submitBtn.style.opacity = '';
-      }, 3500);
+    if (!error) {
+      form.style.display = 'none';
+      (document.getElementById('formSuccess') as HTMLElement).style.display = 'block';
+      return;
     }
+
+    submitBtn.textContent = getCurrentLang() === 'es'
+      ? '¡Algo salió mal! Inténtalo de nuevo.'
+      : 'Something went wrong — please try again.';
+    submitBtn.style.background = '#c0392b';
+    submitBtn.style.borderColor = '#c0392b';
+    submitBtn.style.color = '#fff';
+    submitBtn.disabled = false;
+    setTimeout(() => {
+      submitBtn.textContent = originalText;
+      submitBtn.style.background = '';
+      submitBtn.style.borderColor = '';
+      submitBtn.style.color = '';
+      submitBtn.style.opacity = '';
+    }, 3500);
   });
 </script>

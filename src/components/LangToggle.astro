@@ -1,0 +1,65 @@
+---
+/**
+ * EN/ES language toggle. Owns its buttons, styling, and click wiring;
+ * language state itself lives in src/lib/language.ts so any component
+ * can subscribe via onLanguageChange().
+ */
+---
+
+<div class="lang-toggle" role="group" aria-label="Language">
+  <button class="lang-btn active" id="btnEN" type="button" aria-pressed="true">EN</button>
+  <button class="lang-btn" id="btnES" type="button" aria-pressed="false">ES</button>
+</div>
+
+<script>
+  import { getCurrentLang, setLang, onLanguageChange } from '../lib/language';
+
+  const btnEN = document.getElementById('btnEN');
+  const btnES = document.getElementById('btnES');
+
+  function updateButtons(lang: string) {
+    btnEN?.classList.toggle('active', lang === 'en');
+    btnES?.classList.toggle('active', lang === 'es');
+    btnEN?.setAttribute('aria-pressed', String(lang === 'en'));
+    btnES?.setAttribute('aria-pressed', String(lang === 'es'));
+  }
+
+  btnEN?.addEventListener('click', () => setLang('en'));
+  btnES?.addEventListener('click', () => setLang('es'));
+
+  // Stay in sync when language changes from any source
+  onLanguageChange(updateButtons);
+  updateButtons(getCurrentLang());
+</script>
+
+<style>
+  .lang-toggle {
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--purple-light);
+    border-radius: 22px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .lang-btn {
+    background: transparent;
+    color: var(--paper-a55);
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .lang-btn.active { background: var(--purple-light); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--off-white); }
+
+  @media (pointer: coarse) {
+    .lang-btn { min-height: 38px; min-width: var(--tap); }
+  }
+</style>

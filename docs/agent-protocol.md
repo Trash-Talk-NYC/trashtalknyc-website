@@ -48,7 +48,7 @@ Every recommendation must be labeled as one of:
 Claude can implement this entirely.
 
 [CONFIG]
-An existing third-party system configuration is required (Google Workspace, Netlify, GitHub, Web3Forms, etc.).
+An existing third-party system configuration is required (Google Workspace, Netlify, GitHub, Brevo, etc.).
 
 [EXTERNAL]
 Requires access to a system Claude cannot access.
