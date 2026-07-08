@@ -88,4 +88,17 @@ describe('contact action Brevo list routing', () => {
 
     expect(result).toEqual({ ok: true });
   });
+
+  it('does not fail the submission when the note flow throws unexpectedly', async () => {
+    getBrevoContactId.mockRejectedValueOnce(new Error('boom: unexpected'));
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    const result = await server.contact.handler(contactInput(), contactCtx());
+    expect(result).toEqual({ ok: true });
+
+    createBrevoNote.mockRejectedValueOnce(new Error('boom: note post'));
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    const result2 = await server.contact.handler(contactInput(), contactCtx());
+    expect(result2).toEqual({ ok: true });
+  });
 });

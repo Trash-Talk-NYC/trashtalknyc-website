@@ -95,25 +95,35 @@ async function upsertOrThrow(
  * the contact upsert already succeeded.
  */
 async function tryCreateNote(noteForm: string, email: string, content: string | undefined): Promise<void> {
-  const trimmed = content?.trim();
-  if (!trimmed) return;
+  // Outer guard: the contact upsert already succeeded, so nothing in the
+  // note flow — including bugs — may fail the user's submission.
+  try {
+    const trimmed = content?.trim();
+    if (!trimmed) return;
 
-  const apiKey = getEnv('BREVO_API_KEY');
-  if (!apiKey) return; // upsert would have thrown already; belt and braces
+    const apiKey = getEnv('BREVO_API_KEY');
+    if (!apiKey) return; // upsert would have thrown already; belt and braces
 
-  const contact = await getBrevoContactId(apiKey, email);
-  if (!contact.ok) {
-    log('warn', 'brevo_note_failed', { form: noteForm, stage: 'contact_lookup', status: contact.status ?? 0, detail: contact.detail });
-    return;
+    const contact = await getBrevoContactId(apiKey, email);
+    if (!contact.ok) {
+      log('warn', 'brevo_note_failed', { form: noteForm, stage: 'contact_lookup', status: contact.status ?? 0, detail: contact.detail });
+      return;
+    }
+
+    const note = await createBrevoNote(apiKey, contact.id, buildNoteText(noteForm, 'message', trimmed));
+    if (!note.ok) {
+      log('warn', 'brevo_note_failed', { form: noteForm, stage: 'create_note', status: note.status ?? 0, detail: note.detail });
+      return;
+    }
+
+    log('info', 'brevo_note_created', { form: noteForm });
+  } catch (err) {
+    log('warn', 'brevo_note_failed', {
+      form: noteForm,
+      stage: 'unexpected',
+      detail: err instanceof Error ? err.message : 'unknown',
+    });
   }
-
-  const note = await createBrevoNote(apiKey, contact.id, buildNoteText(noteForm, 'message', trimmed));
-  if (!note.ok) {
-    log('warn', 'brevo_note_failed', { form: noteForm, stage: 'create_note', status: note.status ?? 0, detail: note.detail });
-    return;
-  }
-
-  log('info', 'brevo_note_created', { form: noteForm });
 }
 
 export const server = {

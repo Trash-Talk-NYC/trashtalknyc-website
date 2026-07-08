@@ -98,6 +98,12 @@ describe('getBrevoContactId', () => {
     const result = await getBrevoContactId('key', 'jane@example.com');
     expect(result).toEqual({ ok: false, status: 200, detail: 'missing_contact_id' });
   });
+
+  it('reports a non-JSON success body instead of throwing', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>gateway</html>', { status: 200 })));
+    const result = await getBrevoContactId('key', 'jane@example.com');
+    expect(result).toEqual({ ok: false, status: 200, detail: 'invalid_json' });
+  });
 });
 
 describe('createBrevoNote', () => {

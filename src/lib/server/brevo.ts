@@ -81,7 +81,12 @@ export async function getBrevoContactId(apiKey: string, email: string): Promise<
 
   if (!res.ok) return { ok: false, status: res.status, detail: await errorCode(res) };
 
-  const body = (await res.json()) as { id?: number };
+  let body: { id?: number };
+  try {
+    body = (await res.json()) as { id?: number };
+  } catch {
+    return { ok: false, status: res.status, detail: 'invalid_json' };
+  }
   if (typeof body.id !== 'number') return { ok: false, status: res.status, detail: 'missing_contact_id' };
   return { ok: true, id: body.id };
 }
