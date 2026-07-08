@@ -25,6 +25,7 @@ He reached out to me, Fabi, to make the website.
 ## Brevo integration — sharp edges
 
 Full form/attribute detail lives in `docs/systems.md` (Forms section); these are the things that bite.
+Operational depth — the Authorized-IPs outage story, the debugging order, and the attribute-options API workaround — lives in the `brevo-integration` skill (`.agents/skills/brevo-integration/SKILL.md`).
 
 * **Authorized IPs must stay OFF** in Brevo's security settings.
 Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermittently block production form submissions (this caused a real incident).
