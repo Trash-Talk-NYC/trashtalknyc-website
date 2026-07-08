@@ -22,6 +22,7 @@ Stack:
 Pages:
 - Home
 - Events -> (Club Events)
+- Clean Zone -> (`/clean-zone`, tree guard initiative map)
 - About
 - Contact
 
@@ -39,6 +40,17 @@ Platform:
 Current behavior:
 - Build-time fetch (`fetchEventsAtBuildTime()` in `src/lib/events.ts`) pulls upcoming/past events directly from Eventbrite
 - Events page consumes Eventbrite data
+
+## Clean Zone
+
+Platform:
+- Leaflet + OpenStreetMap raster tiles (no API key)
+
+Current behavior:
+- `/clean-zone` maps every tree bed block the tree guard initiative has renovated ("guarded")
+- Guarded locations are Trash Talk NYC's own curated list (`GuardedSite[]` in `src/lib/clean-zone.ts`), not a NYC Open Data import; new blocks are a single append
+- New site coordinates are geocoded via NYC Planning's GeoSearch API (documented in `src/lib/clean-zone.ts`); NYC Parks' Forestry Tree Points dataset is referenced only as an optional, display-only `nycTreeIds` field
+- Launched with one guarded site: the block of 708 W 171st St, Washington Heights
 
 ## Donations
 
@@ -116,6 +128,7 @@ Shipped:
 - Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
 - Cloudflare Turnstile bot check on both forms (security audit X1); dormant until the captain provisions real keys — see Forms above
 - SEO & share-metadata overhaul (2026-07): complete OG/Twitter tags, favicon set + share card generated from the hero logo, JSON-LD Organization schema, sitemap + robots.txt + canonicals — see Website above
+- Clean Zone page (`/clean-zone`): Leaflet + OpenStreetMap map of guarded tree beds, launched with one site (708 W 171st St)
 
 Medium:
 - CRM/database

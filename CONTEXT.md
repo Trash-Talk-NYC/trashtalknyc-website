@@ -11,3 +11,6 @@ The data shape a card component needs to render an event. Derived from `EventDat
 
 ## CountdownParts
 Defined in `src/lib/countdown.ts`. `{ days: number, hours: number, minutes: number, seconds: number }` — the raw numeric parts of a countdown to an event. Display formatting (padding, labels) is the caller's responsibility. Produced by `createCountdown(isoStr, onTick)`, which returns a cleanup function to stop the interval.
+
+## GuardedSite
+Defined in `src/lib/clean-zone.ts`. The typed shape of one tree bed block the tree guard initiative has renovated ("guarded") — address, borough/neighborhood, lat/lng, bilingual display date and description, and an optional `nycTreeIds` cross-reference into NYC Parks' Forestry Tree Points dataset (display-only, never required). Trash Talk NYC's own curated list (`guardedSites`), not a city import; rendered on `/clean-zone` by `CleanZoneMap.astro` (Leaflet map) and the page's field-log cards.
