@@ -13,6 +13,37 @@
 const BREVO_CONTACTS_URL = 'https://api.brevo.com/v3/contacts';
 const BREVO_NOTES_URL = 'https://api.brevo.com/v3/crm/notes';
 
+// The action runs in a synchronous Netlify function with a 10s budget and
+// makes up to three sequential Brevo calls; without timeouts one hung
+// connection eats the whole budget. The upsert (the call that must not lose
+// a signup) gets the larger share; the best-effort note flow gets less.
+const UPSERT_TIMEOUT_MS = 5000;
+const NOTE_TIMEOUT_MS = 3000;
+
+// Brevo allows 10 req/s on non-enterprise plans, so a viral-post burst can
+// 429 the upsert and lose a signup. One retry (bounded so two attempts plus
+// the wait still fit the function budget) turns most of those into slightly
+// slower successes.
+const RETRY_DELAY_CAP_MS = 2000;
+const RETRY_FALLBACK_DELAY_MS = 1000;
+
+function isRetryable(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
+function retryDelayMs(res: Response): number {
+  const raw = res.headers.get('retry-after');
+  const seconds = raw === null ? NaN : Number(raw);
+  // HTTP-date Retry-After values parse as NaN and fall through to the
+  // jittered fallback rather than being honored — acceptable for one retry.
+  const base = Number.isFinite(seconds) && seconds >= 0
+    ? seconds * 1000
+    : RETRY_FALLBACK_DELAY_MS + Math.random() * 250;
+  return Math.min(base, RETRY_DELAY_CAP_MS);
+}
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
 export interface BrevoUpsert {
   email: string;
   attributes: Record<string, string>;
@@ -32,9 +63,8 @@ export function buildAttributes(fields: Record<string, string | undefined>): Rec
 }
 
 export async function upsertBrevoContact(apiKey: string, contact: BrevoUpsert): Promise<BrevoResult> {
-  let res: Response;
-  try {
-    res = await fetch(BREVO_CONTACTS_URL, {
+  const attempt = () =>
+    fetch(BREVO_CONTACTS_URL, {
       method: 'POST',
       headers: {
         'api-key': apiKey,
@@ -47,7 +77,16 @@ export async function upsertBrevoContact(apiKey: string, contact: BrevoUpsert): 
         listIds: [contact.listId],
         updateEnabled: true,
       }),
+      signal: AbortSignal.timeout(UPSERT_TIMEOUT_MS),
     });
+
+  let res: Response;
+  try {
+    res = await attempt();
+    if (isRetryable(res.status)) {
+      await sleep(retryDelayMs(res));
+      res = await attempt();
+    }
   } catch (err) {
     return { ok: false, detail: err instanceof Error ? err.message : 'network error' };
   }
@@ -74,6 +113,7 @@ export async function getBrevoContactId(apiKey: string, email: string): Promise<
   try {
     res = await fetch(`${BREVO_CONTACTS_URL}/${encodeURIComponent(email)}`, {
       headers: { 'api-key': apiKey, Accept: 'application/json' },
+      signal: AbortSignal.timeout(NOTE_TIMEOUT_MS),
     });
   } catch (err) {
     return { ok: false, detail: err instanceof Error ? err.message : 'network error' };
@@ -106,6 +146,7 @@ export async function createBrevoNote(apiKey: string, contactId: number, text: s
         Accept: 'application/json',
       },
       body: JSON.stringify({ text, contactIds: [contactId] }),
+      signal: AbortSignal.timeout(NOTE_TIMEOUT_MS),
     });
   } catch (err) {
     return { ok: false, detail: err instanceof Error ? err.message : 'network error' };

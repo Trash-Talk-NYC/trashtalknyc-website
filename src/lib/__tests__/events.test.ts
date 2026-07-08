@@ -136,11 +136,23 @@ describe('fetchEventsAtBuildTime', () => {
     vi.unstubAllEnvs();
   });
 
+  const okPage = (events: unknown[], pagination?: unknown) =>
+    ({ ok: true, json: async () => ({ events, pagination }) }) as Response;
+
+  /**
+   * fetchEventsAtBuildTime now issues two queries (current_future + past);
+   * this routes the mock by time_filter so tests can control each side.
+   */
+  const mockEventbrite = (byFilter: { current_future?: unknown[]; past?: unknown[] }) => {
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      const filter = url.includes('time_filter=current_future') ? 'current_future' : 'past';
+      return okPage(byFilter[filter] ?? []);
+    });
+  };
+
   it('flattens Eventbrite\'s nested name and venue shape into EventData', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ events: [rawEvent] }),
-    } as Response);
+    mockEventbrite({ current_future: [rawEvent] });
 
     const { upcoming } = await fetchEventsAtBuildTime();
     expect(upcoming).toHaveLength(1);
@@ -153,10 +165,7 @@ describe('fetchEventsAtBuildTime', () => {
   });
 
   it('produces map URLs and card name without "[object Object]"', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ events: [rawEvent] }),
-    } as Response);
+    mockEventbrite({ current_future: [rawEvent] });
 
     const { upcoming } = await fetchEventsAtBuildTime();
     const mapUrls = getMapUrls(upcoming[0]);
@@ -169,17 +178,77 @@ describe('fetchEventsAtBuildTime', () => {
     const pastEvent = {
       ...rawEvent,
       id: '456',
+      start: { local: '2020-01-01T10:00:00', utc: '2020-01-01T14:00:00Z' },
       end: { local: '2020-01-01T12:00:00', utc: '2020-01-01T16:00:00Z' },
     };
     const draftEvent = { ...rawEvent, id: '789', status: 'draft' };
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ events: [rawEvent, pastEvent, draftEvent] }),
-    } as Response);
+    mockEventbrite({ current_future: [rawEvent, draftEvent], past: [pastEvent] });
 
     const { upcoming, past } = await fetchEventsAtBuildTime();
     expect(upcoming.map(e => e.id)).toEqual(['123']);
     expect(past.map(e => e.id)).toEqual(['456']);
+  });
+
+  it('queries upcoming and past separately instead of one start_asc page', async () => {
+    // Regression: a single time_filter=all&order_by=start_asc query fills
+    // page 1 with the oldest events once the org passes 100 lifetime
+    // events, silently dropping every upcoming event.
+    mockEventbrite({ current_future: [rawEvent] });
+
+    await fetchEventsAtBuildTime();
+
+    const urls = vi.mocked(fetch).mock.calls.map(([input]) => String(input));
+    expect(urls).toHaveLength(2);
+    expect(urls.some(u => u.includes('time_filter=current_future') && u.includes('order_by=start_asc'))).toBe(true);
+    expect(urls.some(u => u.includes('time_filter=past') && u.includes('order_by=start_desc'))).toBe(true);
+    expect(urls.some(u => u.includes('time_filter=all'))).toBe(false);
+  });
+
+  it('follows pagination continuations so events past page 1 are kept', async () => {
+    const page2Event = { ...rawEvent, id: 'page2' };
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (!url.includes('time_filter=current_future')) return okPage([]);
+      if (url.includes('continuation=tok-1')) return okPage([page2Event]);
+      return okPage([rawEvent], { has_more_items: true, continuation: 'tok-1' });
+    });
+
+    const { upcoming } = await fetchEventsAtBuildTime();
+    expect(upcoming.map(e => e.id)).toEqual(['123', 'page2']);
+  });
+
+  it('re-classifies an in-progress event returned by the past query as upcoming', async () => {
+    // Eventbrite buckets by its own current/past rule; the site's rule is
+    // "not yet ended". An event that already started but has a future end
+    // must land in upcoming, and appearing in both queries must not dupe it.
+    const inProgress = {
+      ...rawEvent,
+      id: 'live-now',
+      start: { local: '2020-01-01T10:00:00', utc: '2020-01-01T14:00:00Z' },
+      end: { local: '2099-01-01T12:00:00', utc: '2099-01-01T16:00:00Z' },
+    };
+    mockEventbrite({ current_future: [inProgress], past: [inProgress] });
+
+    const { upcoming, past } = await fetchEventsAtBuildTime();
+    expect(upcoming.map(e => e.id)).toEqual(['live-now']);
+    expect(past).toEqual([]);
+  });
+
+  it('orders upcoming soonest-first and past newest-first', async () => {
+    const at = (id: string, startUtc: string, endUtc: string) => ({
+      ...rawEvent,
+      id,
+      start: { local: null, utc: startUtc },
+      end: { local: null, utc: endUtc },
+    });
+    mockEventbrite({
+      current_future: [at('far', '2099-06-01T14:00:00Z', '2099-06-01T16:00:00Z'), at('soon', '2098-06-01T14:00:00Z', '2098-06-01T16:00:00Z')],
+      past: [at('old', '2019-06-01T14:00:00Z', '2019-06-01T16:00:00Z'), at('recent', '2024-06-01T14:00:00Z', '2024-06-01T16:00:00Z')],
+    });
+
+    const { upcoming, past } = await fetchEventsAtBuildTime();
+    expect(upcoming.map(e => e.id)).toEqual(['soon', 'far']);
+    expect(past.map(e => e.id)).toEqual(['recent', 'old']);
   });
 
   it('returns empty arrays and warns when env vars are missing', async () => {
@@ -195,7 +264,7 @@ describe('fetchEventsAtBuildTime', () => {
   });
 
   it('returns empty arrays and warns when the Eventbrite API request fails', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
+    vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 401,
       statusText: 'Unauthorized',
@@ -205,6 +274,20 @@ describe('fetchEventsAtBuildTime', () => {
     const result = await fetchEventsAtBuildTime();
     expect(result).toEqual({ upcoming: [], past: [] });
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('401'));
+
+    warnSpy.mockRestore();
+  });
+
+  it('still returns upcoming events when only the past query fails', async () => {
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      if (String(input).includes('time_filter=current_future')) return okPage([rawEvent]);
+      return { ok: false, status: 500, statusText: 'Internal Server Error' } as Response;
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { upcoming, past } = await fetchEventsAtBuildTime();
+    expect(upcoming.map(e => e.id)).toEqual(['123']);
+    expect(past).toEqual([]);
 
     warnSpy.mockRestore();
   });

@@ -80,6 +80,44 @@ export function toEventCardProps(ev: EventData): EventCardProps {
   };
 }
 
+type EventbriteEventsPage = {
+  events?: EventbriteApiEvent[];
+  pagination?: { has_more_items?: boolean; continuation?: string | null };
+};
+
+// Bounds the continuation loop so a misbehaving API response can't hang a build.
+const MAX_EVENT_PAGES = 10;
+
+/**
+ * Fetches every page of an organization events query. Returns null on a
+ * failed request so callers can tell "API broke" apart from "no events".
+ */
+async function fetchAllEventbritePages(
+  orgId: string,
+  token: string,
+  query: string,
+): Promise<EventbriteApiEvent[] | null> {
+  const events: EventbriteApiEvent[] = [];
+  let continuation = '';
+  for (let page = 0; page < MAX_EVENT_PAGES; page++) {
+    const res = await fetch(
+      `https://www.eventbriteapi.com/v3/organizations/${orgId}/events/` +
+        `?${query}&expand=venue&page_size=100${continuation && `&continuation=${continuation}`}`,
+      { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
+    );
+    if (!res.ok) {
+      console.warn(`[events] Eventbrite API request failed at build time (${query}): ${res.status} ${res.statusText}`);
+      return null;
+    }
+    const data = await res.json() as EventbriteEventsPage;
+    events.push(...(data.events ?? []));
+    if (!data.pagination?.has_more_items || !data.pagination.continuation) return events;
+    continuation = data.pagination.continuation;
+  }
+  console.warn(`[events] Eventbrite returned more than ${MAX_EVENT_PAGES} pages (${query}); later events were dropped`);
+  return events;
+}
+
 export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[]; past: EventData[] }> {
   const token = import.meta.env.EVENTBRITE_TOKEN as string | undefined;
   const orgId = import.meta.env.EVENTBRITE_ORGANIZER_ID as string | undefined;
@@ -93,23 +131,28 @@ export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[];
     return { upcoming: [], past: [] };
   }
 
-  const res = await fetch(
-    `https://www.eventbriteapi.com/v3/organizations/${orgId}/events/?time_filter=all&order_by=start_asc&expand=venue&page_size=100`,
-    { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
-  );
-  if (!res.ok) {
-    console.warn(`[events] Eventbrite API request failed at build time: ${res.status} ${res.statusText}`);
-    return { upcoming: [], past: [] };
-  }
+  // Two queries instead of one time_filter=all fetch: sorted start_asc, a
+  // single query fills page 1 with the oldest events, so upcoming events
+  // silently vanish once the org passes 100 lifetime events.
+  const [upcomingRaw, pastRaw] = await Promise.all([
+    fetchAllEventbritePages(orgId, token, 'time_filter=current_future&order_by=start_asc'),
+    fetchAllEventbritePages(orgId, token, 'time_filter=past&order_by=start_desc'),
+  ]);
 
-  const data = await res.json() as { events?: EventbriteApiEvent[] };
+  // Eventbrite's current/past split doesn't exactly match the site's rule
+  // (anything not yet *ended* counts as upcoming), so re-classify by end
+  // time over the merged set, deduped in case an in-progress event shows
+  // up in both queries.
+  const byId = new Map<string, EventData>();
+  for (const e of [...(pastRaw ?? []), ...(upcomingRaw ?? [])]) {
+    if (e.status === 'draft') continue;
+    byId.set(e.id, mapEventbriteEvent(e));
+  }
+  const events = [...byId.values()];
   const now = new Date().toISOString();
-  const events = (data.events ?? [])
-    .filter(e => e.status !== 'draft')
-    .map(mapEventbriteEvent);
   return {
-    upcoming: events.filter(e => e.end.utc > now),
-    past: events.filter(e => e.end.utc <= now),
+    upcoming: events.filter(e => e.end.utc > now).sort((a, b) => a.start.utc.localeCompare(b.start.utc)),
+    past: events.filter(e => e.end.utc <= now).sort((a, b) => b.start.utc.localeCompare(a.start.utc)),
   };
 }
 

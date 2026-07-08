@@ -58,6 +58,69 @@ describe('upsertBrevoContact', () => {
     const result = await upsertBrevoContact('key', contact);
     expect(result.ok).toBe(false);
   });
+
+  it('bounds the request with an abort signal so a hung connection cannot eat the function budget', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 201 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await upsertBrevoContact('key', contact);
+
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('retries once on 429, honoring Retry-After, so a rate-limit blip does not lose the signup', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response('{}', { status: 429, headers: { 'Retry-After': '0' } }))
+      .mockResolvedValueOnce(new Response('{}', { status: 201 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await upsertBrevoContact('key', contact);
+
+    expect(result).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries once on 5xx after the ~1s fallback delay when Retry-After is absent', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(new Response('{}', { status: 503 }))
+        .mockResolvedValueOnce(new Response(null, { status: 204 }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const pending = upsertBrevoContact('key', contact);
+      // Fallback delay is 1s + up to 250ms jitter
+      await vi.advanceTimersByTimeAsync(1250);
+
+      expect(await pending).toEqual({ ok: true });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('gives up after a single retry and reports the failure', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ code: 'too_many_requests' }), { status: 429, headers: { 'Retry-After': '0' } }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await upsertBrevoContact('key', contact);
+
+    expect(result).toEqual({ ok: false, status: 429, detail: 'too_many_requests' });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry non-retryable client errors', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ code: 'invalid_parameter' }), { status: 400 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await upsertBrevoContact('key', contact);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('buildNoteText', () => {
@@ -80,6 +143,7 @@ describe('getBrevoContactId', () => {
 
     expect(result).toEqual({ ok: true, id: 4321 });
     expect(fetchMock.mock.calls[0][0]).toBe('https://api.brevo.com/v3/contacts/jane%2Btest%40example.com');
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
   });
 
   it('reports a lookup failure with the Brevo error code', async () => {
@@ -123,6 +187,7 @@ describe('createBrevoNote', () => {
       text: 'form=signup | field=message | submitted=x\n—\nhi',
       contactIds: [4321],
     });
+    expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
   it('reports failures without throwing so callers can treat notes as best-effort', async () => {
