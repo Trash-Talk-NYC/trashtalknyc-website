@@ -2,7 +2,13 @@ import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions'
 import { signupSchema, contactSchema } from '../lib/server/schemas';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
-import { buildAttributes, upsertBrevoContact } from '../lib/server/brevo';
+import {
+  buildAttributes,
+  buildNoteText,
+  createBrevoNote,
+  getBrevoContactId,
+  upsertBrevoContact,
+} from '../lib/server/brevo';
 
 /**
  * Server actions for the two site forms. Flow per submission:
@@ -82,6 +88,34 @@ async function upsertOrThrow(
   log('info', 'form_submitted', { form });
 }
 
+/**
+ * Records the free-text field as a Brevo CRM note so the full submission
+ * history survives (the MESSAGE attribute only keeps the latest value).
+ * Best-effort: a note failure is logged but never fails the submission —
+ * the contact upsert already succeeded.
+ */
+async function tryCreateNote(noteForm: string, email: string, content: string | undefined): Promise<void> {
+  const trimmed = content?.trim();
+  if (!trimmed) return;
+
+  const apiKey = getEnv('BREVO_API_KEY');
+  if (!apiKey) return; // upsert would have thrown already; belt and braces
+
+  const contact = await getBrevoContactId(apiKey, email);
+  if (!contact.ok) {
+    log('warn', 'brevo_note_failed', { form: noteForm, stage: 'contact_lookup', status: contact.status ?? 0, detail: contact.detail });
+    return;
+  }
+
+  const note = await createBrevoNote(apiKey, contact.id, buildNoteText(noteForm, 'message', trimmed));
+  if (!note.ok) {
+    log('warn', 'brevo_note_failed', { form: noteForm, stage: 'create_note', status: note.status ?? 0, detail: note.detail });
+    return;
+  }
+
+  log('info', 'brevo_note_created', { form: noteForm });
+}
+
 export const server = {
   signup: defineAction({
     accept: 'form',
@@ -102,11 +136,16 @@ export const server = {
           LASTNAME: input.lname,
           BOROUGH: input.borough,
           PHONE: input.phone,
-          EXPERIENCE: input.experience,
-          HEAR_ABOUT: input.hear,
+          MESSAGE: input.experience,
+          HEAR_ABOUT_US: input.hear,
+          // Both waiver checkboxes are client-required to submit at all,
+          // so reaching this handler implies acceptance
+          WAIVER_ACCEPTED: 'true',
         }),
         'BREVO_LIST_ID_SIGNUP',
       );
+
+      await tryCreateNote('signup', input.email, input.experience);
 
       return { ok: true };
     },
@@ -134,12 +173,16 @@ export const server = {
         buildAttributes({
           FIRSTNAME: input.fname,
           LASTNAME: input.lname,
+          PHONE: input.phone,
           INQUIRY_TYPE: input.inquiryType,
           ORGANIZATION: input.organization,
           MESSAGE: input.message,
         }),
         listIdVar,
       );
+
+      const noteForm = input.inquiryType === 'partnership' ? 'contact-collab' : 'contact-general';
+      await tryCreateNote(noteForm, input.email, input.message);
 
       return { ok: true };
     },

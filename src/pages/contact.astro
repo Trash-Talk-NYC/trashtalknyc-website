@@ -52,6 +52,11 @@ import { actions } from 'astro:actions';
             <input type="email" id="email" name="email" required placeholder="jane@example.com" autocomplete="email" data-placeholder-en="jane@example.com" data-placeholder-es="jane@ejemplo.com" />
           </div>
 
+          <div class="form-group">
+            <label for="phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+            <input type="tel" id="phone" name="phone" placeholder="(212) 555-0100" autocomplete="tel" />
+          </div>
+
           <div class="form-group" id="orgGroup" hidden>
             <label for="organization" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
             <input type="text" id="organization" name="organization" autocomplete="organization" />
@@ -163,6 +168,8 @@ import { actions } from 'astro:actions';
     color: var(--charcoal);
     margin-bottom: 0.4rem;
   }
+
+  .form-optional { font-size: 0.7rem; color: var(--gray); margin-left: 0.2rem; font-weight: 400; }
 
   /* 16px input text so iOS Safari doesn't zoom the page on focus */
   .form-group input,

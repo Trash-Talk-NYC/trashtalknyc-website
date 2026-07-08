@@ -56,6 +56,11 @@ describe('contactSchema', () => {
     expect(contactSchema.safeParse({ ...validContact, organization: '' }).success).toBe(true);
   });
 
+  it('accepts phone as optional or empty (mirrors the signup form)', () => {
+    expect(contactSchema.safeParse({ ...validContact, phone: '' }).success).toBe(true);
+    expect(contactSchema.safeParse({ ...validContact, phone: '(212) 555-0100' }).success).toBe(true);
+  });
+
   it('rejects a missing message', () => {
     expect(contactSchema.safeParse({ ...validContact, message: '' }).success).toBe(false);
   });

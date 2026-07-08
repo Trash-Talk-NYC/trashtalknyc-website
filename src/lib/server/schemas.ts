@@ -30,6 +30,7 @@ export const contactSchema = z
   .object({
     ...baseFields,
     inquiryType: z.enum(['general', 'partnership']),
+    phone: z.string().trim().max(50).optional(),
     organization: z.string().trim().max(300).optional(),
     message: z.string().trim().min(1, 'Message is required').max(5000),
   })

@@ -225,13 +225,21 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
         <div class="form-group">
           <label for="hear"><span data-en="How'd you hear about us?" data-es="¿Cómo nos conociste?">How'd you hear about us?</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+          <!-- value attributes must exactly match the HEAR_ABOUT_US enum
+               options configured in Brevo; display text is friendlier -->
           <select id="hear" name="hear">
             <option value="" selected data-en="Select one" data-es="Selecciona una opción">Select one</option>
-            <option data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
-            <option data-en="Friend or neighbor" data-es="Un amigo o vecino">Friend or neighbor</option>
-            <option data-en="Flyer / QR code" data-es="Volante / código QR">Flyer / QR code</option>
-            <option data-en="Local community board" data-es="Junta comunitaria local">Local community board</option>
-            <option data-en="Other" data-es="Otro">Other</option>
+            <option value="Saw Tree Guard" data-en="Saw a Tree Guard" data-es="Vi un Tree Guard">Saw a Tree Guard</option>
+            <option value="Saw the Purple Vests" data-en="Saw the Purple Vests" data-es="Vi los chalecos morados">Saw the Purple Vests</option>
+            <option value="My Block Entered the Clean Zone" data-en="My block entered the Clean Zone" data-es="Mi cuadra entró a la Zona Limpia">My block entered the Clean Zone</option>
+            <option value="Word of Mouth" data-en="Word of mouth" data-es="De boca en boca">Word of mouth</option>
+            <option value="Instagram" data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
+            <option value="TikTok" data-en="TikTok" data-es="TikTok">TikTok</option>
+            <option value="LinkedIn" data-en="LinkedIn" data-es="LinkedIn">LinkedIn</option>
+            <option value="Facebook" data-en="Facebook" data-es="Facebook">Facebook</option>
+            <option value="YouTube" data-en="YouTube" data-es="YouTube">YouTube</option>
+            <option value="Flyer / QR Code" data-en="Flyer / QR code" data-es="Volante / código QR">Flyer / QR code</option>
+            <option value="Local Community Board" data-en="Local community board" data-es="Junta comunitaria local">Local community board</option>
           </select>
         </div>
 

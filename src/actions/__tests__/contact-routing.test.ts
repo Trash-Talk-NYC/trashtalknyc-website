@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { upsertBrevoContact } = vi.hoisted(() => ({
+const { upsertBrevoContact, getBrevoContactId, createBrevoNote } = vi.hoisted(() => ({
   upsertBrevoContact: vi.fn().mockResolvedValue({ ok: true }),
+  getBrevoContactId: vi.fn().mockResolvedValue({ ok: true, id: 1 }),
+  createBrevoNote: vi.fn().mockResolvedValue({ ok: true }),
 }));
 vi.mock('../../lib/server/brevo', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../lib/server/brevo')>();
-  return { ...actual, upsertBrevoContact };
+  return { ...actual, upsertBrevoContact, getBrevoContactId, createBrevoNote };
 });
 
 import { server } from '../index';
@@ -59,5 +61,31 @@ describe('contact action Brevo list routing', () => {
 
     expect(upsertBrevoContact).toHaveBeenCalledTimes(1);
     expect(upsertBrevoContact).toHaveBeenCalledWith('test-key', expect.objectContaining({ listId: 222 }));
+  });
+
+  it('records the message as a CRM note tagged with the tab-specific form name', async () => {
+    getBrevoContactId.mockClear();
+    createBrevoNote.mockClear();
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(
+      contactInput({ inquiryType: 'partnership', organization: 'Acme Org', message: 'Let us collaborate' }),
+      contactCtx(),
+    );
+
+    expect(getBrevoContactId).toHaveBeenCalledWith('test-key', 'jane@example.com');
+    expect(createBrevoNote).toHaveBeenCalledTimes(1);
+    const noteText = createBrevoNote.mock.calls[0][2] as string;
+    expect(noteText).toMatch(/^form=contact-collab \| field=message \| submitted=/);
+    expect(noteText).toContain('Let us collaborate');
+  });
+
+  it('does not fail the submission when note creation fails', async () => {
+    createBrevoNote.mockResolvedValueOnce({ ok: false, status: 400, detail: 'invalid_parameter' });
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    const result = await server.contact.handler(contactInput(), contactCtx());
+
+    expect(result).toEqual({ ok: true });
   });
 });
