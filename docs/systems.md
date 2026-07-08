@@ -24,7 +24,7 @@ Pages:
 - Events -> (Club Events)
 - About
 - Contact
-- Wallet (`/wallet`) -> live GoFundMe total plus Cleanups/Tree Guards initiative cards; deploy-preview review only, deliberately not linked from nav
+- Wallet (`/wallet`) -> live GoFundMe total plus Cleanups/Tree Guards initiative cards; linked from nav ("The Wallet" / "La Cartera", between Club Events and About)
 - Cleanups (`/cleanups`) -> minimal placeholder initiative page, linked from Wallet
 - Tree Guards (`/tree-guards`) -> minimal placeholder initiative page, linked from Wallet
 - 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
@@ -122,7 +122,7 @@ Shipped:
 - Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
 - Cloudflare Turnstile bot check on both forms (security audit X1); dormant until the captain provisions real keys — see Forms above
 - SEO & share-metadata overhaul (2026-07): complete OG/Twitter tags, favicon set + share card generated from the hero logo, JSON-LD Organization schema, sitemap + robots.txt + canonicals — see Website above
-- Wallet page (`/wallet`) with live GoFundMe total and Cleanups/Tree Guards initiative cards; deploy-preview review only, not yet linked from nav
+- Wallet page (`/wallet`) with live GoFundMe total and Cleanups/Tree Guards initiative cards; linked from nav as "The Wallet" / "La Cartera"
 
 Medium:
 - CRM/database
