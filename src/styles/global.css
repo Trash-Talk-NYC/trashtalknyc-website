@@ -85,7 +85,9 @@ html {
   /* Keep in-page anchor targets (#deep-clean, #signup, …) clear of the
      sticky nav, which otherwise clips their first --nav-h pixels */
   scroll-padding-top: calc(var(--nav-h) + 0.75rem);
-  background: var(--off-white);
+  /* Canvas color = what rubber-band overscroll exposes beyond the page.
+     Charcoal matches the nav (top bounce) and footer (bottom bounce). */
+  background: var(--charcoal);
   -webkit-text-size-adjust: 100%;
 }
 
@@ -94,13 +96,27 @@ html {
 }
 
 /* ── BODY / BASE TYPOGRAPHY ── */
+/* iOS 26 Safari (Liquid Glass) ignores theme-color and paints the strip
+   between the system status bar and the page from the BODY's
+   background-color specifically — not the html canvas, not the sticky
+   nav, not pseudo-elements (verified by pixel-sampling iOS Simulator
+   screenshots with the theme-color meta removed). Body must stay
+   charcoal so that strip reads as an extension of the nav; the cream
+   page background lives on <main> instead. */
 body {
-  background: var(--off-white);
+  background: var(--charcoal);
   color: var(--charcoal);
   font-family: 'Nunito', sans-serif;
   font-size: var(--step-0);
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+main {
+  background: var(--off-white);
+  /* flow-root keeps child margins from collapsing out of <main>, which
+     would open charcoal gaps between the nav/footer and the cream page. */
+  display: flow-root;
 }
 
 img, svg, video { max-width: 100%; }

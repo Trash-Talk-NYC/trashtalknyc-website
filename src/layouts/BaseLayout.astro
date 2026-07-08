@@ -20,10 +20,10 @@ const { title, description, showSocialBar = true } = Astro.props;
   <!-- viewport-fit=cover lets the page extend under notches/home
        indicators; components pad with env(safe-area-inset-*) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <!-- Without an explicit theme-color, iOS Safari tints its status-bar
-       backdrop from the page background (cream), painting a light band
-       directly above the charcoal sticky nav while scrolling. Match the
-       nav so browser chrome reads as an extension of it. -->
+  <!-- Tints Safari's chrome on iOS 15–17. iOS 26 (Liquid Glass) ignores
+       theme-color entirely and samples the body's background-color for the
+       status-bar strip instead — that's handled by the charcoal body in
+       global.css. Kept for the older-iOS audience. -->
   <meta name="theme-color" content="#1c1c22" />
   <title>{title}</title>
   {description && <meta name="description" content={description} />}
