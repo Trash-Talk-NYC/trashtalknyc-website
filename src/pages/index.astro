@@ -112,9 +112,12 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
         </div>
       ) : (
         <div class="dc-fallback">
-          <span data-en="No upcoming events right now — follow" data-es="No hay eventos próximos — síguenos en">No upcoming events right now — follow</span>
-          {' '}<a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
-          <span data-en="for updates." data-es="para actualizaciones.">for updates.</span>
+          <p>
+            <span data-en="No upcoming events right now — follow" data-es="No hay eventos próximos — síguenos en">No upcoming events right now — follow</span>
+            {' '}<a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
+            <span data-en="for updates." data-es="para actualizaciones.">for updates.</span>
+          </p>
+          <a href="#signup" class="dc-fallback-cta" data-en="Join the club list — hear about the next one first ↓" data-es="Únete a la lista — entérate primero del próximo ↓">Join the club list — hear about the next one first ↓</a>
         </div>
       )}
       {hasEventCoords && (
@@ -632,17 +635,54 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
   .dc-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
 
+  /* Empty state: margin auto centers it both ways inside the flex-column
+     bento box so the card doesn't read as a blank slab at any width */
   .dc-fallback {
     color: var(--paper-a55);
     font-size: 0.9rem;
     font-weight: 600;
     line-height: 1.7;
-    margin-top: auto;
+    margin: auto;
+    max-width: 36ch;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
     position: relative;
     z-index: 1;
   }
 
   .dc-fallback a { color: var(--purple-light); text-decoration: underline; }
+
+  /* Same press-button device as the RSVP button, so the card still has a
+     conversion path (signup) when there's no event to RSVP to */
+  .dc-fallback-cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    background: var(--yellow);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.7rem 1.4rem;
+    border: 2px solid var(--charcoal);
+    border-radius: 8px;
+    box-shadow: var(--press-sm);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+  }
+
+  .dc-fallback a.dc-fallback-cta {
+    color: var(--charcoal);
+    text-decoration: none;
+  }
+
+  .dc-fallback-cta:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--charcoal);
+  }
 
   .btn-eb-rsvp {
     margin-top: auto;
