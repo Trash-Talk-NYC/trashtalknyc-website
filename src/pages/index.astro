@@ -1281,7 +1281,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
 <script>
   import { actions } from 'astro:actions';
-  import { getCurrentLang, onLanguageChange } from '../lib/language';
+  import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
   import { formatDate } from '../lib/events';
 
   // ── WAIVER TEXT (bilingual) ──
@@ -1291,8 +1291,6 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
   // ── SUBMIT ERROR MESSAGE (aria-live region, bilingual) ──
   const signupErrorEl = document.getElementById('signupFormError');
-  const submitErrorText = (lang: 'en' | 'es') =>
-    lang === 'es' ? '¡Algo salió mal! Inténtalo de nuevo.' : 'Something went wrong — please try again.';
 
   // ── LANGUAGE CHANGE HANDLER ──
   onLanguageChange((lang) => {

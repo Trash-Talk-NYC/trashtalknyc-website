@@ -266,7 +266,7 @@ import { actions } from 'astro:actions';
 
 <script>
   import { actions } from 'astro:actions';
-  import { getCurrentLang, onLanguageChange } from '../lib/language';
+  import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
 
   const form = document.getElementById('contactForm') as HTMLFormElement | null;
   const btn = document.getElementById('submitBtn') as HTMLButtonElement | null;
@@ -282,9 +282,6 @@ import { actions } from 'astro:actions';
   const errorEl = document.getElementById('contactFormError') as HTMLElement | null;
 
   if (startedAtInput) startedAtInput.value = String(Date.now());
-
-  const submitErrorText = (lang: 'en' | 'es') =>
-    lang === 'es' ? '¡Algo salió mal! Inténtalo de nuevo.' : 'Something went wrong — please try again.';
 
   type ContactType = 'general' | 'partnership';
   let currentType: ContactType = 'general';
