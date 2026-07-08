@@ -138,9 +138,7 @@ export const server = {
           PHONE: input.phone,
           MESSAGE: input.experience,
           HEAR_ABOUT_US: input.hear,
-          // Both waiver checkboxes are client-required to submit at all,
-          // so reaching this handler implies acceptance
-          WAIVER_ACCEPTED: 'true',
+          WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
         }),
         'BREVO_LIST_ID_SIGNUP',
       );

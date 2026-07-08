@@ -6,6 +6,8 @@ const validSignup = {
   lname: 'Doe',
   email: 'jane@example.com',
   borough: 'Brooklyn',
+  waiverCheck: 'on',
+  ageCheck: 'on',
 };
 
 const validContact = {
@@ -44,6 +46,19 @@ describe('signupSchema', () => {
 
   it('trims whitespace-only names down to invalid', () => {
     expect(signupSchema.safeParse({ ...validSignup, fname: '   ' }).success).toBe(false);
+  });
+
+  it.each(['waiverCheck', 'ageCheck'])('rejects a submission missing %s (checkbox unchecked)', (field) => {
+    const { [field]: _omitted, ...rest } = validSignup as Record<string, string>;
+    expect(signupSchema.safeParse(rest).success).toBe(false);
+  });
+
+  it.each(['waiverCheck', 'ageCheck'])('rejects a non-"on" value for %s', (field) => {
+    expect(signupSchema.safeParse({ ...validSignup, [field]: 'true' }).success).toBe(false);
+  });
+
+  it('requires both waiver checkboxes to be accepted', () => {
+    expect(signupSchema.safeParse(validSignup).success).toBe(true);
   });
 });
 

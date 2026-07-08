@@ -18,12 +18,19 @@ const baseFields = {
 
 export const BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'] as const;
 
+// Checkboxes submit the string 'on' when checked and are omitted entirely
+// from form data when unchecked, so a literal match both requires the box
+// to be present and rejects any other value.
+const waiverAccepted = z.literal('on', { errorMap: () => ({ message: 'You must accept the liability waiver to sign up' }) });
+
 export const signupSchema = z.object({
   ...baseFields,
   borough: z.enum(BOROUGHS, { errorMap: () => ({ message: 'Please select a borough' }) }),
   phone: z.string().trim().max(50).optional(),
   experience: z.string().trim().max(2000).optional(),
   hear: z.string().trim().max(200).optional(),
+  waiverCheck: waiverAccepted,
+  ageCheck: waiverAccepted,
 });
 
 export const contactSchema = z
