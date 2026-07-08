@@ -52,11 +52,12 @@ Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 re
 
 Volunteer form:
 - Home page `#signup` → Brevo list `signups_list` (`BREVO_LIST_ID_SIGNUP`)
-- Fields land as Brevo contact attributes (BOROUGH, PHONE, MESSAGE, HEAR_ABOUT_US, WAIVER_ACCEPTED); HEAR_ABOUT_US values must match the Brevo enum exactly (the select's value attributes do). EXPERIENCE is dormant — historical only
+- Fields land as Brevo contact attributes (BOROUGH, PHONE, MESSAGE, HEAR_ABOUT_US, WAIVER_ACCEPTED); HEAR_ABOUT_US values must match the Brevo enum exactly (the select's value attributes do). WAIVER_ACCEPTED reflects server-validated checkbox state — both the waiver and age checkboxes are required and zod-validated (`'on'` literal), not assumed just because the handler was reached. EXPERIENCE is dormant — historical only
 
 Contact form:
 - Single page (`/contact`), tabbed: General / Collaborate → separate Brevo lists per tab (`CONTACT_GENERAL` / `CONTACT_COLLAB`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
 - Tab choice is sent as `inquiryType` (`general` | `partnership`); partnership requires `organization`
+- Fields land as Brevo contact attributes (FIRSTNAME, LASTNAME, EMAIL, PHONE (optional), INQUIRY_TYPE, ORGANIZATION, MESSAGE)
 - Message text is stored as a Brevo contact attribute (MESSAGE, latest value only) AND as a Brevo CRM note per submission (full history, header form=…|field=…|submitted=…); nothing emails the team directly anymore; a transactional-email notification is a known follow-up
 - "Host an Event" as a third inquiry type was considered and deferred — not built
 
@@ -88,7 +89,7 @@ Current volunteer database:
 Known pain points:
 - Duplicate emails
 - Manual deduplication
-- No CRM
+- No dedicated CRM/database; Brevo CRM notes now capture full per-submission history against a contact (see Forms above), but there's no querying, reporting, or workflow layer beyond Brevo's own UI
 
 ## Known priorities
 
@@ -99,6 +100,7 @@ High:
 Shipped:
 - Contact form redesign / partnership intake flow (single form, tabbed General/Collaborate)
 - Signup and contact forms migrated from Netlify Function + Web3Forms to Astro Actions + Brevo (2026-07 redesign)
+- Per-submission Brevo CRM note history (full history vs. the MESSAGE attribute's latest-value-only)
 
 Medium:
 - CRM/database
