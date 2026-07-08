@@ -56,6 +56,9 @@ See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to c
 * Layout is fluid-first: `clamp()` tokens and `auto-fit`/`minmax()` grids instead of stacking breakpoints; heroes use `svh` (not `vh`); chrome pads with `env(safe-area-inset-*)` under `viewport-fit=cover`.
 * The visual language is "street poster / club zine": hard offset press shadows (`--press`, `--press-sm`), tilted `.sticker` chips, `.sign-plate` street-sign titles, giant outlined Bebas background words, the `.tape-seam` caution divider, and `.grid-paper` texture on light sections. New UI should reuse these devices rather than soft shadows or new decorative styles.
 * EN/ES translation is attribute-driven (`data-en`/`data-es`, state in `src/lib/language.ts`); dynamic text (dates, tab-dependent copy) is re-rendered by the owning component on `onLanguageChange`.
+* iOS Safari paints its own opaque status-bar backdrop above the page while scrolling, colored by the `theme-color` meta in `BaseLayout.astro` (must stay nav charcoal `#1c1c22`).
+Without it, Safari samples the cream page background and draws a light band directly above the charcoal sticky nav — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over that band because it is browser chrome.
+Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
 
 ## Development Philosophy
 
