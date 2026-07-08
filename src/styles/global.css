@@ -82,6 +82,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Keep in-page anchor targets (#deep-clean, #signup, …) clear of the
+     sticky nav, which otherwise clips their first --nav-h pixels */
+  scroll-padding-top: calc(var(--nav-h) + 0.75rem);
   background: var(--off-white);
   -webkit-text-size-adjust: 100%;
 }

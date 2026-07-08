@@ -68,6 +68,10 @@ import { actions } from 'astro:actions';
           </div>
 
           <button type="submit" class="form-submit" id="submitBtn" data-en="Send message →" data-es="Enviar mensaje →">Send message →</button>
+          <!-- No data-en/data-es here: setLang() would inject the error text on
+               every toggle even when no error occurred; the submit handler and
+               onLanguageChange own this element's content -->
+          <p class="form-error" id="contactFormError" aria-live="polite"></p>
         </form>
       </div>
     </div>
@@ -222,6 +226,18 @@ import { actions } from 'astro:actions';
   }
   .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: var(--press-sm); }
 
+  /* Stays rendered (never display:none) so screen readers announce text
+     inserted into the aria-live region; :empty just collapses the gap */
+  .form-error {
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    color: #c0392b;
+  }
+
+  .form-error:empty { margin: 0; }
+
   /* ── SUCCESS STATE ── */
   .form-success {
     display: none;
@@ -263,8 +279,12 @@ import { actions } from 'astro:actions';
   const headingEl = document.getElementById('formHeading') as HTMLElement | null;
   const introEl = document.getElementById('formIntro') as HTMLElement | null;
   const startedAtInput = document.getElementById('contactStartedAt') as HTMLInputElement | null;
+  const errorEl = document.getElementById('contactFormError') as HTMLElement | null;
 
   if (startedAtInput) startedAtInput.value = String(Date.now());
+
+  const submitErrorText = (lang: 'en' | 'es') =>
+    lang === 'es' ? '¡Algo salió mal! Inténtalo de nuevo.' : 'Something went wrong — please try again.';
 
   type ContactType = 'general' | 'partnership';
   let currentType: ContactType = 'general';
@@ -319,6 +339,9 @@ import { actions } from 'astro:actions';
     if (orgInput) orgInput.required = type === 'partnership';
     if (inquiryTypeInput) inquiryTypeInput.value = type;
 
+    // The error belonged to the previous inquiry attempt
+    if (errorEl) errorEl.textContent = '';
+
     restoreFormAfterSuccess();
     applyCopy();
   }
@@ -326,8 +349,12 @@ import { actions } from 'astro:actions';
   tabGeneral?.addEventListener('click', () => setType('general'));
   tabPartnership?.addEventListener('click', () => setType('partnership'));
 
-  // Keep heading/intro in sync when the user switches language
-  onLanguageChange(() => applyCopy());
+  // Keep heading/intro (and any visible submit error) in sync when the
+  // user switches language
+  onLanguageChange((lang) => {
+    applyCopy();
+    if (errorEl?.textContent) errorEl.textContent = submitErrorText(lang);
+  });
 
   applyCopy();
 
@@ -338,6 +365,7 @@ import { actions } from 'astro:actions';
     const originalText = btn.textContent ?? '';
     btn.disabled = true;
     btn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Sending…';
+    if (errorEl) errorEl.textContent = '';
 
     const { error } = await actions.contact(new FormData(form));
 
@@ -347,9 +375,10 @@ import { actions } from 'astro:actions';
       return;
     }
 
-    btn.textContent = getCurrentLang() === 'es'
-      ? '¡Algo salió mal! Inténtalo de nuevo.'
-      : 'Something went wrong — please try again.';
+    // Persistent aria-live message so the failure survives the transient
+    // button swap and is announced by screen readers
+    if (errorEl) errorEl.textContent = submitErrorText(getCurrentLang());
+    btn.textContent = submitErrorText(getCurrentLang());
     btn.style.background = '#c0392b';
     btn.style.borderColor = '#c0392b';
     btn.style.color = '#fff';

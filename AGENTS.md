@@ -2,7 +2,7 @@
 
 ## What this project is  
 
-This is a website for Trash Talk NYC associated with @trashtalk_nyc (on Instagram, @trashtalknyc on TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest. 
+This is a website for Trash Talk NYC associated with @trashtalk_nyc (same handle on Instagram and TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest. 
 He reached out to me, Fabi, to make the website. 
 
 ## What the website does
