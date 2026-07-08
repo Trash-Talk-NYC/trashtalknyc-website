@@ -1,0 +1,312 @@
+---
+/**
+ * Interactive Leaflet + OpenStreetMap map of the tree beds the tree guard
+ * initiative has renovated (data: src/lib/clean-zone.ts). No API key: OSM
+ * raster tiles, desaturated via CSS so the map reads as printed paper
+ * instead of a stock web widget. The frame is the site's polaroid device —
+ * white lip, tape strips, press shadow — so the map sits in the street-
+ * poster language like a map taped to a lamppost.
+ *
+ * Field-log cards (or anything else) can focus a marker by dispatching
+ *   document.dispatchEvent(new CustomEvent('clean-zone:focus', { detail: { id } }))
+ * with a GuardedSite id.
+ */
+---
+
+<div class="cz-frame">
+  <div
+    class="cz-map"
+    id="cleanZoneMap"
+    role="region"
+    aria-label="Map of guarded tree beds"
+  ></div>
+  <div class="cz-caption" data-en="The Clean Zone · NYC" data-es="La Zona Limpia · NYC">The Clean Zone · NYC</div>
+</div>
+
+<script>
+  import * as L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+  import { guardedSites, type GuardedSite } from '../lib/clean-zone';
+  import { getCurrentLang, onLanguageChange, type Lang } from '../lib/language';
+
+  // Popup DOM is created by Leaflet at runtime, so it can't use the
+  // data-en/data-es attribute swap — it re-renders via onLanguageChange.
+  function popupHtml(site: GuardedSite, lang: Lang): string {
+    const chip = lang === 'es' ? 'Protegido' : 'Guarded';
+    const date = lang === 'es' ? site.dateEs : site.dateEn;
+    const desc = lang === 'es' ? site.descriptionEs : site.descriptionEn;
+    return [
+      '<div class="cz-popup">',
+      `<span class="cz-popup-chip">${chip} · ${date}</span>`,
+      `<strong class="cz-popup-address">${site.address}</strong>`,
+      `<span class="cz-popup-area">${site.neighborhood} · ${site.borough}</span>`,
+      `<p class="cz-popup-desc">${desc}</p>`,
+      '</div>',
+    ].join('');
+  }
+
+  const mapEl = document.getElementById('cleanZoneMap');
+
+  if (mapEl) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const map = L.map(mapEl, {
+      // Wheel zoom hijacks page scrolling on desktop; the +/− controls
+      // and pinch zoom cover zooming.
+      scrollWheelZoom: false,
+      // One-finger drag would trap page scrolling on touch screens, so it
+      // starts off there and comes back the moment the visitor zooms —
+      // i.e. once they're deliberately engaging with the map.
+      dragging: !L.Browser.mobile,
+      zoomAnimation: !reducedMotion,
+      fadeAnimation: !reducedMotion,
+      markerZoomAnimation: !reducedMotion,
+    });
+    map.on('zoomstart', () => map.dragging.enable());
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    const treeIcon = L.divIcon({
+      className: 'cz-pin-wrap',
+      html:
+        '<span class="cz-pin">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<circle cx="12" cy="8.5" r="5.5"/><path d="M12 14v7"/><path d="M8.5 21h7"/>' +
+        '</svg></span>',
+      iconSize: [38, 38],
+      iconAnchor: [19, 19],
+      popupAnchor: [0, -22],
+    });
+
+    const markers = new Map<string, L.Marker>();
+    const initialLang = getCurrentLang();
+
+    guardedSites.forEach((site) => {
+      const marker = L.marker([site.lat, site.lng], { icon: treeIcon, alt: site.address }).addTo(map);
+      marker.bindPopup(popupHtml(site, initialLang), { maxWidth: 300 });
+      markers.set(site.id, marker);
+    });
+
+    const first = guardedSites[0];
+    if (guardedSites.length === 1 && first) {
+      map.setView([first.lat, first.lng], 16);
+    } else {
+      map.fitBounds(
+        L.latLngBounds(guardedSites.map((s) => [s.lat, s.lng])),
+        { padding: [48, 48], maxZoom: 16 },
+      );
+    }
+
+    onLanguageChange((lang) => {
+      guardedSites.forEach((site) => {
+        markers.get(site.id)?.setPopupContent(popupHtml(site, lang));
+      });
+    });
+
+    document.addEventListener('clean-zone:focus', (event) => {
+      const id = (event as CustomEvent<{ id: string }>).detail?.id;
+      const site = guardedSites.find((s) => s.id === id);
+      const marker = id ? markers.get(id) : undefined;
+      if (!site || !marker) return;
+      mapEl.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
+      map.setView([site.lat, site.lng], Math.max(map.getZoom(), 16), { animate: !reducedMotion });
+      marker.openPopup();
+    });
+  }
+</script>
+
+<style>
+  /* Polaroid treatment shared with the About page photo: white frame with
+     a deep captioned lip, pinned down with two tape strips */
+  .cz-frame {
+    position: relative;
+    background: #fff;
+    border: 1px solid #d8d3c8;
+    border-radius: 4px;
+    padding: clamp(0.5rem, 1.5vw, 0.8rem);
+    box-shadow: var(--press);
+  }
+
+  .cz-frame::before,
+  .cz-frame::after {
+    content: '';
+    position: absolute;
+    top: -0.8rem;
+    width: 4.5rem;
+    height: 1.6rem;
+    background: rgba(245, 208, 0, 0.75);
+    border: 1px solid rgba(201, 169, 0, 0.4);
+    z-index: 1;
+  }
+
+  .cz-frame::before { left: 6%; transform: rotate(-6deg); }
+  .cz-frame::after { right: 6%; transform: rotate(5deg); }
+
+  .cz-map {
+    height: clamp(340px, 62svh, 560px);
+    border: 2px solid var(--charcoal);
+    border-radius: 3px;
+    background: var(--cream);
+    /* Leaflet panes/controls carry z-indexes up to 1000; contain them so
+       they never float over the sticky nav (z-index 200) while scrolling */
+    position: relative;
+    z-index: 0;
+  }
+
+  .cz-caption {
+    padding: 0.9rem 0.5rem 0.6rem;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--charcoal);
+  }
+
+  /* ── Leaflet overrides — runtime-created DOM, hence :global() ── */
+
+  /* Desaturate the OSM tiles into the site's paper palette; the yellow
+     pins and purple accents then read as ink printed on top */
+  .cz-map :global(.leaflet-tile-pane) {
+    filter: grayscale(1) sepia(0.14) brightness(1.04) contrast(0.92);
+  }
+
+  /* Marker: sticker-style yellow badge, slapped on at a tilt */
+  .cz-map :global(.cz-pin) {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--yellow);
+    color: var(--charcoal);
+    border: 2px solid var(--charcoal);
+    border-radius: 50%;
+    box-shadow: var(--press-sm);
+    transform: rotate(-4deg);
+    transition: transform 150ms var(--ease-out);
+  }
+
+  .cz-map :global(.cz-pin svg) { width: 20px; height: 20px; }
+
+  .cz-map :global(.leaflet-marker-icon:hover .cz-pin),
+  .cz-map :global(.leaflet-marker-icon:focus .cz-pin) {
+    transform: rotate(0deg) scale(1.08);
+  }
+
+  /* Popup: pressed off-white card matching the site's card language */
+  .cz-map :global(.leaflet-popup-content-wrapper) {
+    background: var(--off-white);
+    color: var(--charcoal);
+    border: 2px solid var(--charcoal);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--press-sm);
+  }
+
+  .cz-map :global(.leaflet-popup-tip) {
+    background: var(--charcoal);
+  }
+
+  .cz-map :global(.leaflet-popup-content) {
+    margin: 1rem 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    line-height: 1.55;
+  }
+
+  .cz-map :global(.leaflet-container a.leaflet-popup-close-button) {
+    color: var(--charcoal);
+    font-weight: 700;
+  }
+
+  .cz-map :global(.cz-popup) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .cz-map :global(.cz-popup-chip) {
+    align-self: flex-start;
+    background: var(--yellow);
+    border: 1.5px solid var(--charcoal);
+    border-radius: 3px;
+    padding: 0.2em 0.6em;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .cz-map :global(.cz-popup-address) {
+    margin-top: 0.3rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .cz-map :global(.cz-popup-area) {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--purple);
+  }
+
+  .cz-map :global(.cz-popup-desc) {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a4850;
+  }
+
+  /* Zoom control: pressed street-sign buttons */
+  .cz-map :global(.leaflet-bar) {
+    border: 2px solid var(--charcoal);
+    border-radius: 6px;
+    box-shadow: var(--press-sm);
+  }
+
+  .cz-map :global(.leaflet-bar a) {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    background: var(--off-white);
+    color: var(--charcoal);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    border-bottom-color: var(--charcoal);
+  }
+
+  .cz-map :global(.leaflet-bar a:hover) {
+    background: var(--yellow);
+    color: var(--charcoal);
+  }
+
+  @media (pointer: coarse) {
+    .cz-map :global(.leaflet-bar a) {
+      width: var(--tap);
+      height: var(--tap);
+      line-height: var(--tap);
+    }
+  }
+
+  .cz-map :global(.leaflet-control-attribution) {
+    background: rgba(247, 244, 237, 0.85);
+    font-size: 0.62rem;
+    color: var(--gray);
+  }
+
+  .cz-map :global(.leaflet-control-attribution a) {
+    color: var(--purple);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cz-map :global(.cz-pin) { transition: none; }
+  }
+</style>

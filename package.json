@@ -13,13 +13,15 @@
     "@astrojs/netlify": "^6.6.5",
     "@astrojs/sitemap": "^3.7.3",
     "@netlify/blobs": "^10.7.9",
-    "astro": "^5.0.0"
+    "astro": "^5.0.0",
+    "leaflet": "^1.9.4"
   },
   "engines": {
     "node": ">=20.3.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@types/leaflet": "^1.9.21",
     "@vitest/ui": "^4.1.9",
     "happy-dom": "^20.10.6",
     "netlify-cli": "^17.38.1",

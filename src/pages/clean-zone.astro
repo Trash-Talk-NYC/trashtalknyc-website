@@ -1,0 +1,262 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import CleanZoneMap from '../components/CleanZoneMap.astro';
+import { guardedSites } from '../lib/clean-zone';
+
+const count = guardedSites.length;
+const countEn = `${count} ${count === 1 ? 'block' : 'blocks'} guarded`;
+const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegidas'}`;
+---
+
+<BaseLayout
+  title="The Clean Zone — Trash Talk NYC"
+  description="An interactive map of the NYC tree beds Trash Talk NYC's tree guard initiative has renovated — block by block."
+  showSocialBar={false}
+>
+
+  <PageHero eyebrowEn="Tree Guard Initiative" eyebrowEs="Iniciativa de Protectores de Árboles" word="ZONE">
+    <span data-en="THE" data-es="LA">THE</span><br />
+    <span class="accent" data-en="CLEAN ZONE" data-es="ZONA LIMPIA">CLEAN ZONE</span>
+  </PageHero>
+
+  <section class="cz-section grid-paper">
+    <div class="cz-inner">
+
+      <div class="cz-header">
+        <h2 class="sign-plate" data-en="Guarded Tree Beds" data-es="Alcorques Protegidos">Guarded Tree Beds</h2>
+        <span class="sticker cz-count" style="--tilt: 2deg" data-en={countEn} data-es={countEs}>{countEn}</span>
+      </div>
+
+      <p class="cz-intro" data-en="Tree beds — the little squares of soil around street trees — spend their lives collecting litter, dog waste, and foot traffic. Our tree guard initiative renovates them block by block: we clear out the bed, turn the soil, and install a guard so the tree can actually breathe. Every finished block earns a pin on this map." data-es="Los alcorques — los pequeños cuadros de tierra alrededor de los árboles de la calle — se pasan la vida acumulando basura, desechos de perros y pisadas. Nuestra iniciativa de protectores de árboles los renueva cuadra por cuadra: despejamos el alcorque, removemos la tierra e instalamos un protector para que el árbol pueda respirar. Cada cuadra terminada gana un pin en este mapa.">
+        Tree beds — the little squares of soil around street trees — spend their lives collecting litter, dog waste, and foot traffic. Our tree guard initiative renovates them block by block: we clear out the bed, turn the soil, and install a guard so the tree can actually breathe. Every finished block earns a pin on this map.
+      </p>
+
+      <CleanZoneMap />
+
+      <div class="cz-log">
+        <div class="section-label" data-en="Field Log" data-es="Bitácora">Field Log</div>
+
+        {guardedSites.map((site) => (
+          <article class="cz-card">
+            <div class="cz-card-top">
+              <h3 class="cz-card-address">{site.address}</h3>
+              <span
+                class="cz-card-chip"
+                data-en={`Guarded · ${site.dateEn}`}
+                data-es={`Protegido · ${site.dateEs}`}
+              >Guarded · {site.dateEn}</span>
+            </div>
+            <div class="cz-card-area">{site.neighborhood} · {site.borough}</div>
+            <p class="cz-card-desc" data-en={site.descriptionEn} data-es={site.descriptionEs}>{site.descriptionEn}</p>
+            <button
+              class="cz-card-btn"
+              type="button"
+              data-site-id={site.id}
+              data-en="Find it on the map ↑"
+              data-es="Verlo en el mapa ↑"
+            >Find it on the map ↑</button>
+          </article>
+        ))}
+      </div>
+
+      <div class="cz-cta">
+        <p class="cz-cta-title" data-en="Want the Clean Zone on your block?" data-es="¿Quieres la Zona Limpia en tu cuadra?">Want the Clean Zone on your block?</p>
+        <p class="cz-cta-sub" data-en="Tell us where the tree beds need help — or come guard one with us at a cleanup." data-es="Cuéntanos dónde los alcorques necesitan ayuda — o ven a proteger uno con nosotros en una limpieza.">Tell us where the tree beds need help — or come guard one with us at a cleanup.</p>
+        <a class="cz-cta-btn" href="/contact" data-en="Get in touch →" data-es="Contáctanos →">Get in touch →</a>
+      </div>
+
+    </div>
+  </section>
+
+</BaseLayout>
+
+<script>
+  // Field-log buttons hand focus to the map component (CleanZoneMap
+  // listens for this event and pans/opens the matching popup).
+  document.querySelectorAll<HTMLButtonElement>('.cz-card-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.dispatchEvent(
+        new CustomEvent('clean-zone:focus', { detail: { id: btn.dataset.siteId } }),
+      );
+    });
+  });
+</script>
+
+<style>
+  .cz-section {
+    background: var(--off-white);
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
+
+  .cz-inner {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .cz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-md);
+  }
+
+  .cz-count { flex-shrink: 0; }
+
+  .cz-intro {
+    max-width: 62ch;
+    margin-bottom: var(--space-lg);
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.8;
+  }
+
+  /* ── FIELD LOG ── */
+  .cz-log {
+    margin-top: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .cz-card {
+    background: #fff;
+    border: 2px solid var(--charcoal);
+    border-radius: var(--radius-md);
+    box-shadow: var(--press);
+    padding: var(--space-md);
+  }
+
+  .cz-card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  .cz-card-address {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-2);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .cz-card-chip {
+    background: var(--yellow);
+    border: 1.5px solid var(--charcoal);
+    border-radius: 3px;
+    padding: 0.25em 0.7em;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+  }
+
+  .cz-card-area {
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--purple);
+  }
+
+  .cz-card-desc {
+    max-width: 62ch;
+    margin-top: 0.75rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.7;
+  }
+
+  .cz-card-btn {
+    margin-top: 1rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--purple);
+    border-bottom: 2px solid var(--purple-a20);
+    padding-bottom: 0.15rem;
+    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cz-card-btn:hover { color: var(--purple-light); border-color: var(--purple-light); }
+  }
+
+  @media (pointer: coarse) {
+    .cz-card-btn { min-height: var(--tap); }
+  }
+
+  /* ── CTA: charcoal street-sign card closing the page ── */
+  .cz-cta {
+    margin-top: var(--space-xl);
+    background: var(--charcoal);
+    border-radius: var(--radius-md);
+    box-shadow: 6px 6px 0 var(--purple-light);
+    padding: var(--space-lg) var(--space-md);
+    text-align: center;
+  }
+
+  .cz-cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-3);
+    color: var(--off-white);
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+  }
+
+  .cz-cta-sub {
+    max-width: 46ch;
+    margin: 0.75rem auto 1.5rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--paper-a70);
+    line-height: 1.7;
+  }
+
+  .cz-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap);
+    background: var(--yellow);
+    color: var(--charcoal);
+    border: 2px solid var(--charcoal);
+    border-radius: 6px;
+    box-shadow: var(--press-sm);
+    padding: 0.5rem 1.4rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cz-cta-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 5px 5px 0 var(--charcoal);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cz-cta-btn { transition: none; }
+  }
+</style>
