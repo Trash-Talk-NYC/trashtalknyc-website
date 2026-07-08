@@ -20,6 +20,7 @@ dist/
 .claude/skills/*
 !.claude/skills/e2e-testing
 !.claude/skills/brevo-integration
+!.claude/skills/visual-qa
 
 # Agent skills, lock, and superpowers specs (tooling, not project files)
 .agents/*
@@ -27,6 +28,7 @@ dist/
 .agents/skills/*
 !.agents/skills/e2e-testing/
 !.agents/skills/brevo-integration/
+!.agents/skills/visual-qa/
 skills-lock.json
 docs/superpowers/
 
