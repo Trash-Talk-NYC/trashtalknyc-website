@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<BaseLayout
+  title="Tree Guards — Trash Talk NYC"
+  description="Donation-funded tree guards protecting New York City street trees from trash, salt, and foot traffic."
+>
+  <PageHero eyebrowEn="Initiative" eyebrowEs="Iniciativa" word="TREES">
+    <span data-en="TREE" data-es="PROTECTORES">TREE</span>
+    <br />
+    <span class="accent" data-en="GUARDS" data-es="DE ÁRBOLES">GUARDS</span>
+  </PageHero>
+
+  <section class="initiative-intro grid-paper">
+    <p
+      data-en="Tree guards shield NYC street trees from trash, salt, and foot traffic. Your donations build them — and this page will soon track every guard that goes up."
+      data-es="Los protectores resguardan los árboles de las calles de Nueva York de la basura, la sal y las pisadas. Tus donaciones los construyen — y esta página pronto registrará cada protector instalado."
+    >
+      Tree guards shield NYC street trees from trash, salt, and foot traffic. Your donations build them — and this page will soon track every guard that goes up.
+    </p>
+    <a class="initiative-link" href="/wallet" data-en="← Back to the wallet" data-es="← Volver a la cartera">← Back to the wallet</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .initiative-intro {
+    padding:
+      var(--space-xl)
+      max(var(--gutter), var(--safe-right))
+      max(var(--space-xl), var(--safe-bottom))
+      max(var(--gutter), var(--safe-left));
+    text-align: center;
+  }
+
+  .initiative-intro p {
+    max-width: 34rem;
+    margin: 0 auto var(--space-md);
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+
+  .initiative-link {
+    font-family: 'Space Mono', monospace;
+    font-size: var(--step--1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--purple);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .initiative-link:hover { color: var(--charcoal); }
+</style>

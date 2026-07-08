@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<BaseLayout
+  title="Cleanups — Trash Talk NYC"
+  description="Donation-funded cleanups across New York City: bags, gloves, grabbers, and the crew that shows up."
+>
+  <PageHero eyebrowEn="Initiative" eyebrowEs="Iniciativa" word="CLEANUPS">
+    <span data-en="CLEANUPS" data-es="LIMPIEZAS">CLEANUPS</span>
+  </PageHero>
+
+  <section class="initiative-intro grid-paper">
+    <p
+      data-en="Your donations buy the bags, gloves, and grabbers behind every Trash Talk cleanup — and this page will soon show that work, cleanup by cleanup."
+      data-es="Tus donaciones compran las bolsas, los guantes y las pinzas detrás de cada limpieza de Trash Talk — y esta página pronto mostrará ese trabajo, limpieza por limpieza."
+    >
+      Your donations buy the bags, gloves, and grabbers behind every Trash Talk cleanup — and this page will soon show that work, cleanup by cleanup.
+    </p>
+    <a class="initiative-link" href="/events" data-en="See upcoming cleanups →" data-es="Ver próximas limpiezas →">See upcoming cleanups →</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .initiative-intro {
+    padding:
+      var(--space-xl)
+      max(var(--gutter), var(--safe-right))
+      max(var(--space-xl), var(--safe-bottom))
+      max(var(--gutter), var(--safe-left));
+    text-align: center;
+  }
+
+  .initiative-intro p {
+    max-width: 34rem;
+    margin: 0 auto var(--space-md);
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+
+  .initiative-link {
+    font-family: 'Space Mono', monospace;
+    font-size: var(--step--1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--purple);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .initiative-link:hover { color: var(--charcoal); }
+</style>

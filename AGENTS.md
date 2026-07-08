@@ -20,7 +20,8 @@ He reached out to me, Fabi, to make the website.
 * Astro Actions for both forms (validation, spam checks, Blobs rate limiting, Brevo upsert — `src/actions/`, `src/lib/server/`)
 * Brevo for emailing tens of thousands of people
 * Eventbrite integration 
-* GoFundMe embeds
+* GoFundMe embeds; the raw donation total comes from GoFundMe's public web gateway (`src/lib/server/gofundme.ts`).
+  That gateway sends no CORS allow-origin header, so browsers cannot call it directly — fetch it server-side (page frontmatter at build time, or the on-demand `/api/donation-total.json` route) and pass the number down.
 
 ## Brevo integration — sharp edges
 
