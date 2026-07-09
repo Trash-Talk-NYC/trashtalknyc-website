@@ -2,6 +2,7 @@ import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions'
 import { signupSchema, contactSchema } from '../lib/server/schemas';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
+import { verifyTurnstileToken } from '../lib/server/turnstile';
 import {
   buildAttributes,
   buildNoteText,
@@ -12,7 +13,8 @@ import {
 
 /**
  * Server actions for the two site forms. Flow per submission:
- * spam heuristics → per-IP rate limit → env check → Brevo contact upsert.
+ * spam heuristics → per-IP rate limit → Turnstile verification →
+ * env check → Brevo contact upsert.
  *
  * Log lines are structured JSON (Netlify captures stdout/stderr) and
  * deliberately exclude API keys and submitted PII.
@@ -64,6 +66,31 @@ async function shouldSilentlyDrop(form: FormName, ctx: ActionAPIContext, spamInp
   }
 
   return false;
+}
+
+/**
+ * Enforces Cloudflare Turnstile alongside (not replacing) the heuristics in
+ * shouldSilentlyDrop. Runs after the rate limit so hammering IPs can't burn
+ * siteverify calls. Dormant until PUBLIC_TURNSTILE_SITE_KEY is provisioned:
+ * pages built without the site key render no widget, so enforcing here would
+ * reject every legitimate submission. Once the site key is set, a missing
+ * secret is a misconfiguration and fails closed like any missing form env.
+ */
+async function requireTurnstile(form: FormName, ctx: ActionAPIContext, token: string | undefined): Promise<void> {
+  if (!getEnv('PUBLIC_TURNSTILE_SITE_KEY')) {
+    log('warn', 'turnstile_not_configured', { form });
+    return;
+  }
+
+  const secret = requireEnv('TURNSTILE_SECRET_KEY', form);
+  const result = token
+    ? await verifyTurnstileToken(secret, token, ctx.clientAddress)
+    : { ok: false as const, detail: 'missing_token' };
+
+  if (!result.ok) {
+    log('warn', 'form_turnstile_rejected', { form, reason: result.detail });
+    throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
+  }
 }
 
 async function upsertOrThrow(
@@ -138,6 +165,8 @@ export const server = {
       });
       if (dropped) return { ok: true };
 
+      await requireTurnstile('signup', ctx, input['cf-turnstile-response']);
+
       await upsertOrThrow(
         'signup',
         input.email,
@@ -169,6 +198,8 @@ export const server = {
         text: input.message,
       });
       if (dropped) return { ok: true };
+
+      await requireTurnstile('contact', ctx, input['cf-turnstile-response']);
 
       // Each tab routes to its own Brevo list. These env-var names are
       // short (no BREVO_LIST_ID_ prefix) because Netlify rejected the

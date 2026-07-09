@@ -47,8 +47,14 @@ Current behavior:
 ## Forms
 
 Both forms submit through Astro Actions (`src/actions/index.ts`) running as an on-demand Netlify function via `@astrojs/netlify`.
-Each action validates with zod, runs spam heuristics (honeypot + timing + content patterns), rate limits per IP via Netlify Blobs, and upserts the submitter as a Brevo contact with a raw `fetch()` call (no Brevo SDK).
+Each action validates with zod, runs spam heuristics (honeypot + timing + content patterns), rate limits per IP via Netlify Blobs, verifies a Cloudflare Turnstile token server-side (`src/lib/server/turnstile.ts`), and upserts the submitter as a Brevo contact with a raw `fetch()` call (no Brevo SDK).
 Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign.
+
+Turnstile (bot check, added 2026-07 after the security-scale audit flagged bot list-pollution):
+- Widget renders on both forms only when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time; the token lands as the `cf-turnstile-response` form field.
+- The actions enforce verification only when that site key is set at runtime, so the feature is dormant until the keys are provisioned (logged as `turnstile_not_configured` on every submission meanwhile).
+- Once the site key is set, a missing `TURNSTILE_SECRET_KEY` fails closed (`form_env_missing`), and any verification failure rejects with the same generic message as other validation failures (`form_turnstile_rejected` in logs).
+- Turnstile sits alongside the honeypot/timing heuristics, not instead of them; setting the keys in Netlify requires a redeploy because the site key bakes into the prerendered pages.
 
 Volunteer form:
 - Home page `#signup` → Brevo list `signups_list` (`BREVO_LIST_ID_SIGNUP`)
@@ -102,6 +108,7 @@ Shipped:
 - Signup and contact forms migrated from Netlify Function + Web3Forms to Astro Actions + Brevo (2026-07 redesign)
 - Per-submission Brevo CRM note history (full history vs. the MESSAGE attribute's latest-value-only)
 - Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
+- Cloudflare Turnstile bot check on both forms (security audit X1); dormant until the captain provisions real keys — see Forms above
 
 Medium:
 - CRM/database

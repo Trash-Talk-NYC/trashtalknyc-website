@@ -2,9 +2,18 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import { actions } from 'astro:actions';
+
+// Baked in at build time (pages are prerendered): when unset, no widget
+// renders and the contact action skips Turnstile verification. After setting
+// the key in Netlify, a redeploy is required for the widget to appear.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <BaseLayout title="Contact — Trash Talk NYC">
+
+  <!-- Turnstile bot check on the contact form; implicit rendering picks up the
+       .cf-turnstile div. Only loaded when a site key was set at build time. -->
+  {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
   <PageHero eyebrowEn="Contact" eyebrowEs="Contacto" word="HELLO">
     <span data-en="TALK TO" data-es="HABLA CON">TALK TO</span><br /><span class="accent" data-en="TRASH TALK" data-es="TRASH TALK">TRASH TALK</span>
@@ -66,6 +75,12 @@ import { actions } from 'astro:actions';
             <label for="message" data-en="Message *" data-es="Mensaje *">Message *</label>
             <textarea id="message" name="message" required></textarea>
           </div>
+
+          {turnstileSiteKey && (
+            <div class="form-group turnstile-group">
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-action="contact" data-theme="light"></div>
+            </div>
+          )}
 
           <button type="submit" class="form-submit" id="submitBtn" data-en="Send message →" data-es="Enviar mensaje →">Send message →</button>
           <!-- No data-en/data-es here: setLang() would inject the error text on
@@ -201,6 +216,12 @@ import { actions } from 'astro:actions';
     min-height: 130px;
   }
 
+  /* Reserve the widget's rendered height (normal size is 65px) so the
+     submit button doesn't jump when the Turnstile iframe loads in */
+  .turnstile-group {
+    min-height: 65px;
+  }
+
   .form-submit {
     width: 100%;
     padding: 0.85rem 1.5rem;
@@ -317,6 +338,9 @@ import { actions } from 'astro:actions';
 
     successDiv.style.display = '';
     form.style.display = '';
+    // Turnstile tokens are single-use — the successful submission consumed
+    // this one, so the re-shown form needs a fresh challenge
+    window.turnstile?.reset();
     const messageInput = form.elements.namedItem('message') as HTMLTextAreaElement | null;
     if (messageInput) messageInput.value = '';
     if (btn) {
@@ -371,6 +395,10 @@ import { actions } from 'astro:actions';
       successDiv.style.display = 'block';
       return;
     }
+
+    // Turnstile tokens are single-use — the failed attempt consumed this
+    // one, so reset the widget or a retry would submit a spent token
+    window.turnstile?.reset();
 
     // Persistent aria-live message so the failure survives the transient
     // button swap and is announced by screen readers
