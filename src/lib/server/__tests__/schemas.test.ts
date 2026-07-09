@@ -60,6 +60,16 @@ describe('signupSchema', () => {
   it('requires both waiver checkboxes to be accepted', () => {
     expect(signupSchema.safeParse(validSignup).success).toBe(true);
   });
+
+  it('passes the Turnstile token through and tolerates its absence', () => {
+    const withToken = signupSchema.safeParse({ ...validSignup, 'cf-turnstile-response': 'tok' });
+    expect(withToken.success && withToken.data['cf-turnstile-response']).toBe('tok');
+    expect(signupSchema.safeParse(validSignup).success).toBe(true);
+  });
+
+  it('rejects a Turnstile token beyond the documented 2048-char max', () => {
+    expect(signupSchema.safeParse({ ...validSignup, 'cf-turnstile-response': 'x'.repeat(2049) }).success).toBe(false);
+  });
 });
 
 describe('contactSchema', () => {

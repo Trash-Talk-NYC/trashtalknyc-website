@@ -43,6 +43,15 @@ Before debugging "missing Brevo fields", check the contact's custom attributes v
 * **Attributes are last-write-wins.**
 Full submission history is preserved as Brevo CRM notes with a queryable header (`form=… | field=… | submitted=<ISO>` then the raw content) — see `buildNoteText` in `src/lib/server/brevo.ts`.
 
+## Turnstile bot check — pending real keys
+
+Both forms carry a Cloudflare Turnstile widget verified server-side in the actions (`requireTurnstile` in `src/actions/index.ts`, `src/lib/server/turnstile.ts`), layered on top of — not replacing — the honeypot/timing heuristics.
+**The feature is dormant until real keys exist:** with `PUBLIC_TURNSTILE_SITE_KEY` unset, no widget renders and the actions skip verification, logging `turnstile_not_configured` per submission.
+**Captain action required to go live:** create a Turnstile widget for the production domain in the Cloudflare dashboard, set `PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in Netlify (all deploy contexts), then trigger a redeploy — the site key bakes into the prerendered pages at build time, so enforcement without a rebuild would break the forms.
+Once the site key is set, a missing secret fails closed (`form_env_missing` pattern); verification failures log `form_turnstile_rejected` and show the same generic error as other validation failures.
+For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
+Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
+
 ## E2E Testing
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.

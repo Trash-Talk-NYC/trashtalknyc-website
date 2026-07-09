@@ -14,6 +14,11 @@ const baseFields = {
   email: z.string().trim().email('Please enter a valid email address').max(320),
   botcheck: z.string().optional(),
   startedAt: z.string().optional(),
+  // Injected as a hidden input by the Cloudflare Turnstile widget. Optional
+  // so parsing still succeeds while Turnstile is unprovisioned — enforcement
+  // lives in the action (requireTurnstile), not the schema. 2048 is the
+  // documented max token length.
+  'cf-turnstile-response': z.string().max(2048).optional(),
 };
 
 export const BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'] as const;
