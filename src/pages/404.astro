@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Prerendered so URL misses (mostly bot scans) get a static, CDN-cacheable
+// body instead of a fresh SSR function render per request.
+export const prerender = true;
+---
+
+<BaseLayout title="Page Not Found — Trash Talk NYC" description="This page doesn't exist." showSocialBar={false}>
+
+  <section class="notfound diag-texture">
+    <div class="notfound-inner">
+      <div class="sticker" style="--tilt: 2deg" data-en="Wrong Block" data-es="Cuadra Equivocada">Wrong Block</div>
+      <h1 class="notfound-code">404</h1>
+      <p class="notfound-msg" data-en="This page got picked up with the trash." data-es="Esta página se fue con la basura.">This page got picked up with the trash.</p>
+      <a href="/" class="notfound-btn" data-en="Back to Home →" data-es="Volver al Inicio →">Back to Home →</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .notfound {
+    min-height: calc(100svh - var(--nav-h));
+    background: var(--charcoal);
+    color: var(--off-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
+
+  .notfound-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .notfound-code {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-display);
+    line-height: 1;
+    color: var(--yellow);
+    letter-spacing: 0.04em;
+    text-shadow: 6px 6px 0 var(--purple);
+  }
+
+  .notfound-msg {
+    color: var(--paper-a70);
+    max-width: 32ch;
+  }
+
+  .notfound-btn {
+    display: inline-flex;
+    align-items: center;
+    background: var(--yellow);
+    color: var(--charcoal);
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: var(--step--1);
+    text-decoration: none;
+    padding: 0.9em 1.6em;
+    border: 2px solid var(--charcoal);
+    border-radius: 4px;
+    box-shadow: var(--press-sm);
+    margin-top: var(--space-xs);
+    min-height: var(--tap);
+  }
+
+  .notfound-btn:hover {
+    background: var(--off-white);
+  }
+</style>

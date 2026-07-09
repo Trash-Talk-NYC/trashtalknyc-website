@@ -1,7 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { fetchEventsAtBuildTime, formatDate, formatTime } from '../lib/events';
 import { actions } from 'astro:actions';
+import primaryLogo from '../assets/primary-logo.png';
 
 const { upcoming } = await fetchEventsAtBuildTime();
 
@@ -43,7 +45,9 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
   <div class="hero-core">
     <div class="sticker hero-chip" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
     <h1 class="sr-only">Trash Talk NYC</h1>
-    <img src="/assets/primary-logo.png" alt="Trash Talk NYC" class="hero-logo" width="400" height="400" />
+    <!-- densities covers retina at the 500px CSS max width; eager because
+         the logo is the homepage LCP element -->
+    <Image src={primaryLogo} alt="Trash Talk NYC" class="hero-logo" width={500} height={500} densities={[1, 2]} loading="eager" fetchpriority="high" />
     <div class="hero-btns">
       <a href="#signup" class="btn-primary" data-en="Join" data-es="Únete">Join</a>
       <a href="#deep-clean" class="btn-secondary" data-en="Next Club Event →" data-es="Próximo Evento del Club →">Next Club Event →</a>

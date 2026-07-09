@@ -1,7 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import SocialLinks from '../components/SocialLinks.astro';
+import davidPhoto from '../assets/IMG_0952_Original.jpeg';
 ---
 
 <BaseLayout title="About — Trash Talk NYC" showSocialBar={false}>
@@ -16,7 +18,9 @@ import SocialLinks from '../components/SocialLinks.astro';
 
       <div>
         <div class="david-photo" id="davidPhoto">
-          <img src="/assets/IMG_0952_Original.jpeg" alt="David, organizer of Trash Talk NYC" />
+          <!-- 1140px wide keeps the CSS square crop sharp at 2x on the
+               ~380px polaroid (height scales to ~760px) -->
+          <Image src={davidPhoto} alt="David, organizer of Trash Talk NYC" class="david-img" width={1140} />
           <div class="david-tag" data-en="Organizer" data-es="Organizador">Organizer</div>
         </div>
       </div>
@@ -121,8 +125,14 @@ import SocialLinks from '../components/SocialLinks.astro';
   .david-photo::before { left: 8%; transform: rotate(-6deg); }
   .david-photo::after { right: 8%; transform: rotate(5deg); }
 
-  .david-photo img {
+  /* Class instead of a bare img selector: the element is rendered by
+     astro:assets' <Image>, so it only picks up this page's scoped style
+     via the class we pass through */
+  .david-photo .david-img {
     width: 100%;
+    /* Override the height="" attribute <Image> emits, or the square
+       aspect-ratio crop below never kicks in */
+    height: auto;
     aspect-ratio: 1 / 1;
     object-fit: cover;
     object-position: center 20%;
