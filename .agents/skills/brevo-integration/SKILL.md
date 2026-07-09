@@ -65,6 +65,6 @@ Don't retry with different payloads; edit the options directly in the Brevo dash
 
 ## Form-path facts
 
-Both forms submit through Astro Actions running as an on-demand Netlify function: zod validation → spam heuristics (honeypot + timing + content patterns) → per-IP Netlify Blobs rate limiting → Brevo upsert.
+Both forms submit through Astro Actions running as an on-demand Netlify function: zod validation → spam heuristics (honeypot + timing + content patterns) → per-IP Netlify Blobs rate limiting → Cloudflare Turnstile verification (`src/lib/server/turnstile.ts`, dormant until real keys are provisioned — see `AGENTS.md`) → Brevo upsert.
 Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign — any doc still referencing a Web3Forms key is stale.
 Nothing emails the team on submission and there is no dedicated partnerships inbox; contact submissions land only in Brevo (list + attributes + CRM note), and a transactional-email notification is a known follow-up (`docs/systems.md`, Forms).
