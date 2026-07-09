@@ -50,3 +50,7 @@ export function onLanguageChange(cb: (lang: Lang) => void): () => void {
   callbacks.add(cb);
   return () => callbacks.delete(cb);
 }
+
+export function submitErrorText(lang: Lang): string {
+  return lang === 'es' ? '¡Algo salió mal! Inténtalo de nuevo.' : 'Something went wrong — please try again.';
+}

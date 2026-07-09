@@ -2,7 +2,7 @@
 
 ## What this project is  
 
-This is a website for Trash Talk NYC associated with @trashtalk_nyc (on Instagram, @trashtalknyc on TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest. 
+This is a website for Trash Talk NYC associated with @trashtalk_nyc (same handle on Instagram and TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest. 
 He reached out to me, Fabi, to make the website. 
 
 ## What the website does
@@ -25,6 +25,7 @@ He reached out to me, Fabi, to make the website.
 ## Brevo integration — sharp edges
 
 Full form/attribute detail lives in `docs/systems.md` (Forms section); these are the things that bite.
+Operational depth — the Authorized-IPs outage story, the debugging order, and the attribute-options API workaround — lives in the `brevo-integration` skill (`.agents/skills/brevo-integration/SKILL.md`).
 
 * **Authorized IPs must stay OFF** in Brevo's security settings.
 Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermittently block production form submissions (this caused a real incident).
@@ -46,6 +47,10 @@ Full submission history is preserved as Brevo CRM notes with a queryable header 
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.
 
+## Visual QA
+
+See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling any UI change done: breakpoint matrix, per-width state checklist (including the EN/ES toggle), translating subjective feedback, and the closing report format.
+
 ---
 
 ## Frontend architecture
@@ -58,6 +63,11 @@ See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to c
 * Images live in `src/assets/` and render through `<Image>` from `astro:assets` — never `public/` (raw files there bypass optimization; the 529 KB logo alone would have blown the bandwidth budget at target traffic).
 The adapter sets `imageCDN: false` deliberately, so optimization happens at build time via sharp into immutable `/_astro/*.webp` files — keep it that way.
 Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descendant selector in a scoped `<style>` is fragile against the component's rendered output), and `<Image>` always emits `width`/`height` attributes, so any CSS `aspect-ratio` crop needs an explicit `height: auto` or the height attribute wins (this silently broke the About polaroid once).
+* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over it.
+What colors it depends on the iOS version, and this burned us twice: iOS 15–17 use the `theme-color` meta in `BaseLayout.astro`, but iOS 26 (Liquid Glass) **ignores `theme-color` entirely** and samples the **`body` element's `background-color`** — not the `html` canvas, not the sticky nav, not pseudo-elements (verified by pixel-sampling simulator screenshots).
+That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
+Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
+Local simulators max out at iOS 18, which still honors `theme-color`, so to emulate iOS 26 chrome behavior temporarily remove the `theme-color` meta and confirm the strip still renders charcoal from the body background alone.
 
 ## Development Philosophy
 

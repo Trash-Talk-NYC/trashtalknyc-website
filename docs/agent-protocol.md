@@ -107,116 +107,12 @@ Requires account ownership or platform access.
 
 A role may only assign work to a human if it can explain why the task cannot be completed through one of the other categories.
 
-## Visual Feedback Loop
+## Visual QA, subjective feedback, and closing reports
 
-Human subjective feedback is a first-class input.
+The full procedure lives in the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`): the breakpoint matrix, the per-width state checklist (including the EN/ES language toggle), how to translate subjective feedback and wording feedback into actionable design language, and the closing report every UI change must end with.
 
-The human is not required to use design terminology.
+The non-negotiables it enforces:
 
-Translate observations into actionable design language.
-
-Examples:
-
-"I don't like this."
-→ Ask why (corporate, crowded, generic, too playful, etc.)
-
-"This feels weird."
-→ Determine whether the issue is hierarchy, spacing, contrast, copy, affordance, density, or consistency.
-
-"This feels too corporate."
-→ Adjust copy, placeholder text, imagery, and visual tone.
-
-Do not require a complete design system before making iterative improvements.
-
-Always treat subjective reactions as valid product feedback.
-
-## Developer Experience (DX)
-
-Any UI change must end with a Developer Experience section.
-
-Required outputs:
-
-1. How do I see it?
-2. Where do I see it?
-3. Is it local only, committed, pushed, or in a deploy preview?
-4. What should visually change?
-5. What interactions should I test?
-6. What screen sizes should I verify?
-7. What screenshots/artifacts should be produced?
-
-A feature is not considered complete until a human can easily verify it.
-
-## Visual QA Checklist
-
-For every UI implementation, verify:
-
-Desktop (1440px)
-Laptop (1280px)
-Tablet (768px)
-Mobile (375px)
-
-Check:
-
-- Layout integrity
-- Visual hierarchy
-- Hover states
-- Interactive states
-- Language toggle behavior
-- Overflow/wrapping issues
-- Spacing consistency
-- Accessibility concerns
-- Empty states
-- Success states
-
-Do not assume passing tests implies good visual quality.
-
-## Language Review Mode
-
-When feedback concerns wording, naming, labels, tabs, buttons, headings, placeholders, or short sentences:
-
-Do not treat this as copyediting.
-
-Treat this as audience architecture.
-
-Before changing language, identify:
-
-1. Who is the intended audience?
-2. What mental model is the current language creating?
-3. What assumptions does the language imply?
-4. What alternative framings exist?
-5. Why is one framing preferred?
-
-Translate subjective reactions into design principles rather than replacing words immediately.
-
-Examples:
-
-"I don't like Acme Co."
-
-↓
-
-Design principle:
-Avoid placeholder examples that imply status, exclusivity, or aspirational identity.
-
-"I don't like Work With Us."
-
-↓
-
-Design principle:
-Avoid language that implies employment when the intent is collaboration.
-
-Always explain WHY language changes are proposed.
-
-## Developer Experience Requirements
-
-Any feature that changes the user experience must end with a Developer Experience section.
-
-Include:
-
-1. Where to view the change
-2. Whether it exists locally, in a deploy preview, or in production
-3. What visually changed
-4. What should be verified
-5. Which verification layers have already been completed
-6. Which verification layers still require human review
-
-Do not consider a feature "complete" without explaining how the developer can experience it.
+- Do not assume passing tests implies good visual quality.
+- Human subjective feedback is a first-class input; translate it, never dismiss it.
+- A feature is not complete until a human can easily verify it — every UI change ends with the skill's closing report.

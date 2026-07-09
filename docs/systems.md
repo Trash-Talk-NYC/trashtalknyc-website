@@ -101,6 +101,7 @@ Shipped:
 - Contact form redesign / partnership intake flow (single form, tabbed General/Collaborate)
 - Signup and contact forms migrated from Netlify Function + Web3Forms to Astro Actions + Brevo (2026-07 redesign)
 - Per-submission Brevo CRM note history (full history vs. the MESSAGE attribute's latest-value-only)
+- Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
 
 Medium:
 - CRM/database

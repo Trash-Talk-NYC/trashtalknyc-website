@@ -118,7 +118,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
         <div class="dc-fallback">
           <p>
             <span data-en="No upcoming events right now — follow" data-es="No hay eventos próximos — síguenos en">No upcoming events right now — follow</span>
-            {' '}<a href="https://instagram.com/trashtalk_nyc" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
+            {' '}<a href="https://www.instagram.com/trashtalk_nyc/" target="_blank" rel="noopener">@trashtalk_nyc</a>{' '}
             <span data-en="for updates." data-es="para actualizaciones.">for updates.</span>
           </p>
           <a href="#signup" class="dc-fallback-cta" data-en="Join the club list — hear about the next one first ↓" data-es="Únete a la lista — entérate primero del próximo ↓">Join the club list — hear about the next one first ↓</a>
@@ -261,15 +261,19 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
           </div>
           <label class="waiver-check-row">
             <input type="checkbox" id="waiverCheck" name="waiverCheck" required>
-            <span data-en="I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior. Entiendo que este es un documento legalmente vinculante y firmo voluntariamente. *">I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. <strong>*</strong></span>
+            <span data-en="I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior. Entiendo que este es un documento legalmente vinculante y firmo voluntariamente. *">I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *</span>
           </label>
           <label class="waiver-check-row">
             <input type="checkbox" id="ageCheck" name="ageCheck" required>
-            <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. <strong>*</strong></span>
+            <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *</span>
           </label>
         </div>
 
         <button type="submit" class="form-submit" data-en="Submit my signup →" data-es="Enviar mi inscripción →">Submit my signup →</button>
+        <!-- No data-en/data-es here: setLang() would inject the error text on
+             every toggle even when no error occurred; the submit handler and
+             onLanguageChange own this element's content -->
+        <p class="form-error" id="signupFormError" aria-live="polite"></p>
       </form>
 
       <div class="form-success" id="formSuccess">
@@ -1090,6 +1094,18 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     box-shadow: 2px 2px 0 var(--charcoal);
   }
 
+  /* Stays rendered (never display:none) so screen readers announce text
+     inserted into the aria-live region; :empty just collapses the gap */
+  .form-error {
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    color: #c0392b;
+  }
+
+  .form-error:empty { margin: 0; }
+
   /* ── SUCCESS STATE ── */
   .form-success {
     display: none;
@@ -1269,13 +1285,16 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
 <script>
   import { actions } from 'astro:actions';
-  import { getCurrentLang, onLanguageChange } from '../lib/language';
+  import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
   import { formatDate } from '../lib/events';
 
   // ── WAIVER TEXT (bilingual) ──
   const waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br><br>I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.';
 
   const waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.<br><br>Doy permiso a Trash Talk NYC para fotografiarme o filmarme durante el evento para su uso en redes sociales, incluido Instagram (@trashtalk_nyc), con fines promocionales y comunitarios. Notifique al organizador el día del evento si no da su consentimiento.';
+
+  // ── SUBMIT ERROR MESSAGE (aria-live region, bilingual) ──
+  const signupErrorEl = document.getElementById('signupFormError');
 
   // ── LANGUAGE CHANGE HANDLER ──
   onLanguageChange((lang) => {
@@ -1284,6 +1303,8 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 
     const dateEl = document.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
     if (dateEl) dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
+
+    if (signupErrorEl?.textContent) signupErrorEl.textContent = submitErrorText(lang);
   });
 
   // Apply saved language to waiver on load
@@ -1326,6 +1347,7 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
     submitBtn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Submitting…';
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.7';
+    if (signupErrorEl) signupErrorEl.textContent = '';
 
     const { error } = await actions.signup(new FormData(form));
 
@@ -1335,9 +1357,10 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
       return;
     }
 
-    submitBtn.textContent = getCurrentLang() === 'es'
-      ? '¡Algo salió mal! Inténtalo de nuevo.'
-      : 'Something went wrong — please try again.';
+    // Persistent aria-live message so the failure survives the transient
+    // button swap and is announced by screen readers
+    if (signupErrorEl) signupErrorEl.textContent = submitErrorText(getCurrentLang());
+    submitBtn.textContent = submitErrorText(getCurrentLang());
     submitBtn.style.background = '#c0392b';
     submitBtn.style.borderColor = '#c0392b';
     submitBtn.style.color = '#fff';
