@@ -1,8 +1,9 @@
 ---
 /**
  * Sticky top navigation: logo, page links, Join CTA, language toggle,
- * and the mobile hamburger. Owns active-page detection and the mobile
- * menu open/close wiring.
+ * and the mobile hamburger. Owns active-page detection, the mobile
+ * menu open/close wiring, and the mobile hide-on-scroll behavior
+ * (direction logic in lib/headerScroll).
  */
 import LangToggle from './LangToggle.astro';
 
@@ -14,7 +15,7 @@ const isAbout   = pathname === '/about'  || pathname.startsWith('/about/');
 const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
 ---
 
-<nav aria-label="Main">
+<nav aria-label="Main" id="siteNav">
   <a class="nav-logo" href="/">Trash Talk <span>NYC</span></a>
   <div class="nav-right">
     <LangToggle />
@@ -32,6 +33,9 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
 </nav>
 
 <script>
+  import { createHeaderVisibility } from '../lib/headerScroll';
+
+  const nav = document.getElementById('siteNav');
   const hamburger = document.getElementById('navHamburger');
   const links = document.getElementById('navLinks');
 
@@ -49,6 +53,40 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
   links?.querySelectorAll('a').forEach((a) => {
     a.addEventListener('click', () => setOpen(false));
   });
+
+  /* ── HIDE-ON-SCROLL (mobile) ──
+     Scroll down → header slides away; any upward scroll brings it back.
+     This exists because iOS keeps opening background gaps above a stuck
+     header (three chrome-adjacent fixes later, see AGENTS.md) — a hidden
+     header has no seam to leak through. Direction/threshold/rubber-band
+     logic lives in lib/headerScroll so it stays unit-testable. */
+  const mobileMq = window.matchMedia('(max-width: 768px)');
+  const visibility = createHeaderVisibility({ startY: window.scrollY });
+  let scrollQueued = false;
+
+  function applyScrollState() {
+    scrollQueued = false;
+    const maxY = document.documentElement.scrollHeight - window.innerHeight;
+    const hidden = visibility.update(window.scrollY, maxY);
+    // Never hide on desktop widths or while the mobile menu is open —
+    // hiding the header would take the open menu with it.
+    const shouldHide = hidden && mobileMq.matches && !links?.classList.contains('open');
+    nav?.classList.toggle('nav-hidden', shouldHide);
+  }
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!scrollQueued) {
+        scrollQueued = true;
+        requestAnimationFrame(applyScrollState);
+      }
+    },
+    { passive: true },
+  );
+
+  // Crossing the breakpoint while hidden must not strand a hidden header
+  mobileMq.addEventListener('change', applyScrollState);
 </script>
 
 <style>
@@ -83,6 +121,23 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
       height: 120px;
       background: var(--charcoal);
     }
+
+    /* Hide-on-scroll: the script toggles .nav-hidden; sliding the whole
+       header (bleed included) offscreen removes the chrome seam that iOS
+       keeps opening gaps above. Mobile-only — desktop stays always-sticky. */
+    nav {
+      transition: transform 0.28s var(--ease-out);
+    }
+
+    nav.nav-hidden { transform: translateY(-100%); }
+
+    /* Keyboard focus landing inside a hidden header must bring it back,
+       or the user is typing into an element they cannot see. */
+    nav.nav-hidden:focus-within { transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    nav { transition: none; } /* snap shown/hidden instead of sliding */
   }
 
   .nav-logo {

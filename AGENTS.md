@@ -77,6 +77,11 @@ What colors it depends on the iOS version, and this burned us twice: iOS 15–17
 That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
 Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
 Local simulators max out at iOS 18, which still honors `theme-color`, so to emulate iOS 26 chrome behavior temporarily remove the `theme-color` meta and confirm the strip still renders charcoal from the body background alone.
+* The mobile header (≤768px) is hide-on-scroll: scroll down hides it, any upward scroll reveals it, always shown at the top.
+This exists because three chrome-adjacent fixes (PRs #18, #22, #25) never fully closed the background gap iOS opens above a stuck header — a hidden header has no seam to leak through.
+The direction/threshold/rubber-band-clamp state machine is a pure function in `src/lib/headerScroll.ts` (unit-tested); `NavBar.astro` owns the DOM wiring and must keep three guards: never hide while the hamburger menu is open (it would take the menu with it), reveal on `:focus-within` (keyboard users), and re-apply state when the 768px media query flips (a hidden header must not strand on desktop).
+`prefers-reduced-motion` snaps instead of sliding via `transition: none`.
+The `scroll-padding-top` anchor clearance in `global.css` is sized for the *shown* header, which also covers the hidden state — do not shrink it when the header is hidden.
 
 ## Development Philosophy
 
