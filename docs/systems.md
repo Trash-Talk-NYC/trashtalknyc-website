@@ -129,7 +129,7 @@ Shipped:
 - Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
 - Cloudflare Turnstile bot check on both forms (security audit X1); dormant until the captain provisions real keys — see Forms above
 - SEO & share-metadata overhaul (2026-07): complete OG/Twitter tags, favicon set + share card generated from the hero logo, JSON-LD Organization schema, sitemap + robots.txt + canonicals — see Website above
-- Clean Zone page (`/clean-zone`): Leaflet + OpenStreetMap map of guarded tree beds, launched with one site (708 W 171st St)
+- Clean Zone page (`/clean-zone`): Leaflet + OpenStreetMap map grouping guarded tree beds into named shaded zones, launched with one zone holding one bed (708 W 171st St)
 
 Medium:
 - CRM/database

@@ -23,6 +23,7 @@ The map is Leaflet + OpenStreetMap tiles (no API key); the zones and their tree 
 * Brevo for emailing tens of thousands of people
 * Eventbrite integration 
 * GoFundMe embeds
+* Leaflet + OpenStreetMap tiles for the `/clean-zone` map (client-only, no API key)
 
 ## Brevo integration — sharp edges
 
