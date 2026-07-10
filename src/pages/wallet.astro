@@ -24,7 +24,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 
         <ul class="wallet-cards" role="list">
           <li role="listitem">
-            <a class="wcard wcard-trees" href="/tree-guards">
+            <a class="wcard wcard-trees" href="/tree-guards" data-slot="rear">
               <span class="wcard-top">
                 <span class="wcard-title">Tree Guards</span>
                 <span class="wcard-sub" data-en="Protecting street trees" data-es="Protegiendo los árboles">Protecting street trees</span>
@@ -36,7 +36,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
             </a>
           </li>
           <li role="listitem">
-            <a class="wcard wcard-cleanups" href="/cleanups">
+            <a class="wcard wcard-cleanups" href="/cleanups" data-slot="front">
               <span class="wcard-top">
                 <span class="wcard-title">Cleanups</span>
                 <span class="wcard-sub" data-en="Bags, gloves, grabbers" data-es="Bolsas, guantes, pinzas">Bags, gloves, grabbers</span>
@@ -59,6 +59,15 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
           <p class="wallet-stamp" aria-hidden="true">Trash Talk NYC</p>
         </div>
       </div>
+
+      <button class="cycle-btn cycle-btn-left" id="cycleLeft" type="button">
+        <span aria-hidden="true">&larr;</span>
+        <span class="visually-hidden" data-en="Show other card" data-es="Mostrar la otra tarjeta">Show other card</span>
+      </button>
+      <button class="cycle-btn cycle-btn-right" id="cycleRight" type="button">
+        <span aria-hidden="true">&rarr;</span>
+        <span class="visually-hidden" data-en="Show other card" data-es="Mostrar la otra tarjeta">Show other card</span>
+      </button>
     </div>
 
     <a class="wallet-donate-link" href={campaignUrl} target="_blank" rel="noopener" data-en="Add to the wallet ↗" data-es="Aporta a la cartera ↗">Add to the wallet ↗</a>
@@ -66,12 +75,27 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 </BaseLayout>
 
 <style>
-  /* Registered so the entrance keyframes can interpolate it; without
-     registration a custom property flips discretely mid-animation. */
+  /* Registered so keyframes can interpolate them; without registration
+     a custom property flips discretely mid-animation. */
+  @property --pop-x {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
   @property --pop-y {
     syntax: '<length>';
     inherits: false;
     initial-value: 0px;
+  }
+  @property --pop-z {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+  @property --pop-r {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
   }
 
   /* ── Scene: full viewport under the nav, wallet centered ── */
@@ -99,17 +123,19 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     width: min(100%, 720px);
     container-type: inline-size;
     perspective: 1100px;
-    perspective-origin: 50% 20%;
+    perspective-origin: 50% 40%;
+    position: relative; /* anchors the cycle arrows */
   }
 
-  /* The 3D assembly: back panel (z=0) → cards → front panel, viewed
-     from slightly above so the slot opening reads as real depth.
+  /* The 3D assembly: back panel (z=0) → cards → front panel. Tilted
+     FORWARD — top edge toward the viewer — so you look slightly down
+     into the slot opening, like a wallet leaning at you.
      Heights in cqw: front panel 48, slot headroom 18, total 66. */
   .wallet3d {
     position: relative;
     height: 66cqw;
     transform-style: preserve-3d;
-    transform: rotateX(11deg);
+    transform: rotateX(-10deg);
   }
 
   /* ── Back panel: the wallet's rear wall / interior lining ── */
@@ -138,10 +164,14 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
   }
 
   .wcard {
-    /* Composable 3D placement: --y/--z move per state, --lean is fixed */
-    --pop-y: 0cqw;
+    /* Composable 3D placement: slot rest values + per-state pop deltas */
+    --slot-dy: 7.5cqw; /* front-slot minus rear-slot rest-y, for swipes */
+    --pop-x: 0px;
+    --pop-y: 0px;
     --pop-z: 0px;
+    --pop-r: 0deg;
     position: absolute;
+    top: 0;
     left: 50%;
     width: 76cqw;
     height: 48cqw; /* credit-card 1.586 aspect at 76cqw wide */
@@ -153,63 +183,151 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
     text-decoration: none;
     pointer-events: auto;
-    /* iOS double-tap zoom would otherwise eat the second tap of the
-       pop-then-navigate flow */
+    /* No double-tap gesture here — a tap is always a plain navigation */
     touch-action: manipulation;
+    /* iOS paints its tap highlight over the card's full (mostly hidden)
+       box, which read as a translucent block over the wallet */
+    -webkit-tap-highlight-color: transparent;
     transform:
-      translateX(calc(-50% + var(--lean-x, 0cqw)))
+      translateX(calc(-50% + var(--lean-x, 0px) + var(--pop-x)))
       translateY(calc(var(--rest-y) + var(--pop-y)))
       translateZ(calc(var(--rest-z) + var(--pop-z)))
-      rotate(var(--lean, 0deg));
+      rotate(calc(var(--lean, 0deg) + var(--pop-r)));
     transition: transform 0.35s var(--ease-out);
     /* backwards fill: hidden until the delay elapses, then rise to the
        base value; once finished the animation stops applying so the
-       hover/focus/tap pop can take over --pop-y again */
+       hover/focus pop can take over --pop-y again */
     animation: wcard-rise 0.8s var(--ease-out) backwards;
   }
 
-  /* Rear card: higher in the slot, deeper in z */
-  .wcard-trees {
+  /* Slot geometry: which card occupies which slot changes as the
+     arrows cycle the stack, so it lives on data-slot, not the card */
+  .wcard[data-slot='rear'] {
     --rest-y: 3cqw;
     --rest-z: 16px;
     --lean-x: 1.2cqw;
     --lean: 0.7deg;
-    top: 0;
+  }
+
+  .wcard[data-slot='front'] {
+    --rest-y: 10.5cqw;
+    --rest-z: 34px;
+    --lean-x: -1.2cqw;
+    --lean: -0.8deg;
+  }
+
+  .wcard-trees {
     background: var(--green);
     color: var(--off-white);
     animation-delay: 0.15s;
   }
 
-  /* Front card: lower, closer to the viewer */
   .wcard-cleanups {
-    --rest-y: 10.5cqw;
-    --rest-z: 34px;
-    --lean-x: -1.2cqw;
-    --lean: -0.8deg;
-    top: 0;
     background: var(--yellow);
     color: var(--charcoal);
     animation-delay: 0.3s;
   }
 
-  /* Slide up out of the slot with a slight lean toward the viewer —
-     z stays below the front panel's 58px so the leather keeps masking
-     the card's lower body, like a real card pulled partway out.
-     .is-popped is the touch equivalent (hover doesn't exist there):
-     the script pops on first tap and navigates on the second. */
-  .wcard:hover,
-  .wcard:focus-visible,
-  .wcard.is-popped {
+  /* Desktop: hovering slides the card up out of the slot toward the
+     viewer; un-hovering transitions it back down the same way. The
+     z delta stays below the front panel's 58px so the leather keeps
+     masking the card's lower body, like a real card pulled partway
+     out. Keyboard focus pops on every device. */
+  .wcard:focus-visible {
     --pop-y: -9cqw;
     --pop-z: 14px;
+  }
+
+  @media (hover: hover) {
+    .wcard:hover {
+      --pop-y: -9cqw;
+      --pop-z: 14px;
+    }
   }
 
   @keyframes wcard-rise {
     from { --pop-y: 16cqw; }
   }
 
+  /* Arrow-driven cycle: the outgoing front card swings out sideways,
+     dips behind the stack, and settles into the rear slot. The card's
+     data-slot is already 'rear' when this runs, so the 0% frame
+     re-creates its old front-slot position via deltas and the 100%
+     frame (all zeros) lands exactly on its new rest state. */
+  @keyframes wcard-swipe-left {
+    0% { --pop-x: -2.4cqw; --pop-y: var(--slot-dy); --pop-z: 18px; --pop-r: -1.5deg; }
+    40% { --pop-x: -74cqw; --pop-y: 3cqw; --pop-z: 34px; --pop-r: -7deg; }
+    70% { --pop-x: -46cqw; --pop-y: 0px; --pop-z: -56px; --pop-r: 3deg; }
+    100% { --pop-x: 0px; --pop-y: 0px; --pop-z: 0px; --pop-r: 0deg; }
+  }
+
+  @keyframes wcard-swipe-right {
+    0% { --pop-x: -2.4cqw; --pop-y: var(--slot-dy); --pop-z: 18px; --pop-r: -1.5deg; }
+    40% { --pop-x: 74cqw; --pop-y: 3cqw; --pop-z: 34px; --pop-r: 7deg; }
+    70% { --pop-x: 46cqw; --pop-y: 0px; --pop-z: -56px; --pop-r: -3deg; }
+    100% { --pop-x: 0px; --pop-y: 0px; --pop-z: 0px; --pop-r: 0deg; }
+  }
+
+  .wcard.is-swiping-left {
+    animation: wcard-swipe-left 0.65s var(--ease-out);
+  }
+
+  .wcard.is-swiping-right {
+    animation: wcard-swipe-right 0.65s var(--ease-out);
+  }
+
+  /* ── Cycle arrows: mobile has no hover cursor, so explicit buttons
+        flanking the wallet swap which card is in front ── */
+  .cycle-btn {
+    position: absolute;
+    top: 6cqw;
+    z-index: 5;
+    min-width: var(--tap);
+    min-height: var(--tap);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--yellow);
+    color: var(--charcoal);
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1;
+    border: 3px solid var(--charcoal);
+    border-radius: 8px;
+    box-shadow: var(--press-sm);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cycle-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--charcoal); }
+
+  .cycle-btn-left { left: 0; transform: rotate(-2deg); }
+  .cycle-btn-right { right: 0; transform: rotate(2deg); }
+
+  .cycle-btn-left:active { transform: rotate(-2deg) translate(2px, 2px); }
+  .cycle-btn-right:active { transform: rotate(2deg) translate(2px, 2px); }
+
+  /* Hover devices interact with the cards directly */
+  @media (hover: hover) and (pointer: fine) {
+    .cycle-btn { display: none; }
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .wcard {
+    .wcard,
+    .wcard.is-swiping-left,
+    .wcard.is-swiping-right {
       animation: none;
       transition: none;
     }
@@ -267,9 +385,9 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 
   /* ── Front panel: the purple leather face ── */
   .wallet-front {
-    /* Taps must reach the cards, never the leather; a tap falling
-       through onto a hidden card body acts as a first tap on it. */
-    pointer-events: none;
+    /* The leather must swallow pointer events: with the tap toggle
+       gone, a tap falling through onto a hidden card body would
+       navigate from what looks like a tap on the embossed panel. */
     position: absolute;
     left: 0;
     right: 0;
@@ -382,47 +500,47 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
      rem-floored card text still fits its visible strip */
   @media (max-width: 520px) {
     .wallet3d { height: 72cqw; }
-    .wcard-trees { --rest-y: 4cqw; }
-    .wcard-cleanups { --rest-y: 13cqw; }
+    .wcard { --slot-dy: 9cqw; }
+    .wcard[data-slot='rear'] { --rest-y: 4cqw; }
+    .wcard[data-slot='front'] { --rest-y: 13cqw; }
     .wallet-front { height: 50cqw; }
   }
 </style>
 
 <script>
-  // Touch has no hover, so tapping works in two steps: first tap pops
-  // the card out of the slot, second tap navigates, tapping anywhere
-  // else settles it back. Gated on (hover: none) and driven by click —
-  // not touch coordinates — so VoiceOver/TalkBack synthesized
-  // activations take the same pop-then-navigate path instead of being
-  // suppressed. Keyboard is untouched: :focus-visible already pops the
-  // card, so Enter navigates directly.
-  const cards = document.querySelectorAll<HTMLAnchorElement>('.wcard');
-  const noHover = window.matchMedia('(hover: none)');
+  // Arrow-driven card cycling (touch devices; hidden on hover devices).
+  // Pressing an arrow swaps the slots immediately — the rising card
+  // transitions into the front slot — while the outgoing card replays
+  // its old position via the swipe keyframes and swings out sideways,
+  // dips behind the stack, and settles into the rear slot. Tapping a
+  // card always just navigates; the arrows are real buttons, so
+  // keyboard and screen-reader users cycle the same way.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let poppedCard: HTMLAnchorElement | null = null;
+  const cycle = (direction: 'left' | 'right') => {
+    const front = document.querySelector<HTMLAnchorElement>('.wcard[data-slot="front"]');
+    const rear = document.querySelector<HTMLAnchorElement>('.wcard[data-slot="rear"]');
+    if (!front || !rear) return;
+    // A press mid-swipe restarts cleanly: drop any running swipe class
+    // so re-adding one re-triggers its animation from the new slots.
+    for (const card of [front, rear]) {
+      card.classList.remove('is-swiping-left', 'is-swiping-right');
+    }
 
-  const settle = () => {
-    poppedCard?.classList.remove('is-popped');
-    poppedCard = null;
+    rear.dataset.slot = 'front';
+    front.dataset.slot = 'rear';
+    if (reduceMotion) return;
+
+    front.classList.add(direction === 'left' ? 'is-swiping-left' : 'is-swiping-right');
+    front.addEventListener(
+      'animationend',
+      () => front.classList.remove('is-swiping-left', 'is-swiping-right'),
+      { once: true },
+    );
   };
 
-  for (const card of cards) {
-    card.addEventListener('click', (event) => {
-      if (!noHover.matches) return;
-      if (poppedCard === card || card.matches(':focus-visible')) return;
-
-      event.preventDefault();
-      settle();
-      poppedCard = card;
-      card.classList.add('is-popped');
-    });
-  }
-
-  document.addEventListener('click', (event) => {
-    if (poppedCard && event.target instanceof Node && !poppedCard.contains(event.target)) {
-      settle();
-    }
-  });
+  document.getElementById('cycleLeft')?.addEventListener('click', () => cycle('left'));
+  document.getElementById('cycleRight')?.addEventListener('click', () => cycle('right'));
 
   // Refresh the embossed total with the live GoFundMe number, counting
   // up from the build-time value once the cards have risen out of the
