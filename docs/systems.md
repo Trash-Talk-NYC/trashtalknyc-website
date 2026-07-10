@@ -40,6 +40,7 @@ Platform:
 Current behavior:
 - Build-time fetch (`fetchEventsAtBuildTime()` in `src/lib/events.ts`) pulls upcoming/past events directly from Eventbrite
 - Events page consumes Eventbrite data
+- `/events` opens with a per-borough "next event" hero (swipe carousel on mobile, fruit-market picker on desktop) plus an "X events in Y weeks" counter — mechanics and maintenance rules in `AGENTS.md` ("Events page — borough hero and counter")
 
 ## Donations
 
