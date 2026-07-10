@@ -24,7 +24,7 @@ Pages:
 - Events -> (Club Events)
 - About
 - Contact
-- Wallet (`/wallet`) -> live GoFundMe total embossed on a CSS-3D purple leather wallet, with Cleanups/Tree Guards cards stacked in its slot (hover/focus slides a card out; on touch the first tap pops it, the second navigates); linked from nav ("The Wallet" / "La Cartera", between Club Events and About)
+- Wallet (`/wallet`) -> live GoFundMe total embossed on a CSS-3D purple leather wallet, with Cleanups/Tree Guards cards stacked in its slot (hover/focus slides a card out; on touch, left/right arrow buttons flanking the wallet cycle which card is in front with a swipe-out animation — instant swap under reduced motion — and tapping a card always navigates); linked from nav ("The Wallet" / "La Cartera", between Club Events and About)
 - Cleanups (`/cleanups`) -> minimal placeholder initiative page, linked from Wallet
 - Tree Guards (`/tree-guards`) -> minimal placeholder initiative page, linked from Wallet
 - 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)

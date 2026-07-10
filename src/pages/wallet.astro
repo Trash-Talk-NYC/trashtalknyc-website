@@ -26,7 +26,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
           <li role="listitem">
             <a class="wcard wcard-trees" href="/tree-guards" data-slot="rear">
               <span class="wcard-top">
-                <span class="wcard-title">Tree Guards</span>
+                <span class="wcard-title" data-en="Tree Guards" data-es="Protectores de Árboles">Tree Guards</span>
                 <span class="wcard-sub" data-en="Protecting street trees" data-es="Protegiendo los árboles">Protecting street trees</span>
               </span>
               <span class="wcard-foot" aria-hidden="true">
@@ -38,7 +38,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
           <li role="listitem">
             <a class="wcard wcard-cleanups" href="/cleanups" data-slot="front">
               <span class="wcard-top">
-                <span class="wcard-title">Cleanups</span>
+                <span class="wcard-title" data-en="Cleanups" data-es="Limpiezas">Cleanups</span>
                 <span class="wcard-sub" data-en="Bags, gloves, grabbers" data-es="Bolsas, guantes, pinzas">Bags, gloves, grabbers</span>
               </span>
               <span class="wcard-foot" aria-hidden="true">
@@ -268,12 +268,20 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     100% { --pop-x: 0px; --pop-y: 0px; --pop-z: 0px; --pop-r: 0deg; }
   }
 
+  /* wcard-rise stays in the list so the (long-finished) entrance
+     animation survives the swipe class being added and removed —
+     dropping its name from the computed animation-name would restart
+     it, replaying the rise every time a swipe ends. */
   .wcard.is-swiping-left {
-    animation: wcard-swipe-left 0.65s var(--ease-out);
+    animation:
+      wcard-rise 0.8s var(--ease-out) backwards,
+      wcard-swipe-left 0.65s var(--ease-out);
   }
 
   .wcard.is-swiping-right {
-    animation: wcard-swipe-right 0.65s var(--ease-out);
+    animation:
+      wcard-rise 0.8s var(--ease-out) backwards,
+      wcard-swipe-right 0.65s var(--ease-out);
   }
 
   /* ── Cycle arrows: mobile has no hover cursor, so explicit buttons
