@@ -153,6 +153,9 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
     text-decoration: none;
     pointer-events: auto;
+    /* iOS double-tap zoom would otherwise eat the second tap of the
+       pop-then-navigate flow */
+    touch-action: manipulation;
     transform:
       translateX(calc(-50% + var(--lean-x, 0cqw)))
       translateY(calc(var(--rest-y) + var(--pop-y)))
@@ -264,8 +267,8 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 
   /* ── Front panel: the purple leather face ── */
   .wallet-front {
-    /* Taps must reach the cards, never the leather; the script decides
-       whether a fall-through tap on a hidden card body counts. */
+    /* Taps must reach the cards, never the leather; a tap falling
+       through onto a hidden card body acts as a first tap on it. */
     pointer-events: none;
     position: absolute;
     left: 0;
@@ -388,15 +391,15 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 <script>
   // Touch has no hover, so tapping works in two steps: first tap pops
   // the card out of the slot, second tap navigates, tapping anywhere
-  // else settles it back. The leather panel is pointer-events: none so
-  // it never swallows taps, but that lets taps below its top edge fall
-  // through to the cards' hidden bodies — those only settle, never pop
-  // or navigate.
-  const frontPanel = document.querySelector<HTMLElement>('.wallet-front');
+  // else settles it back. Gated on (hover: none) and driven by click —
+  // not touch coordinates — so VoiceOver/TalkBack synthesized
+  // activations take the same pop-then-navigate path instead of being
+  // suppressed. Keyboard is untouched: :focus-visible already pops the
+  // card, so Enter navigates directly.
   const cards = document.querySelectorAll<HTMLAnchorElement>('.wcard');
+  const noHover = window.matchMedia('(hover: none)');
 
   let poppedCard: HTMLAnchorElement | null = null;
-  let touchStart: { x: number; y: number } | null = null;
 
   const settle = () => {
     poppedCard?.classList.remove('is-popped');
@@ -404,31 +407,9 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
   };
 
   for (const card of cards) {
-    card.addEventListener(
-      'touchstart',
-      (event) => {
-        const touch = event.changedTouches[0];
-        touchStart = { x: touch.clientX, y: touch.clientY };
-      },
-      { passive: true }
-    );
-
-    card.addEventListener('touchend', (event) => {
-      const touch = event.changedTouches[0];
-      const moved =
-        touchStart !== null &&
-        Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) > 12;
-      if (moved) return; // scroll gesture, not a tap
-
-      const onVisibleStrip =
-        frontPanel === null || touch.clientY < frontPanel.getBoundingClientRect().top;
-      if (!onVisibleStrip) {
-        event.preventDefault();
-        settle();
-        return;
-      }
-
-      if (poppedCard === card) return; // second tap: let the click navigate
+    card.addEventListener('click', (event) => {
+      if (!noHover.matches) return;
+      if (poppedCard === card || card.matches(':focus-visible')) return;
 
       event.preventDefault();
       settle();
@@ -437,7 +418,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     });
   }
 
-  document.addEventListener('touchend', (event) => {
+  document.addEventListener('click', (event) => {
     if (poppedCard && event.target instanceof Node && !poppedCard.contains(event.target)) {
       settle();
     }
