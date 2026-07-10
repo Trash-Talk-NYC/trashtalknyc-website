@@ -107,24 +107,27 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
   }
 
   /* iOS Safari opens a strip above a stuck header during rubber-band
-     overscroll and collapsing-chrome transitions, exposing page background
-     in the notch/dynamic-island area. Paint header color above the bar so
-     that strip always reads as chrome. Scoped to widths where the social
-     bar is hidden — on wider screens it sits above the nav and the bleed
-     would cover it at the top of the page. */
+     overscroll, collapsing-chrome transitions, and the hide-on-scroll
+     slide-in, exposing page content in the notch/dynamic-island area
+     (captain device report 2026-07-10). A ::before bleed hanging outside
+     the border box used to cover this, but once the header animates via
+     transform it gets its own compositing layer and content outside the
+     box can drop out mid-frame. So the cover lives INSIDE the border box
+     instead: 120px of extra top padding, pulled offscreen by the matching
+     negative margin (flow height stays 63px + safe area) and negative
+     sticky offset — no frame of any animation or viewport displacement
+     can show anything above the header except its own charcoal. Scoped
+     to widths where the social bar is hidden; on wider screens it sits
+     above the nav and this region would cover it at the top of the page. */
   @media (max-width: 768px) {
-    nav::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 100%;
-      height: 120px;
-      background: var(--charcoal);
+    nav {
+      top: -120px;
+      margin-top: -120px;
+      padding-top: calc(120px + var(--safe-top));
     }
 
     /* Hide-on-scroll: the script toggles .nav-hidden; sliding the whole
-       header (bleed included) offscreen removes the chrome seam that iOS
+       header (cover included) offscreen removes the chrome seam that iOS
        keeps opening gaps above. Mobile-only — desktop stays always-sticky. */
     nav {
       transition: transform 0.28s var(--ease-out);

@@ -72,7 +72,7 @@ See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling a
 * Images live in `src/assets/` and render through `<Image>` from `astro:assets` — never `public/` (raw files there bypass optimization; the 529 KB logo alone would have blown the bandwidth budget at target traffic).
 The adapter sets `imageCDN: false` deliberately, so optimization happens at build time via sharp into immutable `/_astro/*.webp` files — keep it that way.
 Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descendant selector in a scoped `<style>` is fragile against the component's rendered output), and `<Image>` always emits `width`/`height` attributes, so any CSS `aspect-ratio` crop needs an explicit `height: auto` or the height attribute wins (this silently broke the About polaroid once).
-* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over it.
+* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the in-box charcoal cover above the nav logo that handles rubber-band/toolbar-transition gaps) can never paint over it.
 What colors it depends on the iOS version, and this burned us twice: iOS 15–17 use the `theme-color` meta in `BaseLayout.astro`, but iOS 26 (Liquid Glass) **ignores `theme-color` entirely** and samples the **`body` element's `background-color`** — not the `html` canvas, not the sticky nav, not pseudo-elements (verified by pixel-sampling simulator screenshots).
 That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
 Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
@@ -82,6 +82,7 @@ This exists because three chrome-adjacent fixes (PRs #18, #22, #25) never fully 
 The direction/threshold/rubber-band-clamp state machine is a pure function in `src/lib/headerScroll.ts` (unit-tested); `NavBar.astro` owns the DOM wiring and must keep three guards: never hide while the hamburger menu is open (it would take the menu with it), reveal on `:focus-within` (keyboard users), and re-apply state when the 768px media query flips (a hidden header must not strand on desktop).
 `prefers-reduced-motion` snaps instead of sliding via `transition: none`.
 The `scroll-padding-top` anchor clearance in `global.css` is sized for the *shown* header, which also covers the hidden state — do not shrink it when the header is hidden.
+The charcoal region that covers the iOS strip above the header must live *inside* the nav's border box (extra top padding pulled offscreen with a matching negative margin and negative sticky `top`), not in a pseudo-element hanging outside it: once the header animates via `transform` it composites on its own layer, and out-of-box content dropped out mid-frame on the captain's device (2026-07-10 scroll-up gap report), leaking page content above the reappeared header.
 
 ## Development Philosophy
 
