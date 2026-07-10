@@ -23,7 +23,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
         <div class="wallet-back" aria-hidden="true"></div>
 
         <ul class="wallet-cards" role="list">
-          <li>
+          <li role="listitem">
             <a class="wcard wcard-trees" href="/tree-guards">
               <span class="wcard-top">
                 <span class="wcard-title">Tree Guards</span>
@@ -35,7 +35,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
               </span>
             </a>
           </li>
-          <li>
+          <li role="listitem">
             <a class="wcard wcard-cleanups" href="/cleanups">
               <span class="wcard-top">
                 <span class="wcard-title">Cleanups</span>
@@ -161,7 +161,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     transition: transform 0.35s var(--ease-out);
     /* backwards fill: hidden until the delay elapses, then rise to the
        base value; once finished the animation stops applying so the
-       hover/focus/active pop can take over --pop-y again */
+       hover/focus/tap pop can take over --pop-y again */
     animation: wcard-rise 0.8s var(--ease-out) backwards;
   }
 
@@ -189,14 +189,14 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     animation-delay: 0.3s;
   }
 
-  /* Pull the card partway out of the slot, toward the viewer.
-     :active covers touch devices, where hover doesn't exist. */
   /* Slide up out of the slot with a slight lean toward the viewer —
      z stays below the front panel's 58px so the leather keeps masking
-     the card's lower body, like a real card pulled partway out. */
+     the card's lower body, like a real card pulled partway out.
+     .is-popped is the touch equivalent (hover doesn't exist there):
+     the script pops on first tap and navigates on the second. */
   .wcard:hover,
   .wcard:focus-visible,
-  .wcard:active {
+  .wcard.is-popped {
     --pop-y: -9cqw;
     --pop-z: 14px;
   }
@@ -264,6 +264,9 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 
   /* ── Front panel: the purple leather face ── */
   .wallet-front {
+    /* Taps must reach the cards, never the leather; the script decides
+       whether a fall-through tap on a hidden card body counts. */
+    pointer-events: none;
     position: absolute;
     left: 0;
     right: 0;
@@ -383,12 +386,66 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 </style>
 
 <script>
-  // Enable :active styling on iOS so tapping a card gives the same
-  // pop feedback as hover does with a mouse.
-  document.addEventListener('touchstart', () => {}, { passive: true });
+  // Touch has no hover, so tapping works in two steps: first tap pops
+  // the card out of the slot, second tap navigates, tapping anywhere
+  // else settles it back. The leather panel is pointer-events: none so
+  // it never swallows taps, but that lets taps below its top edge fall
+  // through to the cards' hidden bodies — those only settle, never pop
+  // or navigate.
+  const frontPanel = document.querySelector<HTMLElement>('.wallet-front');
+  const cards = document.querySelectorAll<HTMLAnchorElement>('.wcard');
 
-  // Refresh the embossed total with the live GoFundMe number and stamp
-  // it in with a count-up once the cards have risen out of the wallet.
+  let poppedCard: HTMLAnchorElement | null = null;
+  let touchStart: { x: number; y: number } | null = null;
+
+  const settle = () => {
+    poppedCard?.classList.remove('is-popped');
+    poppedCard = null;
+  };
+
+  for (const card of cards) {
+    card.addEventListener(
+      'touchstart',
+      (event) => {
+        const touch = event.changedTouches[0];
+        touchStart = { x: touch.clientX, y: touch.clientY };
+      },
+      { passive: true }
+    );
+
+    card.addEventListener('touchend', (event) => {
+      const touch = event.changedTouches[0];
+      const moved =
+        touchStart !== null &&
+        Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) > 12;
+      if (moved) return; // scroll gesture, not a tap
+
+      const onVisibleStrip =
+        frontPanel === null || touch.clientY < frontPanel.getBoundingClientRect().top;
+      if (!onVisibleStrip) {
+        event.preventDefault();
+        settle();
+        return;
+      }
+
+      if (poppedCard === card) return; // second tap: let the click navigate
+
+      event.preventDefault();
+      settle();
+      poppedCard = card;
+      card.classList.add('is-popped');
+    });
+  }
+
+  document.addEventListener('touchend', (event) => {
+    if (poppedCard && event.target instanceof Node && !poppedCard.contains(event.target)) {
+      settle();
+    }
+  });
+
+  // Refresh the embossed total with the live GoFundMe number, counting
+  // up from the build-time value once the cards have risen out of the
+  // wallet — the server-rendered amount stays up until then.
   const amountEl = document.getElementById('donationAmount');
 
   if (amountEl instanceof HTMLElement) {
@@ -398,8 +455,8 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     const parsed = Number(amountEl.dataset.total);
     const buildTotal = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 
-    let shown = 0;
-    let lastTarget: number | null = null;
+    let shown = buildTotal ?? 0;
+    let lastTarget: number | null = buildTotal;
     let raf = 0;
 
     const renderTo = (target: number) => {
@@ -433,8 +490,6 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
       const wait = Math.max(0, stampDelayMs - (performance.now() - loadedAt));
       setTimeout(() => renderTo(value), wait);
     };
-
-    if (buildTotal !== null) reveal(buildTotal);
 
     fetch('/api/donation-total.json')
       .then((res) => (res.ok ? res.json() : null))
