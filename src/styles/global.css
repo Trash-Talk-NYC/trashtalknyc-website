@@ -83,7 +83,9 @@
 html {
   scroll-behavior: smooth;
   /* Keep in-page anchor targets (#deep-clean, #signup, …) clear of the
-     sticky nav, which otherwise clips their first --nav-h pixels */
+     sticky nav, which otherwise clips their first --nav-h pixels.
+     Sized for the *shown* header, which also covers the mobile
+     hide-on-scroll hidden state — do not shrink when the header hides. */
   scroll-padding-top: calc(var(--nav-h) + 0.75rem);
   /* Canvas color = what rubber-band overscroll exposes beyond the page.
      Charcoal matches the nav (top bounce) and footer (bottom bounce). */
