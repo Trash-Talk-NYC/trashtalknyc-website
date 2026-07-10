@@ -12,8 +12,8 @@ He reached out to me, Fabi, to make the website.
 * Clearly display Trash Talk NYC mission, objectives, and act as a canvas where we display our progress, wins, updates, and projects
 * Importantly, it is the place where people sign up for a newsletter, and getting the emails of those interested is paramount.
 * Also importantly, it is the place where interested creators, organizations, and companies/enterprises can contact us to collaborate.
-* Show off the tree guard initiative's progress: `/clean-zone` maps every tree bed block the org has renovated ("guarded").
-The map is Leaflet + OpenStreetMap tiles (no API key); the guarded locations are the org's own curated list in `src/lib/clean-zone.ts`, which documents how to geocode new entries (NYC Planning GeoSearch) — not a NYC Open Data import.
+* Show off the tree guard initiative's progress: `/clean-zone` shades the areas ("zones") where the org has renovated tree beds, with per-bed detail on demand.
+The map is Leaflet + OpenStreetMap tiles (no API key); the zones and their tree beds are the org's own curated list in `src/lib/clean-zone.ts`, which documents how to geocode new entries (NYC Planning GeoSearch) — not a NYC Open Data import.
 
 ## Current Stack
 

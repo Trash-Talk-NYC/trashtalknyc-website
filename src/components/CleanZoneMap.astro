@@ -1,15 +1,22 @@
 ---
 /**
- * Interactive Leaflet + OpenStreetMap map of the tree beds the tree guard
- * initiative has renovated (data: src/lib/clean-zone.ts). No API key: OSM
- * raster tiles, desaturated via CSS so the map reads as printed paper
- * instead of a stock web widget. The frame is the site's polaroid device —
- * white lip, tape strips, press shadow — so the map sits in the street-
- * poster language like a map taped to a lamppost.
+ * Interactive Leaflet + OpenStreetMap map of the Clean Zone (data:
+ * src/lib/clean-zone.ts). No API key: OSM raster tiles, desaturated via
+ * CSS so the map reads as printed paper instead of a stock web widget.
  *
- * Field-log cards (or anything else) can focus a marker by dispatching
+ * Each zone is drawn as a shaded area — the primary visual — with a
+ * sticker-style name tag; the individual tree beds inside it are small
+ * secondary dots, detailed on demand (zone popup lists them, each dot has
+ * its own mini popup). Zones without a hand-traced `outline` are shaded
+ * as a circle sized to their beds (zoneCircle).
+ *
+ * The frame is the site's polaroid device — white lip, tape strips, press
+ * shadow — so the map sits in the street-poster language like a map taped
+ * to a lamppost.
+ *
+ * Log cards (or anything else) can focus a zone by dispatching
  *   document.dispatchEvent(new CustomEvent('clean-zone:focus', { detail: { id } }))
- * with a GuardedSite id.
+ * with a CleanZone id.
  */
 ---
 
@@ -18,7 +25,7 @@
     class="cz-map"
     id="cleanZoneMap"
     role="region"
-    aria-label="Map of guarded tree beds"
+    aria-label="Map of Clean Zone areas"
   ></div>
   <div class="cz-caption" data-en="The Clean Zone · NYC" data-es="La Zona Limpia · NYC">The Clean Zone · NYC</div>
 </div>
@@ -26,28 +33,67 @@
 <script>
   import * as L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
-  import { guardedSites, type GuardedSite } from '../lib/clean-zone';
+  import { cleanZones, zoneCircle, type CleanZone, type TreeBed } from '../lib/clean-zone';
   import { getCurrentLang, onLanguageChange, type Lang } from '../lib/language';
 
-  // Popup DOM is created by Leaflet at runtime, so it can't use the
+  // Zone shading palette — hex mirrors of the --charcoal/--yellow tokens,
+  // because Leaflet writes these as SVG attributes where CSS vars can't reach.
+  const ZONE_STYLE: L.PathOptions = {
+    color: '#1c1c22',
+    weight: 2.5,
+    dashArray: '7 7',
+    fillColor: '#f5d000',
+    fillOpacity: 0.28,
+  };
+  const ZONE_STYLE_ACTIVE: L.PathOptions = { fillOpacity: 0.45 };
+
+  const BED_DOT_STYLE: L.PathOptions = {
+    color: '#1c1c22',
+    weight: 2,
+    fillColor: '#f5d000',
+    fillOpacity: 1,
+  };
+
+  // Popup/tooltip DOM is created by Leaflet at runtime, so it can't use the
   // data-en/data-es attribute swap — it re-renders via onLanguageChange.
-  function popupHtml(site: GuardedSite, lang: Lang): string {
-    const chip = lang === 'es' ? 'Protegido' : 'Guarded';
-    const date = lang === 'es' ? site.dateEs : site.dateEn;
-    const desc = lang === 'es' ? site.descriptionEs : site.descriptionEn;
+  function zonePopupHtml(zone: CleanZone, lang: Lang): string {
+    const chip = lang === 'es' ? 'Protegida' : 'Guarded';
+    const date = lang === 'es' ? zone.dateEs : zone.dateEn;
+    const name = lang === 'es' ? zone.nameEs : zone.nameEn;
+    const desc = lang === 'es' ? zone.descriptionEs : zone.descriptionEn;
+    const bedLabel =
+      lang === 'es'
+        ? `${zone.beds.length} ${zone.beds.length === 1 ? 'alcorque' : 'alcorques'}`
+        : `${zone.beds.length} ${zone.beds.length === 1 ? 'tree bed' : 'tree beds'}`;
     return [
       '<div class="cz-popup">',
       `<span class="cz-popup-chip">${chip} · ${date}</span>`,
-      `<strong class="cz-popup-address">${site.address}</strong>`,
-      `<span class="cz-popup-area">${site.neighborhood} · ${site.borough}</span>`,
+      `<strong class="cz-popup-name">${name}</strong>`,
+      `<span class="cz-popup-area">${zone.neighborhood} · ${zone.borough}</span>`,
       `<p class="cz-popup-desc">${desc}</p>`,
+      `<span class="cz-popup-bedcount">${bedLabel}</span>`,
+      '<ul class="cz-popup-beds">',
+      ...zone.beds.map((bed) => `<li>${bed.address}</li>`),
+      '</ul>',
       '</div>',
     ].join('');
   }
 
-  const mapEl = document.getElementById('cleanZoneMap');
+  // Bed dot detail is language-neutral: an address plus, when recorded,
+  // the NYC Parks Forestry tree-point ids for cross-reference.
+  function bedPopupHtml(bed: TreeBed): string {
+    const ids = bed.nycTreeIds?.length
+      ? `<span class="cz-popup-bed-ids">NYC ${bed.nycTreeIds.map((id) => `#${id}`).join(', ')}</span>`
+      : '';
+    return `<div class="cz-popup"><strong class="cz-popup-bed-address">${bed.address}</strong>${ids}</div>`;
+  }
 
-  if (mapEl) {
+  const mapEl = document.getElementById('cleanZoneMap');
+  // A zone needs beds (or a traced outline) to be shadable; skip the whole
+  // map rather than fitting bounds to nothing when the list is mid-edit.
+  const shadableZones = cleanZones.filter((z) => z.beds.length > 0 || z.outline?.length);
+
+  if (mapEl && shadableZones.length > 0) {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const map = L.map(mapEl, {
@@ -70,51 +116,74 @@
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    const treeIcon = L.divIcon({
-      className: 'cz-pin-wrap',
-      html:
-        '<span class="cz-pin">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-        '<circle cx="12" cy="8.5" r="5.5"/><path d="M12 14v7"/><path d="M8.5 21h7"/>' +
-        '</svg></span>',
-      iconSize: [38, 38],
-      iconAnchor: [19, 19],
-      popupAnchor: [0, -22],
-    });
+    // Permanent zone tooltips project to screen space the moment they are
+    // bound, so the map must have a view before any shape is added; the
+    // fitBounds below refines it once the shapes exist.
+    const seedPoints = shadableZones.flatMap((z) =>
+      z.beds.length > 0 ? z.beds.map((b) => [b.lat, b.lng] as [number, number]) : (z.outline ?? []),
+    );
+    const seedLat = seedPoints.reduce((sum, p) => sum + p[0], 0) / seedPoints.length;
+    const seedLng = seedPoints.reduce((sum, p) => sum + p[1], 0) / seedPoints.length;
+    map.setView([seedLat, seedLng], 15);
 
-    const markers = new Map<string, L.Marker>();
     const initialLang = getCurrentLang();
+    const zoneShapes = new Map<string, L.Path & { getBounds(): L.LatLngBounds }>();
 
-    guardedSites.forEach((site) => {
-      const marker = L.marker([site.lat, site.lng], { icon: treeIcon, alt: site.address }).addTo(map);
-      marker.bindPopup(popupHtml(site, initialLang), { maxWidth: 300 });
-      markers.set(site.id, marker);
+    shadableZones.forEach((zone) => {
+      let shape: (L.Path & { getBounds(): L.LatLngBounds }) | null = null;
+      if (zone.outline?.length) {
+        shape = L.polygon(zone.outline, ZONE_STYLE);
+      } else {
+        const circle = zoneCircle(zone);
+        if (circle) shape = L.circle([circle.lat, circle.lng], { ...ZONE_STYLE, radius: circle.radiusMeters });
+      }
+      if (!shape) return;
+
+      shape.addTo(map);
+      shape.bindTooltip(initialLang === 'es' ? zone.nameEs : zone.nameEn, {
+        permanent: true,
+        direction: 'center',
+        // Nudged up so the tag doesn't sit on the bed dots at the centroid
+        offset: [0, -30],
+        className: 'cz-zone-tag',
+      });
+      shape.bindPopup(zonePopupHtml(zone, initialLang), { maxWidth: 320 });
+      shape.on('mouseover', () => shape!.setStyle(ZONE_STYLE_ACTIVE));
+      shape.on('mouseout', () => shape!.setStyle(ZONE_STYLE));
+      zoneShapes.set(zone.id, shape);
+
+      // Secondary detail: a small dot per tree bed inside the shading
+      zone.beds.forEach((bed) => {
+        L.circleMarker([bed.lat, bed.lng], { ...BED_DOT_STYLE, radius: 5 })
+          .addTo(map)
+          .bindPopup(bedPopupHtml(bed), { maxWidth: 240 });
+      });
     });
 
-    const first = guardedSites[0];
-    if (guardedSites.length === 1 && first) {
-      map.setView([first.lat, first.lng], 16);
-    } else {
-      map.fitBounds(
-        L.latLngBounds(guardedSites.map((s) => [s.lat, s.lng])),
-        { padding: [48, 48], maxZoom: 16 },
-      );
-    }
+    const allBounds = L.latLngBounds([]);
+    zoneShapes.forEach((shape) => allBounds.extend(shape.getBounds()));
+    map.fitBounds(allBounds, { padding: [40, 40], maxZoom: 16 });
 
     onLanguageChange((lang) => {
-      guardedSites.forEach((site) => {
-        markers.get(site.id)?.setPopupContent(popupHtml(site, lang));
+      shadableZones.forEach((zone) => {
+        const shape = zoneShapes.get(zone.id);
+        if (!shape) return;
+        shape.setTooltipContent(lang === 'es' ? zone.nameEs : zone.nameEn);
+        shape.setPopupContent(zonePopupHtml(zone, lang));
       });
     });
 
     document.addEventListener('clean-zone:focus', (event) => {
       const id = (event as CustomEvent<{ id: string }>).detail?.id;
-      const site = guardedSites.find((s) => s.id === id);
-      const marker = id ? markers.get(id) : undefined;
-      if (!site || !marker) return;
+      const shape = id ? zoneShapes.get(id) : undefined;
+      if (!shape) return;
       mapEl.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
-      map.setView([site.lat, site.lng], Math.max(map.getZoom(), 16), { animate: !reducedMotion });
-      marker.openPopup();
+      map.fitBounds(shape.getBounds(), {
+        padding: [32, 32],
+        maxZoom: 17,
+        animate: !reducedMotion,
+      });
+      shape.openPopup();
     });
   }
 </script>
@@ -170,33 +239,31 @@
 
   /* ── Leaflet overrides — runtime-created DOM, hence :global() ── */
 
-  /* Desaturate the OSM tiles into the site's paper palette; the yellow
-     pins and purple accents then read as ink printed on top */
+  /* Desaturate the OSM tiles into the site's paper palette; the shaded
+     yellow zones and purple accents then read as ink printed on top */
   .cz-map :global(.leaflet-tile-pane) {
     filter: grayscale(1) sepia(0.14) brightness(1.04) contrast(0.92);
   }
 
-  /* Marker: sticker-style yellow badge, slapped on at a tilt */
-  .cz-map :global(.cz-pin) {
-    display: grid;
-    place-items: center;
-    width: 100%;
-    height: 100%;
+  /* Zone name tag: sticker chip pinned at the center of the shading.
+     Leaflet tooltips ship a white card + arrow; restyle both away. */
+  .cz-map :global(.cz-zone-tag) {
     background: var(--yellow);
     color: var(--charcoal);
     border: 2px solid var(--charcoal);
-    border-radius: 50%;
+    border-radius: 4px;
     box-shadow: var(--press-sm);
-    transform: rotate(-4deg);
-    transition: transform 150ms var(--ease-out);
+    padding: 0.3em 0.7em;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    transform: rotate(-2deg);
   }
 
-  .cz-map :global(.cz-pin svg) { width: 20px; height: 20px; }
-
-  .cz-map :global(.leaflet-marker-icon:hover .cz-pin),
-  .cz-map :global(.leaflet-marker-icon:focus .cz-pin) {
-    transform: rotate(0deg) scale(1.08);
-  }
+  .cz-map :global(.cz-zone-tag::before) { display: none; }
 
   /* Popup: pressed off-white card matching the site's card language */
   .cz-map :global(.leaflet-popup-content-wrapper) {
@@ -241,7 +308,7 @@
     letter-spacing: 0.14em;
   }
 
-  .cz-map :global(.cz-popup-address) {
+  .cz-map :global(.cz-popup-name) {
     margin-top: 0.3rem;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.35rem;
@@ -263,6 +330,59 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: #4a4850;
+  }
+
+  .cz-map :global(.cz-popup-bedcount) {
+    margin-top: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--charcoal);
+  }
+
+  .cz-map :global(.cz-popup-beds) {
+    margin: 0.15rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .cz-map :global(.cz-popup-beds li) {
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .cz-map :global(.cz-popup-beds li::before) {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    background: var(--yellow);
+    border: 1.5px solid var(--charcoal);
+    border-radius: 50%;
+  }
+
+  .cz-map :global(.cz-popup-bed-address) {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .cz-map :global(.cz-popup-bed-ids) {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--purple);
   }
 
   /* Zoom control: pressed street-sign buttons */
@@ -304,9 +424,5 @@
 
   .cz-map :global(.leaflet-control-attribution a) {
     color: var(--purple);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .cz-map :global(.cz-pin) { transition: none; }
   }
 </style>

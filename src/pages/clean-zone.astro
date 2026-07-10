@@ -2,16 +2,17 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import CleanZoneMap from '../components/CleanZoneMap.astro';
-import { guardedSites } from '../lib/clean-zone';
+import { cleanZones, totalBedCount } from '../lib/clean-zone';
 
-const count = guardedSites.length;
-const countEn = `${count} ${count === 1 ? 'block' : 'blocks'} guarded`;
-const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegidas'}`;
+const zoneCount = cleanZones.length;
+const bedCount = totalBedCount(cleanZones);
+const countEn = `${zoneCount} ${zoneCount === 1 ? 'zone' : 'zones'} · ${bedCount} ${bedCount === 1 ? 'tree bed' : 'tree beds'}`;
+const countEs = `${zoneCount} ${zoneCount === 1 ? 'zona' : 'zonas'} · ${bedCount} ${bedCount === 1 ? 'alcorque' : 'alcorques'}`;
 ---
 
 <BaseLayout
   title="The Clean Zone — Trash Talk NYC"
-  description="An interactive map of the NYC tree beds Trash Talk NYC's tree guard initiative has renovated — block by block."
+  description="An interactive map of the NYC areas where Trash Talk NYC's tree guard initiative has renovated tree beds — zone by zone."
   showSocialBar={false}
 >
 
@@ -24,37 +25,49 @@ const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegid
     <div class="cz-inner">
 
       <div class="cz-header">
-        <h2 class="sign-plate" data-en="Guarded Tree Beds" data-es="Alcorques Protegidos">Guarded Tree Beds</h2>
+        <h2 class="sign-plate" data-en="Guarded Zones" data-es="Zonas Protegidas">Guarded Zones</h2>
         <span class="sticker cz-count" style="--tilt: 2deg" data-en={countEn} data-es={countEs}>{countEn}</span>
       </div>
 
-      <p class="cz-intro" data-en="Tree beds — the little squares of soil around street trees — spend their lives collecting litter, dog waste, and foot traffic. Our tree guard initiative renovates them block by block: we clear out the bed, turn the soil, and install a guard so the tree can actually breathe. Every finished block earns a pin on this map." data-es="Los alcorques — los pequeños cuadros de tierra alrededor de los árboles de la calle — se pasan la vida acumulando basura, desechos de perros y pisadas. Nuestra iniciativa de protectores de árboles los renueva cuadra por cuadra: despejamos el alcorque, removemos la tierra e instalamos un protector para que el árbol pueda respirar. Cada cuadra terminada gana un pin en este mapa.">
-        Tree beds — the little squares of soil around street trees — spend their lives collecting litter, dog waste, and foot traffic. Our tree guard initiative renovates them block by block: we clear out the bed, turn the soil, and install a guard so the tree can actually breathe. Every finished block earns a pin on this map.
+      <p class="cz-intro" data-en="Tree beds — the little squares of soil around street trees — spend their lives collecting litter, dog waste, and foot traffic. Our tree guard initiative renovates them block by block: we clear out the bed, turn the soil, and install a guard so the tree can actually breathe. When the tree beds in an area are done, the whole area gets shaded in on this map as a guarded zone — tap a zone to see every tree bed inside it." data-es="Los alcorques — los pequeños cuadros de tierra alrededor de los árboles de la calle — se pasan la vida acumulando basura, desechos de perros y pisadas. Nuestra iniciativa de protectores de árboles los renueva cuadra por cuadra: despejamos el alcorque, removemos la tierra e instalamos un protector para que el árbol pueda respirar. Cuando los alcorques de un área quedan listos, el área completa se sombrea en este mapa como zona protegida — toca una zona para ver todos sus alcorques.">
+        Tree beds — the little squares of soil around street trees — spend their lives collecting litter, dog waste, and foot traffic. Our tree guard initiative renovates them block by block: we clear out the bed, turn the soil, and install a guard so the tree can actually breathe. When the tree beds in an area are done, the whole area gets shaded in on this map as a guarded zone — tap a zone to see every tree bed inside it.
       </p>
 
       <CleanZoneMap />
 
       <div class="cz-log">
-        <div class="section-label" data-en="Field Log" data-es="Bitácora">Field Log</div>
+        <div class="section-label" data-en="Zone Log" data-es="Bitácora de Zonas">Zone Log</div>
 
-        {guardedSites.map((site) => (
+        {cleanZones.map((zone) => (
           <article class="cz-card">
             <div class="cz-card-top">
-              <h3 class="cz-card-address">{site.address}</h3>
+              <h3 class="cz-card-name" data-en={zone.nameEn} data-es={zone.nameEs}>{zone.nameEn}</h3>
               <span
                 class="cz-card-chip"
-                data-en={`Guarded · ${site.dateEn}`}
-                data-es={`Protegido · ${site.dateEs}`}
-              >Guarded · {site.dateEn}</span>
+                data-en={`Guarded · ${zone.dateEn}`}
+                data-es={`Protegida · ${zone.dateEs}`}
+              >Guarded · {zone.dateEn}</span>
             </div>
-            <div class="cz-card-area">{site.neighborhood} · {site.borough}</div>
-            <p class="cz-card-desc" data-en={site.descriptionEn} data-es={site.descriptionEs}>{site.descriptionEn}</p>
+            <div class="cz-card-area">{zone.neighborhood} · {zone.borough}</div>
+            <p class="cz-card-desc" data-en={zone.descriptionEn} data-es={zone.descriptionEs}>{zone.descriptionEn}</p>
+
+            <div
+              class="cz-card-bedcount"
+              data-en={`${zone.beds.length} ${zone.beds.length === 1 ? 'tree bed' : 'tree beds'}`}
+              data-es={`${zone.beds.length} ${zone.beds.length === 1 ? 'alcorque' : 'alcorques'}`}
+            >{zone.beds.length} {zone.beds.length === 1 ? 'tree bed' : 'tree beds'}</div>
+            <ul class="cz-card-beds">
+              {zone.beds.map((bed) => (
+                <li>{bed.address}</li>
+              ))}
+            </ul>
+
             <button
               class="cz-card-btn"
               type="button"
-              data-site-id={site.id}
+              data-zone-id={zone.id}
               data-en="Find it on the map ↑"
-              data-es="Verlo en el mapa ↑"
+              data-es="Verla en el mapa ↑"
             >Find it on the map ↑</button>
           </article>
         ))}
@@ -72,12 +85,12 @@ const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegid
 </BaseLayout>
 
 <script>
-  // Field-log buttons hand focus to the map component (CleanZoneMap
-  // listens for this event and pans/opens the matching popup).
+  // Zone-log buttons hand focus to the map component (CleanZoneMap listens
+  // for this event and zooms to the zone, opening its popup).
   document.querySelectorAll<HTMLButtonElement>('.cz-card-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.dispatchEvent(
-        new CustomEvent('clean-zone:focus', { detail: { id: btn.dataset.siteId } }),
+        new CustomEvent('clean-zone:focus', { detail: { id: btn.dataset.zoneId } }),
       );
     });
   });
@@ -114,7 +127,7 @@ const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegid
     line-height: 1.8;
   }
 
-  /* ── FIELD LOG ── */
+  /* ── ZONE LOG ── */
   .cz-log {
     margin-top: var(--space-xl);
     display: flex;
@@ -138,7 +151,7 @@ const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegid
     flex-wrap: wrap;
   }
 
-  .cz-card-address {
+  .cz-card-name {
     font-family: 'Bebas Neue', sans-serif;
     font-size: var(--step-2);
     font-weight: 400;
@@ -177,11 +190,48 @@ const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegid
     line-height: 1.7;
   }
 
+  .cz-card-bedcount {
+    margin-top: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--charcoal);
+  }
+
+  .cz-card-beds {
+    margin: 0.35rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cz-card-beds li {
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cz-card-beds li::before {
+    content: '';
+    width: 0.55rem;
+    height: 0.55rem;
+    flex-shrink: 0;
+    background: var(--yellow);
+    border: 1.5px solid var(--charcoal);
+    border-radius: 50%;
+  }
+
   .cz-card-btn {
     margin-top: 1rem;
     background: none;
     border: none;
-    padding: 0;
+    padding: 0 0 0.15rem;
     cursor: pointer;
     font-family: 'Space Mono', monospace;
     font-size: 0.72rem;
@@ -190,7 +240,6 @@ const countEs = `${count} ${count === 1 ? 'cuadra protegida' : 'cuadras protegid
     letter-spacing: 0.08em;
     color: var(--purple);
     border-bottom: 2px solid var(--purple-a20);
-    padding-bottom: 0.15rem;
     transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
   }
 
