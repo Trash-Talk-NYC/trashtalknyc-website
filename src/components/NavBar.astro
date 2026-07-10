@@ -43,6 +43,7 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
     hamburger?.classList.toggle('open', open);
     links?.classList.toggle('open', open);
     hamburger?.setAttribute('aria-expanded', String(open));
+    if (open) applyScrollState();
   }
 
   hamburger?.addEventListener('click', () => {
