@@ -25,6 +25,12 @@ Pages:
 - About
 - Contact
 
+SEO & share metadata (2026-07 overhaul):
+- `src/layouts/BaseLayout.astro` owns the head: per-page title + required description feed the meta description, canonical URL, and full Open Graph/Twitter tags; the homepage adds JSON-LD Organization schema via `slot="head"`
+- Crawl hygiene: `@astrojs/sitemap` (404 filtered out) + `public/robots.txt`; 404 carries noindex
+- Icon/share assets in `public/` (favicon set, apple-touch-icon, og-image, logo) are generated from the hero logo by `node scripts/generate-icons.mjs` — regenerate, never hand-edit or swap in other logo variants
+- Conventions and sharp edges (bare-brand homepage title, English-only meta descriptions, the deliberate `public/` exception) are documented in AGENTS.md ("SEO & share metadata")
+
 ## Events
 
 Platform:
@@ -109,6 +115,7 @@ Shipped:
 - Per-submission Brevo CRM note history (full history vs. the MESSAGE attribute's latest-value-only)
 - Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
 - Cloudflare Turnstile bot check on both forms (security audit X1); dormant until the captain provisions real keys — see Forms above
+- SEO & share-metadata overhaul (2026-07): complete OG/Twitter tags, favicon set + share card generated from the hero logo, JSON-LD Organization schema, sitemap + robots.txt + canonicals — see Website above
 
 Medium:
 - CRM/database

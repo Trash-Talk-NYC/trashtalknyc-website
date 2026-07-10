@@ -6,11 +6,22 @@ import SiteFooter from '../components/SiteFooter.astro';
 
 interface Props {
   title: string;
-  description?: string;
+  description: string;
+  /** Shared-link display title; defaults to the browser-tab title. The
+      homepage overrides neither — its title is already the bare brand name. */
+  ogTitle?: string;
+  /** Set on pages that must not be indexed (404). */
+  noindex?: boolean;
   showSocialBar?: boolean;
 }
 
-const { title, description, showSocialBar = true } = Astro.props;
+const { title, description, ogTitle = title, noindex = false, showSocialBar = true } = Astro.props;
+
+// Astro.site comes from astro.config.mjs, so canonical/og URLs are absolute
+// production URLs even on previews and local builds — which is what social
+// scrapers and Google need to see.
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = new URL('/og-image.png', Astro.site);
 ---
 
 <!DOCTYPE html>
@@ -26,7 +37,36 @@ const { title, description, showSocialBar = true } = Astro.props;
        global.css. Kept for the older-iOS audience. -->
   <meta name="theme-color" content="#1c1c22" />
   <title>{title}</title>
-  {description && <meta name="description" content={description} />}
+  <meta name="description" content={description} />
+  {noindex && <meta name="robots" content="noindex" />}
+  <link rel="canonical" href={canonicalUrl} />
+
+  <!-- Icons: SVG for modern browsers, ICO (16/32/48) as fallback — the 48px
+       entry is what lets Google show the logo beside search results.
+       sizes="32x32" on the ICO keeps Chrome from preferring it over the SVG. -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Share metadata: og:title is the display title in link previews; the
+       descriptive pitch belongs in og:description, not the title. -->
+  <meta property="og:site_name" content="Trash Talk NYC" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={ogTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:image" content={ogImageUrl} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Trash Talk NYC cleanup-vest logo" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={ogTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImageUrl} />
+
+  <slot name="head" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link

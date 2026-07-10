@@ -11,6 +11,7 @@ Build and maintain the website safely and sustainably.
 - Components
 - Forms
 - Accessibility 
+- SEO & share metadata
 - Testing
 - Performance
 

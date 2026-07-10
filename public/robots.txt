@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://trashtalknyc.org/sitemap-index.xml

@@ -9,7 +9,10 @@ import { actions } from 'astro:actions';
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
-<BaseLayout title="Contact — Trash Talk NYC">
+<BaseLayout
+  title="Contact — Trash Talk NYC"
+  description="Get in touch with Trash Talk NYC — questions, press, or collaborations with creators, organizations, and companies that want to help clean up New York City."
+>
 
   <!-- Turnstile bot check on the contact form; implicit rendering picks up the
        .cf-turnstile div. Only loaded when a site key was set at build time. -->

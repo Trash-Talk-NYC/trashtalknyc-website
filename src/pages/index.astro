@@ -31,9 +31,29 @@ const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != 
 // renders and the signup action skips Turnstile verification. After setting
 // the key in Netlify, a redeploy is required for the widget to appear.
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+
+// Organization schema for Google: name + logo beside search results, and the
+// social profiles it should associate with the brand.
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Trash Talk NYC',
+  url: Astro.site?.href,
+  logo: new URL('/logo.png', Astro.site).href,
+  sameAs: [
+    'https://www.instagram.com/trashtalk_nyc/',
+    'https://www.tiktok.com/@trashtalk_nyc',
+    'https://trashtalknyc.eventbrite.com',
+  ],
+};
 ---
 
-<BaseLayout title="Trash Talk NYC — Community Cleanup">
+<BaseLayout
+  title="Trash Talk NYC"
+  description="Trash Talk NYC is New York City's cleanup club. Find upcoming community cleanup events, sign up for the newsletter, and help keep NYC clean."
+>
+
+<script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(orgSchema)} />
 
 <!-- Load Eventbrite widget JS early; skipped on localhost so local dev doesn't depend on it -->
 <script is:inline>
