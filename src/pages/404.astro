@@ -9,47 +9,539 @@ export const prerender = true;
 <BaseLayout title="Page Not Found — Trash Talk NYC" description="This page doesn't exist." noindex showSocialBar={false}>
 
   <section class="notfound diag-texture">
-    <div class="notfound-inner">
-      <div class="sticker" style="--tilt: 2deg" data-en="Wrong Block" data-es="Cuadra Equivocada">Wrong Block</div>
-      <h1 class="notfound-code">404</h1>
-      <p class="notfound-msg" data-en="This page got picked up with the trash." data-es="Esta página se fue con la basura.">This page got picked up with the trash.</p>
-      <a href="/" class="notfound-btn" data-en="Back to Home →" data-es="Volver al Inicio →">Back to Home →</a>
+
+    <!-- CSS-3D dead-end street: floor + side walls + end wall in one
+         perspective scene. Pure decoration; real messaging lives below. -->
+    <div class="scene" aria-hidden="true">
+      <div class="sky">
+        <span class="stars"></span>
+        <span class="moon"></span>
+      </div>
+
+      <div class="world">
+        <div class="wall wall-left"></div>
+        <div class="wall wall-right"></div>
+        <div class="wall-end"></div>
+        <div class="ground">
+          <div class="road-paint">404</div>
+          <div class="ground-fade"></div>
+        </div>
+      </div>
+
+      <div class="street-sign">
+        <span class="sign-pole"></span>
+        <span class="sign-face" data-en="Dead End" data-es="Sin Salida">Dead End</span>
+      </div>
+
+      <span class="litter litter-a"></span>
+      <span class="litter litter-b"></span>
+      <span class="litter litter-c"></span>
+
+      <div class="can">
+        <span class="stink stink-a"></span>
+        <span class="stink stink-b"></span>
+        <span class="stink stink-c"></span>
+        <span class="bag bag-b"></span>
+        <span class="bag bag-a"></span>
+        <span class="ball ball-a"></span>
+        <span class="ball ball-b"></span>
+        <span class="bin"></span>
+        <span class="lid"></span>
+      </div>
     </div>
+
+    <div class="notfound-inner">
+      <div class="sticker" style="--tilt: -2deg" data-en="Error 404 — Wrong Block" data-es="Error 404 — Cuadra Equivocada">Error 404 — Wrong Block</div>
+      <h1 class="notfound-msg" data-en="This page got picked up with the trash." data-es="Esta página se fue con la basura.">This page got picked up with the trash.</h1>
+      <div class="notfound-actions">
+        <a href="/" class="notfound-btn" data-en="Back to Home →" data-es="Volver al Inicio →">Back to Home →</a>
+        <a href="/events" class="notfound-link" data-en="See Cleanup Events" data-es="Ver Eventos de Limpieza">See Cleanup Events</a>
+      </div>
+    </div>
+
   </section>
 
 </BaseLayout>
 
 <style>
   .notfound {
+    /* Scene geometry knobs — road/sidewalk widths drive everything else */
+    --rw: clamp(280px, 84vw, 940px);
+    --sw: clamp(44px, 7vw, 84px);
+    --gw: calc(var(--rw) + var(--sw) * 2);
+    --depth: 1150px;
+    --wh: clamp(200px, 30vw, 320px);
+    /* Height cap keeps the can proportionate in short/landscape viewports */
+    --can-w: min(clamp(88px, 22vw, 148px), 24svh);
+
     min-height: calc(100svh - var(--nav-h));
+    display: flex;
+    flex-direction: column;
     background: var(--charcoal);
     color: var(--off-white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
   }
 
+  /* ── The 3D street ── */
+
+  .scene {
+    position: relative;
+    overflow: hidden;
+    height: clamp(300px, 52svh, 500px);
+    perspective: clamp(420px, 48vw, 640px);
+    /* Camera eye-line: above the floor plane, below the rooflines */
+    perspective-origin: 50% 36%;
+  }
+
+  .sky {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 62% 36% at 50% 40%, var(--purple-lt-a30), transparent 72%);
+  }
+
+  .moon {
+    position: absolute;
+    top: 9%;
+    right: 11%;
+    width: clamp(34px, 6vw, 54px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 34%, var(--warm-gray) 0 12%, transparent 13%),
+      radial-gradient(circle at 62% 60%, var(--warm-gray) 0 8%, transparent 9%),
+      var(--off-white);
+    /* Hard offset press shadow — same riso-print device as the cards */
+    box-shadow: 4px 4px 0 var(--purple);
+  }
+
+  .stars,
+  .stars::after {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--paper-a55);
+  }
+
+  .stars {
+    top: 14%;
+    left: 12%;
+    box-shadow: 9vw 4vh 0 var(--paper-a35), 22vw -3vh 0 var(--paper-a55), 55vw 2vh 0 var(--paper-a35);
+  }
+
+  .stars::after {
+    content: '';
+    left: 70vw;
+    top: 7vh;
+    box-shadow: -30vw 11vh 0 var(--paper-a35);
+  }
+
+  .world {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    animation: dolly 1.4s var(--ease-out) both;
+  }
+
+  @keyframes dolly {
+    from { transform: translateZ(-70px); }
+    to { transform: translateZ(0); }
+  }
+
+  .ground {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: var(--gw);
+    height: var(--depth);
+    transform-origin: 50% 100%;
+    /* Bottom edge stays at the viewport plane; the rest lies flat,
+       receding into the screen — perspective does the converging */
+    transform: translateX(-50%) rotateX(90deg);
+    background-color: color-mix(in srgb, var(--charcoal) 86%, var(--off-white) 14%);
+    /* Painted road furniture, near edge = bottom: crosswalk, double-yellow
+       center line (stops at the crosswalk), curb lines, sidewalk slabs */
+    background-image:
+      repeating-linear-gradient(90deg, rgba(247, 244, 237, 0.72) 0 42px, transparent 42px 76px),
+      linear-gradient(90deg, transparent 0, transparent calc(50% - 9px), rgba(245, 208, 0, 0.68) calc(50% - 9px), rgba(245, 208, 0, 0.68) calc(50% - 3px), transparent calc(50% - 3px), transparent calc(50% + 3px), rgba(245, 208, 0, 0.68) calc(50% + 3px), rgba(245, 208, 0, 0.68) calc(50% + 9px), transparent calc(50% + 9px)),
+      linear-gradient(rgba(245, 208, 0, 0.4), rgba(245, 208, 0, 0.4)),
+      linear-gradient(rgba(245, 208, 0, 0.4), rgba(245, 208, 0, 0.4)),
+      repeating-linear-gradient(0deg, rgba(28, 28, 34, 0.5) 0 3px, transparent 3px 120px),
+      repeating-linear-gradient(0deg, rgba(28, 28, 34, 0.5) 0 3px, transparent 3px 120px),
+      linear-gradient(var(--paper-a12), var(--paper-a12)),
+      linear-gradient(var(--paper-a12), var(--paper-a12));
+    background-size:
+      calc(100% - var(--sw) * 2 - 20px) 120px,
+      100% calc(100% - 175px),
+      5px 100%,
+      5px 100%,
+      var(--sw) 100%,
+      var(--sw) 100%,
+      var(--sw) 100%,
+      var(--sw) 100%;
+    background-position:
+      50% calc(100% - 20px),
+      50% 0,
+      left calc(var(--sw) - 5px) top,
+      right calc(var(--sw) - 5px) top,
+      left top,
+      right top,
+      left top,
+      right top;
+    background-repeat: no-repeat;
+  }
+
+  .road-paint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 230px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: min(calc(var(--rw) * 0.45), 240px);
+    line-height: 0.9;
+    text-align: center;
+    letter-spacing: 0.12em;
+    color: rgba(247, 244, 237, 0.85);
+    /* Road paint is stretched along the travel direction so it reads
+       correctly through the foreshortening — like SLOW / BUS LANE */
+    transform: scaleY(2.4);
+    transform-origin: 50% 100%;
+  }
+
+  .ground-fade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(28, 28, 34, 0) 55%, rgba(28, 28, 34, 0.85) 92%, var(--charcoal) 100%);
+  }
+
+  .wall {
+    /* Facade base — opaque row bands of this same color sit on top of the
+       window-column layers so windows read as discrete cells, not plaid */
+    --facade: color-mix(in srgb, var(--charcoal) 76%, var(--purple) 24%);
+    position: absolute;
+    bottom: 0;
+    width: var(--depth);
+    height: var(--wh);
+    background-color: var(--facade);
+    background-image:
+      linear-gradient(to top, rgba(28, 28, 34, 0.65) 0 30px, transparent 30px),
+      linear-gradient(to top, var(--facade) 0 34px, transparent 34px),
+      repeating-linear-gradient(0deg, var(--facade) 0 18px, transparent 18px 44px),
+      repeating-linear-gradient(90deg, rgba(245, 208, 0, 0.28) 0 20px, transparent 20px 260px),
+      repeating-linear-gradient(90deg, var(--paper-a12) 0 20px, transparent 20px 48px);
+  }
+
+  .wall::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .wall-left {
+    left: calc(50% - var(--gw) / 2);
+    transform-origin: 0 50%;
+    transform: rotateY(90deg);
+  }
+
+  .wall-left::after {
+    background: linear-gradient(to right, rgba(28, 28, 34, 0) 35%, rgba(28, 28, 34, 0.92) 92%);
+  }
+
+  .wall-right {
+    left: calc(50% + var(--gw) / 2 - var(--depth));
+    transform-origin: 100% 50%;
+    transform: rotateY(-90deg);
+  }
+
+  .wall-right::after {
+    background: linear-gradient(to left, rgba(28, 28, 34, 0) 35%, rgba(28, 28, 34, 0.92) 92%);
+  }
+
+  .wall-end {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: var(--gw);
+    height: var(--wh);
+    margin-left: calc(var(--gw) / -2);
+    transform: translateZ(calc(var(--depth) * -1));
+    --facade: color-mix(in srgb, var(--charcoal) 76%, var(--purple) 24%);
+    background-color: var(--facade);
+    background-image:
+      linear-gradient(to top, rgba(28, 28, 34, 0.65) 0 22px, transparent 22px),
+      linear-gradient(to top, var(--facade) 0 26px, transparent 26px),
+      repeating-linear-gradient(0deg, var(--facade) 0 16px, transparent 16px 38px),
+      repeating-linear-gradient(90deg, rgba(245, 208, 0, 0.28) 0 18px, transparent 18px 132px),
+      repeating-linear-gradient(90deg, var(--paper-a12) 0 18px, transparent 18px 42px);
+  }
+
+  .wall-end::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 28, 34, 0.45);
+  }
+
+  /* ── Street sign ── */
+
+  .street-sign {
+    position: absolute;
+    bottom: 0;
+    /* On the left sidewalk, but never bleeding off narrow viewports */
+    left: max(calc(50% - var(--rw) / 2 - var(--sw) * 0.55), 14px);
+    height: calc(var(--wh) * 0.62);
+    width: 8px;
+  }
+
+  .sign-pole {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 7px;
+    height: 100%;
+    margin-left: -3.5px;
+    background: linear-gradient(90deg, var(--gray), color-mix(in srgb, var(--gray) 55%, var(--off-white) 45%) 55%, var(--gray));
+    border: 2px solid var(--charcoal);
+    border-bottom: none;
+  }
+
+  .sign-face {
+    position: absolute;
+    top: -8px;
+    left: -4px;
+    transform: rotate(-5deg);
+    transform-origin: 0 100%;
+    background: var(--charcoal);
+    color: var(--yellow);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(0.95rem, 2.4vw, 1.35rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 0.4em 0.6em 0.3em;
+    border: 2px solid var(--paper-a70);
+    border-radius: 4px;
+    box-shadow: 3px 3px 0 var(--purple-light);
+  }
+
+  /* ── The full trash can ── */
+
+  .can {
+    position: absolute;
+    bottom: clamp(2px, 1vw, 10px);
+    left: 50%;
+    width: var(--can-w);
+    transform: translateX(calc(var(--rw) * 0.16));
+  }
+
+  .bin {
+    display: block;
+    width: 100%;
+    height: calc(var(--can-w) * 0.92);
+    position: relative;
+    background-color: var(--green);
+    /* Wire-mesh crosshatch + cylinder shading on the classic NYC basket */
+    background-image:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.45), transparent 22% 78%, rgba(0, 0, 0, 0.45)),
+      repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 9px),
+      repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 9px);
+    border: 3px solid var(--charcoal);
+    border-radius: 8px 8px 12px 12px;
+    box-shadow: 6px 6px 0 rgba(107, 63, 160, 0.6);
+  }
+
+  .bin::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    right: -7px;
+    top: -8px;
+    height: 14px;
+    background: var(--green-light);
+    border: 3px solid var(--charcoal);
+    border-radius: 7px;
+  }
+
+  .bag {
+    position: absolute;
+    border: 3px solid var(--charcoal);
+  }
+
+  .bag-a {
+    width: 58%;
+    height: calc(var(--can-w) * 0.42);
+    left: -6%;
+    bottom: calc(var(--can-w) * 0.82);
+    background: var(--off-white);
+    border-radius: 55% 60% 45% 50% / 65% 60% 40% 45%;
+    box-shadow: inset -6px -6px 0 rgba(28, 28, 34, 0.12);
+  }
+
+  /* Tied-bag ears */
+  .bag-a::before,
+  .bag-a::after {
+    content: '';
+    position: absolute;
+    top: -12px;
+    width: 11px;
+    height: 15px;
+    background: var(--off-white);
+    border: 3px solid var(--charcoal);
+    border-radius: 45% 55% 50% 50%;
+  }
+
+  .bag-a::before {
+    left: 26%;
+    transform: rotate(-24deg);
+  }
+
+  .bag-a::after {
+    left: 46%;
+    transform: rotate(20deg);
+  }
+
+  .bag-b {
+    width: 52%;
+    height: calc(var(--can-w) * 0.38);
+    right: -8%;
+    bottom: calc(var(--can-w) * 0.78);
+    background: var(--purple-light);
+    border-radius: 50% 55% 50% 45% / 60% 55% 45% 50%;
+  }
+
+  .ball {
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 3px solid var(--charcoal);
+  }
+
+  .ball-a {
+    width: 26%;
+    left: 30%;
+    bottom: calc(var(--can-w) * 1.08);
+    background: var(--yellow);
+  }
+
+  .ball-b {
+    width: 20%;
+    right: 2%;
+    bottom: calc(var(--can-w) * 1);
+    background: var(--off-white);
+  }
+
+  .lid {
+    position: absolute;
+    right: calc(var(--can-w) * -0.34);
+    bottom: -2px;
+    width: calc(var(--can-w) * 0.5);
+    height: calc(var(--can-w) * 0.5);
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle at 50% 50%, var(--green-light) 0 6px, var(--green) 6px 14px);
+    border: 3px solid var(--charcoal);
+    transform: rotate(12deg);
+    box-shadow: 4px 4px 0 rgba(107, 63, 160, 0.5);
+  }
+
+  .lid::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 38%;
+    height: 20%;
+    background: var(--green);
+    border: 3px solid var(--charcoal);
+    border-radius: 5px;
+  }
+
+  .stink {
+    position: absolute;
+    width: 12px;
+    height: 26px;
+    border-left: 3px solid var(--paper-a55);
+    border-radius: 50%;
+    opacity: 0;
+    animation: stink 2.6s ease-in-out infinite;
+  }
+
+  .stink-a { left: 20%; bottom: calc(var(--can-w) * 1.42); animation-delay: 0s; }
+  .stink-b { left: 44%; bottom: calc(var(--can-w) * 1.5); animation-delay: 0.9s; transform: scaleX(-1); }
+  .stink-c { left: 68%; bottom: calc(var(--can-w) * 1.42); animation-delay: 1.7s; }
+
+  @keyframes stink {
+    0% { opacity: 0; translate: 0 10px; }
+    30% { opacity: 0.75; }
+    100% { opacity: 0; translate: 0 -16px; }
+  }
+
+  .litter {
+    position: absolute;
+    width: 14px;
+    height: 11px;
+    background: var(--off-white);
+    border: 2px solid var(--charcoal);
+    border-radius: 2px;
+  }
+
+  .litter-a {
+    bottom: 14px;
+    left: calc(50% - var(--rw) * 0.22);
+    transform: rotate(-24deg);
+  }
+
+  .litter-b {
+    bottom: 40px;
+    left: calc(50% - var(--rw) * 0.06);
+    width: 10px;
+    height: 10px;
+    border-radius: 50% 40% 55% 45%;
+    background: var(--yellow);
+    transform: rotate(30deg);
+  }
+
+  .litter-c {
+    bottom: 6px;
+    left: calc(50% + var(--rw) * 0.3);
+    transform: rotate(14deg);
+  }
+
+  /* ── Messaging ── */
+
   .notfound-inner {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
+    text-align: center;
+    padding: 0 max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
+    /* Sticker slaps over the scene's bottom edge — break the frame */
+    margin-top: -0.9em;
+    animation: rise 0.8s var(--ease-out) 0.2s both;
   }
 
-  .notfound-code {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-display);
-    line-height: 1;
-    color: var(--yellow);
-    letter-spacing: 0.04em;
-    text-shadow: 6px 6px 0 var(--purple);
+  @keyframes rise {
+    from { opacity: 0; translate: 0 14px; }
+    to { opacity: 1; translate: 0 0; }
   }
 
   .notfound-msg {
-    color: var(--paper-a70);
-    max-width: 32ch;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-3);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    max-width: 24ch;
+  }
+
+  .notfound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-xs);
   }
 
   .notfound-btn {
@@ -67,11 +559,43 @@ export const prerender = true;
     border: 2px solid var(--charcoal);
     border-radius: 4px;
     box-shadow: var(--press-sm);
-    margin-top: var(--space-xs);
     min-height: var(--tap);
   }
 
   .notfound-btn:hover {
     background: var(--off-white);
+  }
+
+  .notfound-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--off-white);
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: var(--step--1);
+    text-decoration: none;
+    padding: 0.9em 1.6em;
+    border: 2px solid var(--paper-a35);
+    border-radius: 4px;
+    min-height: var(--tap);
+  }
+
+  .notfound-link:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .world,
+    .notfound-inner,
+    .stink {
+      animation: none;
+    }
+
+    .stink {
+      opacity: 0.55;
+    }
   }
 </style>

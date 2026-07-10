@@ -24,6 +24,7 @@ Pages:
 - Events -> (Club Events)
 - About
 - Contact
+- 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
 
 SEO & share metadata (2026-07 overhaul):
 - `src/layouts/BaseLayout.astro` owns the head: per-page title + required description feed the meta description, canonical URL, and full Open Graph/Twitter tags; the homepage adds JSON-LD Organization schema via `slot="head"`
