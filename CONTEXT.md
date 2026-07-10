@@ -11,3 +11,6 @@ The data shape a card component needs to render an event. Derived from `EventDat
 
 ## CountdownParts
 Defined in `src/lib/countdown.ts`. `{ days: number, hours: number, minutes: number, seconds: number }` — the raw numeric parts of a countdown to an event. Display formatting (padding, labels) is the caller's responsibility. Produced by `createCountdown(isoStr, onTick)`, which returns a cleanup function to stop the interval.
+
+## DonationTotal
+`number | null` — the GoFundMe campaign's raised total in whole US dollars, or `null` meaning "unavailable right now" so callers degrade instead of failing. Produced by `fetchDonationTotal()` in `src/lib/server/gofundme.ts` (server-only: GoFundMe's gateway sends no CORS header, so browsers can never fetch it directly). Consumed at build time by the wallet page frontmatter and at runtime by the on-demand `/api/donation-total.json` route, which hands it to the page's client script as `{ amountRaised }`.
