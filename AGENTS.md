@@ -78,6 +78,19 @@ That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background l
 Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
 Local simulators max out at iOS 18, which still honors `theme-color`, so to emulate iOS 26 chrome behavior temporarily remove the `theme-color` meta and confirm the strip still renders charcoal from the body background alone.
 
+## SEO & share metadata
+
+* `BaseLayout.astro` owns the whole head: per-page `title` + required `description` props feed the `<title>`, meta description, canonical, Open Graph, and Twitter tags; pages can inject extras (like JSON-LD) via `slot="head"`.
+* The homepage `<title>` and `og:title` are exactly **"Trash Talk NYC"** — a captain decision about how shared links present.
+Keep descriptive copy in the meta description, never appended to the brand name.
+Inner pages use the "Page — Trash Talk NYC" pattern.
+* `site: 'https://trashtalknyc.org'` in `astro.config.mjs` feeds `Astro.site`; canonical/og URLs and the sitemap derive from it, so they stay production-absolute even on preview builds.
+The www host 301s to the apex.
+* Icon/share assets in `public/` (favicon.svg/.ico, apple-touch-icon.png, og-image.png, logo.png) are **generated, not hand-edited**: `node scripts/generate-icons.mjs` rebuilds them from `src/assets/primary-logo.png` — the captain requires the favicon to be the exact hero logo, so regenerate rather than swapping in other variants.
+These are a deliberate exception to the "never `public/`" image rule: they're pre-sized, fetched by crawlers/scrapers at stable root paths, not rendered by pages.
+* Meta descriptions are English-only on purpose: the ES toggle is client-side on the same URLs, so there's no separate ES document to hreflang to and EN is the indexable language.
+* The 404 page carries `noindex` (via the `noindex` layout prop) and is filtered out of the sitemap in `astro.config.mjs`.
+
 ## Development Philosophy
 
 Prioritize:
