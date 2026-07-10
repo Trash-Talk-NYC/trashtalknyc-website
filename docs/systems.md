@@ -24,6 +24,7 @@ Pages:
 - Events -> (Club Events)
 - About
 - Contact
+- 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
 
 ## Events
 
