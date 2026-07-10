@@ -58,35 +58,18 @@ const btnId = `eb-trigger-${id}`;
             </svg>
             {location}
           </span>
-          {mapUrls && (
-            <span class="map-links">
-              <a class="map-link" href={mapUrls.google} target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Google Maps
-              </a>
-              <a class="map-link" href={mapUrls.apple} target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Apple Maps
-              </a>
-            </span>
+          {mapUrls && !isPast && (
+            <a class="map-link" href={mapUrls.google} target="_blank" rel="noopener" data-en="Map ↗" data-es="Mapa ↗">
+              Map ↗
+            </a>
           )}
         </>
       )}
     </div>
   </div>
 
-  <div class="event-cta">
-    {isPast ? (
-      <span class="card-status" data-en="Past" data-es="Pasado">Past</span>
-    ) : (
+  {!isPast && (
+    <div class="event-cta">
       <button
         class="btn-card btn-card-purple"
         id={btnId}
@@ -96,11 +79,13 @@ const btnId = `eb-trigger-${id}`;
         data-date={dateStr}
         data-time={timeStr}
         data-loc={location}
+        data-en="RSVP →"
+        data-es="Regístrate →"
       >
         RSVP &rarr;
       </button>
-    )}
-  </div>
+    </div>
+  )}
 </div>
 
 <style>
@@ -176,16 +161,14 @@ const btnId = `eb-trigger-${id}`;
   }
   .event-detail svg { width: 12px; height: 12px; flex-shrink: 0; }
 
-  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
   .map-link {
-    display: inline-flex; align-items: center; gap: 0.2rem;
+    display: inline-flex; align-items: center;
     font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
     color: rgba(122,122,138,0.7); text-decoration: none;
     border: 1px solid rgba(122,122,138,0.3); border-radius: 4px;
     padding: 0.1rem 0.4rem; transition: border-color 0.15s, color 0.15s; white-space: nowrap;
   }
   .map-link:hover { color: var(--purple); border-color: var(--purple); }
-  .map-link svg { width: 9px; height: 9px; flex-shrink: 0; }
 
   .event-cta {
     flex-shrink: 0; text-align: right;
@@ -207,15 +190,9 @@ const btnId = `eb-trigger-${id}`;
     .btn-card-purple:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--charcoal); }
     .btn-card-purple:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--charcoal); }
   }
-  .card-status {
-    font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--warm-gray);
-  }
-
   @media (max-width: 768px) {
     .event-card { grid-template-columns: 72px 1fr; }
     .event-date-block::after { display: none; }
     .event-cta { grid-column: 1 / -1; display: flex; justify-content: flex-start; padding-top: 0.25rem; }
-    .event-card.past .event-cta { display: none; }
   }
 </style>

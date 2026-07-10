@@ -1,24 +1,43 @@
 ---
-import type { EventCardProps } from '../lib/events';
-import { formatDate, formatTime } from '../lib/events';
+import type { BoroughMeta, EventData } from '../lib/events';
+import { formatDate, formatTime, getMapUrls, toEventCardProps } from '../lib/events';
 
-interface Props extends EventCardProps {}
+interface Props {
+  borough: BoroughMeta;
+  /** This borough's upcoming events, soonest first; the card shows events[0]. */
+  events: EventData[];
+}
 
-const { id, name, url, startIso, endIso, location, mapUrls } = Astro.props;
+const { borough, events } = Astro.props;
+const next = toEventCardProps(events[0]);
+const mapUrls = getMapUrls(events[0]);
 
-const dateStr = formatDate(startIso, 'en');
-const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
+const dateStr = formatDate(next.startIso, 'en');
+const timeStr = formatTime(next.startIso, 'en') + ' – ' + formatTime(next.endIso, 'en');
 
-const rsvpBtnId = `eb-trigger-hero-${id}`;
+const moreCount = events.length - 1;
+const moreEn = `See ${moreCount} more event${moreCount === 1 ? '' : 's'} in ${borough.inEn}`;
+const moreEs = `Ver ${moreCount} evento${moreCount === 1 ? '' : 's'} más en ${borough.inEs}`;
+
+const rsvpBtnId = `eb-trigger-borough-${next.id}`;
 ---
 
-<div class="next-event-card" data-start={startIso}>
+<div
+  class="borough-card"
+  id={`borough-card-${borough.id}`}
+  data-borough={borough.id}
+  data-start={next.startIso}
+  role="group"
+  aria-label={`Next event in ${borough.inEn}`}
+>
   <div class="sticker card-eyebrow">
     <span class="pulse-dot"></span>
-    <span data-en="Next club event" data-es="Próximo evento">Next club event</span>
+    <span data-en="Next event in" data-es="Próximo evento en">Next event in</span>
   </div>
 
-  <div class="card-event-name">{name}</div>
+  <div class="card-borough" data-en={borough.labelEn} data-es={borough.labelEs}>{borough.labelEn}</div>
+
+  <div class="card-event-name">{next.name}</div>
 
   <div class="card-meta">
     <div class="card-meta-row">
@@ -28,7 +47,7 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
         <line x1="8" y1="2" x2="8" y2="6"/>
         <line x1="3" y1="10" x2="21" y2="10"/>
       </svg>
-      <span class="hero-date-text" data-start-iso={startIso}>{dateStr}</span>
+      <span class="card-date-text" data-start-iso={next.startIso}>{dateStr}</span>
     </div>
     <div class="card-meta-row">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -37,13 +56,13 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
       </svg>
       <span>{timeStr}</span>
     </div>
-    {location && (
+    {next.location && (
       <div class="card-meta-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
-        <span>{location}</span>
+        <span>{next.location}</span>
       </div>
     )}
     {mapUrls && (
@@ -72,30 +91,35 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
 
   <div class="card-countdown">
     <span class="cd-label-top" data-en="Time left" data-es="Tiempo restante">Time left</span>
-    <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub" data-en="days" data-es="días">days</span></div>
+    <div class="cd-unit"><span class="cd-num cd-d">--</span><span class="cd-sub" data-en="days" data-es="días">days</span></div>
     <span class="cd-sep">:</span>
-    <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub" data-en="hrs" data-es="hrs">hrs</span></div>
+    <div class="cd-unit"><span class="cd-num cd-h">--</span><span class="cd-sub" data-en="hrs" data-es="hrs">hrs</span></div>
     <span class="cd-sep">:</span>
-    <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub" data-en="min" data-es="min">min</span></div>
+    <div class="cd-unit"><span class="cd-num cd-m">--</span><span class="cd-sub" data-en="min" data-es="min">min</span></div>
   </div>
 
-  <a
-    class="btn-rsvp"
-    id={rsvpBtnId}
-    href={url}
-    target="_blank"
-    rel="noopener"
-    data-event-id={id}
-    data-url={url}
-    data-name={name}
-    data-date={dateStr}
-    data-time={timeStr}
-    data-loc={location}
-    data-en="RSVP for this event"
-    data-es="Regístrate aquí"
-  >
-    RSVP for this event
-  </a>
+  <div class="card-actions">
+    <a
+      class="btn-rsvp"
+      id={rsvpBtnId}
+      href={next.url}
+      target="_blank"
+      rel="noopener"
+      data-event-id={next.id}
+      data-url={next.url}
+      data-name={next.name}
+      data-date={dateStr}
+      data-time={timeStr}
+      data-loc={next.location}
+      data-en="RSVP"
+      data-es="Regístrate"
+    >
+      RSVP
+    </a>
+    {moreCount > 0 && (
+      <a class="more-in-borough" href="#all-events" data-en={`${moreEn} ↓`} data-es={`${moreEs} ↓`}>{moreEn} ↓</a>
+    )}
+  </div>
 </div>
 
 <script>
@@ -103,24 +127,25 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
   import { getCurrentLang, onLanguageChange } from '../lib/language';
   import { formatDate } from '../lib/events';
 
-  const card = document.querySelector<HTMLElement>('.next-event-card[data-start]');
-  if (card) {
-    const startIso = card.dataset.start!;
+  // One card per borough with events; each runs its own countdown and
+  // re-renders its formatted date on language change.
+  document.querySelectorAll<HTMLElement>('.borough-card[data-start]').forEach((card) => {
     const pad = (n: number) => String(n).padStart(2, '0');
+    const dEl = card.querySelector<HTMLElement>('.cd-d');
+    const hEl = card.querySelector<HTMLElement>('.cd-h');
+    const mEl = card.querySelector<HTMLElement>('.cd-m');
 
-    const cleanup = createCountdown(startIso, ({ days, hours, minutes }) => {
-      const dEl = document.getElementById('cdD');
-      if (!dEl) return;
+    const cleanup = createCountdown(card.dataset.start!, ({ days, hours, minutes }) => {
+      if (!dEl || !hEl || !mEl) return;
       dEl.textContent = pad(days);
-      document.getElementById('cdH')!.textContent = pad(hours);
-      document.getElementById('cdM')!.textContent = pad(minutes);
+      hEl.textContent = pad(hours);
+      mEl.textContent = pad(minutes);
     });
-
     document.addEventListener('astro:before-swap', cleanup, { once: true });
 
     // The formatted date is generated text, not a data-en/data-es pair,
     // so this component re-renders it itself on language change
-    const dateEl = card.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
+    const dateEl = card.querySelector<HTMLElement>('.card-date-text[data-start-iso]');
     if (dateEl) {
       const applyDate = (lang: 'en' | 'es') => {
         dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
@@ -128,17 +153,18 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
       onLanguageChange(applyDate);
       if (getCurrentLang() !== 'en') applyDate(getCurrentLang());
     }
-  }
+  });
 </script>
 
 <style>
   /* Bulletin card: light card pinned onto the dark hero, sticker label
-     over the top edge, hard press shadow */
-  .next-event-card {
+     over the top edge, hard press shadow. Presentation mode (carousel item
+     vs desktop reveal panel) is owned by the events page. */
+  .borough-card {
     background: var(--off-white);
     border: 2.5px solid var(--charcoal);
     border-radius: var(--radius-md);
-    padding: clamp(1.75rem, 3.5vw, 2.25rem) clamp(1.25rem, 4vw, 2.25rem) clamp(1.25rem, 3.5vw, 2rem);
+    padding: clamp(1.9rem, 3.5vw, 2.4rem) clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 3.5vw, 1.75rem);
     position: relative;
     box-shadow: 6px 6px 0 var(--purple-light);
     color: var(--charcoal);
@@ -162,20 +188,31 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
     .pulse-dot { animation: none; }
   }
 
+  /* The borough is the headline of the card — it is what visibly changes
+     as you swipe between boroughs. */
+  .card-borough {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.3rem, 4vw, 3rem);
+    line-height: 0.95; letter-spacing: 0.02em;
+    color: var(--purple);
+    text-shadow: 2px 2px 0 rgba(28, 28, 34, 0.18);
+    margin-bottom: 0.35rem;
+  }
+
   .card-event-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+    font-size: clamp(1.35rem, 2vw, 1.7rem);
     color: var(--charcoal); line-height: 1; letter-spacing: 0.02em; margin-bottom: 1.1rem;
   }
 
-  .card-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .card-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.4rem; }
   .card-meta-row {
     display: flex; align-items: center; gap: 0.5rem;
     font-size: 0.78rem; font-weight: 700; color: var(--gray);
   }
   .card-meta-row svg { width: 12px; height: 12px; color: var(--purple); flex-shrink: 0; }
 
-  .map-links { gap: 0.5rem; margin-top: 0.5rem; }
+  .map-links { display: inline-flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
   .map-link {
     font-size: 0.65rem; padding: 0.5rem 0.8rem; border-radius: 6px; min-height: 36px;
     color: var(--charcoal);
@@ -190,7 +227,7 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
 
   .card-countdown {
     display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; padding: 0.85rem 1rem;
+    margin-bottom: 1.4rem; padding: 0.85rem 1rem;
     background: var(--charcoal);
     border-radius: 8px;
   }
@@ -213,11 +250,13 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
     color: var(--paper-a35); margin-top: -4px; align-self: flex-start; padding-top: 2px;
   }
 
+  .card-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+
   .btn-rsvp {
     background: var(--yellow); color: var(--charcoal);
     font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.14em;
-    padding: 0.7rem 1.4rem; border: 2.5px solid var(--charcoal); border-radius: 6px;
+    padding: 0.7rem 1.8rem; border: 2.5px solid var(--charcoal); border-radius: 6px;
     cursor: pointer; white-space: nowrap; text-decoration: none;
     display: inline-flex; align-items: center; justify-content: center; min-height: 48px;
     box-shadow: 4px 4px 0 var(--charcoal);
@@ -227,4 +266,12 @@ const rsvpBtnId = `eb-trigger-hero-${id}`;
     .btn-rsvp:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--charcoal); }
     .btn-rsvp:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--charcoal); transition-duration: 80ms; }
   }
+
+  .more-in-borough {
+    font-size: 0.72rem; font-weight: 800;
+    color: var(--purple);
+    text-decoration: underline; text-underline-offset: 3px;
+    min-height: var(--tap); display: inline-flex; align-items: center;
+  }
+  .more-in-borough:hover { color: var(--purple-light); }
 </style>

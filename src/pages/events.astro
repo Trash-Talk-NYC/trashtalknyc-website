@@ -1,8 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
-import HeroEventCard from '../components/HeroEventCard.astro';
-import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
+import BoroughEventCard from '../components/BoroughEventCard.astro';
+import BoroughFruit from '../components/BoroughFruit.astro';
+import {
+  BOROUGHS,
+  fetchEventsAtBuildTime,
+  getClubStats,
+  groupUpcomingByBorough,
+  toEventCardProps,
+} from '../lib/events';
 
 const { upcoming: upcomingRaw, past: pastRaw } = await fetchEventsAtBuildTime();
 const upcoming = upcomingRaw.map(ev => ({
@@ -12,7 +19,22 @@ const upcoming = upcomingRaw.map(ev => ({
 const past = pastRaw.map(ev => ({
   props: toEventCardProps(ev),
 }));
-const nextEvent = upcoming[0]?.props ?? null;
+
+const byBorough = groupUpcomingByBorough(upcomingRaw);
+// Carousel order: boroughs by their soonest event, so the first card is
+// always the next event citywide.
+const heroBoroughs = BOROUGHS.filter(b => byBorough.has(b.id)).sort((a, b) =>
+  byBorough.get(a.id)![0].start.utc.localeCompare(byBorough.get(b.id)![0].start.utc),
+);
+const emptyBoroughs = BOROUGHS.filter(b => !byBorough.has(b.id));
+// With zero upcoming events nothing is preselected: the page then carries a
+// single global "no upcoming events" message (in the list section), and the
+// per-borough notes only appear when a withered fruit is clicked.
+const defaultBorough: string | null = heroBoroughs[0]?.id ?? null;
+
+const stats = getClubStats(pastRaw);
+const statEn = `${stats.events} events in ${stats.weeks} weeks`;
+const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -26,44 +48,102 @@ const nextEvent = upcoming[0]?.props ?? null;
     }
   </script>
 
-  <!-- HERO -->
+  <!-- HERO: next event per borough — carousel on mobile, fruit market on desktop -->
   <section class="events-hero diag-texture">
     <div class="events-hero-inner">
 
-      <div class="events-hero-left">
-        <div class="hero-page-label" data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</div>
+      <div class="events-hero-head">
         <h1 class="hero-title">
           <span data-en="Club" data-es="Eventos">Club</span>
           <span class="accent" data-en="Events" data-es="del Club">Events</span>
         </h1>
+        <p class="stat-sticker sticker" style="--tilt: -1.5deg">
+          <span data-en={statEn} data-es={statEs}>{statEn}</span>
+        </p>
       </div>
 
-      {nextEvent ? (
-        <HeroEventCard {...nextEvent} />
-      ) : (
-        <div class="next-event-card-empty">
-          <p data-en="No upcoming events right now. Check back soon!" data-es="No hay eventos próximos. ¡Vuelve pronto!">
-            No upcoming events right now. Check back soon!
-          </p>
+      <!-- Desktop-only: the five boroughs as spoiled fruits; click to reveal -->
+      <div class="fruit-market" role="group" aria-label="Pick a borough">
+        {BOROUGHS.map(b => {
+          const events = byBorough.get(b.id);
+          return (
+            <button
+              type="button"
+              class:list={['fruit-btn', { 'is-active': b.id === defaultBorough }]}
+              data-borough={b.id}
+              data-empty={events ? undefined : ''}
+              aria-controls={`borough-card-${b.id}`}
+              aria-expanded={b.id === defaultBorough ? 'true' : 'false'}
+              style={`grid-area: ${b.id}`}
+            >
+              <BoroughFruit borough={b.id} />
+              <span class="fruit-label" data-en={b.labelEn} data-es={b.labelEs}>{b.labelEn}</span>
+              {events ? (
+                <span class="fruit-count">{events.length}</span>
+              ) : (
+                <span class="fruit-none" data-en="No events" data-es="Sin eventos">No events</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div class:list={['borough-stage', { 'no-hero-events': heroBoroughs.length === 0 }]}>
+        <div
+          class:list={['borough-track', { single: heroBoroughs.length === 1 }]}
+          id="boroughTrack"
+          aria-label="Next event per borough"
+        >
+          {heroBoroughs.map(b => (
+            <div class:list={['borough-slide', { 'is-active': b.id === defaultBorough }]} data-borough={b.id}>
+              <BoroughEventCard borough={b} events={byBorough.get(b.id)!} />
+            </div>
+          ))}
+          {emptyBoroughs.map(b => (
+            <div
+              class:list={['borough-slide', 'borough-slide-none', { 'is-active': b.id === defaultBorough }]}
+              data-borough={b.id}
+            >
+              <div class="borough-card-none" id={`borough-card-${b.id}`} role="group" aria-label={`No upcoming events in ${b.inEn}`}>
+                <p class="none-msg">
+                  <span data-en={`No upcoming events in ${b.inEn} — yet.`} data-es={`No hay eventos próximos en ${b.inEs} — todavía.`}>
+                    No upcoming events in {b.inEn} — yet.
+                  </span>
+                </p>
+                <a class="none-nudge" href="/#signup" data-en="Join the club list — hear about new dates first →" data-es="Únete a la lista del club — entérate primero de nuevas fechas →">
+                  Join the club list — hear about new dates first →
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+        {heroBoroughs.length > 1 && (
+          <div class="borough-dots">
+            {heroBoroughs.map((b, i) => (
+              <button
+                type="button"
+                class="borough-dot"
+                data-borough={b.id}
+                aria-label={`Next event in ${b.inEn}`}
+                aria-current={i === 0 ? 'true' : undefined}
+              ></button>
+            ))}
+          </div>
+        )}
+      </div>
 
     </div>
   </section>
 
   <div class="tape-seam" aria-hidden="true"></div>
 
-  <!-- PAGE HEADER BAND -->
-  <div class="page-header-band">
-    <div class="page-header-band-inner">
-      <div class="sign-plate" data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</div>
-      <span class="eb-badge">Eventbrite</span>
-    </div>
-  </div>
-
   <!-- EVENTS LIST -->
   <div class="events-page-bg grid-paper">
   <div class="events-page">
+
+    <h2 class="all-events-marker" id="all-events">
+      <span data-en="See all club events" data-es="Ver todos los eventos del club">See all club events</span>
+    </h2>
 
     <div class="dist-sort-label" id="distSortLabel" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -189,7 +269,9 @@ const nextEvent = upcoming[0]?.props ?? null;
     }
 
     function initWidgets() {
-      document.querySelectorAll('[data-event-id]').forEach(function(btn) {
+      // Triggers only: EventCard root divs also carry data-event-id (for the
+      // staleness/geolocation logic) and must not get widget bindings.
+      document.querySelectorAll('button[data-event-id], a[data-event-id]').forEach(function(btn) {
         var id = btn.getAttribute('data-event-id');
         if (!id || btn.dataset.widgetInit) return;
         btn.dataset.widgetInit = '1';
@@ -213,6 +295,18 @@ const nextEvent = upcoming[0]?.props ?? null;
     }
     function kmToMiles(km) { return km * 0.621371; }
 
+    function distBadgeText(mi) {
+      // data-en/data-es pair so the language toggle keeps translating it
+      return { en: mi.toFixed(1) + ' mi away', es: 'a ' + mi.toFixed(1) + ' mi' };
+    }
+
+    function applyDistBadge(badge, mi) {
+      var text = distBadgeText(mi);
+      badge.setAttribute('data-en', text.en);
+      badge.setAttribute('data-es', text.es);
+      badge.textContent = document.documentElement.lang === 'es' ? text.es : text.en;
+    }
+
     function sortListByDist() {
       var list = document.getElementById('eventsListInner');
       if (!list) return;
@@ -233,12 +327,12 @@ const nextEvent = upcoming[0]?.props ?? null;
         if (isNaN(lat)) return;
         var mi = kmToMiles(haversineKm(userLat, userLng, lat, lng));
         var existing = card.querySelector('.dist-badge');
-        if (existing) { existing.textContent = mi.toFixed(1) + ' mi away'; return; }
+        if (existing) { applyDistBadge(existing, mi); return; }
         var cta = card.querySelector('.event-cta');
         if (cta) {
           var badge = document.createElement('span');
           badge.className = 'dist-badge';
-          badge.textContent = mi.toFixed(1) + ' mi away';
+          applyDistBadge(badge, mi);
           cta.appendChild(badge);
         }
       });
@@ -267,6 +361,63 @@ const nextEvent = upcoming[0]?.props ?? null;
     });
   </script>
 
+  <!-- Borough hero: fruit buttons (desktop) + carousel dots (mobile) drive
+       one shared active-borough state over the same set of cards -->
+  <script>
+    const track = document.getElementById('boroughTrack');
+    if (track) {
+      const slides = Array.from(track.querySelectorAll<HTMLElement>('.borough-slide'));
+      const fruitBtns = Array.from(document.querySelectorAll<HTMLElement>('.fruit-btn'));
+      const dots = Array.from(document.querySelectorAll<HTMLElement>('.borough-dot'));
+      const isDesktop = window.matchMedia('(min-width: 900px)');
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      const setActive = (borough: string, scrollCarousel: boolean) => {
+        slides.forEach(s => s.classList.toggle('is-active', s.dataset.borough === borough));
+        fruitBtns.forEach(f => {
+          const on = f.dataset.borough === borough;
+          f.classList.toggle('is-active', on);
+          f.setAttribute('aria-expanded', String(on));
+        });
+        dots.forEach(d => {
+          if (d.dataset.borough === borough) d.setAttribute('aria-current', 'true');
+          else d.removeAttribute('aria-current');
+        });
+        if (scrollCarousel && !isDesktop.matches) {
+          const slide = slides.find(s => s.dataset.borough === borough);
+          if (slide) {
+            track.scrollTo({
+              left: slide.offsetLeft - (track.clientWidth - slide.clientWidth) / 2,
+              behavior: prefersReduced.matches ? 'auto' : 'smooth',
+            });
+          }
+        }
+      };
+
+      fruitBtns.forEach(f => f.addEventListener('click', () => setActive(f.dataset.borough!, true)));
+      dots.forEach(d => d.addEventListener('click', () => setActive(d.dataset.borough!, true)));
+
+      // Swiping the carousel updates the dots: mark the slide nearest the
+      // track center as active (without scrolling again).
+      let scrollRaf = 0;
+      track.addEventListener('scroll', () => {
+        if (isDesktop.matches) return;
+        cancelAnimationFrame(scrollRaf);
+        scrollRaf = requestAnimationFrame(() => {
+          const center = track.scrollLeft + track.clientWidth / 2;
+          let nearest: HTMLElement | null = null;
+          let nearestDist = Infinity;
+          for (const s of slides) {
+            if (s.offsetWidth === 0) continue;
+            const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - center);
+            if (d < nearestDist) { nearestDist = d; nearest = s; }
+          }
+          if (nearest?.dataset.borough) setActive(nearest.dataset.borough, false);
+        });
+      }, { passive: true });
+    }
+  </script>
+
 </BaseLayout>
 
 <style>
@@ -287,40 +438,184 @@ const nextEvent = upcoming[0]?.props ?? null;
   .events-hero-inner {
     max-width: 1000px; margin: 0 auto;
     position: relative; z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
-    gap: var(--space-lg); align-items: center;
+    display: flex; flex-direction: column;
+    gap: var(--space-md);
   }
-  .hero-page-label {
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em;
-    color: var(--purple-light); margin-bottom: 0.75rem;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .hero-page-label::before { content: ''; display: inline-block; width: 1.25rem; height: 3px; background: var(--purple-light); border-radius: 2px; }
   .hero-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: var(--step-display);
     line-height: 0.88; letter-spacing: 0.02em;
-    color: var(--off-white); margin-bottom: 0.5rem;
+    color: var(--off-white); margin-bottom: 0.9rem;
     text-shadow: 5px 5px 0 rgba(107, 63, 160, 0.55);
   }
   .hero-title .accent { color: var(--yellow); display: block; }
-  .next-event-card-empty {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 200px; color: var(--paper-a55);
-    font-size: 0.85rem; font-weight: 600; text-align: center;
-    border: 2px dashed var(--paper-a35); border-radius: var(--radius-md); padding: 2rem;
+
+  /* "X events in Y weeks" counter */
+  .stat-sticker { font-size: 0.8rem; }
+
+  /* ── FRUIT MARKET (desktop only) ── */
+  .fruit-market { display: none; }
+
+  /* ── BOROUGH CAROUSEL (mobile default) ── */
+  .borough-stage { position: relative; }
+  .borough-stage.no-hero-events { display: none; }
+  .borough-track {
+    display: flex;
+    gap: 0.9rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    position: relative;
+    /* top padding keeps the overhanging sticker eyebrow from being clipped;
+       side padding creates the next-card peek; bottom clears the press shadow */
+    padding: 1.25rem 7% 10px 2px;
+  }
+  .borough-track::-webkit-scrollbar { display: none; }
+  .borough-slide {
+    flex: 0 0 88%;
+    min-width: 0;
+    scroll-snap-align: center;
+  }
+  /* Single borough: full-width card, no misleading peek */
+  .borough-track.single { padding-right: 8px; }
+  .borough-track.single .borough-slide { flex-basis: 100%; }
+  /* Empty-borough notes never join the mobile carousel */
+  .borough-slide-none { display: none; }
+
+  .borough-dots {
+    display: flex; justify-content: center; gap: 0.35rem;
+    margin-top: 0.6rem;
+  }
+  .borough-dot {
+    width: 28px; height: 28px;
+    background: none; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+  }
+  .borough-dot::before {
+    content: '';
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 2px solid var(--paper-a55);
+    background: transparent;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .borough-dot[aria-current]::before {
+    background: var(--yellow); border-color: var(--yellow);
+    transform: scale(1.15);
   }
 
-  /* ── PAGE HEADER BAND ── */
-  .page-header-band {
-    background: var(--cream);
-    border-bottom: 2px solid #d8d3c8;
-    padding: var(--space-md) max(var(--gutter), var(--safe-right)) var(--space-md) max(var(--gutter), var(--safe-left));
+  .borough-card-none {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.9rem;
+    min-height: 200px; text-align: center;
+    border: 2px dashed var(--paper-a35); border-radius: var(--radius-md);
+    padding: 2rem;
   }
-  .page-header-band-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .page-header-band .sign-plate { font-size: var(--step-2); }
-  .eb-badge { background: #f05537; color: #fff; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.22rem 0.6rem; border-radius: 20px; }
+  .none-msg { color: var(--paper-a55); font-size: 0.85rem; font-weight: 600; }
+  .none-nudge {
+    font-size: 0.78rem; font-weight: 700;
+    color: var(--purple-light);
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .none-nudge:hover { color: var(--off-white); }
+
+  /* ── DESKTOP: fruit market + reveal panel ── */
+  @media (min-width: 900px) {
+    .events-hero-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+      grid-template-areas:
+        'head   market'
+        'stage  market';
+      gap: var(--space-md) var(--space-lg);
+      align-items: start;
+    }
+    .events-hero-head { grid-area: head; }
+    .borough-stage { grid-area: stage; }
+
+    .fruit-market {
+      grid-area: market;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-areas:
+        '.             bronx    .'
+        'manhattan     .        queens'
+        'staten-island brooklyn .';
+      gap: 0.25rem 0.5rem;
+      justify-items: center;
+      align-items: center;
+    }
+    .fruit-btn {
+      background: none; border: none; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+      padding: 0.4rem;
+      transition: transform 160ms var(--ease-out);
+    }
+    /* Shadow lives on the SVG, not the button — a button-level drop-shadow
+       would duplicate the label text as an offset copy */
+    .fruit-btn :global(.fruit-svg) {
+      width: clamp(84px, 9vw, 118px); height: auto;
+      filter: drop-shadow(5px 5px 0 rgba(107, 63, 160, 0.55));
+      transition: filter 160ms var(--ease-out);
+    }
+    /* hand-placed market-stall tilt */
+    .fruit-btn[data-borough='manhattan'] { transform: rotate(-3deg); }
+    .fruit-btn[data-borough='brooklyn'] { transform: rotate(2deg) translateY(-0.5rem); }
+    .fruit-btn[data-borough='queens'] { transform: rotate(3deg); }
+    .fruit-btn[data-borough='bronx'] { transform: rotate(-2deg); }
+    .fruit-btn[data-borough='staten-island'] { transform: rotate(-1deg); }
+    .fruit-btn:hover :global(.fruit-svg) { filter: drop-shadow(7px 7px 0 var(--purple-light)); }
+    .fruit-btn.is-active :global(.fruit-svg) { filter: drop-shadow(6px 6px 0 var(--yellow)); }
+    /* Withered: boroughs without upcoming events. grayscale precedes
+       drop-shadow so the active/hover shadow keeps its color. */
+    .fruit-btn[data-empty] :global(.fruit-svg) { filter: grayscale(1) opacity(0.55) drop-shadow(4px 4px 0 rgba(247, 244, 237, 0.25)); }
+    .fruit-btn[data-empty]:hover :global(.fruit-svg) { filter: grayscale(1) opacity(0.7) drop-shadow(5px 5px 0 var(--purple-light)); }
+    .fruit-btn[data-empty].is-active :global(.fruit-svg) { filter: grayscale(1) opacity(0.7) drop-shadow(5px 5px 0 var(--yellow)); }
+    .fruit-btn[data-empty] .fruit-label { color: var(--paper-a55); }
+
+    .fruit-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem; letter-spacing: 0.08em;
+      color: var(--off-white);
+      margin-top: 0.3rem;
+    }
+    .fruit-btn.is-active .fruit-label { color: var(--yellow); }
+    .fruit-count {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem; font-weight: 700;
+      color: var(--charcoal); background: var(--yellow);
+      border: 1.5px solid var(--charcoal); border-radius: 50%;
+      width: 20px; height: 20px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .fruit-none {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.52rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--paper-a55);
+    }
+
+    /* The track becomes a reveal panel: only the active borough shows */
+    .borough-track {
+      display: block;
+      overflow: visible;
+      padding: 1.25rem 0 10px;
+    }
+    .borough-slide { display: none; }
+    .borough-slide.is-active { display: block; animation: slideReveal 240ms var(--ease-out); }
+    .borough-slide-none.is-active { display: block; }
+    @keyframes slideReveal {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .borough-dots { display: none; }
+    /* Desktop always has a panel to show (withered boroughs included) */
+    .borough-stage.no-hero-events { display: block; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .borough-slide.is-active { animation: none; }
+    .fruit-btn { transition: none; }
+  }
 
   /* ── EVENTS LIST ── */
   .events-page {
@@ -329,6 +624,23 @@ const nextEvent = upcoming[0]?.props ?? null;
     padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
   }
   .events-list { display: flex; flex-direction: column; gap: 0.85rem; }
+
+  /* Section marker + scroll target for the borough-card "see more" buttons */
+  .all-events-marker {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-2);
+    line-height: 1; letter-spacing: 0.04em;
+    color: var(--charcoal);
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 1.25rem;
+  }
+  .all-events-marker::before {
+    content: '';
+    display: inline-block;
+    width: 1.4rem; height: 4px;
+    background: var(--purple-light);
+    border-radius: 2px;
+  }
 
   /* ── DISTANCE SORT ── */
   .dist-sort-label {

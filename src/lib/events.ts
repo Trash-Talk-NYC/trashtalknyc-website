@@ -170,6 +170,121 @@ export function formatTime(iso: string, lang: Lang): string {
   );
 }
 
+/* ── Boroughs ─────────────────────────────────────────────────────────── */
+
+export type BoroughId = 'manhattan' | 'brooklyn' | 'queens' | 'bronx' | 'staten-island';
+
+export type BoroughMeta = {
+  id: BoroughId;
+  /** Standalone display name ("The Bronx"). */
+  labelEn: string;
+  labelEs: string;
+  /** Mid-sentence form after "Next event in …" / "Próximo evento en …". */
+  inEn: string;
+  inEs: string;
+};
+
+export const BOROUGHS: readonly BoroughMeta[] = [
+  { id: 'manhattan', labelEn: 'Manhattan', labelEs: 'Manhattan', inEn: 'Manhattan', inEs: 'Manhattan' },
+  { id: 'brooklyn', labelEn: 'Brooklyn', labelEs: 'Brooklyn', inEn: 'Brooklyn', inEs: 'Brooklyn' },
+  { id: 'queens', labelEn: 'Queens', labelEs: 'Queens', inEn: 'Queens', inEs: 'Queens' },
+  { id: 'bronx', labelEn: 'The Bronx', labelEs: 'El Bronx', inEn: 'the Bronx', inEs: 'el Bronx' },
+  { id: 'staten-island', labelEn: 'Staten Island', labelEs: 'Staten Island', inEn: 'Staten Island', inEs: 'Staten Island' },
+] as const;
+
+// Eventbrite venue cities observed in real club events: "New York" (any
+// Manhattan neighborhood), "Brooklyn", "Queens", "The Bronx". Aliases cover
+// the borough names themselves for venues entered differently.
+const CITY_TO_BOROUGH: Record<string, BoroughId> = {
+  'new york': 'manhattan',
+  manhattan: 'manhattan',
+  brooklyn: 'brooklyn',
+  queens: 'queens',
+  bronx: 'bronx',
+  'the bronx': 'bronx',
+  'staten island': 'staten-island',
+};
+
+// Reference points for the lat/lng fallback when the venue city is a
+// neighborhood name Eventbrite didn't normalize (e.g. "Astoria"). Several
+// points per borough because single centroids misclassify the edges (western
+// Queens sits nearer Manhattan's centroid than Queens'). The `null` points
+// are across-the-Hudson NJ anchors so a Jersey City venue beats every NYC
+// point and resolves to "no borough" instead of Manhattan.
+const BOROUGH_REF_POINTS: readonly { lat: number; lng: number; id: BoroughId | null }[] = [
+  { lat: 40.7061, lng: -74.0086, id: 'manhattan' },      // Financial District
+  { lat: 40.7549, lng: -73.984, id: 'manhattan' },       // Midtown
+  { lat: 40.8116, lng: -73.9465, id: 'manhattan' },      // Harlem
+  { lat: 40.867, lng: -73.9212, id: 'manhattan' },       // Inwood
+  { lat: 40.6928, lng: -73.9903, id: 'brooklyn' },       // Downtown Brooklyn
+  { lat: 40.7143, lng: -73.9435, id: 'brooklyn' },       // Williamsburg
+  { lat: 40.645, lng: -73.945, id: 'brooklyn' },         // Flatbush
+  { lat: 40.578, lng: -73.959, id: 'brooklyn' },         // Coney Island
+  { lat: 40.7644, lng: -73.9235, id: 'queens' },         // Astoria
+  { lat: 40.7447, lng: -73.9485, id: 'queens' },         // Long Island City
+  { lat: 40.7, lng: -73.906, id: 'queens' },             // Ridgewood
+  { lat: 40.7282, lng: -73.7949, id: 'queens' },         // Central Queens
+  { lat: 40.6913, lng: -73.8057, id: 'queens' },         // Jamaica
+  { lat: 40.8175, lng: -73.9203, id: 'bronx' },          // Mott Haven
+  { lat: 40.8448, lng: -73.8648, id: 'bronx' },          // Central Bronx
+  { lat: 40.8862, lng: -73.9105, id: 'bronx' },          // Riverdale
+  { lat: 40.6437, lng: -74.0765, id: 'staten-island' },  // St. George
+  { lat: 40.5795, lng: -74.1502, id: 'staten-island' },  // Central SI
+  { lat: 40.5254, lng: -74.2118, id: 'staten-island' },  // South Shore
+  { lat: 40.7178, lng: -74.0431, id: null },             // Jersey City, NJ
+  { lat: 40.744, lng: -74.0324, id: null },              // Hoboken, NJ
+  { lat: 40.6687, lng: -74.1143, id: null },             // Bayonne, NJ
+];
+
+export function getBorough(event: EventData): BoroughId | null {
+  const v = event.venue;
+  if (!v) return null;
+  const byCity = v.city && CITY_TO_BOROUGH[v.city.trim().toLowerCase()];
+  if (byCity) return byCity;
+  if (v.lat == null || v.lng == null) return null;
+  let best: BoroughId | null = null;
+  let bestDist = Infinity;
+  for (const p of BOROUGH_REF_POINTS) {
+    const d = (v.lat - p.lat) ** 2 + (v.lng - p.lng) ** 2;
+    if (d < bestDist) { bestDist = d; best = p.id; }
+  }
+  // Farther than ~0.1° (~7 mi) from every reference point means "not NYC".
+  return bestDist <= 0.1 ** 2 ? best : null;
+}
+
+/** Groups upcoming events by borough, preserving soonest-first order. */
+export function groupUpcomingByBorough(upcoming: EventData[]): Map<BoroughId, EventData[]> {
+  const byBorough = new Map<BoroughId, EventData[]>();
+  for (const ev of upcoming) {
+    const b = getBorough(ev);
+    if (!b) continue;
+    const list = byBorough.get(b) ?? [];
+    list.push(ev);
+    byBorough.set(b, list);
+  }
+  return byBorough;
+}
+
+/* ── Club stats ("X events in Y weeks") ───────────────────────────────── */
+
+/** First club cleanup — the "Y weeks" clock starts here. Never hand-update. */
+export const CLUB_FOUNDED_ISO = '2026-05-11';
+
+/**
+ * SEED for the total-events counter: past club events hand-counted on
+ * Eventbrite as of `asOfIso`. Past events that END after `asOfIso` are added
+ * automatically at build time, so this pair only ever changes if the
+ * Eventbrite history itself is corrected — not as new events happen.
+ */
+export const EVENTS_HELD_SEED = { count: 17, asOfIso: '2026-07-10T00:00:00Z' };
+
+export function getClubStats(past: EventData[], now: Date = new Date()): { events: number; weeks: number } {
+  const events = EVENTS_HELD_SEED.count + past.filter(e => e.end.utc > EVENTS_HELD_SEED.asOfIso).length;
+  const msSinceFounding = now.getTime() - new Date(`${CLUB_FOUNDED_ISO}T00:00:00-04:00`).getTime();
+  const weeks = Math.max(1, Math.ceil(msSinceFounding / (7 * 864e5)));
+  return { events, weeks };
+}
+
 export function getMapUrls(event: EventData): { google: string; apple: string } | null {
   const v = event.venue;
   if (!v) return null;

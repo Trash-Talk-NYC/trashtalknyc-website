@@ -1,5 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls } from '../events';
+import {
+  EVENTS_HELD_SEED,
+  fetchEventsAtBuildTime,
+  formatDate,
+  formatTime,
+  getBorough,
+  getClubStats,
+  getMapUrls,
+  groupUpcomingByBorough,
+} from '../events';
 import type { EventData } from '../events';
 
 // ── formatDate ──────────────────────────────────────────────────────────────
@@ -95,6 +104,75 @@ describe('getMapUrls', () => {
     const result = getMapUrls(event);
     expect(result).not.toBeNull();
     expect(result!.google).toContain(encodeURIComponent('Central Park'));
+  });
+});
+
+// ── getBorough / groupUpcomingByBorough ─────────────────────────────────────
+
+const eventWithVenue = (venue: EventData['venue'], id = 'x'): EventData => ({
+  id,
+  name: 'Test',
+  url: 'https://example.com',
+  status: 'live',
+  start: { local: null, utc: '2099-01-01T14:00:00Z' },
+  end: { local: null, utc: '2099-01-01T16:00:00Z' },
+  venue,
+});
+
+describe('getBorough', () => {
+  it('maps Eventbrite city names to boroughs, including "New York" → Manhattan', () => {
+    expect(getBorough(eventWithVenue({ name: null, address: null, city: 'New York', lat: null, lng: null }))).toBe('manhattan');
+    expect(getBorough(eventWithVenue({ name: null, address: null, city: 'Brooklyn', lat: null, lng: null }))).toBe('brooklyn');
+    expect(getBorough(eventWithVenue({ name: null, address: null, city: 'The Bronx', lat: null, lng: null }))).toBe('bronx');
+    expect(getBorough(eventWithVenue({ name: null, address: null, city: 'Staten Island', lat: null, lng: null }))).toBe('staten-island');
+  });
+
+  it('falls back to nearest borough by coordinates when the city is a neighborhood', () => {
+    // Astoria, Queens
+    const ev = eventWithVenue({ name: null, address: null, city: 'Astoria', lat: 40.7644, lng: -73.9235 });
+    expect(getBorough(ev)).toBe('queens');
+  });
+
+  it('returns null for venues outside NYC and for events without a venue', () => {
+    // Jersey City
+    expect(getBorough(eventWithVenue({ name: null, address: null, city: 'Jersey City', lat: 40.7178, lng: -74.0431 }))).toBeNull();
+    expect(getBorough(eventWithVenue(null))).toBeNull();
+  });
+});
+
+describe('groupUpcomingByBorough', () => {
+  it('groups by borough preserving order and skips borough-less events', () => {
+    const bk1 = eventWithVenue({ name: null, address: null, city: 'Brooklyn', lat: null, lng: null }, 'bk1');
+    const mn = eventWithVenue({ name: null, address: null, city: 'New York', lat: null, lng: null }, 'mn');
+    const bk2 = eventWithVenue({ name: null, address: null, city: 'Brooklyn', lat: null, lng: null }, 'bk2');
+    const noVenue = eventWithVenue(null, 'nv');
+
+    const grouped = groupUpcomingByBorough([bk1, mn, bk2, noVenue]);
+    expect([...grouped.keys()]).toEqual(['brooklyn', 'manhattan']);
+    expect(grouped.get('brooklyn')!.map(e => e.id)).toEqual(['bk1', 'bk2']);
+  });
+});
+
+// ── getClubStats ────────────────────────────────────────────────────────────
+
+describe('getClubStats', () => {
+  const pastEndingAt = (endUtc: string): EventData => ({
+    ...eventWithVenue(null, `p-${endUtc}`),
+    end: { local: null, utc: endUtc },
+  });
+
+  it('adds past events ending after the seed as-of date to the seed count', () => {
+    const before = pastEndingAt('2026-07-01T00:00:00Z');
+    const after1 = pastEndingAt('2026-07-15T00:00:00Z');
+    const after2 = pastEndingAt('2026-08-01T00:00:00Z');
+    const { events } = getClubStats([before, after1, after2], new Date('2026-08-02T00:00:00Z'));
+    expect(events).toBe(EVENTS_HELD_SEED.count + 2);
+  });
+
+  it('computes whole weeks since founding (2026-05-11), never zero', () => {
+    expect(getClubStats([], new Date('2026-07-10T12:00:00-04:00')).weeks).toBe(9);
+    expect(getClubStats([], new Date('2026-05-12T12:00:00-04:00')).weeks).toBe(1);
+    expect(getClubStats([], new Date('2026-05-11T01:00:00-04:00')).weeks).toBe(1);
   });
 });
 

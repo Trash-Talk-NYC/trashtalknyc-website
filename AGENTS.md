@@ -52,6 +52,15 @@ Once the site key is set, a missing secret fails closed (`form_env_missing` patt
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
 
+## Events page — borough hero and counter
+
+The `/events` hero renders one card per borough that has upcoming events: a swipeable scroll-snap carousel under 900px, and a click-to-reveal "fruit market" (five spoiled-fruit SVG stickers in `src/components/BoroughFruit.astro`) at 900px+.
+Both modes drive the same DOM: `.borough-slide` cards in `#boroughTrack`, toggled by `.fruit-btn` buttons (desktop) and `.borough-dot` buttons (mobile) through one shared active-borough script in `events.astro` — change state logic there, not per-mode.
+Borough attribution lives in `getBorough()` (`src/lib/events.ts`): an Eventbrite city-name map first ("New York" means Manhattan), then a nearest-reference-point fallback for neighborhood city names, with NJ anchor points that resolve to `null` so a Jersey venue never claims Manhattan.
+Events with no resolvable borough skip the hero but always appear in the full list.
+The "X events in Y weeks" counter self-maintains: Y derives from `CLUB_FOUNDED_ISO`, and X is `EVENTS_HELD_SEED.count` plus past events ending after `EVENTS_HELD_SEED.asOfIso` — never bump the seed for new events, it only changes if Eventbrite history itself is corrected.
+The countdown/date script in `BoroughEventCard.astro` is multi-instance (class-scoped, no element ids); keep it that way — several cards run countdowns on one page.
+
 ## E2E Testing
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.
