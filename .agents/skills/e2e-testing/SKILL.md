@@ -1,6 +1,6 @@
 ---
 name: e2e-testing
-description: How to end-to-end test changes to the trashtalknyc-website repo — choosing between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change. Use this skill whenever a task involves testing or verifying a change to this site, including UI/layout/copy changes, event card or Eventbrite-related changes, the signup form, the general/partnership contact form, Astro Actions, Brevo, or responsive/safe-area behavior. Also use it before starting any local dev server for testing, since it covers running servers in the background and avoiding port conflicts when multiple agents may be working on this repo at once.
+description: How to end-to-end test changes to the trashtalknyc-website repo — choosing between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change. Use this skill whenever a task involves testing or verifying a change to this site, including UI/layout/copy changes, event card or Eventbrite-related changes, the signup form, the general/partnership contact form, Astro Actions, Brevo, head/SEO metadata (titles, descriptions, OG tags, sitemap, icons), or responsive/safe-area behavior. Also use it before starting any local dev server for testing, since it covers running servers in the background and avoiding port conflicts when multiple agents may be working on this repo at once.
 ---
 
 # E2E Testing (trashtalknyc-website)
@@ -47,3 +47,7 @@ Either reuse it (if it's serving the same repo/branch you need) or start yours o
    - Submissions faster than ~3s after page load are rejected as spam (`too_fast`) — wait a beat before programmatically submitting, or you'll test the spam path by accident.
    - After a successful submission, switch tabs and confirm the form reappears (not the stale success view) — `restoreFormAfterSuccess()` in `contact.astro` handles this.
 4. **Server-logic changes** (schemas, spam heuristics, rate limiting, Turnstile verification, Brevo client in `src/lib/server/`): these are plain modules with unit tests in `src/lib/server/__tests__/` — extend those first; they run without any server.
+5. **Head-metadata / SEO changes** (titles, meta descriptions, OG/Twitter tags, canonical, JSON-LD — `src/layouts/BaseLayout.astro` and page frontmatter): `astro dev` renders the full head, so `curl -s <dev-url> | grep -iE 'og:|twitter:|canonical|description|ld\+json'` (or view-source) covers tag checks.
+   Keep the homepage `<title>`/`og:title` exactly "Trash Talk NYC" — a captain decision (see AGENTS.md, "SEO & share metadata").
+   The sitemap is build-only: `@astrojs/sitemap` writes `sitemap-index.xml` during `astro build` (check `dist/`), so a 404 for it on the dev server is expected, not a regression.
+   Icon/share assets in `public/` are generated, never hand-edited — after a logo change run `node scripts/generate-icons.mjs` and confirm `/favicon.svg`, `/favicon.ico`, `/apple-touch-icon.png`, `/og-image.png`, and `/logo.png` all resolve on the built site.
