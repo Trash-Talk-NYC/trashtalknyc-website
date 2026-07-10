@@ -19,22 +19,28 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     <p class="sticker wallet-eyebrow" data-en="The People's Wallet" data-es="La Cartera del Pueblo">The People's Wallet</p>
 
     <div class="wallet-stage">
-      <div class="wallet">
+      <div class="wallet3d">
+        <div class="wallet-back" aria-hidden="true"></div>
+
         <ul class="wallet-cards" role="list">
-          <li class="wallet-slot">
-            <a class="wcard wcard-cleanups" href="/cleanups">
-              <span class="wcard-title">Cleanups</span>
-              <span class="wcard-sub" data-en="Bags, gloves, grabbers" data-es="Bolsas, guantes, pinzas">Bags, gloves, grabbers</span>
+          <li>
+            <a class="wcard wcard-trees" href="/tree-guards">
+              <span class="wcard-top">
+                <span class="wcard-title">Tree Guards</span>
+                <span class="wcard-sub" data-en="Protecting street trees" data-es="Protegiendo los árboles">Protecting street trees</span>
+              </span>
               <span class="wcard-foot" aria-hidden="true">
                 <span class="wcard-chip"></span>
                 <span class="wcard-arrow">&rarr;</span>
               </span>
             </a>
           </li>
-          <li class="wallet-slot">
-            <a class="wcard wcard-trees" href="/tree-guards">
-              <span class="wcard-title">Tree Guards</span>
-              <span class="wcard-sub" data-en="Protecting street trees" data-es="Protegiendo los árboles">Protecting street trees</span>
+          <li>
+            <a class="wcard wcard-cleanups" href="/cleanups">
+              <span class="wcard-top">
+                <span class="wcard-title">Cleanups</span>
+                <span class="wcard-sub" data-en="Bags, gloves, grabbers" data-es="Bolsas, guantes, pinzas">Bags, gloves, grabbers</span>
+              </span>
               <span class="wcard-foot" aria-hidden="true">
                 <span class="wcard-chip"></span>
                 <span class="wcard-arrow">&rarr;</span>
@@ -43,7 +49,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
           </li>
         </ul>
 
-        <div class="wallet-body">
+        <div class="wallet-front">
           <h1 class="emboss">
             <span data-en="Your" data-es="Tus">Your</span>
             <span class="emboss-amount" id="donationAmount" data-total={total ?? ''}>{formattedTotal}</span>
@@ -55,12 +61,19 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
       </div>
     </div>
 
-    <p class="wallet-caption" data-en="Two initiatives. Pick a card to see the work." data-es="Dos iniciativas. Elige una tarjeta para ver el trabajo.">Two initiatives. Pick a card to see the work.</p>
     <a class="wallet-donate-link" href={campaignUrl} target="_blank" rel="noopener" data-en="Add to the wallet ↗" data-es="Aporta a la cartera ↗">Add to the wallet ↗</a>
   </section>
 </BaseLayout>
 
 <style>
+  /* Registered so the entrance keyframes can interpolate it; without
+     registration a custom property flips discretely mid-animation. */
+  @property --pop-y {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
   /* ── Scene: full viewport under the nav, wallet centered ── */
   .wallet-scene {
     min-height: calc(100svh - var(--nav-h));
@@ -69,7 +82,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     padding:
       var(--space-md)
       max(var(--gutter), var(--safe-right))
@@ -80,62 +93,116 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 
   .wallet-eyebrow { --tilt: -3deg; }
 
-  /* Container so card/peek geometry can use cqw units of the wallet width */
+  /* Container so all wallet geometry can use cqw units of its width;
+     also the perspective camera for the 3D scene inside. */
   .wallet-stage {
-    width: min(100%, 760px);
+    width: min(100%, 720px);
     container-type: inline-size;
+    perspective: 1100px;
+    perspective-origin: 50% 20%;
   }
 
-  /* Reserve headroom above the leather body for the peeking cards:
-     card height is ~25.5cqw (two cards, 8cqw side insets, 3cqw gap,
-     credit-card 1.586 aspect), and 16cqw of it shows at full peek. */
-  .wallet {
+  /* The 3D assembly: back panel (z=0) → cards → front panel, viewed
+     from slightly above so the slot opening reads as real depth.
+     Heights in cqw: front panel 48, slot headroom 18, total 66. */
+  .wallet3d {
     position: relative;
-    padding-top: 16cqw;
+    height: 66cqw;
+    transform-style: preserve-3d;
+    transform: rotateX(11deg);
   }
 
-  /* ── Cards: tucked behind the leather, rising out of the top ── */
+  /* ── Back panel: the wallet's rear wall / interior lining ── */
+  .wallet-back {
+    position: absolute;
+    inset: 0;
+    border-radius: clamp(16px, 3.4cqw, 26px);
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(0, 0, 0, 0.45), transparent 60%),
+      linear-gradient(160deg, #4a2a72, #3a2058 70%);
+    border: 3px solid #2a1742;
+    transform: translateZ(0);
+  }
+
+  /* ── Cards: wide wallet-card shapes standing in the slot ── */
   .wallet-cards {
     list-style: none;
     position: absolute;
-    top: 0;
-    left: 8cqw;
-    right: 8cqw;
-    display: flex;
-    gap: 3cqw;
+    inset: 0;
+    transform-style: preserve-3d;
+    pointer-events: none; /* only the cards themselves take the pointer */
   }
 
-  .wallet-slot { flex: 1; min-width: 0; }
+  .wallet-cards li {
+    display: contents;
+  }
 
   .wcard {
-    /* Resting tuck depth — % of the card's own height left in the slot */
-    --rest: 21%;
+    /* Composable 3D placement: --y/--z move per state, --lean is fixed */
+    --pop-y: 0cqw;
+    --pop-z: 0px;
+    position: absolute;
+    left: 50%;
+    width: 76cqw;
+    height: 48cqw; /* credit-card 1.586 aspect at 76cqw wide */
+    padding: 1.8cqw 3cqw;
     display: flex;
     flex-direction: column;
-    height: 25.5cqw;
-    padding: 1.6cqw 2.4cqw;
     border: 3px solid var(--charcoal);
     border-radius: clamp(8px, 1.8cqw, 14px);
-    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
     text-decoration: none;
-    transform: translateY(var(--rest)) rotate(var(--card-tilt, -1.2deg));
+    pointer-events: auto;
+    transform:
+      translateX(calc(-50% + var(--lean-x, 0cqw)))
+      translateY(calc(var(--rest-y) + var(--pop-y)))
+      translateZ(calc(var(--rest-z) + var(--pop-z)))
+      rotate(var(--lean, 0deg));
     transition: transform 0.35s var(--ease-out);
-    animation: wcard-rise 0.7s var(--ease-out) 0.15s backwards;
+    /* backwards fill: hidden until the delay elapses, then rise to the
+       base value; once finished the animation stops applying so the
+       hover/focus/active pop can take over --pop-y again */
+    animation: wcard-rise 0.8s var(--ease-out) backwards;
   }
 
+  /* Rear card: higher in the slot, deeper in z */
   .wcard-trees {
-    --card-tilt: 1deg;
+    --rest-y: 3cqw;
+    --rest-z: 16px;
+    --lean-x: 1.2cqw;
+    --lean: 0.7deg;
+    top: 0;
+    background: var(--green);
+    color: var(--off-white);
+    animation-delay: 0.15s;
+  }
+
+  /* Front card: lower, closer to the viewer */
+  .wcard-cleanups {
+    --rest-y: 10.5cqw;
+    --rest-z: 34px;
+    --lean-x: -1.2cqw;
+    --lean: -0.8deg;
+    top: 0;
+    background: var(--yellow);
+    color: var(--charcoal);
     animation-delay: 0.3s;
   }
 
+  /* Pull the card partway out of the slot, toward the viewer.
+     :active covers touch devices, where hover doesn't exist. */
+  /* Slide up out of the slot with a slight lean toward the viewer —
+     z stays below the front panel's 58px so the leather keeps masking
+     the card's lower body, like a real card pulled partway out. */
   .wcard:hover,
-  .wcard:focus-visible {
-    transform: translateY(3%) rotate(var(--card-tilt, -1.2deg));
+  .wcard:focus-visible,
+  .wcard:active {
+    --pop-y: -9cqw;
+    --pop-z: 14px;
   }
 
   @keyframes wcard-rise {
-    from { transform: translateY(85%) rotate(var(--card-tilt, -1.2deg)); }
-    to { transform: translateY(var(--rest)) rotate(var(--card-tilt, -1.2deg)); }
+    from { --pop-y: 16cqw; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -145,19 +212,17 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     }
   }
 
-  .wcard-cleanups {
-    background: var(--yellow);
-    color: var(--charcoal);
-  }
-
-  .wcard-trees {
-    background: var(--green);
-    color: var(--off-white);
+  .wcard-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2cqw;
+    flex-wrap: wrap;
   }
 
   .wcard-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.15rem, 5.4cqw, 2.4rem);
+    font-size: clamp(1.3rem, 5.4cqw, 2.4rem);
     letter-spacing: 0.05em;
     line-height: 1;
     text-transform: uppercase;
@@ -170,7 +235,6 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     opacity: 0.75;
-    margin-top: 0.3em;
   }
 
   .wcard-foot {
@@ -198,17 +262,20 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     line-height: 1;
   }
 
-  /* ── The leather body ── */
-  .wallet-body {
-    position: relative;
-    z-index: 2;
-    aspect-ratio: 2 / 1;
+  /* ── Front panel: the purple leather face ── */
+  .wallet-front {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 48cqw;
     border-radius: clamp(16px, 3.4cqw, 26px);
     background:
-      radial-gradient(120% 90% at 30% 0%, rgba(247, 244, 237, 0.07), transparent 55%),
-      linear-gradient(150deg, #2b2b34, #1f1f27 60%, #1a1a21);
-    border: 3px solid #121217;
-    box-shadow: 10px 10px 0 var(--purple);
+      radial-gradient(120% 90% at 30% 0%, rgba(247, 244, 237, 0.06), transparent 55%),
+      linear-gradient(150deg, #6f42a6, #5c3492 55%, #4a2a78);
+    border: 3px solid #33205a;
+    box-shadow: 14px 18px 0 rgba(0, 0, 0, 0.45);
+    transform: translateZ(58px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -218,21 +285,21 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
   }
 
   /* Leather grain — same turbulence device as the site-wide overlay */
-  .wallet-body::after {
+  .wallet-front::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)' opacity='0.09'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)' opacity='0.1'/%3E%3C/svg%3E");
     pointer-events: none;
   }
 
   /* Caution-yellow thread stitched inside the edge */
-  .wallet-body::before {
+  .wallet-front::before {
     content: '';
     position: absolute;
     inset: clamp(8px, 1.8cqw, 14px);
-    border: 2px dashed rgba(201, 169, 0, 0.6);
+    border: 2px dashed rgba(245, 208, 0, 0.55);
     border-radius: clamp(10px, 2.4cqw, 18px);
     pointer-events: none;
   }
@@ -246,10 +313,10 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     line-height: 1.05;
     text-transform: uppercase;
     text-align: center;
-    color: #131318;
+    color: #2b1850;
     text-shadow:
-      0 1px 0 rgba(247, 244, 237, 0.16),
-      0 -1px 1px rgba(0, 0, 0, 0.65);
+      0 1px 0 rgba(240, 232, 255, 0.24),
+      0 -1px 1px rgba(0, 0, 0, 0.55);
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -260,7 +327,7 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 
   /* Gold-foil stamp for the number itself */
   .emboss-amount {
-    color: var(--yellow-dark);
+    color: var(--yellow);
     font-variant-numeric: tabular-nums;
   }
 
@@ -271,8 +338,8 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     text-transform: uppercase;
     letter-spacing: 0.26em;
     text-align: center;
-    color: rgba(0, 0, 0, 0.55);
-    text-shadow: 0 1px 0 rgba(247, 244, 237, 0.13);
+    color: rgba(20, 10, 40, 0.6);
+    text-shadow: 0 1px 0 rgba(240, 232, 255, 0.22);
     position: relative;
     z-index: 1;
   }
@@ -287,20 +354,12 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3em;
-    color: rgba(0, 0, 0, 0.5);
-    text-shadow: 0 1px 0 rgba(247, 244, 237, 0.1);
-  }
-
-  /* ── Scene copy under the wallet ── */
-  .wallet-caption {
-    margin-top: var(--space-sm);
-    color: var(--paper-a70);
-    font-size: var(--step-0);
-    font-weight: 600;
-    text-align: center;
+    color: rgba(20, 10, 40, 0.55);
+    text-shadow: 0 1px 0 rgba(240, 232, 255, 0.18);
   }
 
   .wallet-donate-link {
+    margin-top: var(--space-xs); /* clear the front panel's press shadow */
     font-family: 'Space Mono', monospace;
     font-size: var(--step--1);
     font-weight: 700;
@@ -313,17 +372,21 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
 
   .wallet-donate-link:hover { color: var(--off-white); }
 
-  /* Narrow screens: taller leather for the embossed line, and a higher
-     resting peek so the rem-floored card text still clears the slot */
+  /* Narrow screens: same construction, slightly deeper slot so the
+     rem-floored card text still fits its visible strip */
   @media (max-width: 520px) {
-    .wallet-body { aspect-ratio: 10 / 7; }
-    .wcard { --rest: -2%; }
-    .wcard:hover,
-    .wcard:focus-visible { transform: translateY(-12%) rotate(var(--card-tilt, -1.2deg)); }
+    .wallet3d { height: 72cqw; }
+    .wcard-trees { --rest-y: 4cqw; }
+    .wcard-cleanups { --rest-y: 13cqw; }
+    .wallet-front { height: 50cqw; }
   }
 </style>
 
 <script>
+  // Enable :active styling on iOS so tapping a card gives the same
+  // pop feedback as hover does with a mouse.
+  document.addEventListener('touchstart', () => {}, { passive: true });
+
   // Refresh the embossed total with the live GoFundMe number and stamp
   // it in with a count-up once the cards have risen out of the wallet.
   const amountEl = document.getElementById('donationAmount');
@@ -363,8 +426,8 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
       raf = requestAnimationFrame(tick);
     };
 
-    // Hold the stamp until the cards' rise finishes (0.3s delay + 0.7s).
-    const stampDelayMs = 1000;
+    // Hold the stamp until the cards' rise finishes (0.3s delay + 0.8s).
+    const stampDelayMs = 1100;
     const loadedAt = performance.now();
     const reveal = (value: number) => {
       const wait = Math.max(0, stampDelayMs - (performance.now() - loadedAt));
