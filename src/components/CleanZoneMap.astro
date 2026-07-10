@@ -54,13 +54,23 @@
     fillOpacity: 1,
   };
 
+  // Leaflet renders popup/tooltip strings as innerHTML, so every field from
+  // the hand-edited data file gets escaped before interpolation.
+  function esc(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   // Popup/tooltip DOM is created by Leaflet at runtime, so it can't use the
   // data-en/data-es attribute swap — it re-renders via onLanguageChange.
   function zonePopupHtml(zone: CleanZone, lang: Lang): string {
     const chip = lang === 'es' ? 'Protegida' : 'Guarded';
-    const date = lang === 'es' ? zone.dateEs : zone.dateEn;
-    const name = lang === 'es' ? zone.nameEs : zone.nameEn;
-    const desc = lang === 'es' ? zone.descriptionEs : zone.descriptionEn;
+    const date = esc(lang === 'es' ? zone.dateEs : zone.dateEn);
+    const name = esc(lang === 'es' ? zone.nameEs : zone.nameEn);
+    const desc = esc(lang === 'es' ? zone.descriptionEs : zone.descriptionEn);
     const bedLabel =
       lang === 'es'
         ? `${zone.beds.length} ${zone.beds.length === 1 ? 'alcorque' : 'alcorques'}`
@@ -69,11 +79,11 @@
       '<div class="cz-popup">',
       `<span class="cz-popup-chip">${chip} · ${date}</span>`,
       `<strong class="cz-popup-name">${name}</strong>`,
-      `<span class="cz-popup-area">${zone.neighborhood} · ${zone.borough}</span>`,
+      `<span class="cz-popup-area">${esc(zone.neighborhood)} · ${esc(zone.borough)}</span>`,
       `<p class="cz-popup-desc">${desc}</p>`,
       `<span class="cz-popup-bedcount">${bedLabel}</span>`,
       '<ul class="cz-popup-beds">',
-      ...zone.beds.map((bed) => `<li>${bed.address}</li>`),
+      ...zone.beds.map((bed) => `<li>${esc(bed.address)}</li>`),
       '</ul>',
       '</div>',
     ].join('');
@@ -83,9 +93,9 @@
   // the NYC Parks Forestry tree-point ids for cross-reference.
   function bedPopupHtml(bed: TreeBed): string {
     const ids = bed.nycTreeIds?.length
-      ? `<span class="cz-popup-bed-ids">NYC ${bed.nycTreeIds.map((id) => `#${id}`).join(', ')}</span>`
+      ? `<span class="cz-popup-bed-ids">NYC ${bed.nycTreeIds.map((id) => `#${esc(id)}`).join(', ')}</span>`
       : '';
-    return `<div class="cz-popup"><strong class="cz-popup-bed-address">${bed.address}</strong>${ids}</div>`;
+    return `<div class="cz-popup"><strong class="cz-popup-bed-address">${esc(bed.address)}</strong>${ids}</div>`;
   }
 
   const mapEl = document.getElementById('cleanZoneMap');
@@ -140,7 +150,7 @@
       if (!shape) return;
 
       shape.addTo(map);
-      shape.bindTooltip(initialLang === 'es' ? zone.nameEs : zone.nameEn, {
+      shape.bindTooltip(esc(initialLang === 'es' ? zone.nameEs : zone.nameEn), {
         permanent: true,
         direction: 'center',
         // Nudged up so the tag doesn't sit on the bed dots at the centroid
@@ -168,7 +178,7 @@
       shadableZones.forEach((zone) => {
         const shape = zoneShapes.get(zone.id);
         if (!shape) return;
-        shape.setTooltipContent(lang === 'es' ? zone.nameEs : zone.nameEn);
+        shape.setTooltipContent(esc(lang === 'es' ? zone.nameEs : zone.nameEn));
         shape.setPopupContent(zonePopupHtml(zone, lang));
       });
     });

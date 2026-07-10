@@ -47,10 +47,11 @@ Platform:
 - Leaflet + OpenStreetMap raster tiles (no API key)
 
 Current behavior:
-- `/clean-zone` maps every tree bed block the tree guard initiative has renovated ("guarded")
-- Guarded locations are Trash Talk NYC's own curated list (`GuardedSite[]` in `src/lib/clean-zone.ts`), not a NYC Open Data import; new blocks are a single append
-- New site coordinates are geocoded via NYC Planning's GeoSearch API (documented in `src/lib/clean-zone.ts`); NYC Parks' Forestry Tree Points dataset is referenced only as an optional, display-only `nycTreeIds` field
-- Launched with one guarded site: the block of 708 W 171st St, Washington Heights
+- `/clean-zone` groups the tree beds the tree guard initiative has renovated ("guarded") into named zones: each zone is a shaded area on the map (the primary visual), its beds small secondary dots with on-demand popups, plus a zone log card below the map
+- Zones are Trash Talk NYC's own curated list (`CleanZone[]`/`cleanZones` in `src/lib/clean-zone.ts`, each holding its `TreeBed[]`), not a NYC Open Data import; growth is a data-only append — a bed into an existing zone, or a whole new zone
+- A zone without a hand-traced `outline` is shaded as a circle computed from its beds (`zoneCircle`: centroid + spread, 90 m block-scale minimum; unit-tested)
+- New bed coordinates are geocoded via NYC Planning's GeoSearch API (documented in `src/lib/clean-zone.ts`); NYC Parks' Forestry Tree Points dataset is referenced only as an optional, display-only per-bed `nycTreeIds` field
+- Launched with one zone holding one bed: the block of 708 W 171st St, Washington Heights
 
 ## Donations
 
