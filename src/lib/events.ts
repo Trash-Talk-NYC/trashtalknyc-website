@@ -225,6 +225,7 @@ const BOROUGH_REF_POINTS: readonly { lat: number; lng: number; id: BoroughId | n
   { lat: 40.7, lng: -73.906, id: 'queens' },             // Ridgewood
   { lat: 40.7282, lng: -73.7949, id: 'queens' },         // Central Queens
   { lat: 40.6913, lng: -73.8057, id: 'queens' },         // Jamaica
+  { lat: 40.586, lng: -73.816, id: 'queens' },           // Rockaway Beach
   { lat: 40.8175, lng: -73.9203, id: 'bronx' },          // Mott Haven
   { lat: 40.8448, lng: -73.8648, id: 'bronx' },          // Central Bronx
   { lat: 40.8862, lng: -73.9105, id: 'bronx' },          // Riverdale
@@ -248,7 +249,8 @@ export function getBorough(event: EventData): BoroughId | null {
     const d = (v.lat - p.lat) ** 2 + (v.lng - p.lng) ** 2;
     if (d < bestDist) { bestDist = d; best = p.id; }
   }
-  // Farther than ~0.1° (~7 mi) from every reference point means "not NYC".
+  // Farther than 0.1° (≈7 mi north–south, ≈5 mi east–west at NYC's
+  // latitude) from every reference point means "not NYC".
   return bestDist <= 0.1 ** 2 ? best : null;
 }
 

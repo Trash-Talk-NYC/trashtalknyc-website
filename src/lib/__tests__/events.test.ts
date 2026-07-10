@@ -133,6 +133,11 @@ describe('getBorough', () => {
     expect(getBorough(ev)).toBe('queens');
   });
 
+  it('attributes the Rockaway peninsula to Queens', () => {
+    const ev = eventWithVenue({ name: null, address: null, city: 'Rockaway Beach', lat: 40.586, lng: -73.816 });
+    expect(getBorough(ev)).toBe('queens');
+  });
+
   it('returns null for venues outside NYC and for events without a venue', () => {
     // Jersey City
     expect(getBorough(eventWithVenue({ name: null, address: null, city: 'Jersey City', lat: 40.7178, lng: -74.0431 }))).toBeNull();

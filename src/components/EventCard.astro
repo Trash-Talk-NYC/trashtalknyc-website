@@ -116,6 +116,10 @@ const btnId = `eb-trigger-${id}`;
   }
   .event-card.past { opacity: 0.5; animation: none; border-color: var(--warm-gray); }
   .event-card.past .event-date-block { background: var(--warm-gray); }
+  /* Server-rendered past cards omit these; hiding them here also covers cards
+     the staleness script flips to .past after the page was built. */
+  .event-card.past .event-cta,
+  .event-card.past .map-link { display: none; }
 
   .event-date-block {
     text-align: center;
