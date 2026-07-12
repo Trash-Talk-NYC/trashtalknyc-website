@@ -525,6 +525,17 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
   // keyboard and screen-reader users cycle the same way.
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Only a finished swipe may strip the swipe class: the entrance rise
+  // also ends on this card (its animation stays in the swipe list), and
+  // reacting to it would cut a concurrent swing-out short.
+  for (const card of document.querySelectorAll<HTMLAnchorElement>('.wcard')) {
+    card.addEventListener('animationend', (event) => {
+      if (event.animationName.startsWith('wcard-swipe')) {
+        card.classList.remove('is-swiping-left', 'is-swiping-right');
+      }
+    });
+  }
+
   const cycle = (direction: 'left' | 'right') => {
     const front = document.querySelector<HTMLAnchorElement>('.wcard[data-slot="front"]');
     const rear = document.querySelector<HTMLAnchorElement>('.wcard[data-slot="rear"]');
@@ -540,11 +551,6 @@ const campaignUrl = `https://www.gofundme.com/f/${GOFUNDME_CAMPAIGN_SLUG}`;
     if (reduceMotion) return;
 
     front.classList.add(direction === 'left' ? 'is-swiping-left' : 'is-swiping-right');
-    front.addEventListener(
-      'animationend',
-      () => front.classList.remove('is-swiping-left', 'is-swiping-right'),
-      { once: true },
-    );
   };
 
   document.getElementById('cycleLeft')?.addEventListener('click', () => cycle('left'));
