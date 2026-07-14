@@ -54,7 +54,10 @@ Turnstile tokens are single-use, so the page scripts call `window.turnstile.rese
 
 ## Events page — borough hero and counter
 
-The `/events` hero renders one card per borough that has upcoming events: a swipeable scroll-snap carousel under 900px, and a click-to-reveal "fruit market" (five spoiled-fruit SVG stickers in `src/components/BoroughFruit.astro`) at 900px+.
+The `/events` page is fully dark (captain decision 2026-07: "no off-white, the hero color wins") — the charcoal palette spans hero, borough detail, list, and past sections, with `EventCard` restyled to paper-alpha surfaces; this is deliberately events-page-only, other pages keep the light palette.
+The hero renders one card per borough that has upcoming events: a swipeable scroll-snap carousel under 900px, and at 900px+ a "fruit orbit" — the five spoiled-fruit SVG stickers (`src/components/BoroughFruit.astro`) revolving around a toon trash can (`src/components/TrashCan.astro`).
+Clicking a fruit FLIP-animates the actual button node from its `.orbit-slot` into the active card's `.fruit-dock` while the view scrolls to the detail section, so the reveal stays anchored to what was clicked; clicking the docked fruit sends it home and scrolls back.
+Two sharp edges in that mechanism: the fruit button centers itself with the CSS `translate` property, NOT `transform`, because the FLIP travel sets an inline `transform` that must compose with (not clobber) the centering; and the orbit radius `--orbit-r` must stay a concrete length (derived from `--orbit-size`), because a percentage inside the slot's `translateY()` resolves against the zero-height slot and piles every fruit at the center.
 Both modes drive the same DOM: `.borough-slide` cards in `#boroughTrack`, toggled by `.fruit-btn` buttons (desktop) and `.borough-dot` buttons (mobile) through one shared active-borough script in `events.astro` — change state logic there, not per-mode.
 Borough attribution lives in `getBorough()` (`src/lib/events.ts`): an Eventbrite city-name map first ("New York" means Manhattan), then a nearest-reference-point fallback for neighborhood city names, with NJ anchor points that resolve to `null` so a Jersey venue never claims Manhattan.
 Events with no resolvable borough skip the hero but always appear in the full list.

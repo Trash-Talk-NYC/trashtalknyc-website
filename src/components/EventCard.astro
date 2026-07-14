@@ -89,10 +89,11 @@ const btnId = `eb-trigger-${id}`;
 </div>
 
 <style>
-  /* Ticket-stub card: charcoal date stub + dashed perforation line */
+  /* Ticket-stub card on the dark events page: faint raised surface, light
+     ink, charcoal date stub framed by its own border */
   .event-card {
-    background: white;
-    border: 2px solid var(--charcoal);
+    background: var(--paper-a08);
+    border: 2px solid var(--paper-a35);
     border-radius: 10px;
     padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3.5vw, 1.75rem);
     display: grid;
@@ -114,8 +115,8 @@ const btnId = `eb-trigger-${id}`;
   @media (hover: hover) and (pointer: fine) {
     .event-card:hover { box-shadow: 5px 5px 0 var(--purple-light); }
   }
-  .event-card.past { opacity: 0.5; animation: none; border-color: var(--warm-gray); }
-  .event-card.past .event-date-block { background: var(--warm-gray); }
+  .event-card.past { opacity: 0.5; animation: none; border-color: var(--paper-a12); }
+  .event-card.past .event-date-block { background: var(--paper-a12); border-color: transparent; }
   /* Server-rendered past cards omit these; hiding them here also covers cards
      the staleness script flips to .past after the page was built. */
   .event-card.past .event-cta,
@@ -124,6 +125,7 @@ const btnId = `eb-trigger-${id}`;
   .event-date-block {
     text-align: center;
     background: var(--charcoal);
+    border: 1.5px solid var(--paper-a35);
     border-radius: 6px;
     padding: 0.6rem 0.5rem;
     flex-shrink: 0;
@@ -136,7 +138,7 @@ const btnId = `eb-trigger-${id}`;
     top: 8%;
     bottom: 8%;
     right: calc(clamp(0.9rem, 2.5vw, 1.5rem) / -2);
-    border-right: 2px dashed #d8d3c8;
+    border-right: 2px dashed var(--paper-a35);
   }
   .event-date-block .month {
     font-family: 'Space Mono', monospace;
@@ -157,22 +159,23 @@ const btnId = `eb-trigger-${id}`;
   .event-name {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.35rem; letter-spacing: 0.03em; margin-bottom: 0.3rem;
+    color: var(--off-white);
   }
   .event-details { display: flex; flex-wrap: wrap; gap: 1rem; }
   .event-detail {
     display: flex; align-items: center; gap: 0.35rem;
-    font-size: 0.75rem; font-weight: 700; color: var(--gray);
+    font-size: 0.75rem; font-weight: 700; color: var(--paper-a70);
   }
   .event-detail svg { width: 12px; height: 12px; flex-shrink: 0; }
 
   .map-link {
     display: inline-flex; align-items: center;
     font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-    color: rgba(122,122,138,0.7); text-decoration: none;
-    border: 1px solid rgba(122,122,138,0.3); border-radius: 4px;
+    color: var(--paper-a70); text-decoration: none;
+    border: 1px solid var(--paper-a35); border-radius: 4px;
     padding: 0.1rem 0.4rem; transition: border-color 0.15s, color 0.15s; white-space: nowrap;
   }
-  .map-link:hover { color: var(--purple); border-color: var(--purple); }
+  .map-link:hover { color: var(--purple-light); border-color: var(--purple-light); }
 
   .event-cta {
     flex-shrink: 0; text-align: right;
@@ -186,13 +189,14 @@ const btnId = `eb-trigger-${id}`;
     transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), background 150ms var(--ease-out), color 150ms var(--ease-out);
     white-space: nowrap;
   }
+  /* Press shadow in purple-light: a charcoal shadow vanishes on the dark page */
   .btn-card-purple {
     color: var(--charcoal); border-color: var(--charcoal); background: var(--yellow);
-    box-shadow: 3px 3px 0 var(--charcoal);
+    box-shadow: 3px 3px 0 var(--purple-light);
   }
   @media (hover: hover) and (pointer: fine) {
-    .btn-card-purple:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--charcoal); }
-    .btn-card-purple:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--charcoal); }
+    .btn-card-purple:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--purple-light); }
+    .btn-card-purple:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--purple-light); }
   }
   @media (max-width: 768px) {
     .event-card { grid-template-columns: 72px 1fr; }

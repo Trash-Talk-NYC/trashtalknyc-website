@@ -35,6 +35,11 @@ const rsvpBtnId = `eb-trigger-borough-${next.id}`;
     <span data-en="Next event in" data-es="Próximo evento en">Next event in</span>
   </div>
 
+  {/* Desktop landing pad for the orbiting borough fruit: the events page
+      moves the clicked .fruit-btn into this slot so the fruit visibly docks
+      onto the card it revealed. Empty (and invisible) on mobile. */}
+  <div class="fruit-dock" data-dock={borough.id}></div>
+
   <div class="card-borough" data-en={borough.labelEn} data-es={borough.labelEs}>{borough.labelEn}</div>
 
   <div class="card-event-name">{next.name}</div>
@@ -175,6 +180,18 @@ const rsvpBtnId = `eb-trigger-borough-${next.id}`;
     top: -1rem;
     left: 1.25rem;
   }
+
+  /* Fruit landing pad: overlaps the card's top-right corner like a slapped-on
+     sticker. Sized to match the docked fruit; zero footprint when empty. */
+  .fruit-dock {
+    position: absolute;
+    top: -2.4rem;
+    right: 1rem;
+    width: 84px;
+    height: 84px;
+    pointer-events: none;
+  }
+  .fruit-dock > :global(*) { pointer-events: auto; }
   .pulse-dot {
     width: 7px; height: 7px; background: var(--charcoal); border-radius: 50%;
     display: inline-block; flex-shrink: 0;

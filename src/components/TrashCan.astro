@@ -1,0 +1,52 @@
+---
+// Center of the borough fruit orbit: a toon-shaded galvanized trash can in
+// the same die-cut sticker style as the BoroughFruit illustrations (thick
+// charcoal outlines, brand-token fills, off-white backing, stink + fly).
+// Purely decorative — the owning markup keeps it aria-hidden.
+---
+
+<svg class="trash-can-svg" viewBox="0 0 120 120" aria-hidden="true">
+  <g stroke-linejoin="round" stroke-linecap="round">
+    {/* die-cut backing */}
+    <g fill="var(--off-white)" stroke="var(--off-white)" stroke-width="11">
+      <path d="M34 44 L40 106 C40 110 44 112 48 112 L72 112 C76 112 80 110 80 106 L86 44 Z" />
+      <path d="M28 36 C28 30 42 26 60 26 C78 26 92 30 92 36 L92 40 C92 44 78 46 60 46 C42 46 28 44 28 40 Z" transform="rotate(-6 60 36)" />
+    </g>
+    {/* can body */}
+    <path
+      d="M34 44 L40 106 C40 110 44 112 48 112 L72 112 C76 112 80 110 80 106 L86 44 Z"
+      fill="var(--warm-gray)" stroke="var(--charcoal)" stroke-width="4.5"
+    />
+    {/* body ridges */}
+    <path d="M48 50 L51 104" fill="none" stroke="var(--charcoal)" stroke-width="2.5" opacity="0.35" />
+    <path d="M60 50 L60 105" fill="none" stroke="var(--charcoal)" stroke-width="2.5" opacity="0.35" />
+    <path d="M72 50 L69 104" fill="none" stroke="var(--charcoal)" stroke-width="2.5" opacity="0.35" />
+    {/* highlight */}
+    <path d="M42 52 L46 100" fill="none" stroke="var(--off-white)" stroke-width="3" opacity="0.7" />
+    {/* sticker slapped on the can, echoing the site's .sticker chip */}
+    <g transform="rotate(-8 60 78)">
+      <rect x="44" y="70" width="32" height="16" rx="3" fill="var(--yellow)" stroke="var(--charcoal)" stroke-width="3" />
+      <path d="M56 75 C54 72 50 73 50 76 C50 79 56 82 56 82 C56 82 62 79 62 76 C62 73 58 72 56 75 Z" fill="var(--charcoal)" />
+      <path d="M66 75 L70 75 M66 79 L71 79" fill="none" stroke="var(--charcoal)" stroke-width="2" />
+    </g>
+    {/* trash peeking out under the lid: a banana-peel tip */}
+    <path d="M44 38 C46 32 52 28 58 29 C56 34 51 38 44 38 Z" fill="var(--yellow)" stroke="var(--charcoal)" stroke-width="3" />
+    {/* lid, slightly ajar */}
+    <g transform="rotate(-6 60 36)">
+      <path
+        d="M28 36 C28 30 42 26 60 26 C78 26 92 30 92 36 L92 40 C92 44 78 46 60 46 C42 46 28 44 28 40 Z"
+        fill="var(--warm-gray)" stroke="var(--charcoal)" stroke-width="4.5"
+      />
+      <path d="M34 34 C40 31 50 29 60 29" fill="none" stroke="var(--off-white)" stroke-width="3" opacity="0.7" />
+      {/* handle */}
+      <path d="M52 26 C52 21 68 21 68 26" fill="none" stroke="var(--charcoal)" stroke-width="4.5" />
+    </g>
+    {/* stink squiggles */}
+    <path d="M40 20 C43 16 40 12 43 8" fill="none" stroke="var(--charcoal)" stroke-width="2" opacity="0.5" />
+    <path d="M78 18 C81 14 78 10 81 6" fill="none" stroke="var(--charcoal)" stroke-width="2" opacity="0.5" />
+    {/* fly */}
+    <circle cx="96" cy="18" r="3.2" fill="var(--charcoal)" />
+    <ellipse cx="93" cy="14" rx="3" ry="1.6" fill="none" stroke="var(--charcoal)" stroke-width="1.5" transform="rotate(-30 93 14)" />
+    <path d="M88 28 C91 25 89 22 92 19" fill="none" stroke="var(--charcoal)" stroke-width="1.5" opacity="0.6" />
+  </g>
+</svg>

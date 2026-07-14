@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import BoroughEventCard from '../components/BoroughEventCard.astro';
 import BoroughFruit from '../components/BoroughFruit.astro';
+import TrashCan from '../components/TrashCan.astro';
 import {
   BOROUGHS,
   fetchEventsAtBuildTime,
@@ -35,6 +36,17 @@ const defaultBorough: string | null = heroBoroughs[0]?.id ?? null;
 const stats = getClubStats(pastRaw);
 const statEn = `${stats.events} events in ${stats.weeks} weeks`;
 const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
+
+// Orbit slot angles (degrees from 12 o'clock, clockwise), arranged loosely
+// like the borough map: Bronx up top, Queens east, Brooklyn south-east,
+// Staten Island south-west, Manhattan west.
+const ORBIT_ANGLES: Record<string, number> = {
+  bronx: -90,
+  queens: -18,
+  brooklyn: 54,
+  'staten-island': 126,
+  manhattan: 198,
+};
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -62,83 +74,93 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
         </p>
       </div>
 
-      <!-- Desktop-only: the five boroughs as spoiled fruits; click to reveal -->
-      <div class="fruit-market" role="group" aria-label="Pick a borough">
+      <!-- Desktop-only: the five borough fruits orbit a trash can; clicking
+           one travels it down to dock onto that borough's card below -->
+      <div class="fruit-orbit" id="fruitOrbit" role="group" aria-label="Pick a borough">
+        <div class="orbit-path" aria-hidden="true"></div>
+        <div class="orbit-center" aria-hidden="true"><TrashCan /></div>
         {BOROUGHS.map(b => {
           const events = byBorough.get(b.id);
           return (
-            <button
-              type="button"
-              class:list={['fruit-btn', { 'is-active': b.id === defaultBorough }]}
-              data-borough={b.id}
-              data-empty={events ? undefined : ''}
-              aria-controls={`borough-card-${b.id}`}
-              aria-expanded={b.id === defaultBorough ? 'true' : 'false'}
-              style={`grid-area: ${b.id}`}
-            >
-              <BoroughFruit borough={b.id} />
-              <span class="fruit-label" data-en={b.labelEn} data-es={b.labelEs}>{b.labelEn}</span>
-              {events ? (
-                <span class="fruit-count">{events.length}</span>
-              ) : (
-                <span class="fruit-none" data-en="No events" data-es="Sin eventos">No events</span>
-              )}
-            </button>
+            <div class="orbit-slot" data-slot={b.id} style={`--a0: ${ORBIT_ANGLES[b.id]}deg`}>
+              <button
+                type="button"
+                class:list={['fruit-btn', { 'is-active': b.id === defaultBorough }]}
+                data-borough={b.id}
+                data-empty={events ? undefined : ''}
+                aria-controls={`borough-card-${b.id}`}
+                aria-expanded={b.id === defaultBorough ? 'true' : 'false'}
+              >
+                <BoroughFruit borough={b.id} />
+                <span class="fruit-label" data-en={b.labelEn} data-es={b.labelEs}>{b.labelEn}</span>
+                {events ? (
+                  <span class="fruit-count">{events.length}</span>
+                ) : (
+                  <span class="fruit-none" data-en="No events" data-es="Sin eventos">No events</span>
+                )}
+              </button>
+            </div>
           );
         })}
       </div>
 
-      <div class:list={['borough-stage', { 'no-hero-events': heroBoroughs.length === 0 }]}>
-        <div
-          class:list={['borough-track', { single: heroBoroughs.length === 1 }]}
-          id="boroughTrack"
-          aria-label="Next event per borough"
-        >
-          {heroBoroughs.map(b => (
-            <div class:list={['borough-slide', { 'is-active': b.id === defaultBorough }]} data-borough={b.id}>
-              <BoroughEventCard borough={b} events={byBorough.get(b.id)!} />
+    </div>
+  </section>
+
+  <!-- BOROUGH DETAIL: carousel on mobile; on desktop the clicked fruit docks
+       onto the active card here, keeping it visually tied to what was clicked -->
+  <section class="borough-detail diag-texture" id="boroughDetail">
+    <div class:list={['borough-stage', { 'no-hero-events': heroBoroughs.length === 0 }]}>
+      <div
+        class:list={['borough-track', { single: heroBoroughs.length === 1 }]}
+        id="boroughTrack"
+        role="group"
+        aria-label="Next event per borough"
+      >
+        {heroBoroughs.map(b => (
+          <div class:list={['borough-slide', { 'is-active': b.id === defaultBorough }]} data-borough={b.id}>
+            <BoroughEventCard borough={b} events={byBorough.get(b.id)!} />
+          </div>
+        ))}
+        {emptyBoroughs.map(b => (
+          <div
+            class:list={['borough-slide', 'borough-slide-none', { 'is-active': b.id === defaultBorough }]}
+            data-borough={b.id}
+          >
+            <div class="borough-card-none" id={`borough-card-${b.id}`} role="group" aria-label={`No upcoming events in ${b.inEn}`}>
+              <div class="fruit-dock" data-dock={b.id}></div>
+              <p class="none-msg">
+                <span data-en={`No upcoming events in ${b.inEn} — yet.`} data-es={`No hay eventos próximos en ${b.inEs} — todavía.`}>
+                  No upcoming events in {b.inEn} — yet.
+                </span>
+              </p>
+              <a class="none-nudge" href="/#signup" data-en="Join the club list — hear about new dates first →" data-es="Únete a la lista del club — entérate primero de nuevas fechas →">
+                Join the club list — hear about new dates first →
+              </a>
             </div>
-          ))}
-          {emptyBoroughs.map(b => (
-            <div
-              class:list={['borough-slide', 'borough-slide-none', { 'is-active': b.id === defaultBorough }]}
+          </div>
+        ))}
+      </div>
+      {heroBoroughs.length > 1 && (
+        <div class="borough-dots">
+          {heroBoroughs.map((b, i) => (
+            <button
+              type="button"
+              class="borough-dot"
               data-borough={b.id}
-            >
-              <div class="borough-card-none" id={`borough-card-${b.id}`} role="group" aria-label={`No upcoming events in ${b.inEn}`}>
-                <p class="none-msg">
-                  <span data-en={`No upcoming events in ${b.inEn} — yet.`} data-es={`No hay eventos próximos en ${b.inEs} — todavía.`}>
-                    No upcoming events in {b.inEn} — yet.
-                  </span>
-                </p>
-                <a class="none-nudge" href="/#signup" data-en="Join the club list — hear about new dates first →" data-es="Únete a la lista del club — entérate primero de nuevas fechas →">
-                  Join the club list — hear about new dates first →
-                </a>
-              </div>
-            </div>
+              aria-label={`Next event in ${b.inEn}`}
+              aria-current={i === 0 ? 'true' : undefined}
+            ></button>
           ))}
         </div>
-        {heroBoroughs.length > 1 && (
-          <div class="borough-dots">
-            {heroBoroughs.map((b, i) => (
-              <button
-                type="button"
-                class="borough-dot"
-                data-borough={b.id}
-                aria-label={`Next event in ${b.inEn}`}
-                aria-current={i === 0 ? 'true' : undefined}
-              ></button>
-            ))}
-          </div>
-        )}
-      </div>
-
+      )}
     </div>
   </section>
 
   <div class="tape-seam" aria-hidden="true"></div>
 
   <!-- EVENTS LIST -->
-  <div class="events-page-bg grid-paper">
+  <div class="events-page-bg">
   <div class="events-page">
 
     <h2 class="all-events-marker" id="all-events">
@@ -361,18 +383,86 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
     });
   </script>
 
-  <!-- Borough hero: fruit buttons (desktop) + carousel dots (mobile) drive
-       one shared active-borough state over the same set of cards -->
+  <!-- Borough hero: orbiting fruit buttons (desktop) + carousel dots (mobile)
+       drive one shared active-borough state over the same set of cards. On
+       desktop the clicked fruit FLIP-travels from its orbit slot into the
+       active card's dock so the reveal stays anchored to what was clicked. -->
   <script>
     const track = document.getElementById('boroughTrack');
     if (track) {
+      const orbit = document.getElementById('fruitOrbit');
+      const detail = document.getElementById('boroughDetail');
+      const hero = document.querySelector<HTMLElement>('.events-hero');
       const slides = Array.from(track.querySelectorAll<HTMLElement>('.borough-slide'));
       const fruitBtns = Array.from(document.querySelectorAll<HTMLElement>('.fruit-btn'));
       const dots = Array.from(document.querySelectorAll<HTMLElement>('.borough-dot'));
       const isDesktop = window.matchMedia('(min-width: 900px)');
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const scrollBehavior = () => (prefersReduced.matches ? ('auto' as const) : ('smooth' as const));
 
-      const setActive = (borough: string, scrollCarousel: boolean) => {
+      const fruitFor = (borough: string) => fruitBtns.find(f => f.dataset.borough === borough);
+      const homeSlotFor = (borough: string) =>
+        orbit?.querySelector<HTMLElement>(`.orbit-slot[data-slot="${borough}"]`) ?? null;
+      const dockFor = (borough: string) =>
+        document.querySelector<HTMLElement>(`.fruit-dock[data-dock="${borough}"]`);
+      const dockedFruit = () => fruitBtns.find(f => f.classList.contains('is-docked')) ?? null;
+
+      // FLIP: move the node, then animate from its old screen position to the
+      // new one so the fruit visibly travels instead of teleporting.
+      const flipMove = (node: HTMLElement, moveIntoPlace: () => void) => {
+        const first = node.getBoundingClientRect();
+        moveIntoPlace();
+        if (prefersReduced.matches) return;
+        const last = node.getBoundingClientRect();
+        if (last.width === 0) return; // target hidden (e.g. mid-resize) — skip animating
+        const dx = first.left - last.left;
+        const dy = first.top - last.top;
+        const scale = first.width / last.width;
+        orbit?.classList.add('is-animating');
+        node.style.transition = 'none';
+        node.style.transformOrigin = 'top left';
+        node.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        requestAnimationFrame(() => {
+          node.style.transition = 'transform 480ms var(--ease-out)';
+          node.style.transform = '';
+          node.addEventListener(
+            'transitionend',
+            () => {
+              node.style.transition = '';
+              node.style.transformOrigin = '';
+              orbit?.classList.remove('is-animating');
+            },
+            { once: true },
+          );
+        });
+      };
+
+      const sendFruitHome = (fruit: HTMLElement, animate: boolean) => {
+        const home = homeSlotFor(fruit.dataset.borough!);
+        if (!home || fruit.parentElement === home) return;
+        fruit.classList.remove('is-docked');
+        home.classList.remove('is-vacant');
+        if (animate) flipMove(fruit, () => home.appendChild(fruit));
+        else home.appendChild(fruit);
+      };
+
+      const dockFruit = (borough: string, animate: boolean) => {
+        const fruit = fruitFor(borough);
+        const dock = dockFor(borough);
+        if (!fruit || !dock) return;
+        const previous = dockedFruit();
+        if (previous && previous !== fruit) sendFruitHome(previous, false);
+        if (fruit.parentElement === dock) return;
+        const moveIntoDock = () => {
+          homeSlotFor(borough)?.classList.add('is-vacant');
+          dock.appendChild(fruit);
+          fruit.classList.add('is-docked');
+        };
+        if (animate) flipMove(fruit, moveIntoDock);
+        else moveIntoDock();
+      };
+
+      const setActive = (borough: string | null, opts: { scrollCarousel?: boolean; travel?: boolean } = {}) => {
         slides.forEach(s => s.classList.toggle('is-active', s.dataset.borough === borough));
         fruitBtns.forEach(f => {
           const on = f.dataset.borough === borough;
@@ -380,22 +470,41 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
           f.setAttribute('aria-expanded', String(on));
         });
         dots.forEach(d => {
-          if (d.dataset.borough === borough) d.setAttribute('aria-current', 'true');
+          if (borough && d.dataset.borough === borough) d.setAttribute('aria-current', 'true');
           else d.removeAttribute('aria-current');
         });
-        if (scrollCarousel && !isDesktop.matches) {
+        if (isDesktop.matches) {
+          if (borough) dockFruit(borough, opts.travel ?? false);
+          else {
+            const previous = dockedFruit();
+            if (previous) sendFruitHome(previous, opts.travel ?? false);
+          }
+        } else if (borough && opts.scrollCarousel) {
           const slide = slides.find(s => s.dataset.borough === borough);
           if (slide) {
             track.scrollTo({
               left: slide.offsetLeft - (track.clientWidth - slide.clientWidth) / 2,
-              behavior: prefersReduced.matches ? 'auto' : 'smooth',
+              behavior: scrollBehavior(),
             });
           }
         }
       };
 
-      fruitBtns.forEach(f => f.addEventListener('click', () => setActive(f.dataset.borough!, true)));
-      dots.forEach(d => d.addEventListener('click', () => setActive(d.dataset.borough!, true)));
+      fruitBtns.forEach(f =>
+        f.addEventListener('click', () => {
+          const borough = f.dataset.borough!;
+          if (f.classList.contains('is-docked')) {
+            // The docked fruit is the "back" control: return it to orbit and
+            // bring the orbit back into view.
+            setActive(null, { travel: true });
+            hero?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+          } else {
+            setActive(borough, { travel: true, scrollCarousel: true });
+            if (isDesktop.matches) detail?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+          }
+        }),
+      );
+      dots.forEach(d => d.addEventListener('click', () => setActive(d.dataset.borough!, { scrollCarousel: true })));
 
       // Swiping the carousel updates the dots: mark the slide nearest the
       // track center as active (without scrolling again).
@@ -412,9 +521,22 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
             const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - center);
             if (d < nearestDist) { nearestDist = d; nearest = s; }
           }
-          if (nearest?.dataset.borough) setActive(nearest.dataset.borough, false);
+          if (nearest?.dataset.borough) setActive(nearest.dataset.borough);
         });
       }, { passive: true });
+
+      // Keep fruit placement consistent with the current mode: docked on the
+      // active card on desktop, all home in orbit on mobile.
+      const syncFruitPlacement = () => {
+        const active = slides.find(s => s.classList.contains('is-active'))?.dataset.borough ?? null;
+        if (isDesktop.matches && active) dockFruit(active, false);
+        else {
+          const previous = dockedFruit();
+          if (previous) sendFruitHome(previous, false);
+        }
+      };
+      isDesktop.addEventListener('change', syncFruitPlacement);
+      syncFruitPlacement();
     }
   </script>
 
@@ -426,7 +548,7 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
     background: var(--charcoal);
     position: relative;
     overflow: hidden;
-    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-md) max(var(--gutter), var(--safe-left));
   }
   .events-hero::after {
     content: '';
@@ -453,8 +575,15 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
   /* "X events in Y weeks" counter */
   .stat-sticker { font-size: 0.8rem; }
 
-  /* ── FRUIT MARKET (desktop only) ── */
-  .fruit-market { display: none; }
+  /* ── FRUIT ORBIT (desktop only) ── */
+  .fruit-orbit { display: none; }
+
+  /* ── BOROUGH DETAIL SECTION ── */
+  .borough-detail {
+    background: var(--charcoal);
+    padding: 0 max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
+  }
+  .borough-detail .borough-stage { max-width: 1000px; margin: 0 auto; }
 
   /* ── BOROUGH CAROUSEL (mobile default) ── */
   .borough-stage { position: relative; }
@@ -510,7 +639,16 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
     min-height: 200px; text-align: center;
     border: 2px dashed var(--paper-a35); border-radius: var(--radius-md);
     padding: 2rem;
+    position: relative;
   }
+  /* Landing pad for the withered fruit, mirroring the card version */
+  .borough-card-none .fruit-dock {
+    position: absolute;
+    top: -2.4rem; right: 1rem;
+    width: 84px; height: 84px;
+    pointer-events: none;
+  }
+  .borough-card-none .fruit-dock > * { pointer-events: auto; }
   .none-msg { color: var(--paper-a55); font-size: 0.85rem; font-weight: 600; }
   .none-nudge {
     font-size: 0.78rem; font-weight: 700;
@@ -519,51 +657,88 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
   }
   .none-nudge:hover { color: var(--off-white); }
 
-  /* ── DESKTOP: fruit market + reveal panel ── */
+  /* ── DESKTOP: fruit orbit + docking reveal panel ── */
   @media (min-width: 900px) {
     .events-hero-inner {
       display: grid;
-      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
-      grid-template-areas:
-        'head   market'
-        'stage  market';
+      grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
       gap: var(--space-md) var(--space-lg);
-      align-items: start;
-    }
-    .events-hero-head { grid-area: head; }
-    .borough-stage { grid-area: stage; }
-
-    .fruit-market {
-      grid-area: market;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-areas:
-        '.             bronx    .'
-        'manhattan     .        queens'
-        'staten-island brooklyn .';
-      gap: 0.25rem 0.5rem;
-      justify-items: center;
       align-items: center;
     }
+
+    .fruit-orbit {
+      display: block;
+      position: relative;
+      /* --orbit-r must be a concrete length: translateY(%) inside the slot
+         transform would resolve against the zero-height slot, not the ring */
+      --orbit-size: min(44vw, 520px);
+      --orbit-r: calc(var(--orbit-size) / 2 - 3.4rem);
+      width: var(--orbit-size);
+      aspect-ratio: 1;
+      margin-inline: auto;
+    }
+    .orbit-path {
+      position: absolute;
+      inset: 3.4rem;
+      border: 2px dashed var(--paper-a12);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .orbit-center {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 32%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .orbit-center :global(.trash-can-svg) {
+      width: 100%; height: auto;
+      filter: drop-shadow(5px 5px 0 rgba(107, 63, 160, 0.55));
+    }
+
+    /* Each slot revolves around the center while its fruit stays upright:
+       the keyframes resolve --a0 per slot, and the trailing counter-rotation
+       cancels the leading one at every frame. */
+    .orbit-slot {
+      position: absolute;
+      left: 50%; top: 50%;
+      animation: orbitRevolve 90s linear infinite;
+      transform: rotate(var(--a0)) translateY(calc(-1 * var(--orbit-r))) rotate(calc(-1 * var(--a0)));
+    }
+    @keyframes orbitRevolve {
+      from { transform: rotate(var(--a0)) translateY(calc(-1 * var(--orbit-r))) rotate(calc(-1 * var(--a0))); }
+      to { transform: rotate(calc(var(--a0) + 360deg)) translateY(calc(-1 * var(--orbit-r))) rotate(calc(-1 * var(--a0) - 360deg)); }
+    }
+    /* Moving click targets are hostile — freeze the orbit while the pointer
+       or keyboard focus is anywhere in it, and while a fruit is traveling. */
+    .fruit-orbit:hover .orbit-slot,
+    .fruit-orbit:focus-within .orbit-slot,
+    .fruit-orbit.is-animating .orbit-slot { animation-play-state: paused; }
+    /* Peeled-off sticker outline marks the empty slot of a docked fruit */
+    .orbit-slot.is-vacant::after {
+      content: '';
+      display: block;
+      width: 64px; height: 64px;
+      margin: -32px;
+      border: 2px dashed var(--paper-a35);
+      border-radius: 50%;
+    }
+
     .fruit-btn {
       background: none; border: none; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
       padding: 0.4rem;
-      transition: transform 160ms var(--ease-out);
+      /* the `translate` property, not `transform`: the FLIP travel animation
+         sets an inline transform, and the two must compose, not clobber */
+      translate: -50% -50%;
     }
     /* Shadow lives on the SVG, not the button — a button-level drop-shadow
        would duplicate the label text as an offset copy */
     .fruit-btn :global(.fruit-svg) {
-      width: clamp(84px, 9vw, 118px); height: auto;
+      width: clamp(76px, 8vw, 104px); height: auto;
       filter: drop-shadow(5px 5px 0 rgba(107, 63, 160, 0.55));
       transition: filter 160ms var(--ease-out);
     }
-    /* hand-placed market-stall tilt */
-    .fruit-btn[data-borough='manhattan'] { transform: rotate(-3deg); }
-    .fruit-btn[data-borough='brooklyn'] { transform: rotate(2deg) translateY(-0.5rem); }
-    .fruit-btn[data-borough='queens'] { transform: rotate(3deg); }
-    .fruit-btn[data-borough='bronx'] { transform: rotate(-2deg); }
-    .fruit-btn[data-borough='staten-island'] { transform: rotate(-1deg); }
     .fruit-btn:hover :global(.fruit-svg) { filter: drop-shadow(7px 7px 0 var(--purple-light)); }
     .fruit-btn.is-active :global(.fruit-svg) { filter: drop-shadow(6px 6px 0 var(--yellow)); }
     /* Withered: boroughs without upcoming events. grayscale precedes
@@ -573,11 +748,29 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
     .fruit-btn[data-empty].is-active :global(.fruit-svg) { filter: grayscale(1) opacity(0.7) drop-shadow(5px 5px 0 var(--yellow)); }
     .fruit-btn[data-empty] .fruit-label { color: var(--paper-a55); }
 
+    /* Docked: the fruit has left its orbit slot and sits on the active card
+       as its badge. Same button node, so focus and semantics travel with it. */
+    .fruit-btn.is-docked {
+      position: absolute;
+      inset: 0;
+      padding: 0;
+      translate: none;
+      z-index: 5;
+    }
+    .fruit-btn.is-docked :global(.fruit-svg) {
+      width: 100%;
+      filter: drop-shadow(4px 4px 0 var(--purple-light));
+    }
+    .fruit-btn.is-docked .fruit-label,
+    .fruit-btn.is-docked .fruit-count,
+    .fruit-btn.is-docked .fruit-none { display: none; }
+
     .fruit-label {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 1.05rem; letter-spacing: 0.08em;
       color: var(--off-white);
       margin-top: 0.3rem;
+      white-space: nowrap;
     }
     .fruit-btn.is-active .fruit-label { color: var(--yellow); }
     .fruit-count {
@@ -595,11 +788,14 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
       color: var(--paper-a55);
     }
 
-    /* The track becomes a reveal panel: only the active borough shows */
+    /* The track becomes a reveal panel: only the active borough shows,
+       centered, with headroom for the docked fruit overhanging the card */
     .borough-track {
       display: block;
       overflow: visible;
-      padding: 1.25rem 0 10px;
+      padding: 3rem 0 10px;
+      max-width: 640px;
+      margin-inline: auto;
     }
     .borough-slide { display: none; }
     .borough-slide.is-active { display: block; animation: slideReveal 240ms var(--ease-out); }
@@ -614,10 +810,19 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
   }
   @media (prefers-reduced-motion: reduce) {
     .borough-slide.is-active { animation: none; }
-    .fruit-btn { transition: none; }
+    .orbit-slot { animation: none; }
+    .fruit-btn :global(.fruit-svg) { transition: none; }
   }
 
-  /* ── EVENTS LIST ── */
+  /* ── EVENTS LIST — dark, per captain: the hero color wins the whole page.
+     Faint off-white graph-paper texture replaces the light .grid-paper. ── */
+  .events-page-bg {
+    background-color: var(--charcoal);
+    background-image:
+      linear-gradient(rgba(247, 244, 237, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(247, 244, 237, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
   .events-page {
     max-width: 1000px;
     margin: 0 auto;
@@ -630,7 +835,7 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
     font-family: 'Bebas Neue', sans-serif;
     font-size: var(--step-2);
     line-height: 1; letter-spacing: 0.04em;
-    color: var(--charcoal);
+    color: var(--off-white);
     display: flex; align-items: center; gap: 0.6rem;
     margin-bottom: 1.25rem;
   }
@@ -646,18 +851,18 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
   .dist-sort-label {
     display: flex; align-items: center; gap: 0.4rem;
     font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    color: var(--green); margin-bottom: 1rem;
+    color: var(--green-light); margin-bottom: 1rem;
   }
-  .dist-sort-label svg { width: 12px; height: 12px; stroke: var(--green); flex-shrink: 0; }
+  .dist-sort-label svg { width: 12px; height: 12px; stroke: var(--green-light); flex-shrink: 0; }
   :global(.dist-badge) {
     font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--green); background: rgba(42,107,42,0.1); border: 1px solid rgba(42,107,42,0.25);
+    color: var(--green-light); background: rgba(61,158,61,0.12); border: 1px solid rgba(61,158,61,0.35);
     border-radius: 20px; padding: 0.1rem 0.5rem; white-space: nowrap;
   }
 
   /* ── NO EVENTS CTA ── */
   .no-events-cta { text-align: center; padding: var(--space-lg) 1rem; }
-  .no-events-cta p { color: var(--gray); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.25rem; }
+  .no-events-cta p { color: var(--paper-a70); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.25rem; }
   .no-events-cta .eb-cta-btn {
     display: inline-flex; align-items: center; min-height: var(--tap);
     background: var(--yellow); color: var(--charcoal);
@@ -671,7 +876,7 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
     margin-top: 1.1rem;
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--purple);
+    color: var(--purple-pale);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -679,12 +884,12 @@ const statEs = `${stats.events} eventos en ${stats.weeks} semanas`;
 
   /* ── PAST DIVIDER ── */
   .past-divider { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 0; }
-  .past-divider-line { flex: 1; height: 1px; background: #ddd; }
+  .past-divider-line { flex: 1; height: 1px; background: var(--paper-a12); }
   .past-toggle {
     display: inline-flex; align-items: center; gap: 0.45rem;
-    background: none; border: 1.5px solid #d0ccc4; border-radius: 22px;
+    background: none; border: 1.5px solid var(--paper-a35); border-radius: 22px;
     padding: 0.45rem 1rem; min-height: 40px; cursor: pointer;
-    font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: var(--gray);
+    font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: var(--paper-a70);
     white-space: nowrap; transition: border-color 0.15s, color 0.15s;
   }
   .past-toggle:hover { border-color: var(--purple-light); color: var(--purple-light); }
