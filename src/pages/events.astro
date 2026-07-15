@@ -422,28 +422,41 @@ const ORBIT_ANGLES: Record<string, number> = {
         node.style.transition = 'none';
         node.style.transformOrigin = 'top left';
         node.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        // Cleanup must fire only for THIS node's transform transition:
+        // transitionend bubbles (the child .fruit-svg has its own filter
+        // transition that ends mid-travel on hover loss), and an interrupted
+        // travel fires transitioncancel instead of transitionend — both would
+        // otherwise leave is-animating (a paused orbit) or stale styles behind.
+        const cleanup = (e: TransitionEvent) => {
+          if (e.target !== node || e.propertyName !== 'transform') return;
+          node.style.transition = '';
+          node.style.transformOrigin = '';
+          node.style.transform = '';
+          node.removeEventListener('transitionend', cleanup);
+          node.removeEventListener('transitioncancel', cleanup);
+          orbit?.classList.remove('is-animating');
+        };
         requestAnimationFrame(() => {
           node.style.transition = 'transform 480ms var(--ease-out)';
           node.style.transform = '';
-          node.addEventListener(
-            'transitionend',
-            () => {
-              node.style.transition = '';
-              node.style.transformOrigin = '';
-              orbit?.classList.remove('is-animating');
-            },
-            { once: true },
-          );
+          node.addEventListener('transitionend', cleanup);
+          node.addEventListener('transitioncancel', cleanup);
         });
       };
 
       const sendFruitHome = (fruit: HTMLElement, animate: boolean) => {
         const home = homeSlotFor(fruit.dataset.borough!);
         if (!home || fruit.parentElement === home) return;
-        fruit.classList.remove('is-docked');
-        home.classList.remove('is-vacant');
-        if (animate) flipMove(fruit, () => home.appendChild(fruit));
-        else home.appendChild(fruit);
+        // Class changes happen inside the move callback so flipMove measures
+        // the "first" rect while the fruit still has its docked geometry —
+        // otherwise the return travel starts from a visibly offset position.
+        const moveIntoHome = () => {
+          fruit.classList.remove('is-docked');
+          home.classList.remove('is-vacant');
+          home.appendChild(fruit);
+        };
+        if (animate) flipMove(fruit, moveIntoHome);
+        else moveIntoHome();
       };
 
       const dockFruit = (borough: string, animate: boolean) => {
