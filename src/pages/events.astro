@@ -88,6 +88,7 @@ const ORBIT_ANGLES: Record<string, number> = {
                 class:list={['fruit-btn', { 'is-active': b.id === defaultBorough }]}
                 data-borough={b.id}
                 data-empty={events ? undefined : ''}
+                aria-label={b.labelEn}
                 aria-controls={`borough-card-${b.id}`}
                 aria-expanded={b.id === defaultBorough ? 'true' : 'false'}
               >
@@ -418,6 +419,7 @@ const ORBIT_ANGLES: Record<string, number> = {
         const dx = first.left - last.left;
         const dy = first.top - last.top;
         const scale = first.width / last.width;
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(scale - 1) < 0.01) return; // no visible travel — a zero-change transition may never fire transitionend
         orbit?.classList.add('is-animating');
         node.style.transition = 'none';
         node.style.transformOrigin = 'top left';
@@ -436,12 +438,14 @@ const ORBIT_ANGLES: Record<string, number> = {
           node.removeEventListener('transitioncancel', cleanup);
           orbit?.classList.remove('is-animating');
         };
-        requestAnimationFrame(() => {
-          node.style.transition = 'transform 480ms var(--ease-out)';
-          node.style.transform = '';
-          node.addEventListener('transitionend', cleanup);
-          node.addEventListener('transitioncancel', cleanup);
-        });
+        node.addEventListener('transitionend', cleanup);
+        node.addEventListener('transitioncancel', cleanup);
+        // Synchronous style flush: commits the offset transform as the
+        // transition's before-change style. Without it the transform set above
+        // is never rendered, no transition starts, and the fruit teleports.
+        void node.getBoundingClientRect();
+        node.style.transition = 'transform 480ms var(--ease-out)';
+        node.style.transform = '';
       };
 
       const sendFruitHome = (fruit: HTMLElement, animate: boolean) => {
