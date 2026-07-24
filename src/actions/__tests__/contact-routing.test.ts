@@ -136,8 +136,22 @@ describe('contact action team notification', () => {
     expect(sendBrevoEmail).toHaveBeenLastCalledWith(
       'test-key',
       expect.objectContaining({
-        to: { email: 'team@trashtalknyc.org' },
+        to: [{ email: 'team@trashtalknyc.org' }],
         replyTo: expect.objectContaining({ email: 'jane@example.com' }),
+      }),
+    );
+  });
+
+  it('sends to every address when CONTACT_NOTIFY_TO is a comma-separated list', async () => {
+    process.env.CONTACT_NOTIFY_TO = 'david@trashtalknyc.org, fvillatoro99@gmail.com';
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(contactInput(), contactCtx());
+
+    expect(sendBrevoEmail).toHaveBeenLastCalledWith(
+      'test-key',
+      expect.objectContaining({
+        to: [{ email: 'david@trashtalknyc.org' }, { email: 'fvillatoro99@gmail.com' }],
       }),
     );
   });

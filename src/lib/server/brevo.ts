@@ -137,9 +137,14 @@ export interface InquiryEmailInput {
  * reply reaches them directly.
  */
 export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; htmlContent: string } {
-  const kind = input.inquiryType === 'partnership' ? 'Collaboration' : 'Contact';
+  const isCollab = input.inquiryType === 'partnership';
+  // Distinct subject + heading per tab so the team can eyeball-triage (and
+  // Gmail-filter) collaboration inquiries vs general contact messages, and so
+  // a collaboration subject surfaces the organization at a glance.
+  const label = isCollab ? 'New collaboration inquiry' : 'New contact message';
   const name = `${input.fname} ${input.lname}`.trim();
-  const subject = `New ${kind.toLowerCase()} inquiry — ${name}`;
+  const org = input.organization?.trim();
+  const subject = isCollab && org ? `${label} — ${name} · ${org}` : `${label} — ${name}`;
 
   const rows: Array<[string, string | undefined]> = [
     ['Name', name],
@@ -160,7 +165,7 @@ export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; 
 
   const htmlContent =
     `<div style="font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.5;color:#111;">` +
-    `<h2 style="margin:0 0 12px;">New ${kind.toLowerCase()} inquiry</h2>` +
+    `<h2 style="margin:0 0 12px;">${label}</h2>` +
     `<table style="border-collapse:collapse;margin-bottom:16px;">${rowsHtml}</table>` +
     `<div style="padding:12px 16px;background:#f6f6f4;border-radius:8px;">${messageHtml}</div>` +
     `<p style="margin:16px 0 0;color:#888;font-size:13px;">Reply to this email to respond to ${escapeHtml(input.fname.trim())} directly.</p>` +
@@ -227,7 +232,7 @@ export interface BrevoContactRef {
 
 export interface BrevoEmail {
   sender: BrevoContactRef;
-  to: BrevoContactRef;
+  to: BrevoContactRef[];
   replyTo?: BrevoContactRef;
   subject: string;
   htmlContent: string;
@@ -250,7 +255,7 @@ export async function sendBrevoEmail(apiKey: string, email: BrevoEmail): Promise
       },
       body: JSON.stringify({
         sender: email.sender,
-        to: [email.to],
+        to: email.to,
         ...(email.replyTo ? { replyTo: email.replyTo } : {}),
         subject: email.subject,
         htmlContent: email.htmlContent,

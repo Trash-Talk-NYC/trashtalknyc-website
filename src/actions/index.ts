@@ -176,6 +176,18 @@ async function tryNotifyInquiry(input: ContactInput): Promise<void> {
       return;
     }
 
+    // CONTACT_NOTIFY_TO may list several recipients, comma-separated, so the
+    // team can alert more than one address (e.g. a shared inbox plus a person).
+    const recipients = to
+      .split(',')
+      .map((address) => address.trim())
+      .filter(Boolean)
+      .map((email) => ({ email }));
+    if (recipients.length === 0) {
+      log('info', 'inquiry_notify_skipped', { form: 'contact', inquiry: input.inquiryType });
+      return;
+    }
+
     const { subject, htmlContent } = buildInquiryEmail({
       inquiryType: input.inquiryType,
       fname: input.fname,
@@ -188,7 +200,7 @@ async function tryNotifyInquiry(input: ContactInput): Promise<void> {
 
     const result = await sendBrevoEmail(apiKey, {
       sender: { email: from, name: 'Trash Talk NYC Website' },
-      to: { email: to },
+      to: recipients,
       replyTo: { email: input.email, name: `${input.fname} ${input.lname}`.trim() },
       subject,
       htmlContent,

@@ -227,7 +227,7 @@ describe('buildInquiryEmail', () => {
     message: 'Hello there',
   };
 
-  it('titles a partnership inquiry as a collaboration and includes every provided field', () => {
+  it('subjects a collaboration inquiry distinctly and surfaces the organization', () => {
     const { subject, htmlContent } = buildInquiryEmail({
       ...base,
       inquiryType: 'partnership',
@@ -235,19 +235,33 @@ describe('buildInquiryEmail', () => {
       organization: 'Acme Org',
     });
 
-    expect(subject).toBe('New collaboration inquiry — Jane Doe');
+    expect(subject).toBe('New collaboration inquiry — Jane Doe · Acme Org');
     expect(htmlContent).toContain('jane@example.com');
     expect(htmlContent).toContain('+1 212 555 0100');
     expect(htmlContent).toContain('Acme Org');
     expect(htmlContent).toContain('Hello there');
   });
 
-  it('titles a general inquiry as a contact and omits empty optional fields', () => {
+  it('subjects a general inquiry distinctly (message, not inquiry) and omits empty optionals', () => {
     const { subject, htmlContent } = buildInquiryEmail({ ...base, inquiryType: 'general', phone: '  ' });
 
-    expect(subject).toBe('New contact inquiry — Jane Doe');
+    expect(subject).toBe('New contact message — Jane Doe');
     expect(htmlContent).not.toContain('Phone');
     expect(htmlContent).not.toContain('Organization');
+  });
+
+  it('gives collaboration and general inquiries clearly different subject lines', () => {
+    const collab = buildInquiryEmail({ ...base, inquiryType: 'partnership', organization: 'Acme Org' }).subject;
+    const general = buildInquiryEmail({ ...base, inquiryType: 'general' }).subject;
+    expect(collab).not.toBe(general);
+    expect(collab.startsWith('New collaboration inquiry')).toBe(true);
+    expect(general.startsWith('New contact message')).toBe(true);
+  });
+
+  it('drops the organization separator from a collaboration subject when no org is given', () => {
+    expect(buildInquiryEmail({ ...base, inquiryType: 'partnership' }).subject).toBe(
+      'New collaboration inquiry — Jane Doe',
+    );
   });
 
   it('escapes submitted values so a malicious message cannot inject markup', () => {
@@ -272,7 +286,7 @@ describe('sendBrevoEmail', () => {
 
   const email = {
     sender: { email: 'site@trashtalknyc.org', name: 'Trash Talk NYC Website' },
-    to: { email: 'david@trashtalknyc.org' },
+    to: [{ email: 'david@trashtalknyc.org' }],
     replyTo: { email: 'jane@example.com', name: 'Jane Doe' },
     subject: 'New collaboration inquiry — Jane Doe',
     htmlContent: '<p>hi</p>',
