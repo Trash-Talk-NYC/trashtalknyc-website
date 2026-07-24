@@ -1,13 +1,15 @@
 import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions';
-import { signupSchema, contactSchema } from '../lib/server/schemas';
+import { signupSchema, contactSchema, type ContactInput } from '../lib/server/schemas';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
 import {
   buildAttributes,
+  buildInquiryEmail,
   buildNoteText,
   createBrevoNote,
   getBrevoContactId,
+  sendBrevoEmail,
   upsertBrevoContact,
 } from '../lib/server/brevo';
 
@@ -153,6 +155,65 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
   }
 }
 
+/**
+ * Emails the team the moment a contact-form inquiry arrives (both the General
+ * and Collaborate tabs) so a new lead is seen without polling Brevo. Reply-to
+ * is the person who wrote in, so a reply reaches them directly.
+ *
+ * Dormant until both CONTACT_NOTIFY_TO (recipient) and CONTACT_NOTIFY_FROM (a
+ * verified Brevo sender) are set — mirroring the Turnstile-keys pattern — so no
+ * mail is sent in environments that have not opted in. Best-effort and never
+ * throws: the contact upsert already succeeded and must not be undone by a
+ * notification failure.
+ */
+async function tryNotifyInquiry(input: ContactInput): Promise<void> {
+  try {
+    const apiKey = getEnv('BREVO_API_KEY');
+    const to = getEnv('CONTACT_NOTIFY_TO');
+    const from = getEnv('CONTACT_NOTIFY_FROM');
+    if (!apiKey || !to || !from) {
+      log('info', 'inquiry_notify_skipped', { form: 'contact', inquiry: input.inquiryType });
+      return;
+    }
+
+    const { subject, htmlContent } = buildInquiryEmail({
+      inquiryType: input.inquiryType,
+      fname: input.fname,
+      lname: input.lname,
+      email: input.email,
+      message: input.message,
+      phone: input.phone,
+      organization: input.organization,
+    });
+
+    const result = await sendBrevoEmail(apiKey, {
+      sender: { email: from, name: 'Trash Talk NYC Website' },
+      to: { email: to },
+      replyTo: { email: input.email, name: `${input.fname} ${input.lname}`.trim() },
+      subject,
+      htmlContent,
+    });
+
+    if (!result.ok) {
+      log('warn', 'inquiry_notify_failed', {
+        form: 'contact',
+        inquiry: input.inquiryType,
+        status: result.status ?? 0,
+        detail: result.detail,
+      });
+      return;
+    }
+
+    log('info', 'inquiry_notify_sent', { form: 'contact', inquiry: input.inquiryType });
+  } catch (err) {
+    log('warn', 'inquiry_notify_failed', {
+      form: 'contact',
+      stage: 'unexpected',
+      detail: err instanceof Error ? err.message : 'unknown',
+    });
+  }
+}
+
 export const server = {
   signup: defineAction({
     accept: 'form',
@@ -222,6 +283,7 @@ export const server = {
 
       const noteForm = input.inquiryType === 'partnership' ? 'contact-collab' : 'contact-general';
       await tryCreateNote(noteForm, input.email, input.message);
+      await tryNotifyInquiry(input);
 
       return { ok: true };
     },

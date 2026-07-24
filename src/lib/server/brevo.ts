@@ -12,6 +12,7 @@
 
 const BREVO_CONTACTS_URL = 'https://api.brevo.com/v3/contacts';
 const BREVO_NOTES_URL = 'https://api.brevo.com/v3/crm/notes';
+const BREVO_EMAIL_URL = 'https://api.brevo.com/v3/smtp/email';
 
 // The action runs in a synchronous Netlify function with a 10s budget and
 // makes up to three sequential Brevo calls; without timeouts one hung
@@ -19,6 +20,9 @@ const BREVO_NOTES_URL = 'https://api.brevo.com/v3/crm/notes';
 // a signup) gets the larger share; the best-effort note flow gets less.
 const UPSERT_TIMEOUT_MS = 5000;
 const NOTE_TIMEOUT_MS = 3000;
+// The team notification is best-effort like the note flow, so it gets the same
+// small share of the function budget rather than the upsert's larger one.
+const NOTIFY_TIMEOUT_MS = 3000;
 
 // Brevo allows 10 req/s on non-enterprise plans, so a viral-post burst can
 // 429 the upsert and lose a signup. One retry (bounded so two attempts plus
@@ -105,6 +109,66 @@ export function buildNoteText(form: string, field: string, content: string, subm
   return `form=${form} | field=${field} | submitted=${submittedAt.toISOString()}\n—\n${content}`;
 }
 
+/** Escapes submitted text before it is interpolated into notification HTML. */
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export interface InquiryEmailInput {
+  inquiryType: 'general' | 'partnership';
+  fname: string;
+  lname: string;
+  email: string;
+  message: string;
+  phone?: string;
+  organization?: string;
+}
+
+/**
+ * Builds the internal notification emailed to the team when a contact-form
+ * inquiry arrives, so a new lead is seen immediately without polling Brevo.
+ * Every submitted value is HTML-escaped; empty optional fields are omitted.
+ * The reply-to (set by the caller) points at the person who wrote in, so a
+ * reply reaches them directly.
+ */
+export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; htmlContent: string } {
+  const kind = input.inquiryType === 'partnership' ? 'Collaboration' : 'Contact';
+  const name = `${input.fname} ${input.lname}`.trim();
+  const subject = `New ${kind.toLowerCase()} inquiry — ${name}`;
+
+  const rows: Array<[string, string | undefined]> = [
+    ['Name', name],
+    ['Email', input.email],
+    ['Phone', input.phone],
+    ['Organization', input.organization],
+  ];
+  const rowsHtml = rows
+    .filter(([, value]) => value?.trim())
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:4px 16px 4px 0;color:#666;vertical-align:top;white-space:nowrap;"><strong>${label}</strong></td>` +
+        `<td style="padding:4px 0;">${escapeHtml(value!.trim())}</td></tr>`,
+    )
+    .join('');
+
+  const messageHtml = escapeHtml(input.message.trim()).replace(/\r?\n/g, '<br>');
+
+  const htmlContent =
+    `<div style="font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.5;color:#111;">` +
+    `<h2 style="margin:0 0 12px;">New ${kind.toLowerCase()} inquiry</h2>` +
+    `<table style="border-collapse:collapse;margin-bottom:16px;">${rowsHtml}</table>` +
+    `<div style="padding:12px 16px;background:#f6f6f4;border-radius:8px;">${messageHtml}</div>` +
+    `<p style="margin:16px 0 0;color:#888;font-size:13px;">Reply to this email to respond to ${escapeHtml(input.fname.trim())} directly.</p>` +
+    `</div>`;
+
+  return { subject, htmlContent };
+}
+
 export type BrevoContactIdResult = { ok: true; id: number } | { ok: false; status?: number; detail: string };
 
 /** Looks up the numeric Brevo contact id — needed to attach CRM notes. */
@@ -147,6 +211,51 @@ export async function createBrevoNote(apiKey: string, contactId: number, text: s
       },
       body: JSON.stringify({ text, contactIds: [contactId] }),
       signal: AbortSignal.timeout(NOTE_TIMEOUT_MS),
+    });
+  } catch (err) {
+    return { ok: false, detail: err instanceof Error ? err.message : 'network error' };
+  }
+
+  if (res.ok) return { ok: true };
+  return { ok: false, status: res.status, detail: await errorCode(res) };
+}
+
+export interface BrevoContactRef {
+  email: string;
+  name?: string;
+}
+
+export interface BrevoEmail {
+  sender: BrevoContactRef;
+  to: BrevoContactRef;
+  replyTo?: BrevoContactRef;
+  subject: string;
+  htmlContent: string;
+}
+
+/**
+ * Sends a transactional email via Brevo. Used for the best-effort team
+ * notification, so it reports failures without throwing and bounds the request
+ * with a timeout, exactly like the note flow.
+ */
+export async function sendBrevoEmail(apiKey: string, email: BrevoEmail): Promise<BrevoResult> {
+  let res: Response;
+  try {
+    res = await fetch(BREVO_EMAIL_URL, {
+      method: 'POST',
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        sender: email.sender,
+        to: [email.to],
+        ...(email.replyTo ? { replyTo: email.replyTo } : {}),
+        subject: email.subject,
+        htmlContent: email.htmlContent,
+      }),
+      signal: AbortSignal.timeout(NOTIFY_TIMEOUT_MS),
     });
   } catch (err) {
     return { ok: false, detail: err instanceof Error ? err.message : 'network error' };

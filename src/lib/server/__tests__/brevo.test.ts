@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildAttributes, buildNoteText, createBrevoNote, getBrevoContactId, upsertBrevoContact } from '../brevo';
+import {
+  buildAttributes,
+  buildInquiryEmail,
+  buildNoteText,
+  createBrevoNote,
+  escapeHtml,
+  getBrevoContactId,
+  sendBrevoEmail,
+  upsertBrevoContact,
+} from '../brevo';
 
 describe('buildAttributes', () => {
   it('keeps filled fields and trims them', () => {
@@ -199,5 +208,112 @@ describe('createBrevoNote', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('ECONNRESET')));
     const result = await createBrevoNote('key', 4321, 'text');
     expect(result.ok).toBe(false);
+  });
+});
+
+describe('escapeHtml', () => {
+  it('escapes the characters that would break out of notification HTML', () => {
+    expect(escapeHtml(`<script>alert("x")</script> & 'quote'`)).toBe(
+      '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; &#39;quote&#39;',
+    );
+  });
+});
+
+describe('buildInquiryEmail', () => {
+  const base = {
+    fname: 'Jane',
+    lname: 'Doe',
+    email: 'jane@example.com',
+    message: 'Hello there',
+  };
+
+  it('titles a partnership inquiry as a collaboration and includes every provided field', () => {
+    const { subject, htmlContent } = buildInquiryEmail({
+      ...base,
+      inquiryType: 'partnership',
+      phone: '+1 212 555 0100',
+      organization: 'Acme Org',
+    });
+
+    expect(subject).toBe('New collaboration inquiry — Jane Doe');
+    expect(htmlContent).toContain('jane@example.com');
+    expect(htmlContent).toContain('+1 212 555 0100');
+    expect(htmlContent).toContain('Acme Org');
+    expect(htmlContent).toContain('Hello there');
+  });
+
+  it('titles a general inquiry as a contact and omits empty optional fields', () => {
+    const { subject, htmlContent } = buildInquiryEmail({ ...base, inquiryType: 'general', phone: '  ' });
+
+    expect(subject).toBe('New contact inquiry — Jane Doe');
+    expect(htmlContent).not.toContain('Phone');
+    expect(htmlContent).not.toContain('Organization');
+  });
+
+  it('escapes submitted values so a malicious message cannot inject markup', () => {
+    const { htmlContent } = buildInquiryEmail({
+      ...base,
+      inquiryType: 'general',
+      message: '<img src=x onerror=alert(1)>',
+    });
+
+    expect(htmlContent).not.toContain('<img');
+    expect(htmlContent).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
+
+  it('renders newlines in the message as <br> so multi-line inquiries stay readable', () => {
+    const { htmlContent } = buildInquiryEmail({ ...base, inquiryType: 'general', message: 'line one\nline two' });
+    expect(htmlContent).toContain('line one<br>line two');
+  });
+});
+
+describe('sendBrevoEmail', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const email = {
+    sender: { email: 'site@trashtalknyc.org', name: 'Trash Talk NYC Website' },
+    to: { email: 'david@trashtalknyc.org' },
+    replyTo: { email: 'jane@example.com', name: 'Jane Doe' },
+    subject: 'New collaboration inquiry — Jane Doe',
+    htmlContent: '<p>hi</p>',
+  };
+
+  it('posts the expected transactional-email payload and succeeds', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ messageId: 'x' }), { status: 201 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await sendBrevoEmail('key-123', email);
+
+    expect(result).toEqual({ ok: true });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://api.brevo.com/v3/smtp/email');
+    expect(init.headers['api-key']).toBe('key-123');
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(JSON.parse(init.body)).toEqual({
+      sender: { email: 'site@trashtalknyc.org', name: 'Trash Talk NYC Website' },
+      to: [{ email: 'david@trashtalknyc.org' }],
+      replyTo: { email: 'jane@example.com', name: 'Jane Doe' },
+      subject: 'New collaboration inquiry — Jane Doe',
+      htmlContent: '<p>hi</p>',
+    });
+  });
+
+  it('omits replyTo from the payload when none is given', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 201 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await sendBrevoEmail('key', { ...email, replyTo: undefined });
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty('replyTo');
+  });
+
+  it('reports failures without throwing so the caller can treat it as best-effort', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ code: 'invalid_parameter' }), { status: 400 }),
+    ));
+    expect(await sendBrevoEmail('key', email)).toEqual({ ok: false, status: 400, detail: 'invalid_parameter' });
+
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('ECONNRESET')));
+    expect((await sendBrevoEmail('key', email)).ok).toBe(false);
   });
 });
