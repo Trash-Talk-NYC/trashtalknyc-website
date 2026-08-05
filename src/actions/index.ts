@@ -1,8 +1,7 @@
 import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions';
-import { signupSchema, contactSchema, joinTeamSchema, type ContactInput } from '../lib/server/schemas';
+import { signupSchema, contactSchema, type ContactInput } from '../lib/server/schemas';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
-import { storeJoinApplicationInBlobs } from '../lib/server/join-store';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
 import {
   buildAttributes,
@@ -23,7 +22,7 @@ import {
  * deliberately exclude API keys and submitted PII.
  */
 
-type FormName = 'signup' | 'contact' | 'join';
+type FormName = 'signup' | 'contact';
 
 const GENERIC_FAILURE = 'Something went wrong — please try again.';
 
@@ -298,40 +297,6 @@ export const server = {
       await tryCreateNote(noteForm, input.email, input.message);
       await tryNotifyInquiry(input);
 
-      return { ok: true };
-    },
-  }),
-
-  /**
-   * Join the Team applications (About page). Deliberately NOT Brevo —
-   * the captain ruled it out for this form — and the final intake
-   * destination is still the captain's call (see AGENTS.md). Until then
-   * submissions land in the Netlify Blobs holding pen so none are lost.
-   *
-   * No Turnstile here on purpose: the About page renders no widget, so
-   * calling requireTurnstile would hard-reject every join submission the
-   * moment real Turnstile keys go live for the other two forms.
-   */
-  joinTeam: defineAction({
-    accept: 'form',
-    input: joinTeamSchema,
-    handler: async (input, ctx) => {
-      const dropped = await shouldSilentlyDrop('join', ctx, {
-        botcheck: input.botcheck,
-        startedAt: input.startedAt,
-        text: input.why,
-      });
-      if (dropped) return { ok: true };
-
-      const stored = await storeJoinApplicationInBlobs(input);
-      if (!stored.ok) {
-        // Fail closed: the success screen says the application was saved,
-        // so a lost write must surface as an error, not a fake success.
-        log('error', 'join_store_failed', { form: 'join', detail: stored.detail });
-        throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: GENERIC_FAILURE });
-      }
-
-      log('info', 'form_submitted', { form: 'join', role: input.role });
       return { ok: true };
     },
   }),

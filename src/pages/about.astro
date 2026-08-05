@@ -1,9 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import { actions } from 'astro:actions';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PersonSocials from '../components/PersonSocials.astro';
-import { JOIN_ROLES } from '../lib/server/schemas';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import workDavidFabi from '../assets/film-david-fabi.jpg';
@@ -61,21 +59,26 @@ const bioOrder = ['david', 'nandi', 'fabiola']
   .map((id) => people.find((p) => p.id === id)!);
 
 /**
- * Join the Team role boxes. `value` must stay inside JOIN_ROLES in
- * src/lib/server/schemas.ts — the form select and the action's enum
- * validate against it, so rename them together.
+ * Join the Team role boxes. Intake is EMAIL-ONLY for now (captain,
+ * round 13): no form, no server path — each box is a mailto: link to
+ * TEAM_EMAIL with a per-role subject so the draft already says which
+ * role (context a shared link would lose). English subjects are baked
+ * into the static hrefs (the no-JS default); the language toggle swaps
+ * them client-side from the data-subject-* attributes.
  *
  * The fourth role is a crew-proposed PLACEHOLDER: the captain named only
  * Videographer / Social Media Manager / Developer and has not chosen the
  * fourth yet. "Events & Operations Lead" is our suggestion for a street
- * cleanup club — captain, rename at will (here + JOIN_ROLES).
+ * cleanup club — captain, rename at will.
  *
  * `accent` is an existing brand token per card (yellow / purple-light /
  * orange / green-light) — no new hues.
  */
+const TEAM_EMAIL = 'team@trashtalknyc.org';
+const mailto = (subject: string) => `mailto:${TEAM_EMAIL}?subject=${encodeURIComponent(subject)}`;
+
 const roles = [
   {
-    value: JOIN_ROLES[0], // Videographer
     accent: 'var(--yellow)',
     title: { en: 'Videographer', es: 'Videógrafo/a' },
     desc: {
@@ -84,7 +87,6 @@ const roles = [
     },
   },
   {
-    value: JOIN_ROLES[1], // Social Media Manager
     accent: 'var(--purple-light)',
     title: { en: 'Social Media Manager', es: 'Gestor/a de Redes' },
     desc: {
@@ -93,7 +95,6 @@ const roles = [
     },
   },
   {
-    value: JOIN_ROLES[2], // Developer
     accent: 'var(--orange)',
     title: { en: 'Developer', es: 'Desarrollador/a' },
     desc: {
@@ -102,7 +103,7 @@ const roles = [
     },
   },
   {
-    value: JOIN_ROLES[3], // Events & Operations Lead — PLACEHOLDER name
+    // Events & Operations Lead — PLACEHOLDER name for the captain
     accent: 'var(--green-light)',
     title: { en: 'Events & Operations Lead', es: 'Líder de Eventos y Operaciones' },
     desc: {
@@ -110,7 +111,18 @@ const roles = [
       es: 'Planifica las rutas, organiza el equipo y haz que el día funcione.',
     },
   },
-];
+].map((r) => ({
+  ...r,
+  subject: {
+    en: `Joining as ${r.title.en} — Trash Talk NYC`,
+    es: `Quiero unirme como ${r.title.es} — Trash Talk NYC`,
+  },
+}));
+
+const generalSubject = {
+  en: 'Joining the team — Trash Talk NYC',
+  es: 'Quiero unirme al equipo — Trash Talk NYC',
+};
 ---
 
 <BaseLayout
@@ -230,10 +242,10 @@ const roles = [
 
   </section>
 
-  <!-- JOIN THE TEAM — the loud CTA moment of the page. Four role boxes
-       feed an application form; the intake destination is still the
-       captain's call (NOT Brevo — see AGENTS.md), so submissions land
-       in a Netlify Blobs holding pen for now. -->
+  <!-- JOIN THE TEAM — the loud CTA moment of the page. Four role boxes,
+       each a mailto: link with a per-role subject. Intake is email-only
+       for now by captain decision (round 13) — the application form and
+       its server path were removed, see AGENTS.md. -->
   <section class="join-team diag-texture" id="join">
     <div class="tape-seam" aria-hidden="true"></div>
     <div class="join-word" aria-hidden="true">CREW</div>
@@ -243,66 +255,30 @@ const roles = [
         <span data-en="Join the" data-es="Únete al">Join the</span>
         <span class="join-title-accent" data-en="team" data-es="equipo">team</span>
       </h2>
-      <p class="join-sub" data-en="Trash Talk NYC is a crew before it's anything else. Pick a role, tell us why, and let's clean this city." data-es="Trash Talk NYC es un equipo antes que nada. Elige un rol, cuéntanos por qué, y limpiemos esta ciudad.">Trash Talk NYC is a crew before it's anything else. Pick a role, tell us why, and let's clean this city.</p>
+      <p class="join-sub" data-en="Trash Talk NYC is a crew before it's anything else. Pick a role, tell us who you are, and let's clean this city." data-es="Trash Talk NYC es un equipo antes que nada. Elige un rol, cuéntanos quién eres, y limpiemos esta ciudad.">Trash Talk NYC is a crew before it's anything else. Pick a role, tell us who you are, and let's clean this city.</p>
 
       <div class="join-roles">
         {roles.map((r, i) => (
-          <button type="button" class="role-card" data-role={r.value} style={`--accent:${r.accent}; --card-tilt:${i % 2 === 0 ? '-1deg' : '1deg'}`} aria-pressed="false">
+          <a class="role-card" href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es} style={`--accent:${r.accent}; --card-tilt:${i % 2 === 0 ? '-1deg' : '1deg'}`}>
             <span class="role-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             <span class="role-title" data-en={r.title.en} data-es={r.title.es}>{r.title.en}</span>
             <span class="role-desc" data-en={r.desc.en} data-es={r.desc.es}>{r.desc.en}</span>
-            <span class="role-apply"><span data-en="Apply" data-es="Postúlate">Apply</span> <span class="role-arrow" aria-hidden="true">→</span></span>
-          </button>
+            <span class="role-apply"><span data-en="Apply by email" data-es="Postúlate por correo">Apply by email</span> <span class="role-arrow" aria-hidden="true">→</span></span>
+          </a>
         ))}
       </div>
 
-      <div class="join-form-wrap" id="joinFormWrap">
-        <form id="joinForm" method="POST" action={actions.joinTeam}>
-          <input type="hidden" name="botcheck" value="">
-          <input type="hidden" name="startedAt" id="joinStartedAt" value="">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="joinName" data-en="Name *" data-es="Nombre *">Name *</label>
-              <input type="text" id="joinName" name="name" required maxlength="200" placeholder="Jane Doe" autocomplete="name">
-            </div>
-            <div class="form-group">
-              <label for="joinEmail" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
-              <input type="email" id="joinEmail" name="email" required placeholder="jane@example.com" autocomplete="email">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="joinRole" data-en="Which role? *" data-es="¿Qué rol? *">Which role? *</label>
-            <select id="joinRole" name="role" required>
-              <option value="" selected disabled data-en="Pick a role" data-es="Elige un rol">Pick a role</option>
-              {roles.map((r) => (
-                <option value={r.value} data-en={r.title.en} data-es={r.title.es}>{r.title.en}</option>
-              ))}
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="joinWhy" data-en="Why do you want to join? *" data-es="¿Por qué quieres unirte? *">Why do you want to join? *</label>
-            <textarea id="joinWhy" name="why" required maxlength="2000" data-placeholder-en="A few sentences is plenty — what would you bring to the crew?" data-placeholder-es="Con unas frases basta — ¿qué aportarías al equipo?" placeholder="A few sentences is plenty — what would you bring to the crew?"></textarea>
-          </div>
-
-          <button type="submit" class="form-submit" data-en="Send my application →" data-es="Enviar mi solicitud →">Send my application →</button>
-          <!-- No data-en/data-es: the submit handler and onLanguageChange
-               own this element's content (same rule as the other forms) -->
-          <p class="form-error" id="joinFormError" aria-live="polite"></p>
-        </form>
-
-        <div class="form-success" id="joinSuccess">
-          <div class="check">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:3rem;height:3rem"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
-          </div>
-          <h3 data-en="Application received" data-es="Solicitud recibida">Application received</h3>
-          <!-- Honest copy: the submission IS saved (Netlify Blobs holding
-               pen), but the roles are brand new and there's no inbox
-               workflow yet — don't promise a fast reply. -->
-          <p data-en="It's saved with the crew. These roles are brand new and applications are just opening up, so give us a little time and we'll reach out. Meanwhile, come say hi at a cleanup or DM @trashtalk_nyc." data-es="Quedó guardada con el equipo. Estos roles son completamente nuevos y las solicitudes apenas están abriendo, así que danos un poco de tiempo y te contactaremos. Mientras tanto, ven a saludar en una limpieza o escríbenos por DM a @trashtalk_nyc.">It's saved with the crew. These roles are brand new and applications are just opening up, so give us a little time and we'll reach out. Meanwhile, come say hi at a cleanup or DM @trashtalk_nyc.</p>
-        </div>
+      <!-- The primary action: one address, said plainly. Role boxes
+           pre-fill a role-specific subject; this button is the
+           catch-all for people who don't fit a box. -->
+      <div class="join-cta">
+        <p class="join-cta-note" data-en="Applications are email-only for now — write to us and tell us who you are." data-es="Por ahora las solicitudes son solo por correo — escríbenos y cuéntanos quién eres.">Applications are email-only for now — write to us and tell us who you are.</p>
+        <a class="join-cta-btn" href={mailto(generalSubject.en)} data-subject-en={generalSubject.en} data-subject-es={generalSubject.es}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+          {TEAM_EMAIL}
+        </a>
       </div>
+
     </div>
   </section>
 
@@ -845,6 +821,7 @@ const roles = [
     cursor: pointer;
     text-align: left;
     font-family: 'Nunito', sans-serif;
+    text-decoration: none;
     transform: rotate(var(--card-tilt, 0deg));
     transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
     -webkit-tap-highlight-color: transparent;
@@ -869,15 +846,6 @@ const roles = [
       transform: rotate(0deg) translate(2px, 2px);
       box-shadow: 3px 3px 0 var(--purple-light);
     }
-  }
-
-  /* Chosen role: straightens up, presses in, and answers in yellow —
-     the active-state colour everywhere on the site */
-  .role-card.selected {
-    transform: rotate(0deg) translate(2px, 2px);
-    box-shadow: 3px 3px 0 var(--yellow);
-    outline: 3px solid var(--yellow);
-    outline-offset: -3px;
   }
 
   .role-num {
@@ -929,130 +897,56 @@ const roles = [
     .role-card:hover .role-arrow { transform: translateX(3px); }
   }
 
-  .role-card.selected .role-apply { color: var(--charcoal); }
-
-  /* ── APPLICATION FORM (matches the site's form styling) ── */
-  .join-form-wrap {
+  /* ── EMAIL CTA (intake is email-only for now — captain, round 13) ── */
+  .join-cta {
     max-width: 40rem;
     margin: 0 auto;
-    text-align: left;
-    background: var(--off-white);
-    padding: clamp(1.25rem, 4vw, 2.5rem);
-    border: 2.5px solid var(--charcoal);
-    border-radius: var(--radius-md);
-    box-shadow: 6px 6px 0 var(--purple-light);
-    scroll-margin-top: calc(var(--nav-h) + 0.75rem);
+    text-align: center;
   }
 
-  .form-group { margin-bottom: 1.2rem; }
-
-  .form-group label {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #4a4a5a;
-    margin-bottom: 0.4rem;
-  }
-
-  /* 16px input text so iOS Safari doesn't zoom the page on focus */
-  .form-group input:not([type='checkbox']),
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #d0ccc4;
-    border-radius: var(--radius-sm);
-    background: white;
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
+  .join-cta-note {
+    font-size: 0.95rem;
     font-weight: 600;
-    color: var(--charcoal);
-    appearance: none;
-    -webkit-appearance: none;
-    outline: none;
-    min-height: var(--tap);
-    transition: border-color 0.15s, box-shadow 0.15s;
+    color: var(--paper-a70);
+    margin-bottom: 1.4rem;
+    line-height: 1.6;
   }
 
-  .form-group input:not([type='checkbox']):focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--purple-light);
-    box-shadow: 0 0 0 3px rgba(155, 93, 229, 0.15);
-  }
-
-  .form-group select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231c1c22' stroke-width='2' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    padding-right: 2.5rem;
-    cursor: pointer;
-  }
-
-  .form-group textarea { resize: vertical; min-height: 110px; }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-    gap: 0 1rem;
-  }
-
-  .form-submit {
-    width: 100%;
-    background: var(--purple);
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 1rem;
-    min-height: 52px;
-    border: 3px solid var(--charcoal);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    margin-top: 0.75rem;
-    box-shadow: 4px 4px 0 var(--charcoal);
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
-  }
-
-  .form-submit:hover {
+  /* Primary action in the poster voice: yellow plate, hard charcoal
+     border, purple press (the dark-section press convention — charcoal
+     shadows vanish on charcoal) */
+  .join-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
     background: var(--yellow);
     color: var(--charcoal);
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--charcoal);
-  }
-
-  /* Stays rendered (never display:none) so screen readers announce text
-     inserted into the aria-live region; :empty just collapses the gap */
-  .form-error {
-    margin-top: 0.9rem;
-    font-size: 0.85rem;
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.9rem, 2.6vw, 1.15rem);
     font-weight: 700;
-    text-align: center;
-    color: #c0392b;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    padding: 0.95em 1.4em;
+    min-height: var(--tap);
+    border: 3px solid var(--charcoal);
+    border-radius: var(--radius-sm);
+    box-shadow: 5px 5px 0 var(--purple-light);
+    transform: rotate(-1deg);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
   }
 
-  .form-error:empty { margin: 0; }
-
-  .form-success {
-    display: none;
-    text-align: center;
-    padding: 3rem 2rem;
+  .join-cta-btn svg {
+    width: 1.2em;
+    height: 1.2em;
+    flex-shrink: 0;
   }
 
-  .form-success .check { margin-bottom: 1rem; }
-
-  .form-success h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-    color: var(--purple);
+  @media (hover: hover) and (pointer: fine) {
+    .join-cta-btn:hover {
+      transform: rotate(0deg) translate(2px, 2px);
+      box-shadow: 3px 3px 0 var(--purple-light);
+    }
   }
-
-  .form-success p { font-size: 0.9rem; color: #555; line-height: 1.6; font-weight: 600; }
 
   @media (prefers-reduced-motion: reduce) {
     .team-entry {
@@ -1222,84 +1116,22 @@ const roles = [
 </script>
 
 <script>
-  import { actions } from 'astro:actions';
-  import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
+  import { getCurrentLang, onLanguageChange, type Lang } from '../lib/language';
 
-  // ── JOIN THE TEAM ──
-  const joinForm = document.getElementById('joinForm') as HTMLFormElement | null;
-  const joinRoleSelect = document.getElementById('joinRole') as HTMLSelectElement | null;
-  const joinErrorEl = document.getElementById('joinFormError');
-  const roleCards = Array.from(document.querySelectorAll<HTMLButtonElement>('.role-card'));
-  const joinReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // ── JOIN THE TEAM (email-only intake) ──
+  // The mailto subjects are baked into the hrefs in English at build
+  // time (the no-JS default); setLang swaps textContent only, never
+  // attributes, so the language toggle re-renders the hrefs here from
+  // the data-subject-* attributes.
+  const mailLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[data-subject-en]'));
 
-  // Spam-timing field (same heuristic as the other two forms)
-  const joinStartedAt = document.getElementById('joinStartedAt') as HTMLInputElement | null;
-  if (joinStartedAt) joinStartedAt.value = String(Date.now());
-
-  function markSelectedRole(value: string) {
-    roleCards.forEach((card) => {
-      const selected = card.dataset.role === value;
-      card.classList.toggle('selected', selected);
-      card.setAttribute('aria-pressed', String(selected));
+  function applyMailSubjects(lang: Lang) {
+    mailLinks.forEach((a) => {
+      const subject = lang === 'es' ? a.dataset.subjectEs : a.dataset.subjectEn;
+      if (subject) a.href = `mailto:team@trashtalknyc.org?subject=${encodeURIComponent(subject)}`;
     });
   }
 
-  // Role box → pre-filled form: choosing a card sets the select, then
-  // hands the viewport to the form with the name field ready to type in
-  roleCards.forEach((card) => {
-    card.addEventListener('click', () => {
-      const value = card.dataset.role ?? '';
-      if (joinRoleSelect) joinRoleSelect.value = value;
-      markSelectedRole(value);
-      const nameInput = document.getElementById('joinName') as HTMLInputElement | null;
-      nameInput?.focus({ preventScroll: true });
-      document.getElementById('joinFormWrap')?.scrollIntoView({
-        behavior: joinReduceMotion.matches ? 'auto' : 'smooth',
-        block: 'start',
-      });
-    });
-  });
-
-  // …and the reverse: picking from the select lights the matching card
-  joinRoleSelect?.addEventListener('change', () => markSelectedRole(joinRoleSelect.value));
-
-  joinForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-
-    const submitBtn = form.querySelector<HTMLButtonElement>('.form-submit')!;
-    const originalText = submitBtn.textContent ?? '';
-    submitBtn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Submitting…';
-    submitBtn.disabled = true;
-    submitBtn.style.opacity = '0.7';
-    if (joinErrorEl) joinErrorEl.textContent = '';
-
-    const { error } = await actions.joinTeam(new FormData(form));
-
-    if (!error) {
-      form.style.display = 'none';
-      (document.getElementById('joinSuccess') as HTMLElement).style.display = 'block';
-      return;
-    }
-
-    // Persistent aria-live message so the failure survives the transient
-    // button swap and is announced by screen readers
-    if (joinErrorEl) joinErrorEl.textContent = submitErrorText(getCurrentLang());
-    submitBtn.textContent = submitErrorText(getCurrentLang());
-    submitBtn.style.background = '#c0392b';
-    submitBtn.style.borderColor = '#c0392b';
-    submitBtn.style.color = '#fff';
-    submitBtn.disabled = false;
-    setTimeout(() => {
-      submitBtn.textContent = originalText;
-      submitBtn.style.background = '';
-      submitBtn.style.borderColor = '';
-      submitBtn.style.color = '';
-      submitBtn.style.opacity = '';
-    }, 3500);
-  });
-
-  onLanguageChange((lang) => {
-    if (joinErrorEl?.textContent) joinErrorEl.textContent = submitErrorText(lang);
-  });
+  if (getCurrentLang() !== 'en') applyMailSubjects(getCurrentLang());
+  onLanguageChange(applyMailSubjects);
 </script>

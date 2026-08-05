@@ -52,16 +52,13 @@ Once the site key is set, a missing secret fails closed (`form_env_missing` patt
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
 
-## Join the Team applications — intake destination PENDING
+## Join the Team — intake is EMAIL-ONLY for now (form deferred)
 
-The About page's Join the Team section (four role boxes + application form) posts to the `joinTeam` Astro Action.
-**The captain has not chosen where these applications should ultimately go, and has explicitly ruled out Brevo for this form.**
-Until that decision lands, submissions are written to the Netlify Blobs store `join-team-applications` (one JSON blob per application — name, email, role, why, submittedAt — under a `<ISO timestamp>-<uuid>` key, so listing reads chronologically; see `src/lib/server/join-store.ts`).
-Read them with `netlify blobs:list join-team-applications` / `netlify blobs:get join-team-applications <key>`, and migrate by exporting the store once the captain picks a destination.
-The write fails closed: the success screen tells the applicant their application was saved, so a failed Blobs write surfaces as a submission error (`join_store_failed` in function logs) rather than a fake success.
-Blobs is unreachable under plain `astro dev` — use `netlify dev` to exercise the submit path locally.
-This form deliberately skips Turnstile: the About page renders no widget, so calling `requireTurnstile` there would hard-reject every join submission the moment real Turnstile keys go live for the other forms.
-The fourth role, "Events & Operations Lead", is a crew-proposed placeholder name the captain has not confirmed — rename it in `JOIN_ROLES` (`src/lib/server/schemas.ts`) and the `roles` array in `about.astro` together.
+The About page's Join the Team section is four role boxes plus a primary `mailto:` CTA to **team@trashtalknyc.org** — the captain removed the application form (2026-08, round 13): "no form for now".
+Each role box is itself a `mailto:` link with a per-role subject (so the draft already says which role); English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
+The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`).
+The Blobs store itself may still hold any applications submitted while the form was live; export before assuming it's empty.
+The fourth role, "Events & Operations Lead", is a crew-proposed placeholder name the captain has not confirmed — rename it in the `roles` array in `about.astro`.
 
 ## Projects page — awaiting real content
 

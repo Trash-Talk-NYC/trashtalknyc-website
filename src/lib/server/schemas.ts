@@ -51,30 +51,5 @@ export const contactSchema = z
     path: ['organization'],
   });
 
-/**
- * Team roles offered on the About page's Join the Team section. The
- * fourth is a crew-proposed PLACEHOLDER the captain has not named yet —
- * rename it here and in the About page's `roles` array together (the
- * form's select values must stay inside this enum).
- */
-export const JOIN_ROLES = [
-  'Videographer',
-  'Social Media Manager',
-  'Developer',
-  'Events & Operations Lead',
-] as const;
-
-// The join form asks for a single display name (not fname/lname) because
-// nothing downstream needs the split — there is no Brevo contact here.
-export const joinTeamSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(200),
-  email: z.string().trim().email('Please enter a valid email address').max(320),
-  role: z.enum(JOIN_ROLES, { errorMap: () => ({ message: 'Please pick a role' }) }),
-  why: z.string().trim().min(1, 'Tell us why you want to join').max(2000),
-  botcheck: z.string().optional(),
-  startedAt: z.string().optional(),
-});
-
 export type SignupInput = z.infer<typeof signupSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;
-export type JoinTeamInput = z.infer<typeof joinTeamSchema>;
