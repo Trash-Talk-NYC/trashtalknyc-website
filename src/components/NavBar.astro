@@ -1,9 +1,9 @@
 ---
 /**
  * Sticky top navigation: logo, page links, Join CTA, language toggle,
- * and the mobile hamburger. Owns active-page detection, the mobile
- * menu open/close wiring, and the mobile hide-on-scroll behavior
- * (direction logic in lib/headerScroll).
+ * and the mobile hamburger. Owns active-page detection and the mobile
+ * menu open/close wiring. Deliberately a PLAIN sticky header — see the
+ * safe-area bullet in AGENTS.md before adding any positioning tricks.
  */
 import LangToggle from './LangToggle.astro';
 
@@ -18,7 +18,7 @@ const isAbout    = isTeam || isProjects;
 const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 ---
 
-<nav aria-label="Main" id="siteNav">
+<nav aria-label="Main">
   <a class="nav-logo" href="/">Trash Talk <span>NYC</span></a>
   <div class="nav-right">
     <LangToggle />
@@ -56,9 +56,6 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 </nav>
 
 <script>
-  import { createHeaderVisibility } from '../lib/headerScroll';
-
-  const nav = document.getElementById('siteNav');
   const hamburger = document.getElementById('navHamburger');
   const links = document.getElementById('navLinks');
 
@@ -77,9 +74,6 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
     hamburger?.setAttribute('aria-expanded', String(open));
     // A stale open submenu inside a re-opened mobile panel is disorienting
     if (!open) setDropOpen(false);
-    // An opening menu must clear nav-hidden, or it opens inside an
-    // offscreen header (the guard in applyScrollState handles it)
-    if (open) applyScrollState();
   }
 
   hamburger?.addEventListener('click', () => {
@@ -130,41 +124,6 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
   dropdown?.addEventListener('focusout', (e) => {
     if (!dropdown.contains(e.relatedTarget as Node)) setDropOpen(false);
   });
-
-  /* ── HIDE-ON-SCROLL (mobile) ──
-     Scroll down → header slides away; any upward scroll brings it back.
-     Pure UX now — more reading viewport on phones (the hide interaction
-     was captain-approved on device). It is NOT the safe-area gap fix:
-     the captain proved the gap just returns on scroll-up reveal; the fix
-     is dropping viewport-fit=cover in BaseLayout. Direction/threshold/
-     rubber-band logic lives in lib/headerScroll so it stays testable. */
-  const mobileMq = window.matchMedia('(max-width: 768px)');
-  const visibility = createHeaderVisibility({ startY: window.scrollY });
-  let scrollQueued = false;
-
-  function applyScrollState() {
-    scrollQueued = false;
-    const maxY = document.documentElement.scrollHeight - window.innerHeight;
-    const hidden = visibility.update(window.scrollY, maxY);
-    // Never hide on desktop widths or while the mobile menu is open —
-    // hiding the header would take the open menu with it.
-    const shouldHide = hidden && mobileMq.matches && !links?.classList.contains('open');
-    nav?.classList.toggle('nav-hidden', shouldHide);
-  }
-
-  window.addEventListener(
-    'scroll',
-    () => {
-      if (!scrollQueued) {
-        scrollQueued = true;
-        requestAnimationFrame(applyScrollState);
-      }
-    },
-    { passive: true },
-  );
-
-  // Crossing the breakpoint while hidden must not strand a hidden header
-  mobileMq.addEventListener('change', applyScrollState);
 </script>
 
 <style>
@@ -178,47 +137,12 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
     justify-content: space-between;
     column-gap: var(--space-md);
     flex-wrap: wrap;
-    padding: var(--safe-top) max(var(--gutter), var(--safe-right)) 0 max(var(--gutter), var(--safe-left));
-    min-height: calc(60px + var(--safe-top));
+    /* No safe-area padding: viewport-fit=cover is gone (BaseLayout), so
+       env(safe-area-inset-*) is always 0 — reintroducing cover would
+       require adding it back here. */
+    padding: 0 var(--gutter);
+    min-height: 60px;
     border-bottom: 3px solid var(--purple-light);
-  }
-
-  /* The real fix for the mid-scroll gap above this header lives in
-     BaseLayout: viewport-fit=cover is deliberately absent, so page
-     content never renders into the status-bar band and iOS letterboxes
-     it charcoal itself. (iOS 26 clips fixed/sticky layers at the
-     collapsing-chrome boundary, so this header could never paint that
-     band — every cover-based fix failed on the captain's device,
-     2026-07/08.) The in-box charcoal cover below (extra top padding
-     pulled offscreen by the matching negative margin and sticky offset;
-     flow height stays 63px + safe area, all env() now 0) is retained as
-     zero-cost insurance for pre-26 iOS rubber-band/chrome-transition
-     frames, where the layer CAN paint above the viewport. Scoped to
-     widths where the social bar is hidden; on wider screens it sits
-     above the nav and this region would cover it at the top. */
-  @media (max-width: 768px) {
-    nav {
-      top: -120px;
-      margin-top: -120px;
-      padding-top: calc(120px + var(--safe-top));
-    }
-
-    /* Hide-on-scroll: the script toggles .nav-hidden; the whole header
-       (cover included) slides offscreen. Mobile-only UX — desktop stays
-       always-sticky. */
-    nav {
-      transition: transform 0.28s var(--ease-out);
-    }
-
-    nav.nav-hidden { transform: translateY(-100%); }
-
-    /* Keyboard focus landing inside a hidden header must bring it back,
-       or the user is typing into an element they cannot see. */
-    nav.nav-hidden:focus-within { transform: translateY(0); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    nav { transition: none; } /* snap shown/hidden instead of sliding */
   }
 
   .nav-logo {
