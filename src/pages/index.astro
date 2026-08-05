@@ -175,6 +175,16 @@ const orgSchema = {
               </span>
               <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
             </a>
+            <a class="dc-social-row dc-social-li" href="https://www.linkedin.com/company/trash-talk-nyc/" target="_blank" rel="noopener" aria-label="LinkedIn — Trash Talk NYC">
+              <span class="dc-social-icon dc-social-icon-li" aria-hidden="true">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg>
+              </span>
+              <span class="dc-social-text">
+                <span class="dc-social-net">LinkedIn</span>
+                <span class="dc-social-handle">Trash Talk NYC</span>
+              </span>
+              <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
+            </a>
           </div>
           <a href="#signup" class="dc-fallback-list-link" data-en="or join the club list ↓" data-es="o únete a la lista del club ↓">or join the club list ↓</a>
         </div>
@@ -592,6 +602,11 @@ const orgSchema = {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
     gap: clamp(1.25rem, 2.5vw, 1.75rem);
+    /* When the boxes stack, the Donate sticker overhangs its box top by 1rem
+       and the Deep Clean press shadow drops 6px into the seam — together they
+       swallow the base gap, so the stacked row needs a larger one. Row-gap is
+       invisible in the side-by-side layout, so desktop is unaffected. */
+    row-gap: var(--space-lg);
     align-items: stretch;
   }
 
@@ -794,6 +809,8 @@ const orgSchema = {
 
   /* Text-glyph "e", matching the site's text-wordmark treatment of the
      Eventbrite brand (.eb-logo) */
+  .dc-social-icon-li { background: #0a66c2; }
+
   .dc-social-icon-eb {
     background: #f8623a;
     color: #fff;
@@ -823,6 +840,9 @@ const orgSchema = {
   .dc-social-primary .dc-social-net { color: var(--purple); }
   .dc-social-tt .dc-social-net { color: var(--yellow); }
   .dc-social-eb .dc-social-net { color: #f8623a; }
+  /* Brand #0a66c2 fails contrast for tiny caps on the charcoal card; this is
+     LinkedIn's own dark-mode blue */
+  .dc-social-li .dc-social-net { color: #70b5f9; }
 
   .dc-social-handle {
     font-size: 0.92rem;
