@@ -11,3 +11,6 @@ The data shape a card component needs to render an event. Derived from `EventDat
 
 ## CountdownParts
 Defined in `src/lib/countdown.ts`. `{ days: number, hours: number, minutes: number, seconds: number }` — the raw numeric parts of a countdown to an event. Display formatting (padding, labels) is the caller's responsibility. Produced by `createCountdown(isoStr, onTick)`, which returns a cleanup function to stop the interval.
+
+## HeaderVisibility
+Defined in `src/lib/headerScroll.ts`. The pure state machine behind the mobile hide-on-scroll header: `createHeaderVisibility({ threshold, topZone, startY })` returns `{ update(rawY, maxY) }`, which takes a raw scroll position (clamped to `[0, maxY]` so iOS rubber-band overscroll produces no phantom direction changes) and returns whether the header should be hidden. DOM concerns — class toggling, the open-menu and desktop-width guards, breakpoint changes — belong to `NavBar.astro`, not this module.

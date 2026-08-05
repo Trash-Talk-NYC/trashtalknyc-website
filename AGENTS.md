@@ -63,6 +63,12 @@ Blobs is unreachable under plain `astro dev` — use `netlify dev` to exercise t
 This form deliberately skips Turnstile: the About page renders no widget, so calling `requireTurnstile` there would hard-reject every join submission the moment real Turnstile keys go live for the other forms.
 The fourth role, "Events & Operations Lead", is a crew-proposed placeholder name the captain has not confirmed — rename it in `JOIN_ROLES` (`src/lib/server/schemas.ts`) and the `roles` array in `about.astro` together.
 
+## Projects page — awaiting real content
+
+`/projects` (linked from the nav's About dropdown alongside The Team) has its structure and design in place but is **intentionally pending real content**: the captain has not yet supplied Tree Guards specifics (sites, counts, timeline) or any further projects.
+The "TBD" dimension labels in the tree-guard spec drawing, the dashed pending chips, and the "Coming soon" placeholder slots are deliberate — do not fill them with invented specifics; only the captain supplies real numbers, locations, dates, or partners.
+The tree-guard model in `src/pages/projects.astro` is a CSS-3D scene (same perspective/preserve-3d technique as the 404 street scene) whose scroll-linked yaw is written to the `--ry` custom property by JS; **the CSS fallback value of `--ry` is the fixed three-quarter view that reduced-motion and no-JS visitors get**, and the scroll listener is gated by both `prefers-reduced-motion` and an IntersectionObserver — keep those invariants when touching it.
+
 ## E2E Testing
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.
@@ -92,11 +98,18 @@ Nandi's and Fabiola's bios there are INTERIM role-grounded copy (no invented per
 * The About team section (`about.astro`) keeps only photo-frame presentation: a `geometry` map of hotspot bands, face-chip anchors, and spotlight ellipses, all expressed as percentages of the photo frame.
 The hero renders a fixed build-time vertical crop of the group shot (the `CROP` constant; y-coordinates remap through `py()`) — never a viewport-dependent `object-fit`, which would silently misalign every hotspot and spotlight.
 On mobile the photo plate pins (sticky) while the bios scroll past, the spotlight follows whichever bio owns the viewport (nobody owns it until the reader actually scrolls — the photo rests fully lit at page open), and the bio band pages with CSS scroll-snap whose snap positions are deliberately kept equal to `scrollToEntry`'s JS offset — change one and you must change the other or tap-to-scroll gets re-snapped elsewhere.
-* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over it.
+* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the in-box charcoal cover above the nav logo that handles rubber-band/toolbar-transition gaps) can never paint over it.
 What colors it depends on the iOS version, and this burned us twice: iOS 15–17 use the `theme-color` meta in `BaseLayout.astro`, but iOS 26 (Liquid Glass) **ignores `theme-color` entirely** and samples the **`body` element's `background-color`** — not the `html` canvas, not the sticky nav, not pseudo-elements (verified by pixel-sampling simulator screenshots).
 That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
 Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
 Local simulators max out at iOS 18, which still honors `theme-color`, so to emulate iOS 26 chrome behavior temporarily remove the `theme-color` meta and confirm the strip still renders charcoal from the body background alone.
+* The mobile header (≤768px) is hide-on-scroll: scroll down hides it, any upward scroll reveals it, always shown at the top.
+This is **the** fix for the persistent mid-scroll gap above the header on the captain's device, and it is load-bearing: iOS 26 pins sticky/fixed elements to a layout viewport that lags collapsing browser chrome AND refuses to composite fixed/sticky layers into the region the chrome frees, while in-flow content renders edge-to-edge behind the Liquid Glass — so a *shown* sticky header mid-scroll sits a full chrome-band below the visual top with raw page content visible above it, and **no cover painted from the header's own layer can ever own that band** (Apple forums threads 800798, 801028).
+Four cover-based fixes (PRs #18, #22, #25, and the 2026-08 in-box cover) failed on-device for this reason while looking correct in every emulator and simulator (≤ iOS 18) — do not attempt a fifth; hide-on-scroll works because the header is hidden in exactly the chrome-collapsed states where the band exists.
+The direction/threshold/rubber-band-clamp state machine is a pure function in `src/lib/headerScroll.ts` (unit-tested); `NavBar.astro` owns the DOM wiring and must keep three guards: never hide while the hamburger menu is open (it would take the menu with it), reveal on `:focus-within` (keyboard users), and re-apply state when the 768px media query flips (a hidden header must not strand on desktop).
+`prefers-reduced-motion` snaps instead of sliding via `transition: none`.
+The `scroll-padding-top` anchor clearance in `global.css` is sized for the *shown* header, which also covers the hidden state — do not shrink it when the header is hidden.
+The in-box charcoal cover (extra top padding pulled offscreen with a matching negative margin and negative sticky `top`; flow height stays `--nav-h` = 63px + safe area, so anchor math is unaffected) stays for the transition frames older iOS opens during rubber-band and chrome animation, where the layer *can* paint above the viewport — keep it inside the border box, never in an out-of-box pseudo-element.
 
 ## SEO & share metadata
 

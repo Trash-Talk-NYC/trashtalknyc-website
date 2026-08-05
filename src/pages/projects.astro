@@ -1,0 +1,672 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<BaseLayout
+  title="Projects — Trash Talk NYC"
+  description="Trash Talk NYC projects — starting with tree guards: low protective fences that shield street-tree beds from foot traffic, dogs, and litter. Build details coming soon."
+>
+
+  <PageHero eyebrowEn="Projects" eyebrowEs="Proyectos" word="PROJECTS">
+    <span data-en="WHAT WE'RE" data-es="LO QUE ESTAMOS">WHAT WE'RE</span><br /><span class="accent" data-en="BUILDING" data-es="CONSTRUYENDO">BUILDING</span>
+  </PageHero>
+
+  <!-- INTRO -->
+  <section class="projects-intro">
+    <p data-en="Cleanups are where we start — projects are what stays. This page tracks the physical improvements Trash Talk NYC builds along the way, starting with tree guards." data-es="Las limpiezas son el comienzo — los proyectos son lo que permanece. Esta página registra las mejoras físicas que Trash Talk NYC construye en el camino, empezando por los protectores de árboles.">Cleanups are where we start — projects are what stays. This page tracks the physical improvements Trash Talk NYC builds along the way, starting with tree guards.</p>
+  </section>
+
+  <!-- PROJECT 01 — TREE GUARDS -->
+  <section class="tg-section grid-paper">
+    <div class="tg-inner">
+
+      <div class="tg-figure-col">
+        <figure class="spec-sheet grid-paper">
+          <!-- The model carries meaning, so the scene is aria-hidden and this
+               bilingual description is the accessible text alternative — the
+               site's setLang only swaps textContent, so aria-label would never
+               translate. The spec table below is real, readable HTML. -->
+          <p class="sr-only" data-en="A model of a tree guard: a low fence of steel posts, rails, and pickets enclosing all four sides of a street tree's planted soil bed, with the tree rising from the middle. The model turns slightly as the page scrolls. Its measurements are listed as TBD in the spec table because build specifications are still pending." data-es="Una maqueta de un protector de árbol: una cerca baja de postes de acero, rieles y barrotes que rodea los cuatro lados del alcorque plantado de un árbol urbano, con el árbol creciendo desde el centro. La maqueta gira ligeramente al desplazarse por la página. Sus medidas aparecen como TBD en la tabla de especificaciones porque aún están pendientes.">A model of a tree guard: a low fence of steel posts, rails, and pickets enclosing all four sides of a street tree's planted soil bed, with the tree rising from the middle. The model turns slightly as the page scrolls. Its measurements are listed as TBD in the spec table because build specifications are still pending.</p>
+
+          <!-- CSS-3D model, same technique as the 404 street scene:
+               perspective on the stage, preserve-3d world, planes placed with
+               rotateY/translateZ. The world's yaw is driven by --ry, which JS
+               updates on scroll (gated to viewport + prefers-reduced-motion);
+               without JS or with reduced motion the CSS fallback value below
+               holds a fixed three-quarter view. -->
+          <div class="model-scene" aria-hidden="true">
+            <div class="model-world" id="guardModel">
+              <div class="bed"></div>
+
+              <div class="guard-side side-f"></div>
+              <div class="guard-side side-b"></div>
+              <div class="guard-side side-l"></div>
+              <div class="guard-side side-r"></div>
+
+              <!-- crossed-plane "paper model" tree: the guard is the subject,
+                   the tree just has to read as a tree from every yaw angle -->
+              <div class="tree">
+                <div class="tree-plane"></div>
+                <div class="tree-plane tree-plane-x"></div>
+              </div>
+
+              <div class="sprig sprig-a"><span class="sprig-plane"></span><span class="sprig-plane sprig-plane-x"></span></div>
+              <div class="sprig sprig-b"><span class="sprig-plane"></span><span class="sprig-plane sprig-plane-x"></span></div>
+
+              <!-- numbered part markers; the inner span counter-rotates by
+                   -–ry so labels always face the camera (billboarding) -->
+              <div class="badge badge-1"><span>01</span></div>
+              <div class="badge badge-2"><span>02</span></div>
+              <div class="badge badge-3"><span>03</span></div>
+              <div class="badge badge-4"><span>04</span></div>
+            </div>
+          </div>
+
+          <!-- What survived from the drawing furniture: part names and the
+               TBD dimensions, as an honest parts list — the captain still
+               hasn't supplied real measurements -->
+          <table class="spec-panel">
+            <thead>
+              <tr>
+                <th data-en="Part" data-es="Pieza">Part</th>
+                <th data-en="Spec — pending" data-es="Espec. — pendiente">Spec — pending</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="spec-num">01</span><span data-en="Steel post ×4" data-es="Poste de acero ×4">Steel post ×4</span></td>
+                <td>H · TBD</td>
+              </tr>
+              <tr>
+                <td><span class="spec-num">02</span><span data-en="Top rail ×4" data-es="Riel superior ×4">Top rail ×4</span></td>
+                <td>L · TBD</td>
+              </tr>
+              <tr>
+                <td><span class="spec-num">03</span><span data-en="Tree bed" data-es="Alcorque">Tree bed</span></td>
+                <td>W × W · TBD</td>
+              </tr>
+              <tr>
+                <td><span class="spec-num">04</span><span data-en="Planting" data-es="Plantación">Planting</span></td>
+                <td>TBD</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <figcaption class="spec-caption" data-en="FIG. 01 — TREE GUARD, MODEL VIEW" data-es="FIG. 01 — PROTECTOR DE ÁRBOL, VISTA DE MAQUETA">FIG. 01 — TREE GUARD, MODEL VIEW</figcaption>
+        </figure>
+      </div>
+
+      <div class="tg-text">
+        <div class="sticker tg-chip" style="--tilt:-2deg" data-en="Project 01" data-es="Proyecto 01">Project 01</div>
+        <h2 class="section-title" data-en="Tree Guards" data-es="Protectores de Árboles">Tree Guards</h2>
+
+        <p data-en="A tree guard is the low fence built around a street tree's bed — the tree pit — to shield the soil and roots from foot traffic, dogs, and litter." data-es="Un protector de árbol es la cerca baja que se construye alrededor de la cama de un árbol urbano — el alcorque — para proteger la tierra y las raíces del tránsito de peatones, los perros y la basura.">A tree guard is the low fence built around a street tree's bed — the tree pit — to shield the soil and roots from foot traffic, dogs, and litter.</p>
+        <p data-en="Compacted, trash-filled beds slowly choke the trees that shade our blocks. A simple guard turns a neglected pit into a small garden a block can actually care for." data-es="Las camas compactadas y llenas de basura asfixian poco a poco a los árboles que dan sombra a nuestras cuadras. Un simple protector convierte un alcorque descuidado en un pequeño jardín que la cuadra sí puede cuidar.">Compacted, trash-filled beds slowly choke the trees that shade our blocks. A simple guard turns a neglected pit into a small garden a block can actually care for.</p>
+        <p data-en="The specifics of our tree guard work — sites, numbers, and build progress — will be posted right here as they're confirmed." data-es="Los detalles de nuestro trabajo con protectores — lugares, cifras y avances de construcción — se publicarán aquí en cuanto se confirmen.">The specifics of our tree guard work — sites, numbers, and build progress — will be posted right here as they're confirmed.</p>
+
+        <ul class="pending-specs" aria-label="Pending details">
+          <li class="pending-chip" data-en="Sites — TBD" data-es="Lugares — TBD">Sites — TBD</li>
+          <li class="pending-chip" data-en="Guard count — TBD" data-es="Cantidad — TBD">Guard count — TBD</li>
+          <li class="pending-chip" data-en="Timeline — TBD" data-es="Calendario — TBD">Timeline — TBD</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="tape-seam" aria-hidden="true"></div>
+
+  <!-- MORE IN THE WORKS -->
+  <section class="more-section">
+    <div class="more-inner">
+      <h2 class="section-title" data-en="More in the works" data-es="Más en camino">More in the works</h2>
+      <p class="more-lede" data-en="Tree guards are the first entry — not the last. New projects land here as the club takes them on." data-es="Los protectores de árboles son la primera entrada — no la última. Los nuevos proyectos aparecerán aquí a medida que el club los emprenda.">Tree guards are the first entry — not the last. New projects land here as the club takes them on.</p>
+
+      <div class="more-grid">
+        <div class="placeholder-slot" style="--tilt:-1.2deg">
+          <div class="sticker" style="--tilt:-3deg" data-en="Coming soon" data-es="Muy pronto">Coming soon</div>
+          <p data-en="Next project — to be announced" data-es="Próximo proyecto — por anunciar">Next project — to be announced</p>
+        </div>
+        <div class="placeholder-slot" style="--tilt:1.4deg">
+          <div class="sticker" style="--tilt:2deg" data-en="Coming soon" data-es="Muy pronto">Coming soon</div>
+          <p data-en="Next project — to be announced" data-es="Próximo proyecto — por anunciar">Next project — to be announced</p>
+        </div>
+      </div>
+
+      <div class="more-cta">
+        <p data-en="Want to be first to hear when a project goes live?" data-es="¿Quieres ser de los primeros en enterarte cuando un proyecto arranque?">Want to be first to hear when a project goes live?</p>
+        <div class="more-cta-actions">
+          <a class="cta-btn" href="/#signup" data-en="Join the newsletter" data-es="Únete al boletín">Join the newsletter</a>
+          <a class="cta-btn cta-btn-alt" href="/events" data-en="Come to a cleanup" data-es="Ven a una limpieza">Come to a cleanup</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ── INTRO ── */
+  .projects-intro {
+    background: var(--off-white);
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) 0 max(var(--gutter), var(--safe-left));
+  }
+
+  .projects-intro p {
+    max-width: 62ch;
+    margin: 0 auto;
+    text-align: center;
+    font-size: var(--step-1);
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.55;
+  }
+
+  /* ── TREE GUARDS ── */
+  .tg-section {
+    background: var(--off-white);
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
+
+  .tg-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--space-lg);
+    align-items: center;
+  }
+
+  @media (max-width: 900px) {
+    .tg-inner { grid-template-columns: 1fr; }
+  }
+
+  /* The taped-down sheet stays as the stage the model stands on — same tape
+     device as the About polaroid, square-on, with the site's graph-paper
+     texture so the model still belongs to this page rather than floating */
+  .spec-sheet {
+    position: relative;
+    margin: 0;
+    background: #fff;
+    border: 1px solid #d8d3c8;
+    border-radius: 4px;
+    padding: 0.6rem 0.6rem 0.9rem;
+    box-shadow: var(--press);
+  }
+
+  .spec-sheet::before,
+  .spec-sheet::after {
+    content: '';
+    position: absolute;
+    top: -0.8rem;
+    width: 4.5rem;
+    height: 1.6rem;
+    background: rgba(245, 208, 0, 0.75);
+    border: 1px solid rgba(201, 169, 0, 0.4);
+    z-index: 1;
+  }
+
+  .spec-sheet::before { left: 8%; transform: rotate(-5deg); }
+  .spec-sheet::after { right: 8%; transform: rotate(4deg); }
+
+  /* ── THE 3D MODEL ── */
+  .model-scene {
+    /* Guard footprint drives every other dimension of the model */
+    --gs: clamp(180px, 24vw, 250px);
+    --gh: calc(var(--gs) * 0.42);
+    position: relative;
+    height: clamp(290px, 74vw, 375px);
+    perspective: 950px;
+    perspective-origin: 50% 30%;
+    overflow: hidden;
+  }
+
+  .model-world {
+    position: absolute;
+    left: 50%;
+    top: 66%;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    /* --ry fallback = the fixed three-quarter view that reduced-motion and
+       no-JS visitors get; JS overrides it on scroll for everyone else */
+    transform: rotateX(-16deg) rotateY(var(--ry, -22deg));
+  }
+
+  /* Ground plane: soil + curb. The offset box-shadow renders in-plane after
+     rotateX(90), so it reads as the model's shadow cast on the sheet. */
+  .bed {
+    position: absolute;
+    width: var(--gs);
+    height: var(--gs);
+    left: calc(var(--gs) / -2);
+    top: calc(var(--gs) / -2);
+    transform: rotateX(90deg);
+    background-color: color-mix(in srgb, var(--cream) 76%, var(--charcoal) 24%);
+    background-image: radial-gradient(rgba(28, 28, 34, 0.4) 1.5px, transparent 2px);
+    background-size: 24px 24px;
+    border: 3px solid var(--charcoal);
+    border-radius: 4px;
+    box-shadow: 14px 14px 0 rgba(28, 28, 34, 0.12);
+  }
+
+  .bed::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border: 4px solid var(--charcoal);
+    border-radius: 6px;
+  }
+
+  /* One div per railing side: corner posts + pickets are layered background
+     gradients, rails are the pseudo-elements. The plane is transparent, so
+     the far side shows through — which is exactly right for an open fence. */
+  .guard-side {
+    position: absolute;
+    width: var(--gs);
+    height: var(--gh);
+    left: calc(var(--gs) / -2);
+    bottom: 0;
+    background-image:
+      linear-gradient(var(--charcoal), var(--charcoal)),
+      linear-gradient(var(--charcoal), var(--charcoal)),
+      repeating-linear-gradient(90deg, var(--charcoal) 0 3px, transparent 3px calc(var(--gs) / 7));
+    background-size: 7px 100%, 7px 100%, calc(100% - 24px) calc(100% - 26px);
+    background-position: left top, right top, 12px 8px;
+    background-repeat: no-repeat;
+  }
+
+  .guard-side::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -2px;
+    right: -2px;
+    height: 7px;
+    background: var(--charcoal);
+    border-radius: 2px;
+  }
+
+  .guard-side::after {
+    content: '';
+    position: absolute;
+    bottom: 11px;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--charcoal);
+  }
+
+  .side-f { transform: translateZ(calc(var(--gs) / 2)); }
+  .side-b { transform: rotateY(180deg) translateZ(calc(var(--gs) / 2)); }
+  .side-l { transform: rotateY(-90deg) translateZ(calc(var(--gs) / 2)); }
+  .side-r { transform: rotateY(90deg) translateZ(calc(var(--gs) / 2)); }
+
+  /* Crossed planes read as a volume from any yaw angle — the same
+     cardboard-cutout register as the site's flat illustration style */
+  .tree {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+
+  .tree-plane {
+    --tw: calc(var(--gs) * 0.62);
+    position: absolute;
+    width: var(--tw);
+    height: calc(var(--gs) * 0.98);
+    left: calc(var(--tw) / -2);
+    bottom: 0;
+    /* 45°/135° instead of 0°/90°: within the scroll yaw range (-30°..6°)
+       neither plane ever goes edge-on, so the crown always reads full */
+    transform: rotateY(45deg);
+  }
+
+  .tree-plane-x { transform: rotateY(135deg); }
+
+  .tree-plane::before {
+    content: '';
+    position: absolute;
+    left: calc(50% - 6px);
+    bottom: 0;
+    width: 12px;
+    height: 58%;
+    background: var(--charcoal);
+    border-radius: 3px 3px 0 0;
+  }
+
+  .tree-plane::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 4%;
+    width: 92%;
+    height: 50%;
+    background: var(--green-light);
+    border: 3px solid var(--charcoal);
+    border-radius: 48% 52% 45% 55% / 58% 50% 55% 45%;
+  }
+
+  .sprig {
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+
+  .sprig-a { transform: translate3d(calc(var(--gs) * -0.26), 0, calc(var(--gs) * 0.18)); }
+  .sprig-b { transform: translate3d(calc(var(--gs) * 0.22), 0, calc(var(--gs) * -0.12)); }
+
+  .sprig-plane {
+    position: absolute;
+    width: 22px;
+    height: 26px;
+    left: -11px;
+    bottom: 0;
+  }
+
+  .sprig-plane-x { transform: rotateY(90deg); }
+
+  .sprig-plane::before,
+  .sprig-plane::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    border-radius: 2px;
+    transform-origin: bottom;
+  }
+
+  .sprig-plane::before {
+    height: 20px;
+    background: var(--green);
+    transform: rotate(-20deg);
+  }
+
+  .sprig-plane::after {
+    height: 16px;
+    background: var(--green-light);
+    transform: rotate(18deg);
+  }
+
+  /* Numbered part markers, keyed to the spec table below. The inner span
+     undoes the world rotation so labels always face the camera. */
+  .badge {
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+
+  .badge span {
+    position: absolute;
+    left: -11px;
+    top: -11px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    background: var(--charcoal);
+    color: var(--yellow);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border-radius: 50%;
+    box-shadow: 2px 2px 0 var(--purple-light);
+    transform: rotateY(calc(var(--ry, -22deg) * -1)) rotateX(16deg);
+  }
+
+  .badge-1 { transform: translate3d(calc(var(--gs) / -2), calc(var(--gh) * -1 - 18px), calc(var(--gs) / 2)); }
+  .badge-2 { transform: translate3d(calc(var(--gs) * 0.26), calc(var(--gh) * -1 - 6px), calc(var(--gs) / 2 + 2px)); }
+  .badge-3 { transform: translate3d(calc(var(--gs) * 0.36), -12px, calc(var(--gs) * 0.36)); }
+  .badge-4 { transform: translate3d(calc(var(--gs) * -0.26), -36px, calc(var(--gs) * 0.18)); }
+
+  /* ── SPEC PANEL ── */
+  .spec-panel {
+    width: 100%;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+  }
+
+  .spec-panel th {
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    color: var(--gray);
+    border-bottom: 2px solid var(--charcoal);
+    padding: 0.35rem 0.5rem;
+  }
+
+  .spec-panel td {
+    padding: 0.45rem 0.5rem;
+    border-bottom: 1px dashed var(--warm-gray);
+    color: #4a4850;
+    font-weight: 700;
+  }
+
+  .spec-panel td:last-child,
+  .spec-panel th:last-child {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .spec-panel td:last-child { color: var(--gray); }
+
+  .spec-num {
+    color: var(--purple);
+    margin-right: 0.5em;
+  }
+
+  .spec-caption {
+    margin-top: 0.7rem;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--gray);
+  }
+
+  /* ── TREE GUARDS COPY ── */
+  .tg-chip { margin-bottom: 1.1rem; }
+
+  .tg-text .section-title { color: var(--charcoal); }
+
+  .tg-text p {
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.8;
+    max-width: 55ch;
+    margin-bottom: 1rem;
+  }
+
+  .pending-specs {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 0;
+    margin-top: 1.4rem;
+  }
+
+  /* Dashed outline = intentionally awaiting content, same register as the
+     placeholder slots below */
+  .pending-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gray);
+    border: 2px dashed var(--warm-gray);
+    border-radius: 4px;
+    padding: 0.45em 0.9em;
+    background: transparent;
+  }
+
+  /* ── MORE IN THE WORKS ── */
+  .more-section {
+    background: var(--cream);
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
+
+  .more-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .more-inner .section-title { color: var(--charcoal); }
+
+  .more-lede {
+    max-width: 52ch;
+    margin: 0 auto var(--space-lg);
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.7;
+  }
+
+  .more-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: var(--space-md);
+    max-width: 720px;
+    margin: 0 auto var(--space-lg);
+  }
+
+  .placeholder-slot {
+    border: 2px dashed var(--warm-gray);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg) var(--space-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transform: rotate(var(--tilt, 0deg));
+    background: rgba(247, 244, 237, 0.5);
+  }
+
+  .placeholder-slot p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+  }
+
+  .more-cta p {
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+  }
+
+  .more-cta-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap);
+    padding: 0.6rem 1.5rem;
+    background: var(--yellow);
+    color: var(--charcoal);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    border: 2px solid var(--charcoal);
+    border-radius: 6px;
+    box-shadow: var(--press-sm);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+  }
+
+  .cta-btn-alt {
+    background: var(--off-white);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cta-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 5px 5px 0 var(--charcoal);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-btn { transition: none; }
+    .cta-btn:hover { transform: none; }
+  }
+</style>
+
+<script>
+  // Scroll-linked yaw: as the scene crosses the viewport the model turns
+  // from -30° to +6° — enough to see around it, not a carousel. Gated three
+  // ways: reduced-motion users keep the CSS fallback angle entirely, the
+  // scroll listener only exists while the scene is on screen, and updates
+  // are rAF-coalesced transform-only writes (no layout thrash).
+  const world = document.getElementById('guardModel');
+  const scene = document.querySelector('.model-scene');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (world && scene && !reduceMotion) {
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const r = scene.getBoundingClientRect();
+      const center = r.top + r.height / 2;
+      const t = Math.min(1, Math.max(0, 1 - center / window.innerHeight));
+      const yaw = -30 + t * 36;
+      world.style.setProperty('--ry', `${yaw.toFixed(2)}deg`);
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          window.addEventListener('scroll', onScroll, { passive: true });
+          update();
+        } else {
+          window.removeEventListener('scroll', onScroll);
+        }
+      });
+    });
+
+    io.observe(scene);
+  }
+</script>
