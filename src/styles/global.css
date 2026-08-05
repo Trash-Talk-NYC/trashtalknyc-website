@@ -7,7 +7,11 @@
 
 /* ── DESIGN TOKENS ── */
 :root {
-  /* Brand hues — fixed; do not add new hues, derive from these */
+  /* Brand hues — fixed; do not add new hues, derive from these.
+     (Safety orange added 2026-08 by captain decision — hi-vis vest /
+     traffic-cone orange, accents only: small marks and rules, never
+     large fills or a third headline colour. 3.0:1 on off-white, so
+     non-text marks only there; 5.1:1 on charcoal.) */
   --charcoal: #1c1c22;
   --off-white: #f7f4ed;
   --cream: #ede9df;
@@ -16,6 +20,7 @@
   --purple: #6b3fa0;
   --purple-light: #9b5de5;
   --purple-pale: #f0e8ff;
+  --orange: #f35b04;
   --green: #2a6b2a;
   --green-light: #3d9e3d;
   --gray: #7a7a8a;
@@ -33,6 +38,9 @@
   --purple-a20: rgba(107, 63, 160, 0.2);
   --purple-lt-a12: rgba(155, 93, 229, 0.12);
   --purple-lt-a30: rgba(155, 93, 229, 0.3);
+
+  /* Alpha variant — safety-orange wash */
+  --orange-a35: rgba(243, 91, 4, 0.35);
 
   /* Fluid type scale — rem floor/ceiling with a viewport-driven middle */
   --step--1: clamp(0.72rem, 0.68rem + 0.2vw, 0.8rem);

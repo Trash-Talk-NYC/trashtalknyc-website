@@ -1,9 +1,100 @@
 ---
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PageHero from '../components/PageHero.astro';
 import SocialLinks from '../components/SocialLinks.astro';
-import davidPhoto from '../assets/IMG_0952_Original.jpeg';
+import groupPhoto from '../assets/film-group-pic-1.jpg';
+import workDavidFabi from '../assets/film-david-fabi.jpg';
+import workNandiFabi from '../assets/film-holo-nandi-fabi.jpg';
+
+/**
+ * The hero renders a fixed vertical crop of the landscape group shot:
+ * the top 9% (empty trees) and bottom 5% (rock) go, which buys back
+ * ~130px of viewport at 1440px so the bio row enters the first
+ * screenful sooner. The crop is a build-time constant — never a
+ * viewport-dependent object-fit — so person coordinates stay exact:
+ * py() remaps a y-percentage of the full frame into the cropped frame.
+ */
+const CROP = { top: 9, height: 86 };
+const py = (y: number) => Math.min(100, Math.max(0, ((y - CROP.top) / CROP.height) * 100));
+
+/**
+ * One entry per person, left to right as seated in the group photo.
+ * - face/band: hotspot geometry in % of the full (uncropped) photo
+ *   frame — the template remaps y through py().
+ * - spot: the spotlight ellipse (centre + radii, % of the cropped
+ *   frame) that keeps this person lit while the rest of the photo
+ *   dims. Soft-edged on purpose: it should read as light, not as a
+ *   cursor ring.
+ */
+const people = [
+  {
+    id: 'nandi',
+    name: 'Nandi',
+    face: { x: 29.5, y: 26.5 },
+    band: { x1: 18, x2: 43, y1: 13, y2: 97 },
+    spot: { x: 29.5, y: 49, rx: 17.5, ry: 82, in: 50, out: 80 },
+    // PLACEHOLDER bio below — captain will hand-write the real one; it
+    // swaps in as plain text, same shape as David's, nothing to unpick.
+    role: { en: 'Team Member', es: 'Miembro del equipo' },
+    bio: [
+      {
+        en: "Nandi's bio is on its way — the crew is writing it now. In the meantime, come say hi at a cleanup.",
+        es: 'La biografía de Nandi está en camino — el equipo la está escribiendo. Mientras tanto, ven a saludar en una limpieza.',
+      },
+    ],
+    socials: false,
+  },
+  {
+    id: 'david',
+    name: 'David',
+    face: { x: 47.2, y: 26.5 },
+    band: { x1: 43, x2: 54.5, y1: 18, y2: 100 },
+    spot: { x: 46, y: 51, rx: 18, ry: 82, in: 50, out: 80 },
+    role: { en: 'Organizer', es: 'Organizador' },
+    bio: [
+      {
+        en: 'Trash Talk is my grassroots social media initiative to clean New York through educational entertainment.',
+        es: 'Trash Talk es mi iniciativa de base impulsada por las redes sociales para limpiar Nueva York a través del entretenimiento educativo.',
+      },
+      {
+        en: 'By growing a national and international following, I hope to clean my neighborhood and the city through fun volunteer events and community engagement. Funds for the projects come from donations and sponsorships.',
+        es: 'Al generar una comunidad de seguidores a nivel nacional e internacional, espero limpiar mi vecindario y la ciudad a través de eventos de voluntariado divertidos y la participación comunitaria. Los fondos para los proyectos se reciben mediante donaciones y patrocinios.',
+      },
+      {
+        en: "This is an incredibly complex and exciting project, and I hope you'll join us to clean New York!",
+        es: '¡Este es un proyecto increíblemente complejo y emocionante, y espero que te unas a nosotros para limpiar Nueva York!',
+      },
+    ],
+    socials: true,
+  },
+  {
+    id: 'fabiola',
+    name: 'Fabiola',
+    face: { x: 60.5, y: 31.5 },
+    band: { x1: 54.5, x2: 74.5, y1: 24, y2: 92 },
+    spot: { x: 62, y: 53, rx: 18.5, ry: 78, in: 50, out: 80 },
+    // PLACEHOLDER bio below — captain will hand-write the real one; it
+    // swaps in as plain text, same shape as David's, nothing to unpick.
+    role: { en: 'Team Member', es: 'Miembro del equipo' },
+    bio: [
+      {
+        en: "Fabiola's bio is on its way — the crew is writing it now. Check back soon.",
+        es: 'La biografía de Fabiola está en camino — el equipo la está escribiendo. Vuelve pronto.',
+      },
+    ],
+    socials: false,
+  },
+];
+
+/**
+ * Bio order is fixed: David leads, then Nandi, then Fabiola — the
+ * captain's "always" order for mobile. Desktop restores photo order
+ * (Nandi/David/Fabiola) with CSS `order` so the columns still map
+ * onto the photograph left-to-right; DOM (and screen-reader) order
+ * stays David-first, the primary bio.
+ */
+const bioOrder = ['david', 'nandi', 'fabiola']
+  .map((id) => people.find((p) => p.id === id)!);
 ---
 
 <BaseLayout
@@ -12,55 +103,273 @@ import davidPhoto from '../assets/IMG_0952_Original.jpeg';
   showSocialBar={false}
 >
 
-  <PageHero eyebrowEn="About" eyebrowEs="Sobre Nosotros" word="ABOUT">
-    <span data-en="WE KEEP" data-es="MANTENEMOS">WE KEEP</span><br /><span class="accent" data-en="NYC CLEAN" data-es="NYC LIMPIA">NYC CLEAN</span>
-  </PageHero>
+  <!-- HERO + BIOS share a wrapper so the hero can pin (mobile) exactly
+       while the bios scroll past it, then release before the closing
+       cleanup photographs. -->
+  <div class="team-flow">
 
-  <!-- DAVID -->
-  <section class="david-section">
-    <div class="david-inner">
-
-      <div>
-        <div class="david-photo" id="davidPhoto">
-          <!-- 1140px wide keeps the CSS square crop sharp at 2x on the
-               ~380px polaroid (height scales to ~760px) -->
-          <Image src={davidPhoto} alt="David, organizer of Trash Talk NYC" class="david-img" width={1140} />
-          <div class="david-tag" data-en="Organizer" data-es="Organizador">Organizer</div>
+    <!-- TEAM PHOTO — the page opens on one photograph, no headline.
+         "About" rides it as a chip in the same translucent-paper family
+         as the name chips. Each person is a focusable hotspot: hover,
+         focus, or scrolling to their bio spotlights them in the frame;
+         activating scrolls to their bio. -->
+    <section class="team-hero">
+      <div class="tape-seam" aria-hidden="true"></div>
+      <figure class="team-figure">
+        <div class="team-crop" id="teamCrop">
+          <Image
+            src={groupPhoto}
+            alt="Nandi, David and Fabiola — the Trash Talk NYC team — sitting together on a rock in a park"
+            class="team-photo"
+            width={2560}
+            widths={[640, 960, 1280, 1600, 2048, 2560]}
+            sizes="100vw"
+            loading="eager"
+            fetchpriority="high"
+          />
+          <h1 class="about-chip" data-en="About" data-es="Sobre Nosotros">About</h1>
+          {people.map((p) => (
+            <span class="face-marker" data-person={p.id} style={`left:${p.face.x}%; top:${py(p.face.y + 16)}%;`} aria-hidden="true">{p.name}</span>
+          ))}
+          {people.map((p) => (
+            <div
+              class="spot-layer"
+              data-person={p.id}
+              style={`background: radial-gradient(ellipse ${p.spot.rx}% ${p.spot.ry}% at ${p.spot.x}% ${p.spot.y}%, rgba(12, 12, 16, 0) ${p.spot.in}%, rgba(12, 12, 16, var(--spot-dim)) ${p.spot.out}%);`}
+              aria-hidden="true"
+            ></div>
+          ))}
+          {people.map((p) => (
+            <button
+              type="button"
+              class="hotspot"
+              data-person={p.id}
+              style={`left:${p.band.x1}%; width:${p.band.x2 - p.band.x1}%; top:${py(p.band.y1)}%; height:${py(p.band.y2) - py(p.band.y1)}%;`}
+            >
+              <span class="sr-only" data-en={`Show ${p.name}'s bio`} data-es={`Mostrar la biografía de ${p.name}`}>Show {p.name}'s bio</span>
+            </button>
+          ))}
         </div>
+      </figure>
+      <div class="tape-seam" aria-hidden="true"></div>
+    </section>
+
+    <!-- BIOS — editorial: a charcoal rule, the name large with the
+         marker swipe, the bio in a measured column. All three always
+         readable; the photo interactions only highlight, never gate. -->
+    <section class="team-section grid-paper">
+      <div class="team-cards" id="teamCards">
+        {bioOrder.map((p, i) => (
+          <article class="team-entry" data-person={p.id} data-index={i}>
+            <h2 class="team-name"><mark>{p.name}</mark></h2>
+            <p class="team-role" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</p>
+            <div class="team-bio">
+              {p.bio.map((b) => (
+                <p data-en={b.en} data-es={b.es}>{b.en}</p>
+              ))}
+            </div>
+            {p.socials && (
+              <div class="team-socials">
+                <SocialLinks />
+              </div>
+            )}
+          </article>
+        ))}
       </div>
+    </section>
 
-      <div class="david-text">
-        <div class="david-name" id="davidName"><mark>David</mark></div>
-        <div class="david-role" id="davidRole" data-en="Organizer" data-es="Organizador">Organizer</div>
-        <div class="david-divider" id="davidDivider"></div>
+  </div>
 
-        <div class="david-bio">
-          <p id="davidP1" data-en="Trash Talk is my grassroots social media initiative to clean New York through educational entertainment." data-es="Trash Talk es mi iniciativa de base impulsada por las redes sociales para limpiar Nueva York a través del entretenimiento educativo.">Trash Talk is my grassroots social media initiative to clean New York through educational entertainment.</p>
-          <p id="davidP2" data-en="By growing a national and international following, I hope to clean my neighborhood and the city through fun volunteer events and community engagement. Funds for the projects come from donations and sponsorships." data-es="Al generar una comunidad de seguidores a nivel nacional e internacional, espero limpiar mi vecindario y la ciudad a través de eventos de voluntariado divertidos y la participación comunitaria. Los fondos para los proyectos se reciben mediante donaciones y patrocinios.">By growing a national and international following, I hope to clean my neighborhood and the city through fun volunteer events and community engagement. Funds for the projects come from donations and sponsorships.</p>
-          <p id="davidP3" data-en="This is an incredibly complex and exciting project, and I hope you'll join us to clean New York!" data-es="¡Este es un proyecto increíblemente complejo y emocionante, y espero que te unas a nosotros para limpiar Nueva York!">This is an incredibly complex and exciting project, and I hope you'll join us to clean New York!</p>
-        </div>
-
-        <div class="david-socials" id="davidIg">
-          <SocialLinks />
-        </div>
+  <!-- The cleanup frames — the only images on the site showing the
+       club mid-cleanup. Unlabelled on purpose; the images carry it.
+       They close the page. -->
+  <section class="team-tail grid-paper">
+    <div class="team-work">
+      <div class="team-work-grid">
+        <figure>
+          <Image
+            src={workDavidFabi}
+            alt="David holding a full refuse sack and Fabiola in a hi-vis vest holding up a pink polka-dot bag, mid-conversation on a park path"
+            class="team-work-img"
+            width={1080}
+            widths={[480, 720, 1080]}
+            sizes="(min-width: 700px) 34rem, 100vw"
+            loading="lazy"
+          />
+        </figure>
+        <figure>
+          <Image
+            src={workNandiFabi}
+            alt="Nandi with a litter grabber and Fabiola holding a bag open, both in hi-vis vests, walking through the park"
+            class="team-work-img"
+            width={1080}
+            widths={[480, 720, 1080]}
+            sizes="(min-width: 700px) 34rem, 100vw"
+            loading="lazy"
+          />
+        </figure>
       </div>
-
     </div>
+
   </section>
 
 </BaseLayout>
 
 <style>
-  /* ── DAVID SECTION ── */
-  .david-section {
-    background: var(--off-white);
-    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
-    position: relative;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
     overflow: hidden;
-    border-bottom: 1px solid #ddd9d0;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
-  .david-section::before {
+  /* ── PHOTO HERO ── */
+  .team-hero {
+    background: var(--charcoal);
+  }
+
+  /* Mobile: the taped photo plate pins under the nav while the bios
+     scroll past beneath it, so the scroll-driven spotlight is always
+     visible while reading. The wrapper ends after the bios, which
+     releases the pin before the closing photographs. Desktop keeps
+     normal flow — the hero is most of a screenful there, and its lower
+     half stays naturally visible while the bio row is read. */
+  @media (max-width: 700px) {
+    .team-hero {
+      position: sticky;
+      top: var(--nav-h);
+      z-index: 2;
+    }
+  }
+
+  .team-figure {
+    line-height: 0;
+  }
+
+  /* Fixed build-time crop (see CROP in frontmatter): the wrapper's
+     aspect ratio is the source 5820:3858 with 14% of the height
+     removed, and the image is shifted up by the cropped top band.
+     Everything positioned inside uses py()-remapped percentages. */
+  .team-crop {
+    position: relative;
+    overflow: hidden;
+    /* 3858 × 0.86 */
+    aspect-ratio: 5820 / 3318;
+  }
+
+  .team-crop .team-photo {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: auto;
+    /* 9% of image height as a fraction of the cropped height */
+    top: calc(-9% / 0.86);
+  }
+
+  /* Spotlight: one soft-edged gradient veil per person (the ellipse
+     lives in the inline background). The active layer fades in,
+     dimming everything except that person — including the other
+     chips, which sit under the veil. No ring, no border: the light
+     is the indicator. */
+  .spot-layer {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    --spot-dim: 0.55;
+    transition: opacity 260ms var(--ease-out);
+  }
+
+  .spot-layer.active { opacity: 1; }
+
+  /* Keyboard focus deepens the veil — the focus state must be at
+     least as strong as hover, and reads on luminance alone */
+  .spot-layer.active.strong { --spot-dim: 0.74; }
+
+  .hotspot {
+    position: absolute;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* The spotlight IS the focus indicator for these buttons (set from
+     the focus listener); the global purple ring is intentionally
+     suppressed here at the captain's direction. */
+  .hotspot:focus-visible {
+    outline: none;
+  }
+
+  /* The signature: translucent paper name-chips pinned at chest
+     height, always visible on every device. Quiet by design — the
+     look is captain-approved, do not restyle.
+     Sizing scales with the viewport (= the full-bleed photo) so the
+     chips hold the same visual weight against the photo at every
+     width. The floor is the signed-off phone size (0.55rem at 390px
+     ≈ 2.25vw), so mobile renders exactly as before; the ceiling only
+     guards ultrawide monitors. Border/radius are in em so the whole
+     chip zooms as one object. */
+  .face-marker {
+    position: absolute;
+    transform: translate(-50%, -50%) rotate(-2deg);
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.55rem, 2.25vw, 2.2rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    color: var(--charcoal);
+    background: var(--paper-a70);
+    border: 0.12em solid rgba(28, 28, 34, 0.35);
+    border-radius: 0.35em;
+    padding: 0.3em 0.55em;
+    pointer-events: none;
+    transition: translate 200ms var(--ease-out), border-color 200ms var(--ease-out);
+  }
+
+  /* The lit person's chip answers with a small lift — kept restrained
+     (em so the lift scales with the chip) */
+  .face-marker.is-active {
+    translate: 0 -0.45em;
+    border-color: var(--orange);
+  }
+
+  /* "About" rides the photo as part of the same paper set; same
+     proportional sizing (0.72rem at 390px ≈ 2.95vw) */
+  .about-chip {
+    position: absolute;
+    left: 2.2%;
+    top: 5.5%;
+    transform: rotate(-1.5deg);
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.72rem, 2.95vw, 2.85rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    color: var(--charcoal);
+    background: var(--paper-a70);
+    border: 0.09em solid rgba(28, 28, 34, 0.35);
+    border-radius: 0.26em;
+    padding: 0.4em 0.7em;
+  }
+
+  /* ── BIOS (editorial) ── */
+  .team-section {
+    background: var(--off-white);
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .team-section::before {
     content: '';
     position: absolute;
     left: -10%;
@@ -71,7 +380,144 @@ import davidPhoto from '../assets/IMG_0952_Original.jpeg';
     pointer-events: none;
   }
 
-  .david-section::after {
+  .team-cards {
+    max-width: var(--container);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: var(--space-lg);
+    align-items: start;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* DOM order is David → Nandi → Fabiola (the captain's fixed mobile
+     order, and the reading order). Desktop restores photo order
+     left-to-right so the columns map onto the photograph. */
+  @media (min-width: 701px) {
+    .team-entry[data-person='nandi'] { order: 1; }
+    .team-entry[data-person='david'] { order: 2; }
+    .team-entry[data-person='fabiola'] { order: 3; }
+  }
+
+  /* Editorial entry: a rule, a name, a measured column. --entry is the
+     entrance slide, --lift the hover/focus raise — separate vars so the
+     two motions compose instead of fighting. */
+  .team-entry {
+    --entry: 18px;
+    --lift: 0px;
+    /* Hi-vis orange at rest — the palette's third voice; warms to
+       yellow (the loudest colour) when the person is chosen */
+    border-top: 3px solid var(--orange);
+    padding-top: 1.3rem;
+    opacity: 0;
+    transform: translateY(calc(var(--entry) + var(--lift)));
+    transition:
+      opacity 440ms var(--ease-out),
+      transform 300ms var(--ease-out),
+      border-color 300ms var(--ease-out);
+  }
+
+  .team-entry.visible { opacity: 1; --entry: 0px; }
+
+  /* Hover/focus on a face raises that entry, and its rule answers in
+     yellow; the other two step back gently. Resting state stays at
+     full strength. */
+  .team-entry.is-raised {
+    --lift: -8px;
+    border-top-color: var(--yellow);
+  }
+
+  .team-entry.is-receded {
+    --lift: 2px;
+    opacity: 0.8;
+  }
+
+  .team-name {
+    font-family: 'Nunito', sans-serif;
+    font-size: var(--step-3);
+    font-weight: 800;
+    color: var(--charcoal);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.35rem;
+  }
+
+  /* Marker-highlight swipe behind the name */
+  .team-name mark {
+    color: inherit;
+    background: linear-gradient(transparent 52%, var(--yellow) 52%, var(--yellow) 94%, transparent 94%);
+    padding-inline: 0.08em;
+  }
+
+  /* Hi-vis orange dash — the crossing-guard accent, small marks only */
+  .team-role::before {
+    content: '';
+    display: inline-block;
+    width: 1.1rem;
+    height: 3px;
+    background: var(--orange);
+    border-radius: 2px;
+    margin-right: 0.55rem;
+    vertical-align: 0.18em;
+  }
+
+  .team-role {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--warm-gray);
+    margin-bottom: 1.1rem;
+  }
+
+  .team-bio {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .team-bio p {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.7;
+    max-width: 38ch;
+  }
+
+  .team-socials {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 0.06em;
+  }
+
+  .team-socials :global(.social-link) {
+    border-bottom: 2px solid rgba(107, 63, 160, 0.25);
+    padding-bottom: 0.1rem;
+    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .team-socials :global(.social-link:hover) { color: var(--purple-light); border-color: var(--purple-light); }
+  }
+
+  /* ── TAIL: cleanup frames + closing portrait ── */
+  .team-tail {
+    background: var(--off-white);
+    padding: 0 max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .team-tail::after {
     content: '';
     position: absolute;
     right: -5%;
@@ -82,219 +528,194 @@ import davidPhoto from '../assets/IMG_0952_Original.jpeg';
     pointer-events: none;
   }
 
-  .david-inner {
-    max-width: 960px;
+  .team-work {
+    max-width: var(--container);
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: clamp(220px, 26vw, 280px) 1fr;
-    gap: var(--space-lg);
-    align-items: flex-start;
     position: relative;
     z-index: 1;
+    /* Same rule device as the bios, in the same orange — marks the
+       hand-off from the writing to the work */
+    border-top: 3px solid var(--orange);
+    padding-top: var(--space-md);
   }
 
-  @media (max-width: 700px) {
-    .david-inner { grid-template-columns: 1fr; }
-    .david-photo { max-width: min(280px, 70vw); }
+  .team-work-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: var(--space-md);
+    align-items: start;
   }
 
-  /* Polaroid treatment: white frame with a deep bottom lip, tilted,
-     pinned to the page with two tape strips */
-  .david-photo {
+  .team-work-grid figure { line-height: 0; }
+
+  .team-work-img {
     width: 100%;
-    position: relative;
-    background: #fff;
-    border: 1px solid #d8d3c8;
-    border-radius: 4px;
-    padding: 0.7rem 0.7rem 3rem;
-    box-shadow: var(--press);
-    opacity: 0;
-    transform: rotate(-2deg) translateY(24px) scale(0.97);
-    transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
-  }
-
-  .david-photo.visible { opacity: 1; transform: rotate(-2deg) translateY(0) scale(1); }
-
-  .david-photo::before,
-  .david-photo::after {
-    content: '';
-    position: absolute;
-    top: -0.8rem;
-    width: 4.5rem;
-    height: 1.6rem;
-    background: rgba(245, 208, 0, 0.75);
-    border: 1px solid rgba(201, 169, 0, 0.4);
-  }
-
-  .david-photo::before { left: 8%; transform: rotate(-6deg); }
-  .david-photo::after { right: 8%; transform: rotate(5deg); }
-
-  /* Class instead of a bare img selector: the element is rendered by
-     astro:assets' <Image>, so it only picks up this page's scoped style
-     via the class we pass through */
-  .david-photo .david-img {
-    width: 100%;
-    /* Override the height="" attribute <Image> emits, or the square
-       aspect-ratio crop below never kicks in */
     height: auto;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    object-position: center 20%;
-    display: block;
-  }
-
-  .david-tag {
-    position: absolute;
-    bottom: 0.85rem;
-    left: 50%;
-    background: transparent;
-    color: var(--charcoal);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    opacity: 0;
-    transform: translate(-50%, 6px);
-    transition: opacity 300ms 200ms var(--ease-out), transform 300ms 200ms var(--ease-out);
-  }
-
-  .david-photo.visible .david-tag { opacity: 1; transform: translate(-50%, 0); }
-
-  .david-text { padding-top: 0.5rem; }
-
-  .david-name {
-    font-family: 'Nunito', sans-serif;
-    font-size: var(--step-4);
-    font-weight: 800;
-    color: var(--charcoal);
-    line-height: 1;
-    letter-spacing: -0.01em;
-    margin-bottom: 0.25rem;
-    opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 440ms 60ms var(--ease-out), transform 440ms 60ms var(--ease-out);
-  }
-
-  /* Marker-highlight swipe behind the name */
-  .david-name mark {
-    color: inherit;
-    background: linear-gradient(transparent 52%, var(--yellow) 52%, var(--yellow) 94%, transparent 94%);
-    padding-inline: 0.08em;
-  }
-
-  .david-name.visible { opacity: 1; transform: translateY(0); }
-
-  .david-role {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--warm-gray);
-    margin-bottom: 2rem;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 400ms 100ms var(--ease-out), transform 400ms 100ms var(--ease-out);
-  }
-
-  .david-role.visible { opacity: 1; transform: translateY(0); }
-
-  .david-divider {
-    height: 2px;
-    background: linear-gradient(90deg, var(--purple-light), transparent);
-    border-radius: 2px;
-    margin-bottom: 1.75rem;
-    opacity: 0;
-    width: 0;
-    transition: opacity 400ms 130ms var(--ease-out), width 500ms 130ms var(--ease-out);
-  }
-
-  .david-divider.visible { opacity: 1; width: 2.5rem; }
-
-  .david-bio { display: flex; flex-direction: column; gap: 1rem; }
-
-  .david-bio p {
-    font-size: 0.97rem;
-    font-weight: 600;
-    color: #4a4850;
-    line-height: 1.8;
-    max-width: 62ch;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 380ms var(--ease-out), transform 380ms var(--ease-out);
-  }
-
-  .david-bio p.visible { opacity: 1; transform: translateY(0); }
-  .david-bio p:nth-child(1) { transition-delay: 150ms; }
-  .david-bio p:nth-child(2) { transition-delay: 210ms; }
-  .david-bio p:nth-child(3) { transition-delay: 270ms; }
-
-  .david-socials {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    margin-top: 1.75rem;
-    flex-wrap: wrap;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 360ms 300ms var(--ease-out), transform 360ms 300ms var(--ease-out);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--purple);
-    letter-spacing: 0.06em;
-  }
-
-  .david-socials.visible { opacity: 1; transform: translateY(0); }
-
-  .david-socials :global(.social-link) {
-    border-bottom: 2px solid rgba(107, 63, 160, 0.25);
-    padding-bottom: 0.1rem;
-    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .david-socials :global(.social-link:hover) { color: var(--purple-light); border-color: var(--purple-light); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .david-photo,
-    .david-name,
-    .david-role,
-    .david-bio p,
-    .david-socials {
-      transform: none !important;
-      opacity: 1 !important;
+    .team-entry {
+      transition: none;
+      opacity: 1;
+      --entry: 0px;
+      --lift: 0px !important;
     }
-    .david-divider { width: 2.5rem !important; opacity: 1 !important; }
+    .face-marker { transition: none; }
+    /* The spotlight still switches — only its motion is removed */
+    .spot-layer { transition: none; }
   }
 </style>
 
 <script>
-  const photoObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        photoObserver.unobserve(entry.target);
+  const entryEls = Array.from(document.querySelectorAll<HTMLElement>('.team-entry'));
+  const entries = new Map(entryEls.map((el) => [el.dataset.person, el]));
+  const markers = new Map(
+    Array.from(document.querySelectorAll<HTMLElement>('.face-marker')).map((el) => [el.dataset.person, el]),
+  );
+  const spots = new Map(
+    Array.from(document.querySelectorAll<HTMLElement>('.spot-layer')).map((el) => [el.dataset.person, el]),
+  );
+  const hero = document.querySelector<HTMLElement>('.team-hero');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Two independent sources drive the spotlight:
+  // - pointerId: hover or keyboard focus on a face (wins while active,
+  //   and additionally raises that person's bio entry)
+  // - scrollId: which bio currently owns the viewport (stacked layouts
+  //   only — in the desktop 3-column row no single bio owns the scroll)
+  let pointerId: string | null = null;
+  let focusStrong = false;
+  let scrollId: string | null = null;
+
+  function render() {
+    const id = pointerId ?? scrollId;
+    spots.forEach((layer, key) => {
+      layer.classList.toggle('active', key === id);
+      layer.classList.toggle('strong', key === id && pointerId !== null && focusStrong);
+    });
+    markers.forEach((marker, key) => {
+      marker.classList.toggle('is-active', key === id);
+    });
+    entries.forEach((entry, key) => {
+      entry.classList.toggle('is-raised', pointerId !== null && key === pointerId);
+      entry.classList.toggle('is-receded', pointerId !== null && key !== pointerId);
+    });
+  }
+
+  // ── Scroll ownership ──
+  // A bio owns the viewport while the 55%-height line sits inside it;
+  // in the gaps the previous owner holds on (the line's crossing of
+  // the next entry's top is the single, monotone handover point — no
+  // flicker). Above the first bio and well past the last one, nobody
+  // owns and the photo rests fully lit.
+  let stacked = false;
+
+  function computeStacked() {
+    const els = Array.from(entries.values());
+    stacked = els.length > 1 && Math.abs(els[0].offsetLeft - els[1].offsetLeft) < 4;
+  }
+
+  function ownerFromScroll(): string | null {
+    if (!stacked) return null;
+    const line = window.innerHeight * 0.55;
+    let owner: string | null = null;
+    let ownerTop = -Infinity;
+    let lastKey: string | null = null;
+    let lastRect: DOMRect | null = null;
+    entries.forEach((el, key) => {
+      const r = el.getBoundingClientRect();
+      if (r.top <= line && r.top > ownerTop) {
+        owner = key ?? null;
+        ownerTop = r.top;
+      }
+      if (!lastRect || r.top > lastRect.top) {
+        lastRect = r;
+        lastKey = key ?? null;
       }
     });
-  }, { threshold: 0.15 });
+    if (owner !== null && owner === lastKey && lastRect && (lastRect as DOMRect).bottom + 120 < line) {
+      return null;
+    }
+    return owner;
+  }
 
-  const photo = document.getElementById('davidPhoto');
-  if (photo) photoObserver.observe(photo);
-
-  const textObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        textObserver.unobserve(entry.target);
+  let scrollTick = false;
+  function onScroll() {
+    if (scrollTick) return;
+    scrollTick = true;
+    requestAnimationFrame(() => {
+      scrollTick = false;
+      const owner = ownerFromScroll();
+      if (owner !== scrollId) {
+        scrollId = owner;
+        render();
       }
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => { computeStacked(); onScroll(); });
+  computeStacked();
+  onScroll();
+
+  // Scroll the chosen entry's top under the sticky chrome. Walks the
+  // offset chain (transform-proof) and accounts for the pinned photo
+  // plate on mobile, which scrollIntoView knows nothing about.
+  function scrollToEntry(el: HTMLElement) {
+    let y = 0;
+    for (let n: Element | null = el; n instanceof HTMLElement; n = n.offsetParent) y += n.offsetTop;
+    const navH = document.querySelector('nav')?.getBoundingClientRect().height ?? 70;
+    const pinned = hero && getComputedStyle(hero).position === 'sticky' ? hero.offsetHeight : 0;
+    window.scrollTo(0, Math.max(0, y - navH - pinned - 16));
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.hotspot').forEach((btn) => {
+    const id = btn.dataset.person ?? null;
+    if (!id) return;
+    // pointerType check keeps hover states off touch devices, where a
+    // tap would otherwise leave a person stuck in the spotlight
+    btn.addEventListener('pointerenter', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      pointerId = id;
+      focusStrong = false;
+      render();
+    });
+    btn.addEventListener('pointerleave', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      pointerId = null;
+      render();
+    });
+    // The spotlight is the focus indicator (the ring is suppressed in
+    // CSS): keyboard focus lights the person with a deeper veil
+    btn.addEventListener('focus', () => {
+      pointerId = id;
+      focusStrong = btn.matches(':focus-visible');
+      render();
+    });
+    btn.addEventListener('blur', () => {
+      pointerId = null;
+      focusStrong = false;
+      render();
+    });
+    // Activating a face takes you to that bio; the scroll handler then
+    // hands the spotlight to the same person, so the state is stable
+    btn.addEventListener('click', () => {
+      const entry = entries.get(id);
+      if (entry) scrollToEntry(entry);
+    });
+  });
+
+  // Staggered entrance, delayed in JS rather than transition-delay so
+  // the same transform transition can serve the hover lift undelayed
+  const entryObserver = new IntersectionObserver((observed) => {
+    observed.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target as HTMLElement;
+      const delay = reduceMotion.matches ? 0 : Number(el.dataset.index ?? 0) * 90;
+      window.setTimeout(() => el.classList.add('visible'), delay);
+      entryObserver.unobserve(el);
     });
   }, { threshold: 0.1 });
 
-  ['davidName', 'davidRole', 'davidDivider', 'davidP1', 'davidP2', 'davidP3', 'davidIg'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) textObserver.observe(el);
-  });
+  entryEls.forEach((el) => entryObserver.observe(el));
 </script>

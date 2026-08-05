@@ -72,6 +72,13 @@ See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling a
 * Images live in `src/assets/` and render through `<Image>` from `astro:assets` — never `public/` (raw files there bypass optimization; the 529 KB logo alone would have blown the bandwidth budget at target traffic).
 The adapter sets `imageCDN: false` deliberately, so optimization happens at build time via sharp into immutable `/_astro/*.webp` files — keep it that way.
 Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descendant selector in a scoped `<style>` is fragile against the component's rendered output), and `<Image>` always emits `width`/`height` attributes, so any CSS `aspect-ratio` crop needs an explicit `height: auto` or the height attribute wins (this silently broke the About polaroid once).
+* `setLang` in `src/lib/language.ts` swaps `textContent` only, and only on leaf elements carrying `data-en`/`data-es` — it never translates attributes.
+So an `aria-label` stays English after a toggle; give controls a bilingual accessible name with a visually-hidden `<span data-en data-es>` inside instead (see the photo hotspots in `about.astro`).
+* `<Image>` with `widths` but no `width` emits a fallback `src` at the source file's native resolution — the 5820px About group photo produced a 4.8 MB webp that way.
+Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallback.
+* The About team section (`about.astro`) is data-driven: one `people` array in frontmatter holds hotspot bands, face-chip anchors, and card headshot crops, all expressed as percentages of the photo frame.
+Those percentages are only valid because the hero photo renders uncropped (`width: 100%; height: auto`) — cropping it with `object-fit` would silently misalign every hotspot.
+The card headshots are CSS crops of the same group-shot asset (`--fx`/`--fy`/`--z` vars scale and offset the image inside a square window), so there are no separate headshot files to keep in sync.
 * The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over it.
 What colors it depends on the iOS version, and this burned us twice: iOS 15–17 use the `theme-color` meta in `BaseLayout.astro`, but iOS 26 (Liquid Glass) **ignores `theme-color` entirely** and samples the **`body` element's `background-color`** — not the `html` canvas, not the sticky nav, not pseudo-elements (verified by pixel-sampling simulator screenshots).
 That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
