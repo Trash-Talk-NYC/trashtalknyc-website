@@ -28,9 +28,17 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- viewport-fit=cover lets the page extend under notches/home
-       indicators; components pad with env(safe-area-inset-*) -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- viewport-fit=cover is deliberately ABSENT. With it, scrolling page
+       content renders into the status-bar/notch band, and iOS 26 clips
+       fixed/sticky layers at the collapsing-chrome boundary, so the header
+       can never cover that band — content showed above the header on every
+       captain device test (2026-07/08) no matter how it was covered. Without
+       cover, iOS letterboxes the unsafe areas itself, painted charcoal from
+       theme-color (iOS 15-17) / the body background (iOS 26) — continuous
+       with the nav, with nothing in the band to leak. Re-adding cover
+       reintroduces the unfixable gap. env(safe-area-inset-*) resolves to 0;
+       the CSS max() fallbacks keep every layout correct either way. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Tints Safari's chrome on iOS 15–17. iOS 26 (Liquid Glass) ignores
        theme-color entirely and samples the body's background-color for the
        status-bar strip instead — that's handled by the charcoal body in
