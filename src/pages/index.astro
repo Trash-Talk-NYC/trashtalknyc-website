@@ -236,6 +236,11 @@ const orgSchema = {
     <div class="signup-header">
       <h2 class="sign-plate" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
       <p class="signup-subtitle" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</p>
+      <p
+        class="signup-blurb"
+        data-en="This is our newsletter signup. We'll email you when and where cleanups are happening in your neighborhood."
+        data-es="Esta es la inscripción a nuestro boletín. Te avisaremos por correo cuándo y dónde habrá limpiezas en tu vecindario."
+      >This is our newsletter signup. We'll email you when and where cleanups are happening in your neighborhood.</p>
     </div>
 
     <div class="form-wrap">
@@ -1073,6 +1078,17 @@ const orgSchema = {
     color: rgba(247, 244, 237, 0.75);
     margin-top: 1.1rem;
     letter-spacing: 0.02em;
+  }
+
+  /* Supporting copy under the section header: answers "what am I signing
+     up to?" so it stays quieter than the subtitle above it */
+  .signup-blurb {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--paper-a70);
+    max-width: 46ch;
+    margin: 0.75rem auto 0;
   }
 
   /* ── FORM — club-card treatment ── */
