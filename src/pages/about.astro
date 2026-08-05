@@ -1,7 +1,9 @@
 ---
 import { Image } from 'astro:assets';
+import { actions } from 'astro:actions';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SocialLinks from '../components/SocialLinks.astro';
+import { JOIN_ROLES } from '../lib/server/schemas';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import workDavidFabi from '../assets/film-david-fabi.jpg';
 import workNandiFabi from '../assets/film-holo-nandi-fabi.jpg';
@@ -49,7 +51,7 @@ const people = [
     name: 'David',
     face: { x: 47.2, y: 26.5 },
     band: { x1: 43, x2: 54.5, y1: 18, y2: 100 },
-    spot: { x: 44.5, y: 51, rx: 18, ry: 82, in: 50, out: 80 },
+    spot: { x: 43, y: 51, rx: 18, ry: 82, in: 50, out: 80 },
     role: { en: 'Organizer', es: 'Organizador' },
     bio: [
       {
@@ -95,6 +97,58 @@ const people = [
  */
 const bioOrder = ['david', 'nandi', 'fabiola']
   .map((id) => people.find((p) => p.id === id)!);
+
+/**
+ * Join the Team role boxes. `value` must stay inside JOIN_ROLES in
+ * src/lib/server/schemas.ts — the form select and the action's enum
+ * validate against it, so rename them together.
+ *
+ * The fourth role is a crew-proposed PLACEHOLDER: the captain named only
+ * Videographer / Social Media Manager / Developer and has not chosen the
+ * fourth yet. "Events & Operations Lead" is our suggestion for a street
+ * cleanup club — captain, rename at will (here + JOIN_ROLES).
+ *
+ * `accent` is an existing brand token per card (yellow / purple-light /
+ * orange / green-light) — no new hues.
+ */
+const roles = [
+  {
+    value: JOIN_ROLES[0], // Videographer
+    accent: 'var(--yellow)',
+    title: { en: 'Videographer', es: 'Videógrafo/a' },
+    desc: {
+      en: "Shoot the cleanups. Cut the clips people can't scroll past.",
+      es: 'Graba las limpiezas. Edita los clips que nadie puede ignorar.',
+    },
+  },
+  {
+    value: JOIN_ROLES[1], // Social Media Manager
+    accent: 'var(--purple-light)',
+    title: { en: 'Social Media Manager', es: 'Gestor/a de Redes' },
+    desc: {
+      en: 'Run the accounts, talk to the comments, grow the club.',
+      es: 'Maneja las cuentas, responde los comentarios, haz crecer el club.',
+    },
+  },
+  {
+    value: JOIN_ROLES[2], // Developer
+    accent: 'var(--orange)',
+    title: { en: 'Developer', es: 'Desarrollador/a' },
+    desc: {
+      en: 'Build this site and the tools that keep the club moving.',
+      es: 'Construye este sitio y las herramientas que mueven el club.',
+    },
+  },
+  {
+    value: JOIN_ROLES[3], // Events & Operations Lead — PLACEHOLDER name
+    accent: 'var(--green-light)',
+    title: { en: 'Events & Operations Lead', es: 'Líder de Eventos y Operaciones' },
+    desc: {
+      en: 'Plan the routes, wrangle the gear, make cleanup day run.',
+      es: 'Planifica las rutas, organiza el equipo y haz que el día funcione.',
+    },
+  },
+];
 ---
 
 <BaseLayout
@@ -213,6 +267,82 @@ const bioOrder = ['david', 'nandi', 'fabiola']
 
   </section>
 
+  <!-- JOIN THE TEAM — the loud CTA moment of the page. Four role boxes
+       feed an application form; the intake destination is still the
+       captain's call (NOT Brevo — see AGENTS.md), so submissions land
+       in a Netlify Blobs holding pen for now. -->
+  <section class="join-team diag-texture" id="join">
+    <div class="tape-seam" aria-hidden="true"></div>
+    <div class="join-word" aria-hidden="true">CREW</div>
+    <div class="join-inner">
+      <p class="sticker join-eyebrow" style="--tilt: 2deg" data-en="Now recruiting" data-es="Estamos reclutando">Now recruiting</p>
+      <h2 class="join-title">
+        <span data-en="Join the" data-es="Únete al">Join the</span>
+        <span class="join-title-accent" data-en="team" data-es="equipo">team</span>
+      </h2>
+      <p class="join-sub" data-en="Trash Talk NYC is a crew before it's anything else. Pick a role, tell us why, and let's clean this city." data-es="Trash Talk NYC es un equipo antes que nada. Elige un rol, cuéntanos por qué, y limpiemos esta ciudad.">Trash Talk NYC is a crew before it's anything else. Pick a role, tell us why, and let's clean this city.</p>
+
+      <div class="join-roles">
+        {roles.map((r, i) => (
+          <button type="button" class="role-card" data-role={r.value} style={`--accent:${r.accent}; --card-tilt:${i % 2 === 0 ? '-1deg' : '1deg'}`} aria-pressed="false">
+            <span class="role-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <span class="role-title" data-en={r.title.en} data-es={r.title.es}>{r.title.en}</span>
+            <span class="role-desc" data-en={r.desc.en} data-es={r.desc.es}>{r.desc.en}</span>
+            <span class="role-apply"><span data-en="Apply" data-es="Postúlate">Apply</span> <span class="role-arrow" aria-hidden="true">→</span></span>
+          </button>
+        ))}
+      </div>
+
+      <div class="join-form-wrap" id="joinFormWrap">
+        <form id="joinForm" method="POST" action={actions.joinTeam}>
+          <input type="hidden" name="botcheck" value="">
+          <input type="hidden" name="startedAt" id="joinStartedAt" value="">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="joinName" data-en="Name *" data-es="Nombre *">Name *</label>
+              <input type="text" id="joinName" name="name" required maxlength="200" placeholder="Jane Doe" autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label for="joinEmail" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
+              <input type="email" id="joinEmail" name="email" required placeholder="jane@example.com" autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="joinRole" data-en="Which role? *" data-es="¿Qué rol? *">Which role? *</label>
+            <select id="joinRole" name="role" required>
+              <option value="" selected disabled data-en="Pick a role" data-es="Elige un rol">Pick a role</option>
+              {roles.map((r) => (
+                <option value={r.value} data-en={r.title.en} data-es={r.title.es}>{r.title.en}</option>
+              ))}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="joinWhy" data-en="Why do you want to join? *" data-es="¿Por qué quieres unirte? *">Why do you want to join? *</label>
+            <textarea id="joinWhy" name="why" required maxlength="2000" data-placeholder-en="A few sentences is plenty — what would you bring to the crew?" data-placeholder-es="Con unas frases basta — ¿qué aportarías al equipo?" placeholder="A few sentences is plenty — what would you bring to the crew?"></textarea>
+          </div>
+
+          <button type="submit" class="form-submit" data-en="Send my application →" data-es="Enviar mi solicitud →">Send my application →</button>
+          <!-- No data-en/data-es: the submit handler and onLanguageChange
+               own this element's content (same rule as the other forms) -->
+          <p class="form-error" id="joinFormError" aria-live="polite"></p>
+        </form>
+
+        <div class="form-success" id="joinSuccess">
+          <div class="check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:3rem;height:3rem"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <h3 data-en="Application received" data-es="Solicitud recibida">Application received</h3>
+          <!-- Honest copy: the submission IS saved (Netlify Blobs holding
+               pen), but the roles are brand new and there's no inbox
+               workflow yet — don't promise a fast reply. -->
+          <p data-en="It's saved with the crew. These roles are brand new and applications are just opening up, so give us a little time and we'll reach out. Meanwhile, come say hi at a cleanup or DM @trashtalk_nyc." data-es="Quedó guardada con el equipo. Estos roles son completamente nuevos y las solicitudes apenas están abriendo, así que danos un poco de tiempo y te contactaremos. Mientras tanto, ven a saludar en una limpieza o escríbenos por DM a @trashtalk_nyc.">It's saved with the crew. These roles are brand new and applications are just opening up, so give us a little time and we'll reach out. Meanwhile, come say hi at a cleanup or DM @trashtalk_nyc.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </BaseLayout>
 
 <style>
@@ -244,6 +374,41 @@ const bioOrder = ['david', 'nandi', 'fabiola']
       position: sticky;
       top: var(--nav-h);
       z-index: 2;
+    }
+
+    /* Phased scroll: while the photo is pinned, the bios arrive as
+       beats — the second and third bios snap in under the plate with
+       `scroll-snap-stop: always`, so momentum can't blow past a person
+       and the light walks in deliberate steps. `proximity` (never
+       mandatory) so leaving the section stays effortless: past the
+       last bio there are no snap areas and the page scrolls freely.
+
+       Two deliberate omissions, learned the hard way:
+       - NO snap-align on the wrapper or the first bio. The landing
+         screen (photo + first bio's opening) IS the first beat — the
+         first bio's aligned position sits ~18px below scrollY 0, so
+         giving it a snap position risks a load-time re-snap that would
+         light him up at rest (the captain wants nobody lit on landing)
+         and would trap the first flick at a standstill.
+       - NEVER put snap-align on an ancestor taller than the viewport
+         (we tried .team-flow): Chrome treats an oversized snap area as
+         a RANGE of valid positions that swallows every per-bio snap
+         position inside it, and the range's end becomes a phantom
+         attractor mid-band. */
+    :global(html) {
+      scroll-snap-type: y proximity;
+    }
+
+    .team-entry:not(:first-child) {
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      /* Pinned plate = two 8px seams + the 57.0103vw photo crop
+         (100vw × 3318/5820). +4px so the snapped position lands exactly
+         on scrollToEntry's target: the html scroll-padding already
+         contributes nav + 12px, and nav + plate + 16px is the JS
+         offset — keeping the two equal stops tap-to-scroll from being
+         re-snapped somewhere else afterwards. */
+      scroll-margin-top: calc(57.0103vw + 20px);
     }
   }
 
@@ -549,6 +714,287 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     height: auto;
   }
 
+  /* ── JOIN THE TEAM (loud CTA closer) ── */
+  .join-team {
+    background: var(--charcoal);
+    position: relative;
+    overflow: hidden;
+    padding-bottom: var(--space-xl);
+  }
+
+  /* Giant outlined word behind the section — the PageHero device */
+  .join-word {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(6rem, 24vw, 20rem);
+    letter-spacing: 0.04em;
+    line-height: 0.9;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--purple-lt-a30);
+    user-select: none;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .join-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) 0 max(var(--gutter), var(--safe-left));
+    text-align: center;
+  }
+
+  .join-eyebrow { margin-bottom: 1.5rem; }
+
+  .join-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-4);
+    color: var(--off-white);
+    letter-spacing: 0.06em;
+    line-height: 1.05;
+    text-shadow: 4px 4px 0 rgba(107, 63, 160, 0.55);
+    margin-bottom: 0.75rem;
+  }
+
+  .join-title-accent { color: var(--yellow); }
+
+  .join-sub {
+    font-size: var(--step-0);
+    font-weight: 600;
+    color: var(--paper-a70);
+    max-width: 52ch;
+    margin: 0 auto var(--space-lg);
+    line-height: 1.7;
+  }
+
+  .join-roles {
+    display: grid;
+    /* 13rem minimum so all four boxes share one row inside the 1100px
+       container at desktop (230px left an orphan on a second row),
+       stepping to 2-up on tablets and 1-up on phones */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    text-align: left;
+  }
+
+  /* Role box: off-white poster card, tilted like a slapped-up flyer,
+     with the dark-section press shadow (purple, matching the hero
+     buttons — charcoal press would vanish on charcoal). --accent is an
+     existing brand token per card. */
+  .role-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    background: var(--off-white);
+    border: 3px solid var(--charcoal);
+    border-top: 6px solid var(--accent);
+    border-radius: var(--radius-sm);
+    box-shadow: 5px 5px 0 var(--purple-light);
+    padding: 1.1rem 1.2rem 1.2rem;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Nunito', sans-serif;
+    transform: rotate(var(--card-tilt, 0deg));
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .role-card:hover {
+      transform: rotate(0deg) translate(2px, 2px);
+      box-shadow: 3px 3px 0 var(--purple-light);
+    }
+  }
+
+  /* Chosen role: straightens up, presses in, and answers in yellow —
+     the active-state colour everywhere on the site */
+  .role-card.selected {
+    transform: rotate(0deg) translate(2px, 2px);
+    box-shadow: 3px 3px 0 var(--yellow);
+    outline: 3px solid var(--yellow);
+    outline-offset: -3px;
+  }
+
+  .role-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    /* Accent-coloured type on a charcoal chip: orange and green don't
+       clear text contrast directly on off-white, but all four tokens
+       do on charcoal */
+    color: var(--accent);
+    background: var(--charcoal);
+    align-self: flex-start;
+    padding: 0.2em 0.5em;
+    border-radius: 3px;
+  }
+
+  .role-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--charcoal);
+    line-height: 1.2;
+  }
+
+  .role-desc {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.55;
+  }
+
+  .role-apply {
+    margin-top: auto;
+    padding-top: 0.35rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--purple);
+  }
+
+  .role-arrow {
+    display: inline-block;
+    transition: transform 0.15s var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .role-card:hover .role-arrow { transform: translateX(3px); }
+  }
+
+  .role-card.selected .role-apply { color: var(--charcoal); }
+
+  /* ── APPLICATION FORM (matches the site's form styling) ── */
+  .join-form-wrap {
+    max-width: 40rem;
+    margin: 0 auto;
+    text-align: left;
+    background: var(--off-white);
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border: 2.5px solid var(--charcoal);
+    border-radius: var(--radius-md);
+    box-shadow: 6px 6px 0 var(--purple-light);
+    scroll-margin-top: calc(var(--nav-h) + 0.75rem);
+  }
+
+  .form-group { margin-bottom: 1.2rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #4a4a5a;
+    margin-bottom: 0.4rem;
+  }
+
+  /* 16px input text so iOS Safari doesn't zoom the page on focus */
+  .form-group input:not([type='checkbox']),
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #d0ccc4;
+    border-radius: var(--radius-sm);
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    min-height: var(--tap);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .form-group input:not([type='checkbox']):focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--purple-light);
+    box-shadow: 0 0 0 3px rgba(155, 93, 229, 0.15);
+  }
+
+  .form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231c1c22' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+
+  .form-group textarea { resize: vertical; min-height: 110px; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 0 1rem;
+  }
+
+  .form-submit {
+    width: 100%;
+    background: var(--purple);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 1rem;
+    min-height: 52px;
+    border: 3px solid var(--charcoal);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-top: 0.75rem;
+    box-shadow: 4px 4px 0 var(--charcoal);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
+  }
+
+  .form-submit:hover {
+    background: var(--yellow);
+    color: var(--charcoal);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--charcoal);
+  }
+
+  /* Stays rendered (never display:none) so screen readers announce text
+     inserted into the aria-live region; :empty just collapses the gap */
+  .form-error {
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    color: #c0392b;
+  }
+
+  .form-error:empty { margin: 0; }
+
+  .form-success {
+    display: none;
+    text-align: center;
+    padding: 3rem 2rem;
+  }
+
+  .form-success .check { margin-bottom: 1rem; }
+
+  .form-success h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--purple);
+  }
+
+  .form-success p { font-size: 0.9rem; color: #555; line-height: 1.6; font-weight: 600; }
+
   @media (prefers-reduced-motion: reduce) {
     .team-entry {
       transition: none;
@@ -559,6 +1005,7 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     .face-marker { transition: none; }
     /* The spotlight still switches — only its motion is removed */
     .spot-layer { transition: none; }
+    .role-card, .role-arrow, .form-submit { transition: none; }
   }
 </style>
 
@@ -613,6 +1060,12 @@ const bioOrder = ['david', 'nandi', 'fabiola']
 
   function ownerFromScroll(): string | null {
     if (!stacked) return null;
+    // At page open the photo rests fully lit — nobody owns the spotlight
+    // until the reader actually scrolls to a bio. The first snap beat
+    // (David's bio under the pinned plate) sits ~16px down, so 8px is the
+    // midpoint that separates "landed" from "reading"; returning to the
+    // very top hands the page back to the resting, nobody-lit photo.
+    if (window.scrollY < 8) return null;
     const line = window.innerHeight * 0.55;
     let owner: string | null = null;
     let ownerTop = -Infinity;
@@ -714,4 +1167,87 @@ const bioOrder = ['david', 'nandi', 'fabiola']
   }, { threshold: 0.1 });
 
   entryEls.forEach((el) => entryObserver.observe(el));
+</script>
+
+<script>
+  import { actions } from 'astro:actions';
+  import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
+
+  // ── JOIN THE TEAM ──
+  const joinForm = document.getElementById('joinForm') as HTMLFormElement | null;
+  const joinRoleSelect = document.getElementById('joinRole') as HTMLSelectElement | null;
+  const joinErrorEl = document.getElementById('joinFormError');
+  const roleCards = Array.from(document.querySelectorAll<HTMLButtonElement>('.role-card'));
+  const joinReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Spam-timing field (same heuristic as the other two forms)
+  const joinStartedAt = document.getElementById('joinStartedAt') as HTMLInputElement | null;
+  if (joinStartedAt) joinStartedAt.value = String(Date.now());
+
+  function markSelectedRole(value: string) {
+    roleCards.forEach((card) => {
+      const selected = card.dataset.role === value;
+      card.classList.toggle('selected', selected);
+      card.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  // Role box → pre-filled form: choosing a card sets the select, then
+  // hands the viewport to the form with the name field ready to type in
+  roleCards.forEach((card) => {
+    card.addEventListener('click', () => {
+      const value = card.dataset.role ?? '';
+      if (joinRoleSelect) joinRoleSelect.value = value;
+      markSelectedRole(value);
+      const nameInput = document.getElementById('joinName') as HTMLInputElement | null;
+      nameInput?.focus({ preventScroll: true });
+      document.getElementById('joinFormWrap')?.scrollIntoView({
+        behavior: joinReduceMotion.matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    });
+  });
+
+  // …and the reverse: picking from the select lights the matching card
+  joinRoleSelect?.addEventListener('change', () => markSelectedRole(joinRoleSelect.value));
+
+  joinForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+
+    const submitBtn = form.querySelector<HTMLButtonElement>('.form-submit')!;
+    const originalText = submitBtn.textContent ?? '';
+    submitBtn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Submitting…';
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
+    if (joinErrorEl) joinErrorEl.textContent = '';
+
+    const { error } = await actions.joinTeam(new FormData(form));
+
+    if (!error) {
+      form.style.display = 'none';
+      (document.getElementById('joinSuccess') as HTMLElement).style.display = 'block';
+      return;
+    }
+
+    // Persistent aria-live message so the failure survives the transient
+    // button swap and is announced by screen readers
+    if (joinErrorEl) joinErrorEl.textContent = submitErrorText(getCurrentLang());
+    submitBtn.textContent = submitErrorText(getCurrentLang());
+    submitBtn.style.background = '#c0392b';
+    submitBtn.style.borderColor = '#c0392b';
+    submitBtn.style.color = '#fff';
+    submitBtn.disabled = false;
+    setTimeout(() => {
+      submitBtn.textContent = originalText;
+      submitBtn.style.background = '';
+      submitBtn.style.borderColor = '';
+      submitBtn.style.color = '';
+      submitBtn.style.opacity = '';
+    }, 3500);
+  });
+
+  onLanguageChange((lang) => {
+    if (joinErrorEl?.textContent) joinErrorEl.textContent = submitErrorText(lang);
+  });
 </script>
