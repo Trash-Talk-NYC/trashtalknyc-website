@@ -246,7 +246,9 @@ const generalSubject = {
        each a mailto: link with a per-role subject. Intake is email-only
        for now by captain decision (round 13) — the application form and
        its server path were removed, see AGENTS.md. -->
-  <section class="join-team diag-texture" id="join">
+  <!-- id is a stable contract: the Contact page banner links to
+       /about#join-the-team — do not rename. -->
+  <section class="join-team diag-texture" id="join-the-team">
     <div class="tape-seam" aria-hidden="true"></div>
     <div class="join-word" aria-hidden="true">CREW</div>
     <div class="join-inner">
@@ -256,6 +258,14 @@ const generalSubject = {
         <span class="join-title-accent" data-en="team" data-es="equipo">team</span>
       </h2>
       <p class="join-sub" data-en="Trash Talk NYC is a crew before it's anything else. Pick a role, tell us who you are, and let's clean this city." data-es="Trash Talk NYC es un equipo antes que nada. Elige un rol, cuéntanos quién eres, y limpiemos esta ciudad.">Trash Talk NYC is a crew before it's anything else. Pick a role, tell us who you are, and let's clean this city.</p>
+
+      <!-- The captain's message to prospective folks: physical presence,
+           fast iteration, and not fearing mistakes. Frames the boxes
+           and the email CTA below it. -->
+      <div class="join-note">
+        <p class="join-note-label" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</p>
+        <p class="join-note-body" data-en="How we work: showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't — and nobody here gets side-eye for making a mistake. If that sounds like you, pick a role." data-es="Cómo trabajamos: presentarse en persona vale más que cualquier currículum. Probamos las cosas rápido, nos quedamos con lo que funciona y arreglamos lo que no — y aquí nadie te mira mal por equivocarte. Si eso te suena, elige un rol.">How we work: showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't — and nobody here gets side-eye for making a mistake. If that sounds like you, pick a role.</p>
+      </div>
 
       <div class="join-roles">
         {roles.map((r, i) => (
@@ -791,6 +801,50 @@ const generalSubject = {
     color: var(--paper-a70);
     max-width: 52ch;
     margin: 0 auto var(--space-lg);
+    line-height: 1.7;
+  }
+
+  /* The crew's note to applicants: a taped-up paper card in the poster
+     voice — off-white plate, charcoal border, purple press (the
+     dark-section convention), one yellow tape strip. */
+  .join-note {
+    position: relative;
+    max-width: 44rem;
+    margin: 0 auto var(--space-lg);
+    background: var(--off-white);
+    border: 2.5px solid var(--charcoal);
+    border-radius: var(--radius-sm);
+    box-shadow: 5px 5px 0 var(--purple-light);
+    padding: 1.3rem 1.5rem 1.4rem;
+    text-align: left;
+    transform: rotate(-0.5deg);
+  }
+
+  .join-note::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 96px;
+    height: 24px;
+    background: rgba(245, 208, 0, 0.85);
+  }
+
+  .join-note-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--purple);
+    margin-bottom: 0.55rem;
+  }
+
+  .join-note-body {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--charcoal);
     line-height: 1.7;
   }
 
