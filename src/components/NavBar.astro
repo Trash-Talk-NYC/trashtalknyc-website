@@ -8,10 +8,13 @@ import LangToggle from './LangToggle.astro';
 
 const pathname = Astro.url.pathname;
 
-const isHome    = pathname === '/' || pathname === '';
-const isEvents  = pathname === '/events' || pathname.startsWith('/events/');
-const isAbout   = pathname === '/about'  || pathname.startsWith('/about/');
-const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
+const isHome     = pathname === '/' || pathname === '';
+const isEvents   = pathname === '/events' || pathname.startsWith('/events/');
+const isTeam     = pathname === '/about' || pathname.startsWith('/about/');
+const isProjects = pathname === '/projects' || pathname.startsWith('/projects/');
+// The About parent highlights when either of its children is current
+const isAbout    = isTeam || isProjects;
+const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 ---
 
 <nav aria-label="Main">
@@ -25,7 +28,27 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
   <ul class="nav-links" id="navLinks">
     <li><a href="/" class:list={{ active: isHome }} data-en="Home" data-es="Inicio">Home</a></li>
     <li><a href="/events" class:list={{ active: isEvents }} data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-    <li><a href="/about" class:list={{ active: isAbout }} data-en="About" data-es="Nosotros">About</a></li>
+    <li class="nav-dropdown" id="aboutDropdown">
+      <!-- Disclosure pattern (APG): the parent is a toggle, not a link —
+           /about stays reachable as "The Team" below. aria-expanded is the
+           whole submenu contract; no menu roles, no aria-haspopup. -->
+      <button
+        type="button"
+        class:list={['nav-drop-toggle', { active: isAbout }]}
+        id="aboutDropToggle"
+        aria-expanded="false"
+        aria-controls="aboutDropMenu"
+      >
+        <span data-en="About" data-es="Nosotros">About</span>
+        <svg class="drop-caret" aria-hidden="true" width="10" height="7" viewBox="0 0 10 7" fill="none">
+          <path d="M1 1.5 5 5.5 9 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      <ul class="nav-drop-menu" id="aboutDropMenu">
+        <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
+        <li><a href="/projects" class:list={{ active: isProjects }} data-en="Projects" data-es="Proyectos">Projects</a></li>
+      </ul>
+    </li>
     <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
     <li><a href="/#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
   </ul>
@@ -35,10 +58,21 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
   const hamburger = document.getElementById('navHamburger');
   const links = document.getElementById('navLinks');
 
+  const dropdown = document.getElementById('aboutDropdown');
+  const dropToggle = document.getElementById('aboutDropToggle');
+  const dropMenu = document.getElementById('aboutDropMenu');
+
+  function setDropOpen(open: boolean) {
+    dropdown?.classList.toggle('open', open);
+    dropToggle?.setAttribute('aria-expanded', String(open));
+  }
+
   function setOpen(open: boolean) {
     hamburger?.classList.toggle('open', open);
     links?.classList.toggle('open', open);
     hamburger?.setAttribute('aria-expanded', String(open));
+    // A stale open submenu inside a re-opened mobile panel is disorienting
+    if (!open) setDropOpen(false);
   }
 
   hamburger?.addEventListener('click', () => {
@@ -48,6 +82,46 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
   // Close the mobile menu after navigating (matters for same-page #anchors)
   links?.querySelectorAll('a').forEach((a) => {
     a.addEventListener('click', () => setOpen(false));
+  });
+
+  // ── About dropdown (disclosure pattern) ──
+  dropToggle?.addEventListener('click', () => {
+    setDropOpen(dropToggle.getAttribute('aria-expanded') !== 'true');
+  });
+
+  // ArrowDown on the closed toggle opens and moves into the list, per APG
+  dropToggle?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setDropOpen(true);
+      dropMenu?.querySelector('a')?.focus();
+    }
+  });
+
+  dropMenu?.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const items = Array.from(dropMenu.querySelectorAll('a'));
+    const i = items.indexOf(document.activeElement as HTMLAnchorElement);
+    if (i === -1) return;
+    e.preventDefault();
+    const next = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+    items[next].focus();
+  });
+
+  dropdown?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+      setDropOpen(false);
+      dropToggle?.focus();
+    }
+  });
+
+  // Click-away and focus-leave both dismiss; Tab itself is never trapped
+  document.addEventListener('click', (e) => {
+    if (dropdown && !dropdown.contains(e.target as Node)) setDropOpen(false);
+  });
+
+  dropdown?.addEventListener('focusout', (e) => {
+    if (!dropdown.contains(e.relatedTarget as Node)) setDropOpen(false);
   });
 </script>
 
@@ -142,6 +216,76 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
 
   .nav-links a.nav-cta:hover { background: var(--purple-light); color: #fff; }
 
+  /* ── ABOUT DROPDOWN ── */
+  .nav-dropdown { position: relative; }
+
+  /* The toggle mirrors the sibling links exactly, plus a caret so it
+     reads as "opens something", not a dead link */
+  .nav-drop-toggle {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--paper-a70);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    min-height: 60px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .nav-drop-toggle:hover,
+  .nav-drop-toggle.active { color: var(--yellow); }
+
+  .drop-caret { transition: transform 0.15s; }
+  .nav-dropdown.open .drop-caret { transform: rotate(180deg); }
+
+  /* visibility (not display) so the closed menu is out of the tab order
+     but the open/close still gets a transition */
+  .nav-drop-menu {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 50%;
+    min-width: 11rem;
+    list-style: none;
+    padding: 0.35rem 0;
+    background: var(--charcoal);
+    border: 1px solid var(--paper-a12);
+    border-bottom: 3px solid var(--purple-light);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 6px);
+    /* visibility flips only after the fade-out completes on close… */
+    transition: opacity 0.15s, transform 0.15s, visibility 0s 0.15s;
+  }
+
+  .nav-dropdown.open .nav-drop-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    /* …but instantly on open, so ArrowDown can focus a child link in the
+       same keystroke that opened the menu */
+    transition: opacity 0.15s, transform 0.15s, visibility 0s;
+  }
+
+  .nav-drop-menu a {
+    display: flex;
+    width: 100%;
+    padding: 0 1.1rem;
+    min-height: var(--tap);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-drop-menu,
+    .drop-caret { transition: none; }
+  }
+
   /* ── HAMBURGER ── */
   .nav-hamburger {
     display: none;
@@ -200,5 +344,35 @@ const isContact = pathname === '/contact' || pathname.startsWith('/contact/');
       border-radius: 6px;
       min-height: var(--tap);
     }
+
+    /* Inside the panel the dropdown becomes an in-flow expanding sub-list —
+       nothing floats, so nothing can clip or overflow */
+    .nav-drop-toggle {
+      width: 100%;
+      justify-content: center;
+      padding: 0.85rem 0.5rem;
+      font-size: 0.9rem;
+      min-height: var(--tap);
+    }
+
+    .nav-drop-menu {
+      position: static;
+      min-width: 0;
+      padding: 0;
+      border: none;
+      transform: none;
+      transition: none;
+      display: none;
+      opacity: 1;
+      visibility: visible;
+      background: var(--paper-a08);
+    }
+
+    .nav-dropdown.open .nav-drop-menu {
+      display: block;
+      transform: none;
+    }
+
+    .nav-drop-menu a { justify-content: center; font-size: 0.85rem; }
   }
 </style>

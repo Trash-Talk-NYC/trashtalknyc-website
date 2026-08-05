@@ -52,6 +52,12 @@ Once the site key is set, a missing secret fails closed (`form_env_missing` patt
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
 
+## Projects page — awaiting real content
+
+`/projects` (linked from the nav's About dropdown alongside The Team) has its structure and design in place but is **intentionally pending real content**: the captain has not yet supplied Tree Guards specifics (sites, counts, timeline) or any further projects.
+The "TBD" dimension labels in the tree-guard spec drawing, the dashed pending chips, and the "Coming soon" placeholder slots are deliberate — do not fill them with invented specifics; only the captain supplies real numbers, locations, dates, or partners.
+The tree-guard drawing in `src/pages/projects.astro` is a hand-authored inline SVG whose **assembled state is the CSS default**; animation only runs when viewport entry adds `.play` under `prefers-reduced-motion: no-preference`, so reduced-motion and no-JS users always get the finished still — keep that invariant when touching it.
+
 ## E2E Testing
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.

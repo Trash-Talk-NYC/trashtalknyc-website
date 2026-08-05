@@ -1,0 +1,520 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<BaseLayout
+  title="Projects — Trash Talk NYC"
+  description="Trash Talk NYC projects — starting with tree guards: low protective fences that shield street-tree beds from foot traffic, dogs, and litter. Build details coming soon."
+>
+
+  <PageHero eyebrowEn="Projects" eyebrowEs="Proyectos" word="PROJECTS">
+    <span data-en="WHAT WE'RE" data-es="LO QUE ESTAMOS">WHAT WE'RE</span><br /><span class="accent" data-en="BUILDING" data-es="CONSTRUYENDO">BUILDING</span>
+  </PageHero>
+
+  <!-- INTRO -->
+  <section class="projects-intro">
+    <p data-en="Cleanups are where we start — projects are what stays. This page tracks the physical improvements Trash Talk NYC builds along the way, starting with tree guards." data-es="Las limpiezas son el comienzo — los proyectos son lo que permanece. Esta página registra las mejoras físicas que Trash Talk NYC construye en el camino, empezando por los protectores de árboles.">Cleanups are where we start — projects are what stays. This page tracks the physical improvements Trash Talk NYC builds along the way, starting with tree guards.</p>
+  </section>
+
+  <!-- PROJECT 01 — TREE GUARDS -->
+  <section class="tg-section grid-paper">
+    <div class="tg-inner">
+
+      <div class="tg-figure-col">
+        <figure class="spec-sheet">
+          <!-- The drawing carries meaning, so the SVG is aria-hidden and this
+               bilingual description is the accessible text alternative — the
+               site's setLang only swaps textContent, so aria-label would never
+               translate. -->
+          <p class="sr-only" data-en="Technical drawing of a tree guard: a low metal fence of four posts and two rails assembled around a street tree's soil bed, with the tree rising from the planted bed. Dimension lines are marked TBD because build specifications are still pending." data-es="Dibujo técnico de un protector de árbol: una cerca baja de metal con cuatro postes y dos rieles ensamblada alrededor del alcorque de un árbol urbano, con el árbol creciendo desde la cama plantada. Las líneas de dimensión dicen TBD porque las especificaciones de construcción aún están pendientes.">Technical drawing of a tree guard: a low metal fence of four posts and two rails assembled around a street tree's soil bed, with the tree rising from the planted bed. Dimension lines are marked TBD because build specifications are still pending.</p>
+
+          <!-- Hand-authored spec drawing. The assembled state is the CSS
+               default; animation only runs when .play lands (viewport entry)
+               under prefers-reduced-motion: no-preference — so reduced-motion,
+               no-JS, and print all get the finished still. Plays once, no
+               loop: it sits beside body copy and a loop would fidget forever. -->
+          <svg id="assemblyFig" class="assembly" viewBox="0 0 760 600" width="760" height="600" aria-hidden="true">
+            <defs>
+              <pattern id="specGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+                <path d="M 24 0 H 0 V 24" fill="none" stroke="#1c1c22" stroke-opacity="0.05" stroke-width="1" />
+              </pattern>
+            </defs>
+
+            <!-- sheet frame + construction grid -->
+            <rect class="sheet-border a-fade" style="--d:0s" x="6" y="6" width="748" height="588" fill="none" stroke-width="1.5" />
+            <rect class="a-fade" style="--d:.1s" x="7" y="7" width="746" height="586" fill="url(#specGrid)" />
+
+            <!-- title block, bottom-right, flush with the frame -->
+            <g class="title-block a-fade" style="--d:.2s">
+              <rect x="524" y="538" width="230" height="56" fill="none" stroke-width="1.2" />
+              <line x1="524" y1="556" x2="754" y2="556" stroke-width="0.8" />
+              <line x1="524" y1="575" x2="754" y2="575" stroke-width="0.8" />
+              <text x="534" y="551" font-size="12" font-weight="700">TRASH TALK NYC</text>
+              <text x="534" y="570" font-size="11" data-en="DWG 01 — TREE GUARD" data-es="DWG 01 — PROTECTOR DE ÁRBOL">DWG 01 — TREE GUARD</text>
+              <text x="534" y="589" font-size="10" data-en="SCALE — NTS · SPEC PENDING" data-es="ESCALA — S/E · SPEC PENDIENTE">SCALE — NTS · SPEC PENDING</text>
+            </g>
+
+            <!-- ground line + section hatching outside the bed -->
+            <path class="ink a-draw" style="--d:.3s" pathLength="100" d="M 60 430 H 700" stroke-width="2" fill="none" />
+            <path class="ink-thin a-draw" style="--d:.5s" pathLength="100" fill="none" d="M 70 440 l 8 -8 M 90 440 l 8 -8 M 110 440 l 8 -8 M 130 440 l 8 -8 M 150 440 l 8 -8 M 170 440 l 8 -8 M 190 440 l 8 -8 M 210 440 l 8 -8 M 520 440 l 8 -8 M 540 440 l 8 -8 M 560 440 l 8 -8 M 580 440 l 8 -8 M 600 440 l 8 -8 M 620 440 l 8 -8 M 640 440 l 8 -8 M 660 440 l 8 -8 M 680 440 l 8 -8" />
+
+            <!-- tree pit: curb blocks + soil + planting -->
+            <g class="a-rise" style="--d:.9s">
+              <rect class="ink-fill" x="230" y="422" width="10" height="8" />
+              <rect class="ink-fill" x="500" y="422" width="10" height="8" />
+            </g>
+            <g class="a-fade" style="--d:1.1s">
+              <circle class="soil-dot" cx="262" cy="426" r="1.6" />
+              <circle class="soil-dot" cx="285" cy="423" r="1.4" />
+              <circle class="soil-dot" cx="308" cy="427" r="1.6" />
+              <circle class="soil-dot" cx="336" cy="424" r="1.4" />
+              <circle class="soil-dot" cx="398" cy="426" r="1.6" />
+              <circle class="soil-dot" cx="428" cy="423" r="1.4" />
+              <circle class="soil-dot" cx="462" cy="427" r="1.6" />
+              <circle class="soil-dot" cx="484" cy="424" r="1.4" />
+              <path class="sprig" fill="none" d="M 276 428 l -4 -13 M 276 428 l 4 -10 M 318 428 l -3 -11 M 318 428 l 4 -13 M 444 428 l -4 -12 M 444 428 l 3 -10 M 474 428 l -3 -11 M 474 428 l 4 -13" />
+            </g>
+
+            <!-- tree: trunk, branches, revision-cloud canopy -->
+            <path class="ink a-draw" style="--d:1.2s" pathLength="100" fill="none" stroke-width="2.5" d="M 362 430 C 363 340 358 260 364 195" />
+            <path class="ink a-draw" style="--d:1.3s" pathLength="100" fill="none" stroke-width="2.5" d="M 378 430 C 377 340 381 260 375 195" />
+            <path class="ink-thin a-draw" style="--d:1.45s" pathLength="100" fill="none" d="M 364 250 C 342 230 332 214 324 198 M 375 268 C 398 248 410 232 418 216" />
+            <path class="ink-thin a-draw canopy" style="--d:1.6s" pathLength="100" fill="none" d="M 470 148 A 34 34 0 0 0 451 117 A 34 34 0 0 0 401 96 A 34 34 0 0 0 339 96 A 34 34 0 0 0 289 117 A 34 34 0 0 0 270 148 A 34 34 0 0 0 289 179 A 34 34 0 0 0 339 200 A 34 34 0 0 0 401 200 A 34 34 0 0 0 451 179 A 34 34 0 0 0 470 148 Z" />
+
+            <!-- the guard: posts drop in, rails slide, finials pop -->
+            <line class="ink post a-drop" style="--d:2s"    x1="250" y1="354" x2="250" y2="430" stroke-width="6" />
+            <line class="ink post a-drop" style="--d:2.15s" x1="330" y1="354" x2="330" y2="430" stroke-width="6" />
+            <line class="ink post a-drop" style="--d:2.3s"  x1="410" y1="354" x2="410" y2="430" stroke-width="6" />
+            <line class="ink post a-drop" style="--d:2.45s" x1="490" y1="354" x2="490" y2="430" stroke-width="6" />
+            <line class="ink a-slide-r" style="--d:2.8s" x1="244" y1="404" x2="496" y2="404" stroke-width="3.5" />
+            <line class="ink a-slide-l" style="--d:3s"   x1="242" y1="356" x2="498" y2="356" stroke-width="5" />
+            <circle class="ink-fill a-pop" style="--d:3.3s"  cx="250" cy="347" r="5" />
+            <circle class="ink-fill a-pop" style="--d:3.4s"  cx="330" cy="347" r="5" />
+            <circle class="ink-fill a-pop" style="--d:3.5s"  cx="410" cy="347" r="5" />
+            <circle class="ink-fill a-pop" style="--d:3.6s"  cx="490" cy="347" r="5" />
+
+            <!-- dimensions — measurements read TBD on purpose: the spec is
+                 the captain's to supply, and the drawing says so -->
+            <g class="dims">
+              <path class="dim a-draw" style="--d:3.8s" pathLength="100" fill="none" d="M 244 354 H 196 M 244 430 H 196" stroke-width="1" />
+              <line class="dim a-draw" style="--d:3.9s" pathLength="100" x1="204" y1="358" x2="204" y2="426" stroke-width="1.5" />
+              <path class="dim-fill a-fade" style="--d:4.1s" d="M 204 354 l -4 9 h 8 z M 204 430 l -4 -9 h 8 z" />
+              <text class="dim-label a-fade" style="--d:4.1s" x="190" y="392" font-size="15" text-anchor="middle" transform="rotate(-90 190 392)">H · TBD</text>
+
+              <path class="dim a-draw" style="--d:3.8s" pathLength="100" fill="none" d="M 238 438 V 474 M 502 438 V 474" stroke-width="1" />
+              <line class="dim a-draw" style="--d:3.9s" pathLength="100" x1="244" y1="466" x2="496" y2="466" stroke-width="1.5" />
+              <path class="dim-fill a-fade" style="--d:4.1s" d="M 238 466 l 9 -4 v 8 z M 502 466 l -9 -4 v 8 z" />
+              <text class="dim-label a-fade" style="--d:4.1s" x="370" y="459" font-size="15" text-anchor="middle" data-en="W · TBD" data-es="A · TBD">W · TBD</text>
+            </g>
+
+            <!-- part callouts; the two secondary ones hide at phone widths -->
+            <g class="co-rail">
+              <path class="co a-draw" style="--d:4.2s" pathLength="100" fill="none" d="M 466 356 L 530 306 h 66" />
+              <circle class="co-dot a-fade" style="--d:4.2s" cx="466" cy="356" r="3.5" />
+              <text class="co-label a-fade" style="--d:4.35s" x="534" y="298" font-size="15" data-en="TOP RAIL" data-es="RIEL SUPERIOR">TOP RAIL</text>
+            </g>
+            <g class="co-post-callout">
+              <path class="co a-draw" style="--d:4.3s" pathLength="100" fill="none" d="M 250 380 L 186 330 H 64" />
+              <circle class="co-dot a-fade" style="--d:4.3s" cx="250" cy="380" r="3.5" />
+              <text class="co-label a-fade" style="--d:4.45s" x="64" y="322" font-size="15" data-en="STEEL POST" data-es="POSTE DE ACERO">STEEL POST</text>
+            </g>
+            <g class="co-bed">
+              <path class="co a-draw" style="--d:4.4s" pathLength="100" fill="none" d="M 280 426 L 200 500 H 96" />
+              <circle class="co-dot a-fade" style="--d:4.4s" cx="280" cy="426" r="3.5" />
+              <text class="co-label a-fade" style="--d:4.55s" x="64" y="492" font-size="15" data-en="TREE BED" data-es="ALCORQUE">TREE BED</text>
+            </g>
+            <g class="co-plant-callout">
+              <path class="co a-draw" style="--d:4.5s" pathLength="100" fill="none" d="M 452 424 L 560 470 h 58" />
+              <circle class="co-dot a-fade" style="--d:4.5s" cx="452" cy="424" r="3.5" />
+              <text class="co-label a-fade" style="--d:4.65s" x="564" y="462" font-size="15" data-en="PLANTING" data-es="PLANTACIÓN">PLANTING</text>
+            </g>
+          </svg>
+
+          <figcaption class="spec-caption" data-en="FIG. 01 — TREE GUARD, ASSEMBLED INTO A TREE BED" data-es="FIG. 01 — PROTECTOR DE ÁRBOL, ENSAMBLADO EN EL ALCORQUE">FIG. 01 — TREE GUARD, ASSEMBLED INTO A TREE BED</figcaption>
+        </figure>
+      </div>
+
+      <div class="tg-text">
+        <div class="sticker tg-chip" style="--tilt:-2deg" data-en="Project 01" data-es="Proyecto 01">Project 01</div>
+        <h2 class="section-title" data-en="Tree Guards" data-es="Protectores de Árboles">Tree Guards</h2>
+
+        <p data-en="A tree guard is the low fence built around a street tree's bed — the tree pit — to shield the soil and roots from foot traffic, dogs, and litter." data-es="Un protector de árbol es la cerca baja que se construye alrededor de la cama de un árbol urbano — el alcorque — para proteger la tierra y las raíces del tránsito de peatones, los perros y la basura.">A tree guard is the low fence built around a street tree's bed — the tree pit — to shield the soil and roots from foot traffic, dogs, and litter.</p>
+        <p data-en="Compacted, trash-filled beds slowly choke the trees that shade our blocks. A simple guard turns a neglected pit into a small garden a block can actually care for." data-es="Las camas compactadas y llenas de basura asfixian poco a poco a los árboles que dan sombra a nuestras cuadras. Un simple protector convierte un alcorque descuidado en un pequeño jardín que la cuadra sí puede cuidar.">Compacted, trash-filled beds slowly choke the trees that shade our blocks. A simple guard turns a neglected pit into a small garden a block can actually care for.</p>
+        <p data-en="The specifics of our tree guard work — sites, numbers, and build progress — will be posted right here as they're confirmed." data-es="Los detalles de nuestro trabajo con protectores — lugares, cifras y avances de construcción — se publicarán aquí en cuanto se confirmen.">The specifics of our tree guard work — sites, numbers, and build progress — will be posted right here as they're confirmed.</p>
+
+        <ul class="pending-specs" aria-label="Pending details">
+          <li class="pending-chip" data-en="Sites — TBD" data-es="Lugares — TBD">Sites — TBD</li>
+          <li class="pending-chip" data-en="Guard count — TBD" data-es="Cantidad — TBD">Guard count — TBD</li>
+          <li class="pending-chip" data-en="Timeline — TBD" data-es="Calendario — TBD">Timeline — TBD</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="tape-seam" aria-hidden="true"></div>
+
+  <!-- MORE IN THE WORKS -->
+  <section class="more-section">
+    <div class="more-inner">
+      <h2 class="section-title" data-en="More in the works" data-es="Más en camino">More in the works</h2>
+      <p class="more-lede" data-en="Tree guards are the first entry — not the last. New projects land here as the club takes them on." data-es="Los protectores de árboles son la primera entrada — no la última. Los nuevos proyectos aparecerán aquí a medida que el club los emprenda.">Tree guards are the first entry — not the last. New projects land here as the club takes them on.</p>
+
+      <div class="more-grid">
+        <div class="placeholder-slot" style="--tilt:-1.2deg">
+          <div class="sticker" style="--tilt:-3deg" data-en="Coming soon" data-es="Muy pronto">Coming soon</div>
+          <p data-en="Next project — to be announced" data-es="Próximo proyecto — por anunciar">Next project — to be announced</p>
+        </div>
+        <div class="placeholder-slot" style="--tilt:1.4deg">
+          <div class="sticker" style="--tilt:2deg" data-en="Coming soon" data-es="Muy pronto">Coming soon</div>
+          <p data-en="Next project — to be announced" data-es="Próximo proyecto — por anunciar">Next project — to be announced</p>
+        </div>
+      </div>
+
+      <div class="more-cta">
+        <p data-en="Want to be first to hear when a project goes live?" data-es="¿Quieres ser de los primeros en enterarte cuando un proyecto arranque?">Want to be first to hear when a project goes live?</p>
+        <div class="more-cta-actions">
+          <a class="cta-btn" href="/#signup" data-en="Join the newsletter" data-es="Únete al boletín">Join the newsletter</a>
+          <a class="cta-btn cta-btn-alt" href="/events" data-en="Come to a cleanup" data-es="Ven a una limpieza">Come to a cleanup</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ── INTRO ── */
+  .projects-intro {
+    background: var(--off-white);
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) 0 max(var(--gutter), var(--safe-left));
+  }
+
+  .projects-intro p {
+    max-width: 62ch;
+    margin: 0 auto;
+    text-align: center;
+    font-size: var(--step-1);
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.55;
+  }
+
+  /* ── TREE GUARDS ── */
+  .tg-section {
+    background: var(--off-white);
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
+
+  .tg-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--space-lg);
+    align-items: center;
+  }
+
+  @media (max-width: 900px) {
+    .tg-inner { grid-template-columns: 1fr; }
+  }
+
+  /* Spec sheet card: white "paper" taped to the page, same tape device as
+     the About polaroid, but square-on — a tilt would fight the CAD register */
+  .spec-sheet {
+    position: relative;
+    margin: 0;
+    background: #fff;
+    border: 1px solid #d8d3c8;
+    border-radius: 4px;
+    padding: 0.6rem 0.6rem 0.9rem;
+    box-shadow: var(--press);
+  }
+
+  .spec-sheet::before,
+  .spec-sheet::after {
+    content: '';
+    position: absolute;
+    top: -0.8rem;
+    width: 4.5rem;
+    height: 1.6rem;
+    background: rgba(245, 208, 0, 0.75);
+    border: 1px solid rgba(201, 169, 0, 0.4);
+  }
+
+  .spec-sheet::before { left: 8%; transform: rotate(-5deg); }
+  .spec-sheet::after { right: 8%; transform: rotate(4deg); }
+
+  .assembly {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .assembly text {
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.06em;
+  }
+
+  .spec-caption {
+    margin-top: 0.6rem;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--gray);
+  }
+
+  /* drawing palette — brand tokens only, no blueprint blue */
+  .assembly .ink { stroke: var(--charcoal); }
+  .assembly .ink-thin { stroke: var(--charcoal); stroke-width: 1.2; }
+  .assembly .ink-fill { fill: var(--charcoal); }
+  .assembly .sheet-border { stroke: var(--charcoal); }
+  .assembly .title-block rect,
+  .assembly .title-block line { stroke: var(--charcoal); }
+  .assembly .title-block text { fill: var(--charcoal); }
+  .assembly .canopy { stroke-width: 1.4; }
+  .assembly .soil-dot { fill: var(--warm-gray); }
+  .assembly .sprig { stroke: var(--green-light); stroke-width: 1.6; stroke-linecap: round; }
+  .assembly .dim { stroke: var(--yellow-dark); }
+  .assembly .dim-fill { fill: var(--yellow-dark); }
+  .assembly .dim-label { fill: var(--yellow-dark); font-weight: 700; }
+  .assembly .co { stroke: var(--purple); stroke-width: 1.2; }
+  .assembly .co-dot { fill: var(--purple); }
+  .assembly .co-label { fill: var(--purple); font-weight: 700; }
+
+  @media (max-width: 700px) {
+    /* Fewer, larger annotations at phone widths — 15-unit text renders
+       ~7px at 390px viewport, which is not legible */
+    .assembly .co-post-callout,
+    .assembly .co-plant-callout { display: none; }
+    .assembly .co-label,
+    .assembly .dim-label { font-size: 22px; }
+  }
+
+  /* Assembly animation: only under an explicit motion preference and only
+     once .play lands (viewport entry). The finished drawing is the default
+     state, so the still is what everyone else gets. */
+  @media (prefers-reduced-motion: no-preference) {
+    .assembly.play .a-fade { animation: aFade 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
+    .assembly.play .a-draw { animation: aDraw 0.7s ease-out both; animation-delay: var(--d, 0s); }
+    .assembly.play .a-drop { animation: aDrop 0.55s var(--ease-out) both; animation-delay: var(--d, 0s); }
+    .assembly.play .a-rise { animation: aRise 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
+    .assembly.play .a-slide-l { animation: aSlideL 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
+    .assembly.play .a-slide-r { animation: aSlideR 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
+    .assembly.play .a-pop {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: aPop 0.3s var(--ease-out) both;
+      animation-delay: var(--d, 0s);
+    }
+  }
+
+  @keyframes aFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes aDraw {
+    from { stroke-dasharray: 100; stroke-dashoffset: 100; }
+    to { stroke-dasharray: 100; stroke-dashoffset: 0; }
+  }
+
+  @keyframes aDrop {
+    from { opacity: 0; transform: translateY(-46px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes aRise {
+    from { opacity: 0; transform: translateY(26px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes aSlideL {
+    from { opacity: 0; transform: translateX(-64px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes aSlideR {
+    from { opacity: 0; transform: translateX(64px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes aPop {
+    from { opacity: 0; transform: scale(0); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── TREE GUARDS COPY ── */
+  .tg-chip { margin-bottom: 1.1rem; }
+
+  .tg-text .section-title { color: var(--charcoal); }
+
+  .tg-text p {
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.8;
+    max-width: 55ch;
+    margin-bottom: 1rem;
+  }
+
+  .pending-specs {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 0;
+    margin-top: 1.4rem;
+  }
+
+  /* Dashed outline = intentionally awaiting content, same register as the
+     placeholder slots below */
+  .pending-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gray);
+    border: 2px dashed var(--warm-gray);
+    border-radius: 4px;
+    padding: 0.45em 0.9em;
+    background: transparent;
+  }
+
+  /* ── MORE IN THE WORKS ── */
+  .more-section {
+    background: var(--cream);
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
+
+  .more-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .more-inner .section-title { color: var(--charcoal); }
+
+  .more-lede {
+    max-width: 52ch;
+    margin: 0 auto var(--space-lg);
+    font-weight: 600;
+    color: #4a4850;
+    line-height: 1.7;
+  }
+
+  .more-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: var(--space-md);
+    max-width: 720px;
+    margin: 0 auto var(--space-lg);
+  }
+
+  .placeholder-slot {
+    border: 2px dashed var(--warm-gray);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg) var(--space-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transform: rotate(var(--tilt, 0deg));
+    background: rgba(247, 244, 237, 0.5);
+  }
+
+  .placeholder-slot p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+  }
+
+  .more-cta p {
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+  }
+
+  .more-cta-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap);
+    padding: 0.6rem 1.5rem;
+    background: var(--yellow);
+    color: var(--charcoal);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    border: 2px solid var(--charcoal);
+    border-radius: 6px;
+    box-shadow: var(--press-sm);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+  }
+
+  .cta-btn-alt {
+    background: var(--off-white);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cta-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 5px 5px 0 var(--charcoal);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-btn { transition: none; }
+    .cta-btn:hover { transform: none; }
+  }
+</style>
+
+<script>
+  // Play the assembly once when ~35% of the drawing is on screen, then
+  // leave it be — no loop, no off-screen animation. Reduced-motion users
+  // never get .play's animations (the CSS is media-gated), so the finished
+  // still renders immediately.
+  const fig = document.getElementById('assemblyFig');
+
+  if (fig) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          fig.classList.add('play');
+          io.disconnect();
+        }
+      });
+    }, { threshold: 0.35 });
+
+    io.observe(fig);
+  }
+</script>
