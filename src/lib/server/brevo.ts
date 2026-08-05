@@ -120,7 +120,7 @@ export function escapeHtml(value: string): string {
 }
 
 export interface InquiryEmailInput {
-  inquiryType: 'general' | 'partnership';
+  inquiryType: 'general' | 'partnership' | 'sponsor';
   fname: string;
   lname: string;
   email: string;
@@ -137,14 +137,18 @@ export interface InquiryEmailInput {
  * reply reaches them directly.
  */
 export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; htmlContent: string } {
-  const isCollab = input.inquiryType === 'partnership';
   // Distinct subject + heading per tab so the team can eyeball-triage (and
-  // Gmail-filter) collaboration inquiries vs general contact messages, and so
-  // a collaboration subject surfaces the organization at a glance.
-  const label = isCollab ? 'New collaboration inquiry' : 'New contact message';
+  // Gmail-filter) each inquiry kind, and so an org-backed subject surfaces
+  // the organization at a glance.
+  const labels: Record<InquiryEmailInput['inquiryType'], string> = {
+    general: 'New contact message',
+    partnership: 'New collaboration inquiry',
+    sponsor: 'New sponsorship inquiry',
+  };
+  const label = labels[input.inquiryType];
   const name = `${input.fname} ${input.lname}`.trim();
   const org = input.organization?.trim();
-  const subject = isCollab && org ? `${label} — ${name} · ${org}` : `${label} — ${name}`;
+  const subject = input.inquiryType !== 'general' && org ? `${label} — ${name} · ${org}` : `${label} — ${name}`;
 
   const rows: Array<[string, string | undefined]> = [
     ['Name', name],

@@ -277,7 +277,16 @@ export const server = {
       // Each tab routes to its own Brevo list. These env-var names are
       // short (no BREVO_LIST_ID_ prefix) because Netlify rejected the
       // longer names when the captain configured them — keep as-is.
-      const listIdVar = input.inquiryType === 'partnership' ? 'CONTACT_COLLAB' : 'CONTACT_GENERAL';
+      // TODO(captain): CONTACT_SPONSOR has no Brevo list ID yet — create the
+      // sponsor list in Brevo and set the var in Netlify (all deploy
+      // contexts). Until then sponsor submissions fail loudly with
+      // form_env_missing instead of silently landing in another list.
+      const listIdVars: Record<ContactInput['inquiryType'], string> = {
+        general: 'CONTACT_GENERAL',
+        partnership: 'CONTACT_COLLAB',
+        sponsor: 'CONTACT_SPONSOR',
+      };
+      const listIdVar = listIdVars[input.inquiryType];
 
       await upsertOrThrow(
         'contact',
@@ -293,7 +302,12 @@ export const server = {
         listIdVar,
       );
 
-      const noteForm = input.inquiryType === 'partnership' ? 'contact-collab' : 'contact-general';
+      const noteForms: Record<ContactInput['inquiryType'], string> = {
+        general: 'contact-general',
+        partnership: 'contact-collab',
+        sponsor: 'contact-sponsor',
+      };
+      const noteForm = noteForms[input.inquiryType];
       await tryCreateNote(noteForm, input.email, input.message);
       await tryNotifyInquiry(input);
 

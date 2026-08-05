@@ -32,9 +32,11 @@ Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermit
 * **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact.
 Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
 All are set identically across all Netlify deploy contexts (verified 2026-07).
+The Sponsor contact tab reads `CONTACT_SPONSOR`, which is **not set yet** — the captain must create the Brevo sponsor list and set the var in all deploy contexts; until then sponsor submissions fail loudly (`form_env_missing`, generic error in the UI) rather than landing in another list.
 * **Custom attribute map** (each must exist in the Brevo dashboard first or the upsert payload is rejected): `PHONE`, `INQUIRY_TYPE`, `WAIVER_ACCEPTED`, `MESSAGE`, `BOROUGH`, `HEAR_ABOUT_US`, `ORGANIZATION` (+ standard `FIRSTNAME`/`LASTNAME`).
 Signup sends FIRSTNAME, LASTNAME, BOROUGH, PHONE, MESSAGE (experience text), HEAR_ABOUT_US, WAIVER_ACCEPTED.
-Contact sends FIRSTNAME, LASTNAME, PHONE, INQUIRY_TYPE, ORGANIZATION (collab tab only), MESSAGE.
+Contact sends FIRSTNAME, LASTNAME, PHONE, INQUIRY_TYPE (`general` | `partnership` | `sponsor`), ORGANIZATION (collab + sponsor tabs), MESSAGE.
+`INQUIRY_TYPE` is a plain text attribute (verified via the attributes API 2026-08), so new inquiry-type values need no Brevo dashboard work.
 Empty-string fields are dropped before upsert so updates never blank existing values (`buildAttributes` in `src/lib/server/brevo.ts`).
 * **`PHONE` is a custom text attribute, not Brevo's native SMS/phone field.**
 The Brevo UI shows the native field prominently and shows custom attributes only in the contact's attribute panel (or as manually added list columns), so `PHONE`/`ORGANIZATION` can look "missing" in the UI while being present via API.
