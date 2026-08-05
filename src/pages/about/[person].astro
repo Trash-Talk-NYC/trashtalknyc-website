@@ -180,13 +180,15 @@ const imgTopPct = ((0.45 * FRAME_H - (fy * z) / PHOTO_AR) / FRAME_H) * 100;
     margin-bottom: 1.3rem;
   }
 
-  /* Hi-vis orange dash — same crossing-guard accent as the About cards */
+  /* Role dash — charcoal, matching the About cards (raw orange lines
+     are out by the round-13 captain rule; a 3px dash can't carry the
+     required charcoal border) */
   .person-role::before {
     content: '';
     display: inline-block;
     width: 1.1rem;
     height: 3px;
-    background: var(--orange);
+    background: var(--charcoal);
     border-radius: 2px;
     margin-right: 0.55rem;
     vertical-align: 0.18em;

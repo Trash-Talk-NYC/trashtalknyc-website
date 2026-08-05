@@ -557,26 +557,43 @@ const roles = [
   .team-entry {
     --entry: 18px;
     --lift: 0px;
-    /* Hi-vis orange at rest — the palette's third voice; warms to
-       yellow (the loudest colour) when the person is chosen */
-    border-top: 3px solid var(--orange);
-    padding-top: 1.3rem;
     opacity: 0;
     transform: translateY(calc(var(--entry) + var(--lift)));
     transition:
       opacity 440ms var(--ease-out),
-      transform 300ms var(--ease-out),
-      border-color 300ms var(--ease-out);
+      transform 300ms var(--ease-out);
+  }
+
+  /* Hi-vis orange at rest — the palette's third voice — as a small
+     taped-on tab: orange fill, hard charcoal border, press shadow.
+     Raw orange lines are out by captain decision (round 13); orange
+     only appears as a bordered object. Warms to yellow (the loudest
+     colour) when the person is chosen. */
+  .team-entry::before {
+    content: '';
+    display: block;
+    width: 3.2rem;
+    height: 0.85rem;
+    background: var(--orange);
+    border: 2px solid var(--charcoal);
+    border-radius: 3px;
+    box-shadow: var(--press-sm);
+    transform: rotate(-2deg);
+    margin-bottom: 1.15rem;
+    transition: background 300ms var(--ease-out);
   }
 
   .team-entry.visible { opacity: 1; --entry: 0px; }
 
-  /* Hover/focus on a face raises that entry, and its rule answers in
+  /* Hover/focus on a face raises that entry, and its tab answers in
      yellow; the other two step back gently. Resting state stays at
      full strength. */
   .team-entry.is-raised {
     --lift: -8px;
-    border-top-color: var(--yellow);
+  }
+
+  .team-entry.is-raised::before {
+    background: var(--yellow);
   }
 
   .team-entry.is-receded {
@@ -616,13 +633,15 @@ const roles = [
     }
   }
 
-  /* Hi-vis orange dash — the crossing-guard accent, small marks only */
+  /* Role dash — charcoal since round 13 (raw orange lines are out and
+     a 3px dash can't carry a border; the orange tab above the name is
+     the entry's orange now) */
   .team-role::before {
     content: '';
     display: inline-block;
     width: 1.1rem;
     height: 3px;
-    background: var(--orange);
+    background: var(--charcoal);
     border-radius: 2px;
     margin-right: 0.55rem;
     vertical-align: 0.18em;
@@ -820,7 +839,6 @@ const roles = [
     gap: 0.55rem;
     background: var(--off-white);
     border: 3px solid var(--charcoal);
-    border-top: 6px solid var(--accent);
     border-radius: var(--radius-sm);
     box-shadow: 5px 5px 0 var(--purple-light);
     padding: 1.1rem 1.2rem 1.2rem;
@@ -830,6 +848,20 @@ const roles = [
     transform: rotate(var(--card-tilt, 0deg));
     transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Per-card colour identity as a bordered swatch bar INSIDE the
+     charcoal card frame — never a raw colour edge (the round-13 rule:
+     orange, and by extension every accent, only appears bordered in
+     charcoal, same as the yellow sticker chips). */
+  .role-card::before {
+    content: '';
+    display: block;
+    height: 0.7rem;
+    background: var(--accent);
+    border: 2px solid var(--charcoal);
+    border-radius: 3px;
+    margin-bottom: 0.2rem;
   }
 
   @media (hover: hover) and (pointer: fine) {
