@@ -56,7 +56,7 @@ Turnstile tokens are single-use, so the page scripts call `window.turnstile.rese
 
 `/projects` (linked from the nav's About dropdown alongside The Team) has its structure and design in place but is **intentionally pending real content**: the captain has not yet supplied Tree Guards specifics (sites, counts, timeline) or any further projects.
 The "TBD" dimension labels in the tree-guard spec drawing, the dashed pending chips, and the "Coming soon" placeholder slots are deliberate — do not fill them with invented specifics; only the captain supplies real numbers, locations, dates, or partners.
-The tree-guard drawing in `src/pages/projects.astro` is a hand-authored inline SVG whose **assembled state is the CSS default**; animation only runs when viewport entry adds `.play` under `prefers-reduced-motion: no-preference`, so reduced-motion and no-JS users always get the finished still — keep that invariant when touching it.
+The tree-guard model in `src/pages/projects.astro` is a CSS-3D scene (same perspective/preserve-3d technique as the 404 street scene) whose scroll-linked yaw is written to the `--ry` custom property by JS; **the CSS fallback value of `--ry` is the fixed three-quarter view that reduced-motion and no-JS visitors get**, and the scroll listener is gated by both `prefers-reduced-motion` and an IntersectionObserver — keep those invariants when touching it.
 
 ## E2E Testing
 

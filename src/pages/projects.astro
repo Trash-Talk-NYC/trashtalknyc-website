@@ -22,116 +22,78 @@ import PageHero from '../components/PageHero.astro';
     <div class="tg-inner">
 
       <div class="tg-figure-col">
-        <figure class="spec-sheet">
-          <!-- The drawing carries meaning, so the SVG is aria-hidden and this
+        <figure class="spec-sheet grid-paper">
+          <!-- The model carries meaning, so the scene is aria-hidden and this
                bilingual description is the accessible text alternative — the
                site's setLang only swaps textContent, so aria-label would never
-               translate. -->
-          <p class="sr-only" data-en="Technical drawing of a tree guard: a low metal fence of four posts and two rails assembled around a street tree's soil bed, with the tree rising from the planted bed. Dimension lines are marked TBD because build specifications are still pending." data-es="Dibujo técnico de un protector de árbol: una cerca baja de metal con cuatro postes y dos rieles ensamblada alrededor del alcorque de un árbol urbano, con el árbol creciendo desde la cama plantada. Las líneas de dimensión dicen TBD porque las especificaciones de construcción aún están pendientes.">Technical drawing of a tree guard: a low metal fence of four posts and two rails assembled around a street tree's soil bed, with the tree rising from the planted bed. Dimension lines are marked TBD because build specifications are still pending.</p>
+               translate. The spec table below is real, readable HTML. -->
+          <p class="sr-only" data-en="A model of a tree guard: a low fence of steel posts, rails, and pickets enclosing all four sides of a street tree's planted soil bed, with the tree rising from the middle. The model turns slightly as the page scrolls. Its measurements are listed as TBD in the spec table because build specifications are still pending." data-es="Una maqueta de un protector de árbol: una cerca baja de postes de acero, rieles y barrotes que rodea los cuatro lados del alcorque plantado de un árbol urbano, con el árbol creciendo desde el centro. La maqueta gira ligeramente al desplazarse por la página. Sus medidas aparecen como TBD en la tabla de especificaciones porque aún están pendientes.">A model of a tree guard: a low fence of steel posts, rails, and pickets enclosing all four sides of a street tree's planted soil bed, with the tree rising from the middle. The model turns slightly as the page scrolls. Its measurements are listed as TBD in the spec table because build specifications are still pending.</p>
 
-          <!-- Hand-authored spec drawing. The assembled state is the CSS
-               default; animation only runs when .play lands (viewport entry)
-               under prefers-reduced-motion: no-preference — so reduced-motion,
-               no-JS, and print all get the finished still. Plays once, no
-               loop: it sits beside body copy and a loop would fidget forever. -->
-          <svg id="assemblyFig" class="assembly" viewBox="0 0 760 600" width="760" height="600" aria-hidden="true">
-            <defs>
-              <pattern id="specGrid" width="24" height="24" patternUnits="userSpaceOnUse">
-                <path d="M 24 0 H 0 V 24" fill="none" stroke="#1c1c22" stroke-opacity="0.05" stroke-width="1" />
-              </pattern>
-            </defs>
+          <!-- CSS-3D model, same technique as the 404 street scene:
+               perspective on the stage, preserve-3d world, planes placed with
+               rotateY/translateZ. The world's yaw is driven by --ry, which JS
+               updates on scroll (gated to viewport + prefers-reduced-motion);
+               without JS or with reduced motion the CSS fallback value below
+               holds a fixed three-quarter view. -->
+          <div class="model-scene" aria-hidden="true">
+            <div class="model-world" id="guardModel">
+              <div class="bed"></div>
 
-            <!-- sheet frame + construction grid -->
-            <rect class="sheet-border a-fade" style="--d:0s" x="6" y="6" width="748" height="588" fill="none" stroke-width="1.5" />
-            <rect class="a-fade" style="--d:.1s" x="7" y="7" width="746" height="586" fill="url(#specGrid)" />
+              <div class="guard-side side-f"></div>
+              <div class="guard-side side-b"></div>
+              <div class="guard-side side-l"></div>
+              <div class="guard-side side-r"></div>
 
-            <!-- title block, bottom-right, flush with the frame -->
-            <g class="title-block a-fade" style="--d:.2s">
-              <rect x="524" y="538" width="230" height="56" fill="none" stroke-width="1.2" />
-              <line x1="524" y1="556" x2="754" y2="556" stroke-width="0.8" />
-              <line x1="524" y1="575" x2="754" y2="575" stroke-width="0.8" />
-              <text x="534" y="551" font-size="12" font-weight="700">TRASH TALK NYC</text>
-              <text x="534" y="570" font-size="11" data-en="DWG 01 — TREE GUARD" data-es="DWG 01 — PROTECTOR DE ÁRBOL">DWG 01 — TREE GUARD</text>
-              <text x="534" y="589" font-size="10" data-en="SCALE — NTS · SPEC PENDING" data-es="ESCALA — S/E · SPEC PENDIENTE">SCALE — NTS · SPEC PENDING</text>
-            </g>
+              <!-- crossed-plane "paper model" tree: the guard is the subject,
+                   the tree just has to read as a tree from every yaw angle -->
+              <div class="tree">
+                <div class="tree-plane"></div>
+                <div class="tree-plane tree-plane-x"></div>
+              </div>
 
-            <!-- ground line + section hatching outside the bed -->
-            <path class="ink a-draw" style="--d:.3s" pathLength="100" d="M 60 430 H 700" stroke-width="2" fill="none" />
-            <path class="ink-thin a-draw" style="--d:.5s" pathLength="100" fill="none" d="M 70 440 l 8 -8 M 90 440 l 8 -8 M 110 440 l 8 -8 M 130 440 l 8 -8 M 150 440 l 8 -8 M 170 440 l 8 -8 M 190 440 l 8 -8 M 210 440 l 8 -8 M 520 440 l 8 -8 M 540 440 l 8 -8 M 560 440 l 8 -8 M 580 440 l 8 -8 M 600 440 l 8 -8 M 620 440 l 8 -8 M 640 440 l 8 -8 M 660 440 l 8 -8 M 680 440 l 8 -8" />
+              <div class="sprig sprig-a"><span class="sprig-plane"></span><span class="sprig-plane sprig-plane-x"></span></div>
+              <div class="sprig sprig-b"><span class="sprig-plane"></span><span class="sprig-plane sprig-plane-x"></span></div>
 
-            <!-- tree pit: curb blocks + soil + planting -->
-            <g class="a-rise" style="--d:.9s">
-              <rect class="ink-fill" x="230" y="422" width="10" height="8" />
-              <rect class="ink-fill" x="500" y="422" width="10" height="8" />
-            </g>
-            <g class="a-fade" style="--d:1.1s">
-              <circle class="soil-dot" cx="262" cy="426" r="1.6" />
-              <circle class="soil-dot" cx="285" cy="423" r="1.4" />
-              <circle class="soil-dot" cx="308" cy="427" r="1.6" />
-              <circle class="soil-dot" cx="336" cy="424" r="1.4" />
-              <circle class="soil-dot" cx="398" cy="426" r="1.6" />
-              <circle class="soil-dot" cx="428" cy="423" r="1.4" />
-              <circle class="soil-dot" cx="462" cy="427" r="1.6" />
-              <circle class="soil-dot" cx="484" cy="424" r="1.4" />
-              <path class="sprig" fill="none" d="M 276 428 l -4 -13 M 276 428 l 4 -10 M 318 428 l -3 -11 M 318 428 l 4 -13 M 444 428 l -4 -12 M 444 428 l 3 -10 M 474 428 l -3 -11 M 474 428 l 4 -13" />
-            </g>
+              <!-- numbered part markers; the inner span counter-rotates by
+                   -–ry so labels always face the camera (billboarding) -->
+              <div class="badge badge-1"><span>01</span></div>
+              <div class="badge badge-2"><span>02</span></div>
+              <div class="badge badge-3"><span>03</span></div>
+              <div class="badge badge-4"><span>04</span></div>
+            </div>
+          </div>
 
-            <!-- tree: trunk, branches, revision-cloud canopy -->
-            <path class="ink a-draw" style="--d:1.2s" pathLength="100" fill="none" stroke-width="2.5" d="M 362 430 C 363 340 358 260 364 195" />
-            <path class="ink a-draw" style="--d:1.3s" pathLength="100" fill="none" stroke-width="2.5" d="M 378 430 C 377 340 381 260 375 195" />
-            <path class="ink-thin a-draw" style="--d:1.45s" pathLength="100" fill="none" d="M 364 250 C 342 230 332 214 324 198 M 375 268 C 398 248 410 232 418 216" />
-            <path class="ink-thin a-draw canopy" style="--d:1.6s" pathLength="100" fill="none" d="M 470 148 A 34 34 0 0 0 451 117 A 34 34 0 0 0 401 96 A 34 34 0 0 0 339 96 A 34 34 0 0 0 289 117 A 34 34 0 0 0 270 148 A 34 34 0 0 0 289 179 A 34 34 0 0 0 339 200 A 34 34 0 0 0 401 200 A 34 34 0 0 0 451 179 A 34 34 0 0 0 470 148 Z" />
+          <!-- What survived from the drawing furniture: part names and the
+               TBD dimensions, as an honest parts list — the captain still
+               hasn't supplied real measurements -->
+          <table class="spec-panel">
+            <thead>
+              <tr>
+                <th data-en="Part" data-es="Pieza">Part</th>
+                <th data-en="Spec — pending" data-es="Espec. — pendiente">Spec — pending</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="spec-num">01</span><span data-en="Steel post ×4" data-es="Poste de acero ×4">Steel post ×4</span></td>
+                <td>H · TBD</td>
+              </tr>
+              <tr>
+                <td><span class="spec-num">02</span><span data-en="Top rail ×4" data-es="Riel superior ×4">Top rail ×4</span></td>
+                <td>L · TBD</td>
+              </tr>
+              <tr>
+                <td><span class="spec-num">03</span><span data-en="Tree bed" data-es="Alcorque">Tree bed</span></td>
+                <td>W × W · TBD</td>
+              </tr>
+              <tr>
+                <td><span class="spec-num">04</span><span data-en="Planting" data-es="Plantación">Planting</span></td>
+                <td>TBD</td>
+              </tr>
+            </tbody>
+          </table>
 
-            <!-- the guard: posts drop in, rails slide, finials pop -->
-            <line class="ink post a-drop" style="--d:2s"    x1="250" y1="354" x2="250" y2="430" stroke-width="6" />
-            <line class="ink post a-drop" style="--d:2.15s" x1="330" y1="354" x2="330" y2="430" stroke-width="6" />
-            <line class="ink post a-drop" style="--d:2.3s"  x1="410" y1="354" x2="410" y2="430" stroke-width="6" />
-            <line class="ink post a-drop" style="--d:2.45s" x1="490" y1="354" x2="490" y2="430" stroke-width="6" />
-            <line class="ink a-slide-r" style="--d:2.8s" x1="244" y1="404" x2="496" y2="404" stroke-width="3.5" />
-            <line class="ink a-slide-l" style="--d:3s"   x1="242" y1="356" x2="498" y2="356" stroke-width="5" />
-            <circle class="ink-fill a-pop" style="--d:3.3s"  cx="250" cy="347" r="5" />
-            <circle class="ink-fill a-pop" style="--d:3.4s"  cx="330" cy="347" r="5" />
-            <circle class="ink-fill a-pop" style="--d:3.5s"  cx="410" cy="347" r="5" />
-            <circle class="ink-fill a-pop" style="--d:3.6s"  cx="490" cy="347" r="5" />
-
-            <!-- dimensions — measurements read TBD on purpose: the spec is
-                 the captain's to supply, and the drawing says so -->
-            <g class="dims">
-              <path class="dim a-draw" style="--d:3.8s" pathLength="100" fill="none" d="M 244 354 H 196 M 244 430 H 196" stroke-width="1" />
-              <line class="dim a-draw" style="--d:3.9s" pathLength="100" x1="204" y1="358" x2="204" y2="426" stroke-width="1.5" />
-              <path class="dim-fill a-fade" style="--d:4.1s" d="M 204 354 l -4 9 h 8 z M 204 430 l -4 -9 h 8 z" />
-              <text class="dim-label a-fade" style="--d:4.1s" x="190" y="392" font-size="15" text-anchor="middle" transform="rotate(-90 190 392)">H · TBD</text>
-
-              <path class="dim a-draw" style="--d:3.8s" pathLength="100" fill="none" d="M 238 438 V 474 M 502 438 V 474" stroke-width="1" />
-              <line class="dim a-draw" style="--d:3.9s" pathLength="100" x1="244" y1="466" x2="496" y2="466" stroke-width="1.5" />
-              <path class="dim-fill a-fade" style="--d:4.1s" d="M 238 466 l 9 -4 v 8 z M 502 466 l -9 -4 v 8 z" />
-              <text class="dim-label a-fade" style="--d:4.1s" x="370" y="459" font-size="15" text-anchor="middle" data-en="W · TBD" data-es="A · TBD">W · TBD</text>
-            </g>
-
-            <!-- part callouts; the two secondary ones hide at phone widths -->
-            <g class="co-rail">
-              <path class="co a-draw" style="--d:4.2s" pathLength="100" fill="none" d="M 466 356 L 530 306 h 66" />
-              <circle class="co-dot a-fade" style="--d:4.2s" cx="466" cy="356" r="3.5" />
-              <text class="co-label a-fade" style="--d:4.35s" x="534" y="298" font-size="15" data-en="TOP RAIL" data-es="RIEL SUPERIOR">TOP RAIL</text>
-            </g>
-            <g class="co-post-callout">
-              <path class="co a-draw" style="--d:4.3s" pathLength="100" fill="none" d="M 250 380 L 186 330 H 64" />
-              <circle class="co-dot a-fade" style="--d:4.3s" cx="250" cy="380" r="3.5" />
-              <text class="co-label a-fade" style="--d:4.45s" x="64" y="322" font-size="15" data-en="STEEL POST" data-es="POSTE DE ACERO">STEEL POST</text>
-            </g>
-            <g class="co-bed">
-              <path class="co a-draw" style="--d:4.4s" pathLength="100" fill="none" d="M 280 426 L 200 500 H 96" />
-              <circle class="co-dot a-fade" style="--d:4.4s" cx="280" cy="426" r="3.5" />
-              <text class="co-label a-fade" style="--d:4.55s" x="64" y="492" font-size="15" data-en="TREE BED" data-es="ALCORQUE">TREE BED</text>
-            </g>
-            <g class="co-plant-callout">
-              <path class="co a-draw" style="--d:4.5s" pathLength="100" fill="none" d="M 452 424 L 560 470 h 58" />
-              <circle class="co-dot a-fade" style="--d:4.5s" cx="452" cy="424" r="3.5" />
-              <text class="co-label a-fade" style="--d:4.65s" x="564" y="462" font-size="15" data-en="PLANTING" data-es="PLANTACIÓN">PLANTING</text>
-            </g>
-          </svg>
-
-          <figcaption class="spec-caption" data-en="FIG. 01 — TREE GUARD, ASSEMBLED INTO A TREE BED" data-es="FIG. 01 — PROTECTOR DE ÁRBOL, ENSAMBLADO EN EL ALCORQUE">FIG. 01 — TREE GUARD, ASSEMBLED INTO A TREE BED</figcaption>
+          <figcaption class="spec-caption" data-en="FIG. 01 — TREE GUARD, MODEL VIEW" data-es="FIG. 01 — PROTECTOR DE ÁRBOL, VISTA DE MAQUETA">FIG. 01 — TREE GUARD, MODEL VIEW</figcaption>
         </figure>
       </div>
 
@@ -232,8 +194,9 @@ import PageHero from '../components/PageHero.astro';
     .tg-inner { grid-template-columns: 1fr; }
   }
 
-  /* Spec sheet card: white "paper" taped to the page, same tape device as
-     the About polaroid, but square-on — a tilt would fight the CAD register */
+  /* The taped-down sheet stays as the stage the model stands on — same tape
+     device as the About polaroid, square-on, with the site's graph-paper
+     texture so the model still belongs to this page rather than floating */
   .spec-sheet {
     position: relative;
     margin: 0;
@@ -253,110 +216,276 @@ import PageHero from '../components/PageHero.astro';
     height: 1.6rem;
     background: rgba(245, 208, 0, 0.75);
     border: 1px solid rgba(201, 169, 0, 0.4);
+    z-index: 1;
   }
 
   .spec-sheet::before { left: 8%; transform: rotate(-5deg); }
   .spec-sheet::after { right: 8%; transform: rotate(4deg); }
 
-  .assembly {
-    display: block;
-    width: 100%;
-    height: auto;
+  /* ── THE 3D MODEL ── */
+  .model-scene {
+    /* Guard footprint drives every other dimension of the model */
+    --gs: clamp(180px, 24vw, 250px);
+    --gh: calc(var(--gs) * 0.42);
+    position: relative;
+    height: clamp(290px, 74vw, 375px);
+    perspective: 950px;
+    perspective-origin: 50% 30%;
+    overflow: hidden;
   }
 
-  .assembly text {
+  .model-world {
+    position: absolute;
+    left: 50%;
+    top: 66%;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    /* --ry fallback = the fixed three-quarter view that reduced-motion and
+       no-JS visitors get; JS overrides it on scroll for everyone else */
+    transform: rotateX(-16deg) rotateY(var(--ry, -22deg));
+  }
+
+  /* Ground plane: soil + curb. The offset box-shadow renders in-plane after
+     rotateX(90), so it reads as the model's shadow cast on the sheet. */
+  .bed {
+    position: absolute;
+    width: var(--gs);
+    height: var(--gs);
+    left: calc(var(--gs) / -2);
+    top: calc(var(--gs) / -2);
+    transform: rotateX(90deg);
+    background-color: color-mix(in srgb, var(--cream) 76%, var(--charcoal) 24%);
+    background-image: radial-gradient(rgba(28, 28, 34, 0.4) 1.5px, transparent 2px);
+    background-size: 24px 24px;
+    border: 3px solid var(--charcoal);
+    border-radius: 4px;
+    box-shadow: 14px 14px 0 rgba(28, 28, 34, 0.12);
+  }
+
+  .bed::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border: 4px solid var(--charcoal);
+    border-radius: 6px;
+  }
+
+  /* One div per railing side: corner posts + pickets are layered background
+     gradients, rails are the pseudo-elements. The plane is transparent, so
+     the far side shows through — which is exactly right for an open fence. */
+  .guard-side {
+    position: absolute;
+    width: var(--gs);
+    height: var(--gh);
+    left: calc(var(--gs) / -2);
+    bottom: 0;
+    background-image:
+      linear-gradient(var(--charcoal), var(--charcoal)),
+      linear-gradient(var(--charcoal), var(--charcoal)),
+      repeating-linear-gradient(90deg, var(--charcoal) 0 3px, transparent 3px calc(var(--gs) / 7));
+    background-size: 7px 100%, 7px 100%, calc(100% - 24px) calc(100% - 26px);
+    background-position: left top, right top, 12px 8px;
+    background-repeat: no-repeat;
+  }
+
+  .guard-side::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -2px;
+    right: -2px;
+    height: 7px;
+    background: var(--charcoal);
+    border-radius: 2px;
+  }
+
+  .guard-side::after {
+    content: '';
+    position: absolute;
+    bottom: 11px;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--charcoal);
+  }
+
+  .side-f { transform: translateZ(calc(var(--gs) / 2)); }
+  .side-b { transform: rotateY(180deg) translateZ(calc(var(--gs) / 2)); }
+  .side-l { transform: rotateY(-90deg) translateZ(calc(var(--gs) / 2)); }
+  .side-r { transform: rotateY(90deg) translateZ(calc(var(--gs) / 2)); }
+
+  /* Crossed planes read as a volume from any yaw angle — the same
+     cardboard-cutout register as the site's flat illustration style */
+  .tree {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+
+  .tree-plane {
+    --tw: calc(var(--gs) * 0.62);
+    position: absolute;
+    width: var(--tw);
+    height: calc(var(--gs) * 0.98);
+    left: calc(var(--tw) / -2);
+    bottom: 0;
+    /* 45°/135° instead of 0°/90°: within the scroll yaw range (-30°..6°)
+       neither plane ever goes edge-on, so the crown always reads full */
+    transform: rotateY(45deg);
+  }
+
+  .tree-plane-x { transform: rotateY(135deg); }
+
+  .tree-plane::before {
+    content: '';
+    position: absolute;
+    left: calc(50% - 6px);
+    bottom: 0;
+    width: 12px;
+    height: 58%;
+    background: var(--charcoal);
+    border-radius: 3px 3px 0 0;
+  }
+
+  .tree-plane::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 4%;
+    width: 92%;
+    height: 50%;
+    background: var(--green-light);
+    border: 3px solid var(--charcoal);
+    border-radius: 48% 52% 45% 55% / 58% 50% 55% 45%;
+  }
+
+  .sprig {
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+
+  .sprig-a { transform: translate3d(calc(var(--gs) * -0.26), 0, calc(var(--gs) * 0.18)); }
+  .sprig-b { transform: translate3d(calc(var(--gs) * 0.22), 0, calc(var(--gs) * -0.12)); }
+
+  .sprig-plane {
+    position: absolute;
+    width: 22px;
+    height: 26px;
+    left: -11px;
+    bottom: 0;
+  }
+
+  .sprig-plane-x { transform: rotateY(90deg); }
+
+  .sprig-plane::before,
+  .sprig-plane::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    border-radius: 2px;
+    transform-origin: bottom;
+  }
+
+  .sprig-plane::before {
+    height: 20px;
+    background: var(--green);
+    transform: rotate(-20deg);
+  }
+
+  .sprig-plane::after {
+    height: 16px;
+    background: var(--green-light);
+    transform: rotate(18deg);
+  }
+
+  /* Numbered part markers, keyed to the spec table below. The inner span
+     undoes the world rotation so labels always face the camera. */
+  .badge {
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+
+  .badge span {
+    position: absolute;
+    left: -11px;
+    top: -11px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    background: var(--charcoal);
+    color: var(--yellow);
     font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border-radius: 50%;
+    box-shadow: 2px 2px 0 var(--purple-light);
+    transform: rotateY(calc(var(--ry, -22deg) * -1)) rotateX(16deg);
+  }
+
+  .badge-1 { transform: translate3d(calc(var(--gs) / -2), calc(var(--gh) * -1 - 18px), calc(var(--gs) / 2)); }
+  .badge-2 { transform: translate3d(calc(var(--gs) * 0.26), calc(var(--gh) * -1 - 6px), calc(var(--gs) / 2 + 2px)); }
+  .badge-3 { transform: translate3d(calc(var(--gs) * 0.36), -12px, calc(var(--gs) * 0.36)); }
+  .badge-4 { transform: translate3d(calc(var(--gs) * -0.26), -36px, calc(var(--gs) * 0.18)); }
+
+  /* ── SPEC PANEL ── */
+  .spec-panel {
+    width: 100%;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
     letter-spacing: 0.06em;
   }
 
+  .spec-panel th {
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    color: var(--gray);
+    border-bottom: 2px solid var(--charcoal);
+    padding: 0.35rem 0.5rem;
+  }
+
+  .spec-panel td {
+    padding: 0.45rem 0.5rem;
+    border-bottom: 1px dashed var(--warm-gray);
+    color: #4a4850;
+    font-weight: 700;
+  }
+
+  .spec-panel td:last-child,
+  .spec-panel th:last-child {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .spec-panel td:last-child { color: var(--gray); }
+
+  .spec-num {
+    color: var(--purple);
+    margin-right: 0.5em;
+  }
+
   .spec-caption {
-    margin-top: 0.6rem;
+    margin-top: 0.7rem;
     text-align: center;
     font-family: 'Space Mono', monospace;
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     color: var(--gray);
-  }
-
-  /* drawing palette — brand tokens only, no blueprint blue */
-  .assembly .ink { stroke: var(--charcoal); }
-  .assembly .ink-thin { stroke: var(--charcoal); stroke-width: 1.2; }
-  .assembly .ink-fill { fill: var(--charcoal); }
-  .assembly .sheet-border { stroke: var(--charcoal); }
-  .assembly .title-block rect,
-  .assembly .title-block line { stroke: var(--charcoal); }
-  .assembly .title-block text { fill: var(--charcoal); }
-  .assembly .canopy { stroke-width: 1.4; }
-  .assembly .soil-dot { fill: var(--warm-gray); }
-  .assembly .sprig { stroke: var(--green-light); stroke-width: 1.6; stroke-linecap: round; }
-  .assembly .dim { stroke: var(--yellow-dark); }
-  .assembly .dim-fill { fill: var(--yellow-dark); }
-  .assembly .dim-label { fill: var(--yellow-dark); font-weight: 700; }
-  .assembly .co { stroke: var(--purple); stroke-width: 1.2; }
-  .assembly .co-dot { fill: var(--purple); }
-  .assembly .co-label { fill: var(--purple); font-weight: 700; }
-
-  @media (max-width: 700px) {
-    /* Fewer, larger annotations at phone widths — 15-unit text renders
-       ~7px at 390px viewport, which is not legible */
-    .assembly .co-post-callout,
-    .assembly .co-plant-callout { display: none; }
-    .assembly .co-label,
-    .assembly .dim-label { font-size: 22px; }
-  }
-
-  /* Assembly animation: only under an explicit motion preference and only
-     once .play lands (viewport entry). The finished drawing is the default
-     state, so the still is what everyone else gets. */
-  @media (prefers-reduced-motion: no-preference) {
-    .assembly.play .a-fade { animation: aFade 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
-    .assembly.play .a-draw { animation: aDraw 0.7s ease-out both; animation-delay: var(--d, 0s); }
-    .assembly.play .a-drop { animation: aDrop 0.55s var(--ease-out) both; animation-delay: var(--d, 0s); }
-    .assembly.play .a-rise { animation: aRise 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
-    .assembly.play .a-slide-l { animation: aSlideL 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
-    .assembly.play .a-slide-r { animation: aSlideR 0.5s var(--ease-out) both; animation-delay: var(--d, 0s); }
-    .assembly.play .a-pop {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: aPop 0.3s var(--ease-out) both;
-      animation-delay: var(--d, 0s);
-    }
-  }
-
-  @keyframes aFade {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes aDraw {
-    from { stroke-dasharray: 100; stroke-dashoffset: 100; }
-    to { stroke-dasharray: 100; stroke-dashoffset: 0; }
-  }
-
-  @keyframes aDrop {
-    from { opacity: 0; transform: translateY(-46px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes aRise {
-    from { opacity: 0; transform: translateY(26px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes aSlideL {
-    from { opacity: 0; transform: translateX(-64px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  @keyframes aSlideR {
-    from { opacity: 0; transform: translateX(64px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  @keyframes aPop {
-    from { opacity: 0; transform: scale(0); }
-    to { opacity: 1; transform: scale(1); }
   }
 
   /* ── TREE GUARDS COPY ── */
@@ -499,22 +628,45 @@ import PageHero from '../components/PageHero.astro';
 </style>
 
 <script>
-  // Play the assembly once when ~35% of the drawing is on screen, then
-  // leave it be — no loop, no off-screen animation. Reduced-motion users
-  // never get .play's animations (the CSS is media-gated), so the finished
-  // still renders immediately.
-  const fig = document.getElementById('assemblyFig');
+  // Scroll-linked yaw: as the scene crosses the viewport the model turns
+  // from -30° to +6° — enough to see around it, not a carousel. Gated three
+  // ways: reduced-motion users keep the CSS fallback angle entirely, the
+  // scroll listener only exists while the scene is on screen, and updates
+  // are rAF-coalesced transform-only writes (no layout thrash).
+  const world = document.getElementById('guardModel');
+  const scene = document.querySelector('.model-scene');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (fig) {
+  if (world && scene && !reduceMotion) {
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const r = scene.getBoundingClientRect();
+      const center = r.top + r.height / 2;
+      const t = Math.min(1, Math.max(0, 1 - center / window.innerHeight));
+      const yaw = -30 + t * 36;
+      world.style.setProperty('--ry', `${yaw.toFixed(2)}deg`);
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          fig.classList.add('play');
-          io.disconnect();
+          window.addEventListener('scroll', onScroll, { passive: true });
+          update();
+        } else {
+          window.removeEventListener('scroll', onScroll);
         }
       });
-    }, { threshold: 0.35 });
+    });
 
-    io.observe(fig);
+    io.observe(scene);
   }
 </script>
