@@ -142,20 +142,23 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
   }
 
   /* iOS Safari opens a strip above a stuck header during rubber-band
-     overscroll and collapsing-chrome transitions, exposing page background
-     in the notch/dynamic-island area. Paint header color above the bar so
-     that strip always reads as chrome. Scoped to widths where the social
-     bar is hidden — on wider screens it sits above the nav and the bleed
-     would cover it at the top of the page. */
+     overscroll and collapsing-chrome transitions, exposing page content
+     in the notch/dynamic-island area (captain device reports 2026-07-10
+     and 2026-08). A ::before bleed hanging outside the border box used to
+     cover this, but iOS composites the sticky header onto its own layer
+     and does not reliably paint out-of-box content mid-frame — exactly
+     when the strip opens. So the cover lives INSIDE the border box:
+     120px of extra top padding, pulled offscreen by the matching negative
+     margin (flow height stays 63px + safe area) and negative sticky
+     offset — no frame of any chrome transition or viewport displacement
+     can show anything above the header except its own charcoal. Scoped
+     to widths where the social bar is hidden; on wider screens it sits
+     above the nav and this region would cover it at the top of the page. */
   @media (max-width: 768px) {
-    nav::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 100%;
-      height: 120px;
-      background: var(--charcoal);
+    nav {
+      top: -120px;
+      margin-top: -120px;
+      padding-top: calc(120px + var(--safe-top));
     }
   }
 

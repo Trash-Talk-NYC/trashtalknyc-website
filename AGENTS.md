@@ -78,11 +78,14 @@ See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling a
 * Images live in `src/assets/` and render through `<Image>` from `astro:assets` — never `public/` (raw files there bypass optimization; the 529 KB logo alone would have blown the bandwidth budget at target traffic).
 The adapter sets `imageCDN: false` deliberately, so optimization happens at build time via sharp into immutable `/_astro/*.webp` files — keep it that way.
 Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descendant selector in a scoped `<style>` is fragile against the component's rendered output), and `<Image>` always emits `width`/`height` attributes, so any CSS `aspect-ratio` crop needs an explicit `height: auto` or the height attribute wins (this silently broke the About polaroid once).
-* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over it.
+* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the in-box charcoal cover above the nav logo that handles rubber-band/toolbar-transition gaps) can never paint over it.
 What colors it depends on the iOS version, and this burned us twice: iOS 15–17 use the `theme-color` meta in `BaseLayout.astro`, but iOS 26 (Liquid Glass) **ignores `theme-color` entirely** and samples the **`body` element's `background-color`** — not the `html` canvas, not the sticky nav, not pseudo-elements (verified by pixel-sampling simulator screenshots).
 That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
 Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
 Local simulators max out at iOS 18, which still honors `theme-color`, so to emulate iOS 26 chrome behavior temporarily remove the `theme-color` meta and confirm the strip still renders charcoal from the body background alone.
+* The charcoal region that covers the mid-scroll gap iOS opens above the sticky header (captain device reports 2026-07-10 and 2026-08) must live *inside* the nav's border box — extra top padding pulled offscreen by a matching negative `margin-top` and negative sticky `top` in `NavBar.astro`'s ≤768px block — never in a pseudo-element hanging outside it.
+iOS composites the sticky header onto its own layer and does not reliably paint out-of-box content mid-frame, which is exactly when chrome transitions expose the strip; the old `nav::before` bleed failed on-device for this reason while looking fine in every emulator.
+Flow height stays `--nav-h` (63px + safe area), so anchor `scroll-padding-top` math is unaffected — keep it that way if you touch the nav's box.
 
 ## SEO & share metadata
 
