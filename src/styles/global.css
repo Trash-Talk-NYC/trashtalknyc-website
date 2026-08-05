@@ -183,12 +183,27 @@ body::after {
    mix of solid border-bottoms. */
 .tape-seam {
   height: 8px;
+  /* Staccato third voice: two orange bars at uneven positions in an
+     eight-bar cycle (gaps of 2 and 4 yellow bars), so the orange reads
+     as punctuation, not a candy stripe. Yellow stays dominant. */
   background: repeating-linear-gradient(
     -45deg,
-    var(--yellow) 0,
-    var(--yellow) 14px,
-    var(--charcoal) 14px,
-    var(--charcoal) 28px
+    var(--yellow) 0 14px,
+    var(--charcoal) 14px 28px,
+    var(--orange) 28px 42px,
+    var(--charcoal) 42px 56px,
+    var(--yellow) 56px 70px,
+    var(--charcoal) 70px 84px,
+    var(--yellow) 84px 98px,
+    var(--charcoal) 98px 112px,
+    var(--orange) 112px 126px,
+    var(--charcoal) 126px 140px,
+    var(--yellow) 140px 154px,
+    var(--charcoal) 154px 168px,
+    var(--yellow) 168px 182px,
+    var(--charcoal) 182px 196px,
+    var(--yellow) 196px 210px,
+    var(--charcoal) 210px 224px
   );
 }
 

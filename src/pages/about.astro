@@ -49,7 +49,7 @@ const people = [
     name: 'David',
     face: { x: 47.2, y: 26.5 },
     band: { x1: 43, x2: 54.5, y1: 18, y2: 100 },
-    spot: { x: 46, y: 51, rx: 18, ry: 82, in: 50, out: 80 },
+    spot: { x: 44.5, y: 51, rx: 18, ry: 82, in: 50, out: 80 },
     role: { en: 'Organizer', es: 'Organizador' },
     bio: [
       {
@@ -72,7 +72,7 @@ const people = [
     name: 'Fabiola',
     face: { x: 60.5, y: 31.5 },
     band: { x1: 54.5, x2: 74.5, y1: 24, y2: 92 },
-    spot: { x: 62, y: 53, rx: 18.5, ry: 78, in: 50, out: 80 },
+    spot: { x: 62, y: 57, rx: 18.5, ry: 78, in: 50, out: 80 },
     // PLACEHOLDER bio below — captain will hand-write the real one; it
     // swaps in as plain text, same shape as David's, nothing to unpick.
     role: { en: 'Team Member', es: 'Miembro del equipo' },
@@ -533,10 +533,6 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     margin: 0 auto;
     position: relative;
     z-index: 1;
-    /* Same rule device as the bios, in the same orange — marks the
-       hand-off from the writing to the work */
-    border-top: 3px solid var(--orange);
-    padding-top: var(--space-md);
   }
 
   .team-work-grid {
