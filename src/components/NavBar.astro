@@ -133,10 +133,11 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 
   /* ── HIDE-ON-SCROLL (mobile) ──
      Scroll down → header slides away; any upward scroll brings it back.
-     This exists because iOS keeps opening background gaps above a stuck
-     header (three chrome-adjacent fixes later, see AGENTS.md) — a hidden
-     header has no seam to leak through. Direction/threshold/rubber-band
-     logic lives in lib/headerScroll so it stays unit-testable. */
+     Pure UX now — more reading viewport on phones (the hide interaction
+     was captain-approved on device). It is NOT the safe-area gap fix:
+     the captain proved the gap just returns on scroll-up reveal; the fix
+     is dropping viewport-fit=cover in BaseLayout. Direction/threshold/
+     rubber-band logic lives in lib/headerScroll so it stays testable. */
   const mobileMq = window.matchMedia('(max-width: 768px)');
   const visibility = createHeaderVisibility({ startY: window.scrollY });
   let scrollQueued = false;
@@ -182,22 +183,19 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
     border-bottom: 3px solid var(--purple-light);
   }
 
-  /* iOS 26 will not composite fixed/sticky layers into the region browser
-     chrome frees while collapsing, and the header pins to a layout
-     viewport that lags that collapse — so mid-scroll a shown sticky
-     header sits a full chrome-band below the visual top while IN-FLOW
-     content renders edge-to-edge behind the glass in the band above it
-     (captain device screenshots 2026-07-10 and 2026-08; the failed fixes
-     below tried to paint that band from this layer, which iOS clips).
-     No cover inside a sticky layer can own those pixels; hide-on-scroll
-     is the actual fix because the header is hidden in exactly the
-     chrome-collapsed states where the band exists. The in-box charcoal
-     cover (extra top padding pulled offscreen by the matching negative
-     margin and sticky offset; flow height stays 63px + safe area) remains
-     for the transition frames iOS 15–18 opens during rubber-band and
-     chrome animation, where the layer CAN paint above the viewport.
-     Scoped to widths where the social bar is hidden; on wider screens it
-     sits above the nav and this region would cover it at the top. */
+  /* The real fix for the mid-scroll gap above this header lives in
+     BaseLayout: viewport-fit=cover is deliberately absent, so page
+     content never renders into the status-bar band and iOS letterboxes
+     it charcoal itself. (iOS 26 clips fixed/sticky layers at the
+     collapsing-chrome boundary, so this header could never paint that
+     band — every cover-based fix failed on the captain's device,
+     2026-07/08.) The in-box charcoal cover below (extra top padding
+     pulled offscreen by the matching negative margin and sticky offset;
+     flow height stays 63px + safe area, all env() now 0) is retained as
+     zero-cost insurance for pre-26 iOS rubber-band/chrome-transition
+     frames, where the layer CAN paint above the viewport. Scoped to
+     widths where the social bar is hidden; on wider screens it sits
+     above the nav and this region would cover it at the top. */
   @media (max-width: 768px) {
     nav {
       top: -120px;
@@ -205,9 +203,9 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
       padding-top: calc(120px + var(--safe-top));
     }
 
-    /* Hide-on-scroll: the script toggles .nav-hidden; sliding the whole
-       header (cover included) offscreen removes the chrome seam that iOS
-       keeps opening gaps above. Mobile-only — desktop stays always-sticky. */
+    /* Hide-on-scroll: the script toggles .nav-hidden; the whole header
+       (cover included) slides offscreen. Mobile-only UX — desktop stays
+       always-sticky. */
     nav {
       transition: transform 0.28s var(--ease-out);
     }

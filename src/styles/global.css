@@ -68,7 +68,11 @@
   --radius-md: 12px;
   --radius-lg: 18px;
 
-  /* Device safe areas (notch / dynamic island / home indicator) */
+  /* Device safe areas (notch / dynamic island / home indicator).
+     All 0 today: viewport-fit=cover is deliberately absent (see
+     BaseLayout.astro — re-adding it reintroduces the iOS 26 header
+     gap). Kept so chrome-adjacent components stay correct under
+     either viewport mode via max(<design spacing>, var(--safe-*)). */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
