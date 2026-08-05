@@ -2,8 +2,9 @@
 import { Image } from 'astro:assets';
 import { actions } from 'astro:actions';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SocialLinks from '../components/SocialLinks.astro';
+import PersonSocials from '../components/PersonSocials.astro';
 import { JOIN_ROLES } from '../lib/server/schemas';
+import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import workDavidFabi from '../assets/film-david-fabi.jpg';
 import workNandiFabi from '../assets/film-holo-nandi-fabi.jpg';
@@ -20,7 +21,10 @@ const CROP = { top: 9, height: 86 };
 const py = (y: number) => Math.min(100, Math.max(0, ((y - CROP.top) / CROP.height) * 100));
 
 /**
- * One entry per person, left to right as seated in the group photo.
+ * Photo geometry per person, left to right as seated in the group
+ * photo. Names, roles, bios, and social links live in src/lib/team.ts
+ * (shared with the /about/{person} pages); only the About-page-specific
+ * presentation lives here.
  * - face/band: hotspot geometry in % of the full (uncropped) photo
  *   frame — the template remaps y through py().
  * - spot: the spotlight ellipse (centre + radii, % of the cropped
@@ -28,65 +32,29 @@ const py = (y: number) => Math.min(100, Math.max(0, ((y - CROP.top) / CROP.heigh
  *   dims. Soft-edged on purpose: it should read as light, not as a
  *   cursor ring.
  */
-const people = [
-  {
-    id: 'nandi',
-    name: 'Nandi',
+const geometry: Record<string, {
+  face: { x: number; y: number };
+  band: { x1: number; x2: number; y1: number; y2: number };
+  spot: { x: number; y: number; rx: number; ry: number; in: number; out: number };
+}> = {
+  nandi: {
     face: { x: 29.5, y: 26.5 },
     band: { x1: 18, x2: 43, y1: 13, y2: 97 },
     spot: { x: 29.5, y: 49, rx: 17.5, ry: 82, in: 50, out: 80 },
-    // PLACEHOLDER bio below — captain will hand-write the real one; it
-    // swaps in as plain text, same shape as David's, nothing to unpick.
-    role: { en: 'Team Member', es: 'Miembro del equipo' },
-    bio: [
-      {
-        en: "Nandi's bio is on its way — the crew is writing it now. In the meantime, come say hi at a cleanup.",
-        es: 'La biografía de Nandi está en camino — el equipo la está escribiendo. Mientras tanto, ven a saludar en una limpieza.',
-      },
-    ],
-    socials: false,
   },
-  {
-    id: 'david',
-    name: 'David',
+  david: {
     face: { x: 47.2, y: 26.5 },
     band: { x1: 43, x2: 54.5, y1: 18, y2: 100 },
     spot: { x: 43, y: 51, rx: 18, ry: 82, in: 50, out: 80 },
-    role: { en: 'Organizer', es: 'Organizador' },
-    bio: [
-      {
-        en: 'Trash Talk is my grassroots social media initiative to clean New York through educational entertainment.',
-        es: 'Trash Talk es mi iniciativa de base impulsada por las redes sociales para limpiar Nueva York a través del entretenimiento educativo.',
-      },
-      {
-        en: 'By growing a national and international following, I hope to clean my neighborhood and the city through fun volunteer events and community engagement. Funds for the projects come from donations and sponsorships.',
-        es: 'Al generar una comunidad de seguidores a nivel nacional e internacional, espero limpiar mi vecindario y la ciudad a través de eventos de voluntariado divertidos y la participación comunitaria. Los fondos para los proyectos se reciben mediante donaciones y patrocinios.',
-      },
-      {
-        en: "This is an incredibly complex and exciting project, and I hope you'll join us to clean New York!",
-        es: '¡Este es un proyecto increíblemente complejo y emocionante, y espero que te unas a nosotros para limpiar Nueva York!',
-      },
-    ],
-    socials: true,
   },
-  {
-    id: 'fabiola',
-    name: 'Fabiola',
+  fabiola: {
     face: { x: 60.5, y: 31.5 },
     band: { x1: 54.5, x2: 74.5, y1: 24, y2: 92 },
     spot: { x: 62, y: 57, rx: 18.5, ry: 78, in: 50, out: 80 },
-    // PLACEHOLDER bio below — captain will hand-write the real one; it
-    // swaps in as plain text, same shape as David's, nothing to unpick.
-    role: { en: 'Team Member', es: 'Miembro del equipo' },
-    bio: [
-      {
-        en: "Fabiola's bio is on its way — the crew is writing it now. Check back soon.",
-        es: 'La biografía de Fabiola está en camino — el equipo la está escribiendo. Vuelve pronto.',
-      },
-    ],
-    socials: false,
   },
-];
+};
+
+const people = team.map((p) => ({ ...p, ...geometry[p.id] }));
 
 /**
  * Bio order is fixed: David leads, then Nandi, then Fabiola — the
@@ -210,23 +178,31 @@ const roles = [
 
     <!-- BIOS — editorial: a charcoal rule, the name large with the
          marker swipe, the bio in a measured column. All three always
-         readable; the photo interactions only highlight, never gate. -->
+         readable; the photo interactions only highlight, never gate.
+         The intro blurb runs first: it introduces the crew collectively
+         AND buys the resting, fully-lit photo more scroll runway on
+         mobile before the first bio takes the spotlight. -->
     <section class="team-section grid-paper">
+      <div class="team-intro">
+        <p data-en="Three of us, one crew. We pick up New York block by block — cleanups anyone can join, filmed so the whole city catches on. Meet the people behind the grabbers." data-es="Somos tres, un solo equipo. Levantamos Nueva York cuadra por cuadra — limpiezas abiertas a cualquiera, filmadas para que toda la ciudad se sume. Conoce a la gente detrás de las pinzas.">Three of us, one crew. We pick up New York block by block — cleanups anyone can join, filmed so the whole city catches on. Meet the people behind the grabbers.</p>
+      </div>
       <div class="team-cards" id="teamCards">
         {bioOrder.map((p, i) => (
           <article class="team-entry" data-person={p.id} data-index={i}>
-            <h2 class="team-name"><mark>{p.name}</mark></h2>
+            {/* Interaction split: taps/hovers on the PHOTO highlight and
+                scroll; the card's name and the "Full bio" link are the
+                explicit navigation to the person's own page. */}
+            <h2 class="team-name"><a href={`/about/${p.id}`}><mark>{p.name}</mark></a></h2>
             <p class="team-role" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</p>
             <div class="team-bio">
               {p.bio.map((b) => (
                 <p data-en={b.en} data-es={b.es}>{b.en}</p>
               ))}
             </div>
-            {p.socials && (
-              <div class="team-socials">
-                <SocialLinks />
-              </div>
-            )}
+            <div class="team-socials">
+              <PersonSocials socials={p.socials} />
+            </div>
+            <a class="team-more" href={`/about/${p.id}`} data-en="Full bio →" data-es="Biografía completa →">Full bio →</a>
           </article>
         ))}
       </div>
@@ -545,6 +521,28 @@ const roles = [
     pointer-events: none;
   }
 
+  /* Editorial lede introducing the crew as a whole. On mobile it also
+     buys the resting photo more runway: the first bio starts lower, so
+     the reader scrolls through neutral ground (nobody spotlighted)
+     before David's entry claims the light. */
+  .team-intro {
+    max-width: var(--container);
+    margin: 0 auto var(--space-xl);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Lede-sized on purpose: the type scale and the space-xl below are
+     what buy the resting photo its scroll runway on mobile — shrink
+     either and David's spotlight fires almost immediately again. */
+  .team-intro p {
+    font-size: var(--step-2);
+    font-weight: 800;
+    color: var(--charcoal);
+    line-height: 1.45;
+    max-width: 40ch;
+  }
+
   .team-cards {
     max-width: var(--container);
     margin: 0 auto;
@@ -608,11 +606,26 @@ const roles = [
     margin-bottom: 0.35rem;
   }
 
+  /* The name links through to the person's own page; the marker swipe
+     stays, and on hover the swipe floods to a full highlight so the
+     link affordance reads without adding an underline. */
+  .team-name a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   /* Marker-highlight swipe behind the name */
   .team-name mark {
     color: inherit;
     background: linear-gradient(transparent 52%, var(--yellow) 52%, var(--yellow) 94%, transparent 94%);
     padding-inline: 0.08em;
+    transition: background-color 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .team-name a:hover mark {
+      background-color: var(--yellow);
+    }
   }
 
   /* Hi-vis orange dash — the crossing-guard accent, small marks only */
@@ -672,6 +685,32 @@ const roles = [
 
   @media (hover: hover) and (pointer: fine) {
     .team-socials :global(.social-link:hover) { color: var(--purple-light); border-color: var(--purple-light); }
+  }
+
+  /* Explicit navigation to the person's own page (the photo taps only
+     highlight — see the interaction-split comment in the markup) */
+  .team-more {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 1.3rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--charcoal);
+    text-decoration: none;
+    border-bottom: 2px solid var(--yellow);
+    padding-bottom: 0.15rem;
+    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  }
+
+  @media (pointer: coarse) {
+    .team-more { min-height: var(--tap); }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .team-more:hover { color: var(--purple); border-color: var(--purple); }
   }
 
   /* ── TAIL: cleanup frames + closing portrait ── */
