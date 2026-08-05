@@ -22,10 +22,11 @@ Verify every UI change at each of these widths, using real rendering (a browser 
 | 768px | Tablet |
 | 375px | Mobile |
 
-Two site-specific additions:
+Three site-specific additions:
 
 - The layout is fluid (`clamp()` tokens and `auto-fit`/`minmax()` grids, not stacked breakpoints), so also drag through intermediate widths rather than only sampling the four above — fluid layouts break *between* named breakpoints. Phone landscape (~844×390) is a known blind spot worth a look.
 - Anything touching the nav, hero heights, or full-bleed sections interacts with `viewport-fit=cover` + `env(safe-area-inset-*)` and `svh` units: check under device emulation, with a notched-device emulation if the change is chrome-adjacent.
+- The mobile header (≤768px) is hide-on-scroll (desktop stays always-sticky), so nav-adjacent changes have extra states to check: hidden after scrolling down, revealed on any upward scroll, always shown at the top, never hiding while the hamburger menu is open, and snapping instead of sliding under `prefers-reduced-motion` — see AGENTS.md for the guards.
 
 Do not verify only the width you developed at: most visual regressions live at the widths nobody was looking at.
 

@@ -1,8 +1,9 @@
 ---
 /**
  * Sticky top navigation: logo, page links, Join CTA, language toggle,
- * and the mobile hamburger. Owns active-page detection and the mobile
- * menu open/close wiring.
+ * and the mobile hamburger. Owns active-page detection, the mobile
+ * menu open/close wiring, and the mobile hide-on-scroll behavior
+ * (direction logic in lib/headerScroll).
  */
 import LangToggle from './LangToggle.astro';
 
@@ -17,7 +18,7 @@ const isAbout    = isTeam || isProjects;
 const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 ---
 
-<nav aria-label="Main">
+<nav aria-label="Main" id="siteNav">
   <a class="nav-logo" href="/">Trash Talk <span>NYC</span></a>
   <div class="nav-right">
     <LangToggle />
@@ -55,6 +56,9 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 </nav>
 
 <script>
+  import { createHeaderVisibility } from '../lib/headerScroll';
+
+  const nav = document.getElementById('siteNav');
   const hamburger = document.getElementById('navHamburger');
   const links = document.getElementById('navLinks');
 
@@ -73,6 +77,9 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
     hamburger?.setAttribute('aria-expanded', String(open));
     // A stale open submenu inside a re-opened mobile panel is disorienting
     if (!open) setDropOpen(false);
+    // An opening menu must clear nav-hidden, or it opens inside an
+    // offscreen header (the guard in applyScrollState handles it)
+    if (open) applyScrollState();
   }
 
   hamburger?.addEventListener('click', () => {
@@ -123,6 +130,40 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
   dropdown?.addEventListener('focusout', (e) => {
     if (!dropdown.contains(e.relatedTarget as Node)) setDropOpen(false);
   });
+
+  /* ── HIDE-ON-SCROLL (mobile) ──
+     Scroll down → header slides away; any upward scroll brings it back.
+     This exists because iOS keeps opening background gaps above a stuck
+     header (three chrome-adjacent fixes later, see AGENTS.md) — a hidden
+     header has no seam to leak through. Direction/threshold/rubber-band
+     logic lives in lib/headerScroll so it stays unit-testable. */
+  const mobileMq = window.matchMedia('(max-width: 768px)');
+  const visibility = createHeaderVisibility({ startY: window.scrollY });
+  let scrollQueued = false;
+
+  function applyScrollState() {
+    scrollQueued = false;
+    const maxY = document.documentElement.scrollHeight - window.innerHeight;
+    const hidden = visibility.update(window.scrollY, maxY);
+    // Never hide on desktop widths or while the mobile menu is open —
+    // hiding the header would take the open menu with it.
+    const shouldHide = hidden && mobileMq.matches && !links?.classList.contains('open');
+    nav?.classList.toggle('nav-hidden', shouldHide);
+  }
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!scrollQueued) {
+        scrollQueued = true;
+        requestAnimationFrame(applyScrollState);
+      }
+    },
+    { passive: true },
+  );
+
+  // Crossing the breakpoint while hidden must not strand a hidden header
+  mobileMq.addEventListener('change', applyScrollState);
 </script>
 
 <style>
@@ -141,25 +182,45 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
     border-bottom: 3px solid var(--purple-light);
   }
 
-  /* iOS Safari opens a strip above a stuck header during rubber-band
-     overscroll and collapsing-chrome transitions, exposing page content
-     in the notch/dynamic-island area (captain device reports 2026-07-10
-     and 2026-08). A ::before bleed hanging outside the border box used to
-     cover this, but iOS composites the sticky header onto its own layer
-     and does not reliably paint out-of-box content mid-frame — exactly
-     when the strip opens. So the cover lives INSIDE the border box:
-     120px of extra top padding, pulled offscreen by the matching negative
-     margin (flow height stays 63px + safe area) and negative sticky
-     offset — no frame of any chrome transition or viewport displacement
-     can show anything above the header except its own charcoal. Scoped
-     to widths where the social bar is hidden; on wider screens it sits
-     above the nav and this region would cover it at the top of the page. */
+  /* iOS 26 will not composite fixed/sticky layers into the region browser
+     chrome frees while collapsing, and the header pins to a layout
+     viewport that lags that collapse — so mid-scroll a shown sticky
+     header sits a full chrome-band below the visual top while IN-FLOW
+     content renders edge-to-edge behind the glass in the band above it
+     (captain device screenshots 2026-07-10 and 2026-08; the failed fixes
+     below tried to paint that band from this layer, which iOS clips).
+     No cover inside a sticky layer can own those pixels; hide-on-scroll
+     is the actual fix because the header is hidden in exactly the
+     chrome-collapsed states where the band exists. The in-box charcoal
+     cover (extra top padding pulled offscreen by the matching negative
+     margin and sticky offset; flow height stays 63px + safe area) remains
+     for the transition frames iOS 15–18 opens during rubber-band and
+     chrome animation, where the layer CAN paint above the viewport.
+     Scoped to widths where the social bar is hidden; on wider screens it
+     sits above the nav and this region would cover it at the top. */
   @media (max-width: 768px) {
     nav {
       top: -120px;
       margin-top: -120px;
       padding-top: calc(120px + var(--safe-top));
     }
+
+    /* Hide-on-scroll: the script toggles .nav-hidden; sliding the whole
+       header (cover included) offscreen removes the chrome seam that iOS
+       keeps opening gaps above. Mobile-only — desktop stays always-sticky. */
+    nav {
+      transition: transform 0.28s var(--ease-out);
+    }
+
+    nav.nav-hidden { transform: translateY(-100%); }
+
+    /* Keyboard focus landing inside a hidden header must bring it back,
+       or the user is typing into an element they cannot see. */
+    nav.nav-hidden:focus-within { transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    nav { transition: none; } /* snap shown/hidden instead of sliding */
   }
 
   .nav-logo {
