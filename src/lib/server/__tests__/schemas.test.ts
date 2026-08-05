@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { signupSchema, contactSchema, BOROUGHS } from '../schemas';
+import { signupSchema, contactSchema, joinTeamSchema, BOROUGHS, JOIN_ROLES } from '../schemas';
 
 const validSignup = {
   fname: 'Jane',
@@ -99,5 +99,42 @@ describe('contactSchema', () => {
     expect(contactSchema.safeParse(partnership).success).toBe(false);
     expect(contactSchema.safeParse({ ...partnership, organization: '  ' }).success).toBe(false);
     expect(contactSchema.safeParse({ ...partnership, organization: 'Acme Co' }).success).toBe(true);
+  });
+});
+
+describe('joinTeamSchema', () => {
+  const validJoin = {
+    name: 'Jane Doe',
+    email: 'jane@example.com',
+    role: 'Videographer',
+    why: 'I film everything already.',
+  };
+
+  it('accepts a complete application', () => {
+    expect(joinTeamSchema.safeParse(validJoin).success).toBe(true);
+  });
+
+  it.each(JOIN_ROLES)('accepts role %s', (role) => {
+    expect(joinTeamSchema.safeParse({ ...validJoin, role }).success).toBe(true);
+  });
+
+  it('rejects a role outside the offered four', () => {
+    expect(joinTeamSchema.safeParse({ ...validJoin, role: 'CEO' }).success).toBe(false);
+  });
+
+  it.each(['name', 'email', 'why'])('rejects missing %s', (field) => {
+    expect(joinTeamSchema.safeParse({ ...validJoin, [field]: '' }).success).toBe(false);
+  });
+
+  it('rejects a whitespace-only why', () => {
+    expect(joinTeamSchema.safeParse({ ...validJoin, why: '   ' }).success).toBe(false);
+  });
+
+  it('rejects an invalid email', () => {
+    expect(joinTeamSchema.safeParse({ ...validJoin, email: 'not-an-email' }).success).toBe(false);
+  });
+
+  it('tolerates the spam-heuristic fields', () => {
+    expect(joinTeamSchema.safeParse({ ...validJoin, botcheck: '', startedAt: '1700000000000' }).success).toBe(true);
   });
 });

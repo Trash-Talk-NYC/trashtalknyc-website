@@ -52,6 +52,17 @@ Once the site key is set, a missing secret fails closed (`form_env_missing` patt
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
 
+## Join the Team applications — intake destination PENDING
+
+The About page's Join the Team section (four role boxes + application form) posts to the `joinTeam` Astro Action.
+**The captain has not chosen where these applications should ultimately go, and has explicitly ruled out Brevo for this form.**
+Until that decision lands, submissions are written to the Netlify Blobs store `join-team-applications` (one JSON blob per application — name, email, role, why, submittedAt — under a `<ISO timestamp>-<uuid>` key, so listing reads chronologically; see `src/lib/server/join-store.ts`).
+Read them with `netlify blobs:list join-team-applications` / `netlify blobs:get join-team-applications <key>`, and migrate by exporting the store once the captain picks a destination.
+The write fails closed: the success screen tells the applicant their application was saved, so a failed Blobs write surfaces as a submission error (`join_store_failed` in function logs) rather than a fake success.
+Blobs is unreachable under plain `astro dev` — use `netlify dev` to exercise the submit path locally.
+This form deliberately skips Turnstile: the About page renders no widget, so calling `requireTurnstile` there would hard-reject every join submission the moment real Turnstile keys go live for the other forms.
+The fourth role, "Events & Operations Lead", is a crew-proposed placeholder name the captain has not confirmed — rename it in `JOIN_ROLES` (`src/lib/server/schemas.ts`) and the `roles` array in `about.astro` together.
+
 ## E2E Testing
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.
@@ -76,9 +87,9 @@ Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descenda
 So an `aria-label` stays English after a toggle; give controls a bilingual accessible name with a visually-hidden `<span data-en data-es>` inside instead (see the photo hotspots in `about.astro`).
 * `<Image>` with `widths` but no `width` emits a fallback `src` at the source file's native resolution — the 5820px About group photo produced a 4.8 MB webp that way.
 Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallback.
-* The About team section (`about.astro`) is data-driven: one `people` array in frontmatter holds hotspot bands, face-chip anchors, and card headshot crops, all expressed as percentages of the photo frame.
-Those percentages are only valid because the hero photo renders uncropped (`width: 100%; height: auto`) — cropping it with `object-fit` would silently misalign every hotspot.
-The card headshots are CSS crops of the same group-shot asset (`--fx`/`--fy`/`--z` vars scale and offset the image inside a square window), so there are no separate headshot files to keep in sync.
+* The About team section (`about.astro`) is data-driven: one `people` array in frontmatter holds hotspot bands, face-chip anchors, and spotlight ellipses, all expressed as percentages of the photo frame.
+The hero renders a fixed build-time vertical crop of the group shot (the `CROP` constant; y-coordinates remap through `py()`) — never a viewport-dependent `object-fit`, which would silently misalign every hotspot and spotlight.
+On mobile the photo plate pins (sticky) while the bios scroll past, the spotlight follows whichever bio owns the viewport (nobody owns it until the reader actually scrolls — the photo rests fully lit at page open), and the bio band pages with CSS scroll-snap whose snap positions are deliberately kept equal to `scrollToEntry`'s JS offset — change one and you must change the other or tap-to-scroll gets re-snapped elsewhere.
 * The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over it.
 What colors it depends on the iOS version, and this burned us twice: iOS 15–17 use the `theme-color` meta in `BaseLayout.astro`, but iOS 26 (Liquid Glass) **ignores `theme-color` entirely** and samples the **`body` element's `background-color`** — not the `html` canvas, not the sticky nav, not pseudo-elements (verified by pixel-sampling simulator screenshots).
 That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
