@@ -29,7 +29,7 @@ This took down all 3 form paths in production and preview with HTTP 500 for ~2 d
 | 9 | signup (`signups_list`) | `BREVO_LIST_ID_SIGNUP` |
 | 10 | general contact | `CONTACT_GENERAL` |
 | 11 | collab/partnership contact | `CONTACT_COLLAB` |
-| _pending_ | sponsor contact | `CONTACT_SPONSOR` (var read by the action but not yet set — captain must create the list; until then sponsor submissions fail loudly with `form_env_missing`) |
+| _pending_ | sponsor contact (`sponsorship_list`) | `CONTACT_SPONSOR` (var read by the action but not yet set — captain must create the list and supply the numeric ID; until then sponsor submissions fail loudly with `form_env_missing`) |
 
 The contact env var names are short because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones — keep as-is.
 `BREVO_API_KEY` plus all three list vars are set identically across all Netlify deploy contexts (verified 2026-07).

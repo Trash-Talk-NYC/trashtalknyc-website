@@ -149,6 +149,7 @@ describe('contact action team notification', () => {
     process.env.CONTACT_COLLAB = '222';
     process.env.CONTACT_SPONSOR = '333';
     process.env.CONTACT_NOTIFY_TO = 'team@trashtalknyc.org';
+    process.env.SPONSOR_NOTIFY_TO = 'sponsors@trashtalknyc.org';
     process.env.CONTACT_NOTIFY_FROM = 'site@trashtalknyc.org';
   });
 
@@ -158,6 +159,7 @@ describe('contact action team notification', () => {
     delete process.env.CONTACT_COLLAB;
     delete process.env.CONTACT_SPONSOR;
     delete process.env.CONTACT_NOTIFY_TO;
+    delete process.env.SPONSOR_NOTIFY_TO;
     delete process.env.CONTACT_NOTIFY_FROM;
   });
 
@@ -166,22 +168,54 @@ describe('contact action team notification', () => {
     await server.contact.handler(contactInput({ inquiryType: 'general' }), contactCtx());
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(
-      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }),
-      contactCtx(),
-    );
-    // @ts-expect-error handler is untyped once defineAction is stubbed
-    await server.contact.handler(
       contactInput({ inquiryType: 'partnership', organization: 'Acme Org' }),
       contactCtx(),
     );
 
-    expect(sendBrevoEmail).toHaveBeenCalledTimes(3);
+    expect(sendBrevoEmail).toHaveBeenCalledTimes(2);
     expect(sendBrevoEmail).toHaveBeenLastCalledWith(
       'test-key',
       expect.objectContaining({
         to: [{ email: 'team@trashtalknyc.org' }],
         replyTo: expect.objectContaining({ email: 'jane@example.com' }),
       }),
+    );
+  });
+
+  it('notifies the sponsorship inbox — not the general team address — for sponsor inquiries', async () => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(
+      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }),
+      contactCtx(),
+    );
+
+    expect(sendBrevoEmail).toHaveBeenCalledTimes(1);
+    expect(sendBrevoEmail).toHaveBeenCalledWith(
+      'test-key',
+      expect.objectContaining({ to: [{ email: 'sponsors@trashtalknyc.org' }] }),
+    );
+  });
+
+  it('sends no sponsor notification when SPONSOR_NOTIFY_TO is unset — never falls back to the general address', async () => {
+    delete process.env.SPONSOR_NOTIFY_TO;
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    const result = await server.contact.handler(
+      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }),
+      contactCtx(),
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(sendBrevoEmail).not.toHaveBeenCalled();
+  });
+
+  it('keeps general inquiries on CONTACT_NOTIFY_TO even when the sponsor address is set', async () => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(contactInput({ inquiryType: 'general' }), contactCtx());
+
+    expect(sendBrevoEmail).toHaveBeenCalledWith(
+      'test-key',
+      expect.objectContaining({ to: [{ email: 'team@trashtalknyc.org' }] }),
     );
   });
 

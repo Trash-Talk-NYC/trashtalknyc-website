@@ -156,11 +156,13 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
 }
 
 /**
- * Emails the team the moment a contact-form inquiry arrives (both the General
- * and Collaborate tabs) so a new lead is seen without polling Brevo. Reply-to
- * is the person who wrote in, so a reply reaches them directly.
+ * Emails the team the moment a contact-form inquiry arrives (every tab) so a
+ * new lead is seen without polling Brevo. Reply-to is the person who wrote
+ * in, so a reply reaches them directly. Sponsor inquiries notify the
+ * sponsorship inbox (SPONSOR_NOTIFY_TO) instead of the general team address —
+ * with no fallback between the two, so a misroute is impossible.
  *
- * Dormant until both CONTACT_NOTIFY_TO (recipient) and CONTACT_NOTIFY_FROM (a
+ * Dormant until both the tab's recipient var and CONTACT_NOTIFY_FROM (a
  * verified Brevo sender) are set — mirroring the Turnstile-keys pattern — so no
  * mail is sent in environments that have not opted in. Best-effort and never
  * throws: the contact upsert already succeeded and must not be undone by a
@@ -169,7 +171,7 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
 async function tryNotifyInquiry(input: ContactInput): Promise<void> {
   try {
     const apiKey = getEnv('BREVO_API_KEY');
-    const to = getEnv('CONTACT_NOTIFY_TO');
+    const to = getEnv(input.inquiryType === 'sponsor' ? 'SPONSOR_NOTIFY_TO' : 'CONTACT_NOTIFY_TO');
     const from = getEnv('CONTACT_NOTIFY_FROM');
     if (!apiKey || !to || !from) {
       log('info', 'inquiry_notify_skipped', { form: 'contact', inquiry: input.inquiryType });
@@ -277,9 +279,9 @@ export const server = {
       // Each tab routes to its own Brevo list. These env-var names are
       // short (no BREVO_LIST_ID_ prefix) because Netlify rejected the
       // longer names when the captain configured them — keep as-is.
-      // TODO(captain): CONTACT_SPONSOR has no Brevo list ID yet — create the
-      // sponsor list in Brevo and set the var in Netlify (all deploy
-      // contexts). Until then sponsor submissions fail loudly with
+      // TODO(captain): the Brevo "sponsorship_list" does not exist yet —
+      // create it and set CONTACT_SPONSOR to its numeric ID in Netlify (all
+      // deploy contexts). Until then sponsor submissions fail loudly with
       // form_env_missing instead of silently landing in another list.
       const listIdVars: Record<ContactInput['inquiryType'], string> = {
         general: 'CONTACT_GENERAL',
