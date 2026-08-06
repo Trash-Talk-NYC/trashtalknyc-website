@@ -56,14 +56,16 @@ Turnstile tokens are single-use, so the page scripts call `window.turnstile.rese
 
 Join the Team lives at **`/contact/join`** (`src/pages/contact/join.astro`, captain round 15): the captain-approved verbatim opening statement ("This isn't cute. …" — do not rewrite or decorate it), three roles (Social Media Manager, Content Videographer/Editor, Long-form Videographer/Editor — Events & Operations Lead and Developer were dropped), and a `mailto:` CTA to **team@trashtalknyc.org**. No form.
 Each role box is a `mailto:` link with a per-role subject; English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
-The About page keeps a compact pointer section holding the old `#join-the-team` anchor — the Contact page banner (another crewmate's branch) links to `/about#join-the-team`, so the id must survive until that banner is repointed straight at `/contact/join` after the branches merge.
+The About page closes with a "Want to lend a hand?" CTA that links to `/contact/join` and still carries the `#join-the-team` anchor id — the Contact page banner links to `/about#join-the-team`, so the id must survive until that banner is repointed straight at `/contact/join`.
 The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`); the Blobs store may still hold applications submitted while the form was live.
 
-## Projects page — awaiting real content
+## Projects page — decoupled to `fm/projects-tree-guard`
 
-`/projects` (linked from the nav's About dropdown alongside The Team) has its structure and design in place but is **intentionally pending real content**: the captain has not yet supplied Tree Guards specifics (sites, counts, timeline) or any further projects.
-The "TBD" dimension labels in the tree-guard spec drawing, the dashed pending chips, and the "Coming soon" placeholder slots are deliberate — do not fill them with invented specifics; only the captain supplies real numbers, locations, dates, or partners.
-The tree-guard model in `src/pages/projects.astro` is a CSS-3D scene (same perspective/preserve-3d technique as the 404 street scene) whose scroll-linked yaw is written to the `--ry` custom property by JS; **the CSS fallback value of `--ry` is the fixed three-quarter view that reduced-motion and no-JS visitors get**, and the scroll listener is gated by both `prefers-reduced-motion` and an IntersectionObserver — keep those invariants when touching it.
+The Projects page (`/projects`, with its CSS-3D tree-guard model and intentionally-pending placeholder content) was **removed from the release at the captain's request** and lives in full on the `fm/projects-tree-guard` branch — continue Projects work there, not here.
+The nav's About dropdown ships with two items: **The Team** (`/about`) and **Work With Us** (`/contact/join` — the recruitment page; both live on this consolidated branch).
+"Work With Us" must **never be relabelled "Join"** — the nav CTA already uses Join for the mailing list, and two Joins would route people wrong (captain naming decision; ES is `Trabaja con Nosotros`).
+`/contact/join` highlights the **About** parent, not Contact (`isContact` explicitly excludes it — two simultaneously-active parents look broken); Projects rejoins the dropdown when `fm/projects-tree-guard` lands.
+Do not link to `/projects` from anything on this branch — the route does not exist here and it is filtered from nothing (it simply isn't built), so a link would 404.
 
 ## E2E Testing
 
