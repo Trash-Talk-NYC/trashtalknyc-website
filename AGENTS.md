@@ -52,11 +52,11 @@ Once the site key is set, a missing secret fails closed (`form_env_missing` patt
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
 
-## Projects page — awaiting real content
+## Projects page — decoupled to `fm/projects-tree-guard`
 
-`/projects` (linked from the nav's About dropdown alongside The Team) has its structure and design in place but is **intentionally pending real content**: the captain has not yet supplied Tree Guards specifics (sites, counts, timeline) or any further projects.
-The "TBD" dimension labels in the tree-guard spec drawing, the dashed pending chips, and the "Coming soon" placeholder slots are deliberate — do not fill them with invented specifics; only the captain supplies real numbers, locations, dates, or partners.
-The tree-guard model in `src/pages/projects.astro` is a CSS-3D scene (same perspective/preserve-3d technique as the 404 street scene) whose scroll-linked yaw is written to the `--ry` custom property by JS; **the CSS fallback value of `--ry` is the fixed three-quarter view that reduced-motion and no-JS visitors get**, and the scroll listener is gated by both `prefers-reduced-motion` and an IntersectionObserver — keep those invariants when touching it.
+The Projects page (`/projects`, with its CSS-3D tree-guard model and intentionally-pending placeholder content) was **removed from the release at the captain's request** and lives in full on the `fm/projects-tree-guard` branch — continue Projects work there, not here.
+The nav's About dropdown ships with **The Team as its only item, deliberately** (the captain's explicit choice); Projects rejoins the dropdown when its branch lands.
+Do not link to `/projects` from anything on this branch — the route does not exist here and it is filtered from nothing (it simply isn't built), so a link would 404.
 
 ## E2E Testing
 

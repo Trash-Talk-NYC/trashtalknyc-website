@@ -12,9 +12,8 @@ const pathname = Astro.url.pathname;
 const isHome     = pathname === '/' || pathname === '';
 const isEvents   = pathname === '/events' || pathname.startsWith('/events/');
 const isTeam     = pathname === '/about' || pathname.startsWith('/about/');
-const isProjects = pathname === '/projects' || pathname.startsWith('/projects/');
-// The About parent highlights when either of its children is current
-const isAbout    = isTeam || isProjects;
+// The About parent highlights when its child is the current page
+const isAbout    = isTeam;
 const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 ---
 
@@ -32,7 +31,10 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
     <li class="nav-dropdown" id="aboutDropdown">
       <!-- Disclosure pattern (APG): the parent is a toggle, not a link —
            /about stays reachable as "The Team" below. aria-expanded is the
-           whole submenu contract; no menu roles, no aria-haspopup. -->
+           whole submenu contract; no menu roles, no aria-haspopup.
+           One child is deliberate: the captain decoupled Projects to its
+           own branch (fm/projects-tree-guard) and chose to ship the
+           dropdown now; Projects rejoins this list when it lands. -->
       <button
         type="button"
         class:list={['nav-drop-toggle', { active: isAbout }]}
@@ -47,7 +49,6 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
       </button>
       <ul class="nav-drop-menu" id="aboutDropMenu">
         <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
-        <li><a href="/projects" class:list={{ active: isProjects }} data-en="Projects" data-es="Proyectos">Projects</a></li>
       </ul>
     </li>
     <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
