@@ -44,18 +44,24 @@ export const team: TeamMember[] = [
   {
     id: 'nandi',
     name: 'Nandi',
-    role: { en: 'Team Member', es: 'Miembro del equipo' },
-    // INTERIM bio awaiting the captain's real text: role-grounded copy
-    // only — what a crew member does at Trash Talk — asserting no
-    // personal facts. Swap in the captain's copy 1:1 when it lands.
+    role: { en: 'Brand Management & Programming', es: 'Gestión de Marca y Programación' },
+    // Nandi's own words, passed on by the captain (round 16) — VERBATIM.
+    // Do not edit wording, punctuation, or order; only the paragraph
+    // breaks are ours. "Events & Infrastructure Pilot Programs" reads as
+    // a proper programme name, so the Spanish keeps it in English with a
+    // gloss in parentheses rather than guessing an official translation.
     bio: [
       {
-        en: 'Nandi is one third of the Trash Talk NYC crew — out at the cleanups with a grabber and a hi-vis vest, helping turn a messy block into a clean one.',
-        es: 'Nandi es un tercio del equipo de Trash Talk NYC — presente en las limpiezas con pinza y chaleco reflectante, ayudando a convertir una cuadra sucia en una limpia.',
+        en: "Hi, I'm Nandi! I handle all things brand and support David on Events & Infrastructure Pilot Programs. I'm most passionate about curbing littering behaviors through convenient and engaging infrastructure.",
+        es: '¡Hola, soy Nandi! Me encargo de todo lo relacionado con la marca y apoyo a David en los Events & Infrastructure Pilot Programs (programas piloto de eventos e infraestructura). Lo que más me apasiona es frenar el hábito de tirar basura mediante infraestructura práctica y atractiva.',
       },
       {
-        en: "Come to an event and she'll get you sorted with gear and a stretch of street. Her full bio lands here soon.",
-        es: 'Ven a un evento y te equipará con lo necesario y un tramo de calle. Su biografía completa llegará aquí pronto.',
+        en: 'Beyond litter reduction, I like to spend my time engaging in youth mentorship, community gardening, and photographing our beautiful green spaces.',
+        es: 'Más allá de la reducción de basura, me gusta dedicar mi tiempo a la mentoría de jóvenes, la jardinería comunitaria y a fotografiar nuestros hermosos espacios verdes.',
+      },
+      {
+        en: "The power to change this city lies within each of us. It's when we come together that it expresses itself. Let's get to work!",
+        es: 'El poder de cambiar esta ciudad vive en cada uno de nosotros. Es cuando nos unimos que se expresa. ¡Manos a la obra!',
       },
     ],
     socials: [
@@ -64,7 +70,7 @@ export const team: TeamMember[] = [
     ],
     portrait: { fx: 0.295, fy: 0.38, z: 3.6 },
     metaDescription:
-      "Meet Nandi of the Trash Talk NYC crew — out at the club's volunteer cleanup events helping keep New York City's streets clean, block by block.",
+      'Meet Nandi — Brand Management & Programming at Trash Talk NYC, working to curb littering through convenient, engaging infrastructure and community effort.',
   },
   {
     id: 'david',
