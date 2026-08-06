@@ -55,7 +55,9 @@ Turnstile tokens are single-use, so the page scripts call `window.turnstile.rese
 ## Projects page — decoupled to `fm/projects-tree-guard`
 
 The Projects page (`/projects`, with its CSS-3D tree-guard model and intentionally-pending placeholder content) was **removed from the release at the captain's request** and lives in full on the `fm/projects-tree-guard` branch — continue Projects work there, not here.
-The nav's About dropdown ships with **The Team as its only item, deliberately** (the captain's explicit choice); Projects rejoins the dropdown when its branch lands.
+The nav's About dropdown ships with two items: **The Team** (`/about`) and **Work With Us** (`/contact/join` — the recruitment page, built on the About branch; it 404s until that branch lands).
+"Work With Us" must **never be relabelled "Join"** — the nav CTA already uses Join for the mailing list, and two Joins would route people wrong (captain naming decision; ES is `Trabaja con Nosotros`).
+`/contact/join` highlights the **About** parent, not Contact (`isContact` explicitly excludes it — two simultaneously-active parents look broken); Projects rejoins the dropdown when `fm/projects-tree-guard` lands.
 Do not link to `/projects` from anything on this branch — the route does not exist here and it is filtered from nothing (it simply isn't built), so a link would 404.
 
 ## E2E Testing
