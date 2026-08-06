@@ -106,7 +106,13 @@ const orgSchema = {
   <div class="bento-inner">
 
     <div class="bento-box deepclean-box" id="deep-clean">
-      <div class="sticker bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
+      {/* The card is the nearest-event RSVP when events exist, a socials list
+          when none do — the sticker has to name what's actually inside */}
+      {defaultEvent ? (
+        <div class="sticker bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
+      ) : (
+        <div class="sticker bento-label" data-en="Connect on social media" data-es="Conéctate en redes sociales">Connect on social media</div>
+      )}
       {defaultEvent ? (
         <div class="dc-body" id="dcBody">
           <div class="dc-eyebrow">
@@ -607,11 +613,12 @@ const orgSchema = {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
     gap: clamp(1.25rem, 2.5vw, 1.75rem);
-    /* When the boxes stack, the Donate sticker overhangs its box top by 1rem
-       and the Deep Clean press shadow drops 6px into the seam — together they
-       swallow the base gap, so the stacked row needs a larger one. Row-gap is
+    /* When the boxes stack, the Donate sticker tab overhangs its box top by
+       1rem (.bento-label top: -1rem) and the card above casts a 6px press
+       shadow into the seam — so the stacked row gets the section token PLUS
+       the tab's overhang, keeping clear air around the tab itself. Row-gap is
        invisible in the side-by-side layout, so desktop is unaffected. */
-    row-gap: var(--space-lg);
+    row-gap: calc(var(--space-lg) + 1rem);
     align-items: stretch;
   }
 
