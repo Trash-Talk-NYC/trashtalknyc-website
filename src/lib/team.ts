@@ -141,27 +141,34 @@ export const team: TeamMember[] = [
         es: '¡Hola, soy Fabiola! Ando metida en todo lo tech de Trash Talk — este sitio incluido. Me importa que estas cosas de verdad funcionen para todos.',
       },
       {
+        // Captain-written (round 27): the ellipses runs — three dots
+        // then FOUR ("problem….actually") — are her deliberate informal
+        // pauses; there is deliberately no closing full stop; and it is
+        // first-person "reach me" now (superseding round 19's "us").
+        // Keep all of it exactly. /contact IS the General-form deep
+        // link: the General tab is statically `active` in
+        // contact.astro's server markup (JS-free included) and nothing
+        // URL-driven changes tabs.
         parts: [
           {
-            en: "If you can't easily find an event, join our mailing list, or figure out how to support us, that's a problem — ",
-            es: 'Si no puedes encontrar un evento fácilmente, unirte a nuestra lista de correo o entender cómo apoyarnos, eso es un problema — ',
+            en: "If you can't easily find an event, join our mailing list, or figure out how to support us, well…that's a problem….actually please reach me via ",
+            es: 'Si no puedes encontrar un evento fácilmente, unirte a nuestra lista de correo o entender cómo apoyarnos, pues…eso es un problema….de hecho, mejor escríbeme por ',
           },
           {
-            // "us", not "me" — her bio is first-person but the
-            // invitation is to the club (captain, round 19). /contact
-            // IS the General-form deep link: the General tab is
-            // statically `active` in contact.astro's server markup
-            // (JS-free included) and nothing URL-driven changes tabs.
-            en: 'please contact us',
-            es: 'por favor, contáctanos',
+            en: 'the contact form',
+            es: 'el formulario de contacto',
             href: '/contact',
           },
-          { en: '.', es: '.' },
         ],
       },
       {
-        en: 'Alongside supporting Nandi and David, I like exploring technical solutions for more empowered communities and a cleaner New York.',
-        es: 'Además de apoyar a Nandi y David, me gusta explorar soluciones técnicas para comunidades más empoderadas y una Nueva York más limpia.',
+        // Captain's rewrite (round 27): "I explore", and "a cleaner New
+        // York" removed deliberately. Sole firstmate edit, flagged to
+        // the captain: "to further empowering and mobilizing" →
+        // "to further empower and mobilize" so "further" gets the bare
+        // verbs it needs.
+        en: 'Alongside supporting Nandi and David, I explore technical solutions to further empower and mobilize communities and neighborhoods.',
+        es: 'Además de apoyar a Nandi y David, exploro soluciones técnicas para empoderar y movilizar aún más a las comunidades y los vecindarios.',
       },
     ],
     socials: [
