@@ -369,6 +369,18 @@ const orgSchema = {
   </div>
 </section>
 
+<!-- CREW CALLOUT: the signup above is the mailing list and is for everyone;
+     this is the pitch for people who want to WORK on Trash Talk (roles live
+     at /contact/join, built on another branch), so it deliberately reads as
+     a different ask: dark band, ghost button, no form -->
+<section class="crew-callout diag-texture">
+  <div class="crew-callout-inner">
+    <h2 class="crew-title" data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
+    <p class="crew-copy" data-en="Every cleanup has a crew behind it — people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo — gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it — people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
+    <a href="/contact/join" class="btn-secondary" data-en="Introduce myself" data-es="Presentarme">Introduce myself</a>
+  </div>
+</section>
+
 <!-- RSVP MODAL: fallback on localhost; Eventbrite widget used in production -->
 <div class="modal-overlay" id="rsvpModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
@@ -958,6 +970,41 @@ const orgSchema = {
   }
 
   .donate-subtle-link:hover { color: var(--purple); border-color: var(--purple-light); }
+
+  /* ── CREW CALLOUT ── */
+  .crew-callout {
+    background: var(--charcoal);
+    color: var(--off-white);
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
+    text-align: center;
+  }
+
+  .crew-callout-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    position: relative;
+    z-index: 1;
+  }
+
+  .crew-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-3);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+  }
+
+  .crew-copy {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--paper-a70);
+    max-width: 44ch;
+  }
 
   /* ── CAN'T ATTEND CTA ── */
   .cant-attend-cta {
