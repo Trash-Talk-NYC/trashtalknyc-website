@@ -52,13 +52,12 @@ Once the site key is set, a missing secret fails closed (`form_env_missing` patt
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
 
-## Join the Team — intake is EMAIL-ONLY for now (form deferred)
+## Join the Team — its own page at /contact/join, intake EMAIL-ONLY
 
-The About page's Join the Team section is four role boxes plus a primary `mailto:` CTA to **team@trashtalknyc.org** — the captain removed the application form (2026-08, round 13): "no form for now".
-Each role box is itself a `mailto:` link with a per-role subject (so the draft already says which role); English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
-The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`).
-The Blobs store itself may still hold any applications submitted while the form was live; export before assuming it's empty.
-The fourth role, "Events & Operations Lead", is a crew-proposed placeholder name the captain has not confirmed — rename it in the `roles` array in `about.astro`.
+Join the Team lives at **`/contact/join`** (`src/pages/contact/join.astro`, captain round 15): the captain-approved verbatim opening statement ("This isn't cute. …" — do not rewrite or decorate it), three roles (Social Media Manager, Content Videographer/Editor, Long-form Videographer/Editor — Events & Operations Lead and Developer were dropped), and a `mailto:` CTA to **team@trashtalknyc.org**. No form.
+Each role box is a `mailto:` link with a per-role subject; English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
+The About page keeps a compact pointer section holding the old `#join-the-team` anchor — the Contact page banner (another crewmate's branch) links to `/about#join-the-team`, so the id must survive until that banner is repointed straight at `/contact/join` after the branches merge.
+The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`); the Blobs store may still hold applications submitted while the form was live.
 
 ## Projects page — awaiting real content
 
