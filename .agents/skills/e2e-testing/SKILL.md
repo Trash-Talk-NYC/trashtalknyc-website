@@ -20,6 +20,8 @@ The one thing it can't emulate is Netlify Blobs: the per-IP rate limiter (`src/l
 **`netlify dev`** — wraps the Astro dev server in Netlify's runtime emulation.
 Only needed when verifying Netlify-runtime specifics: Blobs-backed rate limiting, `netlify.toml` behavior, or (after `netlify link`) the linked site's real env vars instead of local `.env`.
 
+**Redirects cannot be verified locally.** Redirects live in `astro.config.mjs` (`redirects: {...}`; the Netlify adapter emits `_redirects` from it at build time — never hand-write a `_redirects` file). But `netlify serve` falls back to a "simple static server" for this repo (`[dev.framework]` = `#static`) that ignores `_redirects`, so an old path 404ing locally proves nothing. Verify a redirect by checking the rule in `dist/_redirects` after `npm run build`, and for end-to-end proof curl an unlisted draft deploy (`npx netlify deploy --dir dist`, no `--prod`) — that's real Netlify routing without touching production.
+
 ## Running the dev server
 
 Start whichever server you need **in the background**, not in the foreground — a blocking foreground process leaves the session unable to do anything else while it waits, and this repo is often worked on by more than one agent/session at once, so a blocking server in one session is easy to mistake for a hang in another.
