@@ -221,12 +221,10 @@ const orgSchema = {
       <div class="gfm-widget-wrap">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
-      <!-- Two quiet lines under the widget: the fact as context, then
-           what the money does. Deliberately flat — the raised total
-           above does the talking (captain, round 28 amendment). -->
-      <p class="donate-fact" data-en="Trash Talk started in late May 2026." data-es="Trash Talk empezó a fines de mayo de 2026.">Trash Talk started in late May 2026.</p>
-      <p class="donate-note" data-en="Funds help scale cleanups, flower-planting, and builds." data-es="Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Funds help scale cleanups, flower-planting, and builds.</p>
-      <a href="/about" class="donate-subtle-link" data-en="Where does our money go?" data-es="¿A dónde va nuestro dinero?">Where does our money go?</a>
+      <!-- One flat paragraph under the widget — deliberately even, no
+           emphasis anywhere; the raised total above does the talking
+           (captain, rounds 28–30). -->
+      <p class="donate-note" data-en="Trash Talk started in late May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk empezó a fines de mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk started in late May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
     </div>
 
   </div>
@@ -377,7 +375,7 @@ const orgSchema = {
   <div class="crew-callout-inner">
     <h2 class="crew-title" data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
     <p class="crew-copy" data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
-    <a href="/recruit" class="btn-secondary" data-en="Introduce myself" data-es="Presentarme">Introduce myself</a>
+    <a href="/recruit" class="btn-secondary" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
   </div>
 </section>
 
@@ -955,41 +953,15 @@ const orgSchema = {
     margin-bottom: 1rem;
   }
 
-  /* Two quiet lines under the GoFundMe embed — neither competes with
-     the widget's call to action. The fact reads a shade firmer
-     (context), the funds line a shade softer (what happens next), so
-     they relate without merging into one block or competing. */
-  .donate-fact {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #4a4850;
-    line-height: 1.5;
-    margin-bottom: 0.2rem;
-  }
-
+  /* One flat supporting paragraph under the GoFundMe embed — a single
+     weight and size throughout (captain, round 30), quiet enough never
+     to compete with the widget's call to action */
   .donate-note {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    color: var(--gray);
-    line-height: 1.5;
-    margin-bottom: 0.4rem;
+    color: #4a4850;
+    line-height: 1.55;
   }
-
-  .donate-subtle-link {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--gray);
-    text-decoration: none;
-    align-self: flex-start;
-    margin-top: auto;
-    min-height: 32px;
-    display: inline-flex;
-    align-items: center;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.15s, color 0.15s;
-  }
-
-  .donate-subtle-link:hover { color: var(--purple); border-color: var(--purple-light); }
 
   /* ── CREW CALLOUT ── */
   .crew-callout {
