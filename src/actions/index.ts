@@ -24,7 +24,7 @@ import {
 
 type FormName = 'signup' | 'contact';
 
-const GENERIC_FAILURE = 'Something went wrong — please try again.';
+const GENERIC_FAILURE = 'Something went wrong. Please try again.';
 
 function log(level: 'info' | 'warn' | 'error', evt: string, fields: Record<string, string | number> = {}) {
   console[level](JSON.stringify({ evt, ...fields }));
@@ -63,7 +63,7 @@ async function shouldSilentlyDrop(form: FormName, ctx: ActionAPIContext, spamInp
     log('warn', 'form_rate_limited', { form });
     throw new ActionError({
       code: 'TOO_MANY_REQUESTS',
-      message: 'Too many submissions — please wait a few minutes and try again.',
+      message: 'Too many submissions. Please wait a few minutes and try again.',
     });
   }
 

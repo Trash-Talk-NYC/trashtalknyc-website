@@ -93,7 +93,7 @@ export const team: TeamMember[] = [
     ],
     portrait: { fx: 0.295, fy: 0.38, z: 3.6 },
     metaDescription:
-      'Meet Nandi — Brand Management & Programming at Trash Talk NYC, working to curb littering through convenient, engaging infrastructure and community effort.',
+      'Meet Nandi, Brand Management & Programming at Trash Talk NYC, working to curb littering through convenient, engaging infrastructure and community effort.',
   },
   {
     id: 'david',
@@ -120,7 +120,7 @@ export const team: TeamMember[] = [
     ],
     portrait: { fx: 0.472, fy: 0.36, z: 4 },
     metaDescription:
-      'Meet David, organizer of Trash Talk NYC — the grassroots initiative cleaning New York City through volunteer cleanup events and educational entertainment.',
+      'Meet David, organizer of Trash Talk NYC, the grassroots initiative cleaning New York City through volunteer cleanup events and educational entertainment.',
   },
   {
     id: 'fabiola',
@@ -168,7 +168,7 @@ export const team: TeamMember[] = [
     ],
     portrait: { fx: 0.625, fy: 0.44, z: 3.6 },
     metaDescription:
-      "Meet Fabiola — Technology at Trash Talk NYC, building the club's website and tech so finding events, joining the list, and supporting the cleanups works for everyone.",
+      "Meet Fabiola, Technology at Trash Talk NYC, building the club's website and tech so finding events, joining the list, and supporting the cleanups works for everyone.",
   },
 ];
 

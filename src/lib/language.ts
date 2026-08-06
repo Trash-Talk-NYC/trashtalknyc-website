@@ -52,5 +52,5 @@ export function onLanguageChange(cb: (lang: Lang) => void): () => void {
 }
 
 export function submitErrorText(lang: Lang): string {
-  return lang === 'es' ? '¡Algo salió mal! Inténtalo de nuevo.' : 'Something went wrong — please try again.';
+  return lang === 'es' ? '¡Algo salió mal! Inténtalo de nuevo.' : 'Something went wrong. Please try again.';
 }

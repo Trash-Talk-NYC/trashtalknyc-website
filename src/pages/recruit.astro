@@ -71,7 +71,7 @@ const roles = [
 
 <BaseLayout
   title="Open Roles — Trash Talk NYC"
-  description="Trash Talk NYC is looking for helping hands — open roles in social media and video, on the ground across the boroughs. Apply by email to team@trashtalknyc.org."
+  description="Trash Talk NYC needs helping hands. Open roles in social media and video, on the ground across the boroughs. Apply by email to team@trashtalknyc.org."
 >
   <section class="recruit-page grid-paper">
     <div class="recruit-inner">
@@ -88,7 +88,20 @@ const roles = [
         <h2 class="recruit-note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h2>
         <p class="recruit-note-body" data-en="Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role." data-es="Presentarse en persona vale más que cualquier currículum. Probamos las cosas rápido, nos quedamos con lo que funciona y arreglamos lo que no. Y buscamos información que activa: cuando te escribamos, no vamos a proponer una reunión para algún día del futuro — te preguntamos qué haces ese mismo día. Si eso te suena, elige un rol.">Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role.</p>
         <h3 class="recruit-note-sub" data-en="How we work" data-es="Cómo trabajamos">How we work</h3>
-        <p class="recruit-note-body" data-en="We're keeping up with the growth as best we can. We work out of iMessage group chats and the trusty phone call. At events, we get our hands dirty! We prioritize bonding there too, so whatever the role, expect to be chatting it up!" data-es="Vamos siguiendo el ritmo del crecimiento lo mejor que podemos. Trabajamos desde chats de grupo en iMessage y la llamada de toda la vida. En los eventos, ¡nos ensuciamos las manos! Ahí también priorizamos el vínculo, así que sea cual sea el rol, ¡prepárate para charlar!">We're keeping up with the growth as best we can. We work out of iMessage group chats and the trusty phone call. At events, we get our hands dirty! We prioritize bonding there too, so whatever the role, expect to be chatting it up!</p>
+        <!-- CAPTAIN'S COPY VERBATIM (round 22): "we move fast, and with
+             effort" keeps its comma, the third preference keeps its
+             quotation marks and has no full stop. Do not edit. -->
+        <p class="recruit-note-body" data-en="The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech." data-es="La mejor manera de saber si algo funciona es probarlo, y creemos que eso aplica a eventos, contenido, colaboraciones y tecnología.">The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech.</p>
+        <p class="recruit-note-body" data-en="Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:" data-es="Dado el crecimiento de Trash Talk, nos movemos rápido, y con esfuerzo. Algunas preferencias para ilustrar:">Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:</p>
+        <!-- Four parallel statements, so one column, not key/value: a
+             faint tint and hairline separators give the "light contrast,
+             not a data table" the captain asked for -->
+        <ul class="recruit-prefs">
+          <li data-en="A quick phone call beats a 30 minute call in the evening." data-es="Una llamada rápida le gana a una llamada de 30 minutos por la noche.">A quick phone call beats a 30 minute call in the evening.</li>
+          <li data-en="An iMessage or WhatsApp group chat beats emails." data-es="Un chat de grupo en iMessage o WhatsApp le gana a los correos.">An iMessage or WhatsApp group chat beats emails.</li>
+          <li data-en="“Here's the link” instead of “I posted this in the drive”" data-es="“Aquí va el link” en vez de “lo subí al drive”">“Here's the link” instead of “I posted this in the drive”</li>
+          <li data-en="We know what teammates have on their plates on a given day, because we want to support each other." data-es="Sabemos qué tiene cada quien entre manos en un día dado, porque queremos apoyarnos entre nosotros.">We know what teammates have on their plates on a given day, because we want to support each other.</li>
+        </ul>
         <h3 class="recruit-note-sub" data-en="Why email" data-es="¿Por qué correo?">Why email</h3>
         <p class="recruit-note-body" data-en="Applications come by email — we move quickly, and we're not big on unnecessary scaffolding." data-es="Las solicitudes llegan por correo — nos movemos rápido y no nos gustan los trámites innecesarios.">Applications come by email — we move quickly, and we're not big on unnecessary scaffolding.</p>
       </div>
@@ -107,7 +120,7 @@ const roles = [
       </div>
 
       <div class="recruit-cta">
-        <p class="recruit-cta-note" data-en="Applications are email-only for now — write to us and tell us who you are." data-es="Por ahora las solicitudes son solo por correo — escríbenos y cuéntanos quién eres.">Applications are email-only for now — write to us and tell us who you are.</p>
+        <p class="recruit-cta-note" data-en="Applications are email-only for now. Write to us and tell us who you are." data-es="Por ahora las solicitudes son solo por correo. Escríbenos y cuéntanos quién eres.">Applications are email-only for now. Write to us and tell us who you are.</p>
         <a class="recruit-cta-btn" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
           {TEAM_EMAIL}
@@ -211,6 +224,28 @@ const roles = [
     font-weight: 600;
     color: var(--charcoal);
     line-height: 1.7;
+  }
+
+  /* The captain's preferences: a distinct set, but light contrast only
+     ("not too big heavy weight"). Faint tint + hairline separators, no
+     table chrome. Single column flows fine at 390px. */
+  .recruit-prefs {
+    list-style: none;
+    margin: 0.8rem 0 0.3rem;
+    background: var(--purple-a06);
+    border-radius: var(--radius-sm);
+  }
+
+  .recruit-prefs li {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    line-height: 1.6;
+    padding: 0.6rem 0.9rem;
+  }
+
+  .recruit-prefs li + li {
+    border-top: 1px solid rgba(28, 28, 34, 0.08);
   }
 
   .recruit-roles {
