@@ -75,20 +75,22 @@ const roles = [
 >
   <section class="recruit-page grid-paper">
     <div class="recruit-inner">
-      <h1 class="recruit-title">
-        <span data-en="We're looking for" data-es="Buscamos">We're looking for</span>
-        <span class="recruit-title-accent" data-en="helping hands" data-es="manos que ayuden">helping hands</span>
-      </h1>
+      <h1 class="recruit-title" data-en="We need helping hands!" data-es="¡Necesitamos manos que ayuden!">We need helping hands!</h1>
 
-      <!-- The note is the first substantial content on the page -->
+      <!-- The note is the first substantial content on the page. It holds
+           the whole pitch — the promoted heading, then How we work and
+           Why email as signposts inside one continuous note (captain,
+           round 21). The How-we-work and Why-email copy is the CAPTAIN'S
+           OWN VOICE, approved verbatim — do not smooth it out: the
+           exclamation marks, "the trusty phone call", "chatting it up"
+           and the abruptness between sentences are the point. -->
       <div class="recruit-note">
-        <p class="recruit-note-label" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</p>
+        <h2 class="recruit-note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h2>
         <p class="recruit-note-body" data-en="Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role." data-es="Presentarse en persona vale más que cualquier currículum. Probamos las cosas rápido, nos quedamos con lo que funciona y arreglamos lo que no. Y buscamos información que activa: cuando te escribamos, no vamos a proponer una reunión para algún día del futuro — te preguntamos qué haces ese mismo día. Si eso te suena, elige un rol.">Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role.</p>
-      </div>
-
-      <div class="recruit-how">
-        <p class="section-label" data-en="How we work" data-es="Cómo trabajamos">How we work</p>
-        <p class="recruit-how-body" data-en="iMessage group chats and five-minute calls. We're keeping up with the growth as best we can. Most of all, we get our hands dirty at events — we don't stand back and film, we work alongside neighbourhoods and build relationships across boroughs. Whatever the role, connecting with communities next to your own is the point." data-es="Chats de grupo en iMessage y llamadas de cinco minutos. Vamos siguiendo el ritmo del crecimiento lo mejor que podemos. Sobre todo, nos ensuciamos las manos en los eventos — no nos quedamos atrás filmando: trabajamos junto a los vecindarios y construimos relaciones entre condados. Sea cual sea el rol, de eso se trata: conectar con las comunidades vecinas a la tuya.">iMessage group chats and five-minute calls. We're keeping up with the growth as best we can. Most of all, we get our hands dirty at events — we don't stand back and film, we work alongside neighbourhoods and build relationships across boroughs. Whatever the role, connecting with communities next to your own is the point.</p>
+        <h3 class="recruit-note-sub" data-en="How we work" data-es="Cómo trabajamos">How we work</h3>
+        <p class="recruit-note-body" data-en="We're keeping up with the growth as best we can. We work out of iMessage group chats and the trusty phone call. At events, we get our hands dirty! We prioritize bonding there too, so whatever the role, expect to be chatting it up!" data-es="Vamos siguiendo el ritmo del crecimiento lo mejor que podemos. Trabajamos desde chats de grupo en iMessage y la llamada de toda la vida. En los eventos, ¡nos ensuciamos las manos! Ahí también priorizamos el vínculo, así que sea cual sea el rol, ¡prepárate para charlar!">We're keeping up with the growth as best we can. We work out of iMessage group chats and the trusty phone call. At events, we get our hands dirty! We prioritize bonding there too, so whatever the role, expect to be chatting it up!</p>
+        <h3 class="recruit-note-sub" data-en="Why email" data-es="¿Por qué correo?">Why email</h3>
+        <p class="recruit-note-body" data-en="Applications come by email — we move quickly, and we're not big on unnecessary scaffolding." data-es="Las solicitudes llegan por correo — nos movemos rápido y no nos gustan los trámites innecesarios.">Applications come by email — we move quickly, and we're not big on unnecessary scaffolding.</p>
       </div>
 
       <div class="recruit-roles">
@@ -130,24 +132,29 @@ const roles = [
     z-index: 1;
   }
 
-  /* Plain page title — deliberately no hero, no eyebrow, no ghost word
-     (captain, round 20). The second line takes a yellow marker so it
-     still reads street-poster without any hero machinery. */
+  /* Boxed page title — deliberately no hero, no eyebrow, no ghost word
+     (captain, rounds 20–21). The whole title sits in one orange bordered
+     box, the button treatment: orange appears only as a bordered object
+     with the hard press shadow, per the orange-accent rule in
+     global.css. Charcoal text on orange is 5.1:1 — fine for display
+     type. text-wrap: balance keeps a forced two-line wrap at phone
+     widths from stranding one word. */
   .recruit-title {
+    display: inline-block;
     font-family: 'Bebas Neue', sans-serif;
     font-size: var(--step-4);
     font-weight: 400;
-    line-height: 1.1;
+    line-height: 1.05;
     letter-spacing: 0.02em;
     color: var(--charcoal);
+    background: var(--orange);
+    border: 3px solid var(--charcoal);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--press);
+    padding: 0.32em 0.5em 0.22em;
+    transform: rotate(-1deg);
     margin-bottom: var(--space-lg);
-    max-width: 18ch;
-  }
-
-  .recruit-title-accent {
-    background: var(--yellow);
-    box-shadow: 0.12em 0.12em 0 var(--charcoal);
-    padding: 0 0.18em;
+    text-wrap: balance;
   }
 
   /* The crew's note to applicants: a taped-up paper card (carried over
@@ -175,29 +182,31 @@ const roles = [
     background: rgba(245, 208, 0, 0.85);
   }
 
-  .recruit-note-label {
+  /* Promoted from an eyebrow to the note's real title (captain,
+     round 21) — the first substantial thing after the page title */
+  .recruit-note-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-2);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: var(--charcoal);
+    margin-bottom: 0.7rem;
+  }
+
+  /* Signposts inside one continuous note, not section breaks — they
+     reuse the old eyebrow voice so the note still reads as one card */
+  .recruit-note-sub {
     font-family: 'Space Mono', monospace;
     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.16em;
     color: var(--purple);
-    margin-bottom: 0.55rem;
+    margin: 1.2rem 0 0.45rem;
   }
 
   .recruit-note-body {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--charcoal);
-    line-height: 1.7;
-  }
-
-  .recruit-how {
-    max-width: 44rem;
-    margin-bottom: var(--space-lg);
-  }
-
-  .recruit-how-body {
     font-size: 1rem;
     font-weight: 600;
     color: var(--charcoal);
