@@ -3,7 +3,11 @@
  * Sticky top navigation: logo, page links, Join CTA, language toggle,
  * and the mobile hamburger. Owns active-page detection and the mobile
  * menu open/close wiring. Deliberately a PLAIN sticky header — see the
- * safe-area bullet in AGENTS.md before adding any positioning tricks.
+ * header bullet in AGENTS.md before adding any positioning tricks.
+ * The iOS 26 header-gap bug was never the nav's fault: the device-
+ * verified trigger was a position:fixed full-viewport overlay layered
+ * above it (the grain, since fixed — see global.css). Never stack a
+ * fixed full-viewport layer above this nav.
  */
 import LangToggle from './LangToggle.astro';
 
@@ -12,12 +16,11 @@ const pathname = Astro.url.pathname;
 const isHome     = pathname === '/' || pathname === '';
 const isEvents   = pathname === '/events' || pathname.startsWith('/events/');
 const isTeam     = pathname === '/about' || pathname.startsWith('/about/');
-// The recruitment page lives under /contact but belongs to the About menu
-const isWorkWithUs = pathname === '/contact/join' || pathname.startsWith('/contact/join/');
+// The recruitment page is top-level at /recruit but belongs to the About menu
+const isRecruit  = pathname === '/recruit' || pathname.startsWith('/recruit/');
 // The About parent highlights when either of its children is current
-const isAbout    = isTeam || isWorkWithUs;
-// /contact/join must NOT also light Contact, or two parents look active
-const isContact  = (pathname === '/contact' || pathname.startsWith('/contact/')) && !isWorkWithUs;
+const isAbout    = isTeam || isRecruit;
+const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 ---
 
 <nav aria-label="Main">
@@ -35,8 +38,9 @@ const isContact  = (pathname === '/contact' || pathname.startsWith('/contact/'))
       <!-- Disclosure pattern (APG): the parent is a toggle, not a link —
            /about stays reachable as "The Team" below. aria-expanded is the
            whole submenu contract; no menu roles, no aria-haspopup.
-           "Work With Us" must NOT be labelled "Join" — the nav CTA already
-           uses Join for the mailing list (captain naming decision).
+           "Open Roles" is the captain's chosen label (round 20): "Join"
+           is taken by the mailing-list nav CTA and "Work With Us" was
+           rejected as confusable with Contact.
            Projects stays decoupled on fm/projects-tree-guard and rejoins
            this list when it lands. -->
       <button
@@ -53,7 +57,7 @@ const isContact  = (pathname === '/contact' || pathname.startsWith('/contact/'))
       </button>
       <ul class="nav-drop-menu" id="aboutDropMenu">
         <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
-        <li><a href="/contact/join" class:list={{ active: isWorkWithUs }} data-en="Work With Us" data-es="Trabaja con Nosotros">Work With Us</a></li>
+        <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
       </ul>
     </li>
     <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>

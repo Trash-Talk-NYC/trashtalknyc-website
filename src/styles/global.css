@@ -108,14 +108,17 @@ html {
 }
 
 /* ── BODY / BASE TYPOGRAPHY ── */
-/* iOS 26 Safari (Liquid Glass) ignores theme-color and paints the strip
-   between the system status bar and the page from the BODY's
-   background-color specifically — not the html canvas, not the sticky
-   nav, not pseudo-elements (verified by pixel-sampling iOS Simulator
-   screenshots with the theme-color meta removed). Body must stay
-   charcoal so that strip reads as an extension of the nav; the cream
-   page background lives on <main> instead. */
+/* BOTH html and body stay nav charcoal. Which surface iOS paints into
+   the status-bar band and the rubber-band overscroll reveal varies by
+   iOS version, so matching both is the belt-and-braces that finally
+   held on the captain's device (header-astro-demo page 16, 2026-08).
+   Earlier "iOS 26 samples the body specifically" claims came from iOS 18
+   simulator sampling and are NOT verified for iOS 26 — don't rely on
+   either surface alone. The cream page background lives on <main>;
+   position: relative anchors the grain overlay below (see body::after —
+   the overlay must scroll with the document, not pin to the viewport). */
 body {
+  position: relative;
   background: var(--charcoal);
   color: var(--charcoal);
   font-family: 'Nunito', sans-serif;
@@ -138,10 +141,18 @@ img, svg, video { max-width: 100%; }
   outline-offset: 2px;
 }
 
-/* grain texture overlay — identical across all pages */
+/* grain texture overlay — identical across all pages.
+   MUST stay position: absolute (a document overlay on the relative body,
+   scrolling with the page). As position: fixed — a full-viewport layer
+   pinned above the sticky nav — it made iOS 26 Safari misplace the
+   header on scroll-direction changes: THE cause of the long-standing
+   header-gap reports, isolated and fix-confirmed on the captain's
+   device (header-astro-demo-z4 pages 8/14, 2026-08). The grain is
+   uniform static noise, so scrolling with the document is visually
+   indistinguishable from the old screen-pinned layer. */
 body::after {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none;

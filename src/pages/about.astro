@@ -157,17 +157,17 @@ const bioOrder = ['david', 'nandi', 'fabiola']
 
   <!-- CLOSING CTA (round 19) — the page's one closer: it absorbs and
        replaces the round-15 pointer band rather than standing beside
-       it. The id is a stable contract: the Contact page banner
-       (another crewmate's branch) links to /about#join-the-team, so it
-       must stay until that banner is repointed at /contact/join. -->
+       it. The id survives as a legacy anchor: old links to
+       /about#join-the-team still land here; the roles themselves live
+       at /recruit (round 20). "Now recruiting" was retired by the
+       captain in round 20 — don't reintroduce it. -->
   <section class="close-cta diag-texture" id="join-the-team">
     <div class="tape-seam" aria-hidden="true"></div>
     <div class="close-cta-inner">
-      <p class="sticker close-cta-eyebrow" style="--tilt: 2deg" data-en="Now recruiting" data-es="Estamos reclutando">Now recruiting</p>
       <h2 class="close-cta-title" data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
       <p class="close-cta-sub" data-en="We're expanding — more blocks, more projects, more crew." data-es="Estamos creciendo — más cuadras, más proyectos, más equipo.">We're expanding — more blocks, more projects, more crew.</p>
-      <a class="close-cta-btn" href="/contact/join">
-        <span data-en="Join the team" data-es="Únete al equipo">Join the team</span>
+      <a class="close-cta-btn" href="/recruit">
+        <span data-en="See the open roles" data-es="Ver los puestos abiertos">See the open roles</span>
         <span aria-hidden="true">→</span>
       </a>
     </div>
@@ -560,8 +560,8 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     .team-bio a:hover { color: var(--purple-light); border-color: var(--purple-light); }
   }
 
-  /* ── CLOSING CTA (the join route, findable from the page itself;
-        the Join the Team content lives at /contact/join) ── */
+  /* ── CLOSING CTA (the recruiting route, findable from the page
+        itself; the roles live at /recruit) ── */
   .close-cta {
     background: var(--charcoal);
     position: relative;
@@ -580,8 +580,6 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     position: relative;
     z-index: 1;
   }
-
-  .close-cta-eyebrow { margin-bottom: 0.4rem; }
 
   .close-cta-title {
     font-family: 'Bebas Neue', sans-serif;

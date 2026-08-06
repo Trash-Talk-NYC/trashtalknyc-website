@@ -96,13 +96,14 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
         </form>
       </div>
 
-      <!-- Join-the-team invitation: links to the Join the Team section on the
-           About page (the anchor target ships on the About redesign branch). -->
+      <!-- Recruiting invitation: links straight to the roles page at
+           /recruit (round 20 — it previously landed on the About page's
+           closing note instead of the roles, captain-flagged). Copy is
+           the captain's round-20 wording; "Now recruiting" was retired. -->
       <aside class="join-banner" aria-labelledby="joinBannerHeading">
-        <span class="sticker join-banner-tag" data-en="Now recruiting" data-es="Reclutando">Now recruiting</span>
-        <h2 class="join-banner-heading" id="joinBannerHeading" data-en="Join the team" data-es="Únete al equipo">Join the team</h2>
-        <p class="join-banner-copy" data-en="Rather pick up a grabber than write an email? There's room on the crew, and roles for every kind of helper." data-es="¿Prefieres agarrar una pinza antes que escribir un correo? Hay lugar en el equipo y roles para todo tipo de ayudante.">Rather pick up a grabber than write an email? There's room on the crew, and roles for every kind of helper.</p>
-        <a class="join-banner-link" href="/about#join-the-team" data-en="See the roles →" data-es="Ver los roles →">See the roles →</a>
+        <h2 class="join-banner-heading" id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
+        <p class="join-banner-copy" data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo — o alguien — que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
+        <a class="join-banner-link" href="/recruit" data-en="See more →" data-es="Ver más →">See more →</a>
       </aside>
     </div>
   </section>
@@ -316,16 +317,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     padding: clamp(2rem, 5vw, 2.75rem) clamp(1.25rem, 4vw, 2.5rem) clamp(1.75rem, 4.5vw, 2.25rem);
     text-align: center;
     transform: rotate(-0.6deg);
-  }
-
-  /* .sticker supplies the yellow chip look; this only pins it over the
-     banner's top edge */
-  .join-banner-tag {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-2deg);
-    white-space: nowrap;
   }
 
   .join-banner-heading {

@@ -192,7 +192,7 @@ const orgSchema = {
               <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
             </a>
           </div>
-          <a href="#signup" class="dc-fallback-list-link" data-en="or join the club list ↓" data-es="o únete a la lista del club ↓">or join the club list ↓</a>
+          <a href="#signup" class="dc-fallback-list-link" data-en="find out about neighborhood events ↓" data-es="entérate de los eventos en tu vecindario ↓">find out about neighborhood events ↓</a>
         </div>
       )}
       {hasEventCoords && (
@@ -227,15 +227,6 @@ const orgSchema = {
   </div>
 </section>
 
-<!-- CAN'T ATTEND CTA -->
-<div class="cant-attend-cta grid-paper">
-  <a href="#signup" class="cant-attend-link">
-    <span class="cta-arrow" aria-hidden="true">&darr;</span>
-    <span data-en="Can't attend just yet?" data-es="¿Aún no puedes asistir?">Can't attend just yet?</span>
-    <span class="cta-arrow" aria-hidden="true">&darr;</span>
-  </a>
-</div>
-
 <!-- SIGNUP -->
 <section class="signup" id="signup">
   <div class="signup-inner">
@@ -244,9 +235,9 @@ const orgSchema = {
       <p class="signup-subtitle" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</p>
       <p
         class="signup-blurb"
-        data-en="This is our newsletter signup. We'll email you when and where cleanups are happening in your neighborhood."
-        data-es="Esta es la inscripción a nuestro boletín. Te avisaremos por correo cuándo y dónde habrá limpiezas en tu vecindario."
-      >This is our newsletter signup. We'll email you when and where cleanups are happening in your neighborhood.</p>
+        data-en="We'll email you when cleanups are happening."
+        data-es="Te avisaremos por correo cuando haya limpiezas."
+      >We'll email you when cleanups are happening.</p>
     </div>
 
     <div class="form-wrap">
@@ -369,15 +360,19 @@ const orgSchema = {
   </div>
 </section>
 
+<!-- The site's signature seam marks the handoff from the mailing-list ask
+     to the crew ask — the captain found the bare transition abrupt -->
+<div class="tape-seam" aria-hidden="true"></div>
+
 <!-- CREW CALLOUT: the signup above is the mailing list and is for everyone;
      this is the pitch for people who want to WORK on Trash Talk (roles live
-     at /contact/join, built on another branch), so it deliberately reads as
-     a different ask: dark band, ghost button, no form -->
+     at /recruit), so it deliberately reads as a different ask: dark band,
+     ghost button, no form -->
 <section class="crew-callout diag-texture">
   <div class="crew-callout-inner">
     <h2 class="crew-title" data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
     <p class="crew-copy" data-en="Every cleanup has a crew behind it — people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo — gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it — people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
-    <a href="/contact/join" class="btn-secondary" data-en="Introduce myself" data-es="Presentarme">Introduce myself</a>
+    <a href="/recruit" class="btn-secondary" data-en="Introduce myself" data-es="Presentarme">Introduce myself</a>
   </div>
 </section>
 
@@ -1005,39 +1000,6 @@ const orgSchema = {
     color: var(--paper-a70);
     max-width: 44ch;
   }
-
-  /* ── CAN'T ATTEND CTA ── */
-  .cant-attend-cta {
-    background: var(--off-white);
-    padding: 0 max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
-    text-align: center;
-  }
-
-  .cant-attend-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.85rem;
-    min-height: var(--tap);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--charcoal);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-
-  .cant-attend-link:hover { color: var(--purple); }
-
-  .cta-arrow {
-    font-size: 1.1rem;
-    color: var(--purple-light);
-    transition: transform 0.15s;
-    display: inline-block;
-  }
-
-  .cant-attend-link:hover .cta-arrow { transform: translateY(3px); }
 
   /* ── RSVP MODAL ── */
   .modal-overlay {

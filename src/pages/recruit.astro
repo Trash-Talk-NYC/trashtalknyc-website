@@ -1,33 +1,42 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageHero from '../../components/PageHero.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
 /**
- * Join the Team — its own page under Contact (captain, round 15; it
- * moved here from the About page, which keeps a pointer at the old
- * #join-the-team anchor).
+ * Open Roles — the recruitment page, top-level at /recruit (captain,
+ * round 20; moved from /contact/join, where it was "Join the Team").
+ * No hero, no form: a title, the note, how we work, the roles, and an
+ * email-only apply path to team@trashtalknyc.org.
  *
- * The opening statement is CAPTAIN-APPROVED VERBATIM — do not rewrite,
- * soften, or decorate over it. The three roles below are the captain's
- * own copy (round 15); Events & Operations Lead was dropped. Intake is
- * email-only: each role is a mailto: with a per-role subject, plus a
- * catch-all button. English subjects are baked into the static hrefs;
- * the language toggle swaps them client-side (setLang never touches
- * attributes).
+ * The "[your name]" placeholder in the mailto subject is deliberate —
+ * a mailto can't know the sender, so the subject asks them to say so
+ * (captain's sketch: "I'm <name> and I want to join Trash Talk NYC").
+ * English subjects are baked into the static hrefs; the language toggle
+ * swaps them client-side from data-subject-* attributes, because
+ * setLang never translates attributes.
+ *
+ * Copy is captain-supplied (round 20, tightened by firstmate) and still
+ * open to captain revision — keep it easy to swap.
  */
 const TEAM_EMAIL = 'team@trashtalknyc.org';
 const mailto = (subject: string) => `mailto:${TEAM_EMAIL}?subject=${encodeURIComponent(subject)}`;
+
+// The captain's subject line, verbatim; role boxes append the role after
+// an em dash so an application still says what it's for.
+const baseSubject = {
+  en: "I'm [your name] and I want to join Trash Talk NYC",
+  es: 'Soy [tu nombre] y quiero unirme a Trash Talk NYC',
+};
 
 const roles = [
   {
     accent: 'var(--purple-light)',
     title: { en: 'Social Media Manager', es: 'Gestor/a de Redes' },
-    // The captain's line ("run our channels day to day") extended only
-    // by what the club demonstrably does: post the cleanups and call
-    // people out to them.
+    // Captain's copy verbatim ("vital organ" stays exactly); only
+    // "channel" was pluralized — the club runs Instagram, TikTok and
+    // Eventbrite. The Spanish keeps the anatomical metaphor.
     desc: {
-      en: 'Run our channels day to day — the cleanups, the wins, and the calls to come out.',
-      es: 'Maneja nuestras cuentas día a día — las limpiezas, los logros y las convocatorias a salir.',
+      en: 'Run the channels. Social media is a vital organ of Trash Talk.',
+      es: 'Maneja las cuentas. Las redes sociales son un órgano vital de Trash Talk.',
     },
     pace: null,
   },
@@ -38,80 +47,66 @@ const roles = [
       en: 'Film on the ground with us: cleanups, builds, and future projects.',
       es: 'Filma en el terreno con nosotros: limpiezas, construcciones y proyectos futuros.',
     },
-    pace: { en: 'On the ground · fast', es: 'En el terreno · rápido' },
+    pace: { en: 'On the ground', es: 'En el terreno' },
   },
   {
     accent: 'var(--orange)',
     title: { en: 'Long-form Videographer / Editor', es: 'Videógrafo/a / Editor/a de Formato Largo' },
-    // Captain's copy — the slower/deeper framing, people and policy
-    // over time, and the three-month compound effect are theirs; keep
-    // the substance intact.
+    // Captain's copy — people and policy over time, and the three-month
+    // compound effect are theirs; keep the substance intact.
     desc: {
       en: "Help us tell the slower, deeper stories behind Trash Talk. We move fast on cleanups, but we want to document projects, people, and policy over time. In just three months there is a compound effect of sustained community effort we are looking forward to capturing.",
       es: 'Ayúdanos a contar las historias más lentas y profundas detrás de Trash Talk. En las limpiezas nos movemos rápido, pero queremos documentar proyectos, personas y políticas a lo largo del tiempo. En apenas tres meses ya hay un efecto compuesto del esfuerzo comunitario sostenido que esperamos capturar.',
     },
-    pace: { en: 'The long story · slow', es: 'La historia larga · lento' },
+    pace: { en: 'The long story', es: 'La historia larga' },
   },
 ].map((r) => ({
   ...r,
   subject: {
-    en: `Joining as ${r.title.en} — Trash Talk NYC`,
-    es: `Quiero unirme como ${r.title.es} — Trash Talk NYC`,
+    en: `${baseSubject.en} — ${r.title.en}`,
+    es: `${baseSubject.es} — ${r.title.es}`,
   },
 }));
-
-const generalSubject = {
-  en: 'Joining the team — Trash Talk NYC',
-  es: 'Quiero unirme al equipo — Trash Talk NYC',
-};
 ---
 
 <BaseLayout
-  title="Join the Team — Trash Talk NYC"
-  description="Join the Trash Talk NYC crew — social media, on-the-ground video, and long-form storytelling roles. Applications are open by email to team@trashtalknyc.org."
+  title="Open Roles — Trash Talk NYC"
+  description="Trash Talk NYC is looking for helping hands — open roles in social media and video, on the ground across the boroughs. Apply by email to team@trashtalknyc.org."
 >
-  <PageHero eyebrowEn="Now recruiting" eyebrowEs="Estamos reclutando" word="CREW">
-    <span data-en="JOIN THE" data-es="ÚNETE AL">JOIN THE</span> <span class="accent" data-en="TEAM" data-es="EQUIPO">TEAM</span>
-  </PageHero>
+  <section class="recruit-page grid-paper">
+    <div class="recruit-inner">
+      <h1 class="recruit-title">
+        <span data-en="We're looking for" data-es="Buscamos">We're looking for</span>
+        <span class="recruit-title-accent" data-en="helping hands" data-es="manos que ayuden">helping hands</span>
+      </h1>
 
-  <section class="join-page grid-paper">
-    <div class="join-inner">
-      <!-- CAPTAIN-APPROVED VERBATIM — do not rewrite or decorate.
-           The Spanish keeps the same blunt register on purpose. -->
-      <p class="join-statement" data-en="This isn't cute. Trash Talk is people showing up, getting their hands dirty, filming what happens, and paying attention to why a block looks the way it does. No neighbourhood gets dirty in a vacuum. If that's the work you want, we want you." data-es="Esto no es para verse lindo. Trash Talk es gente que se presenta, se ensucia las manos, filma lo que pasa y presta atención a por qué una cuadra se ve como se ve. Ningún vecindario se ensucia solo. Si ese es el trabajo que quieres, te queremos aquí.">This isn't cute. Trash Talk is people showing up, getting their hands dirty, filming what happens, and paying attention to why a block looks the way it does. No neighbourhood gets dirty in a vacuum. If that's the work you want, we want you.</p>
-
-      <!-- The three pillars the captain named, as the substance under
-           the statement -->
-      <ul class="join-pillars">
-        <li><span data-en="Showing up to events" data-es="Presentarse a los eventos">Showing up to events</span></li>
-        <li><span data-en="Filming content" data-es="Filmar contenido">Filming content</span></li>
-        <li><span data-en="Seeing how things actually work — hands dirty" data-es="Ver cómo funcionan las cosas de verdad — manos sucias">Seeing how things actually work — hands dirty</span></li>
-      </ul>
-
-      <!-- The captain's round-13 message to applicants, carried over
-           with the section -->
-      <div class="join-note">
-        <p class="join-note-label" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</p>
-        <p class="join-note-body" data-en="How we work: showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't — and nobody here gets side-eye for making a mistake. If that sounds like you, pick a role." data-es="Cómo trabajamos: presentarse en persona vale más que cualquier currículum. Probamos las cosas rápido, nos quedamos con lo que funciona y arreglamos lo que no — y aquí nadie te mira mal por equivocarte. Si eso te suena, elige un rol.">How we work: showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't — and nobody here gets side-eye for making a mistake. If that sounds like you, pick a role.</p>
+      <!-- The note is the first substantial content on the page -->
+      <div class="recruit-note">
+        <p class="recruit-note-label" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</p>
+        <p class="recruit-note-body" data-en="Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role." data-es="Presentarse en persona vale más que cualquier currículum. Probamos las cosas rápido, nos quedamos con lo que funciona y arreglamos lo que no. Y buscamos información que activa: cuando te escribamos, no vamos a proponer una reunión para algún día del futuro — te preguntamos qué haces ese mismo día. Si eso te suena, elige un rol.">Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role.</p>
       </div>
 
-      <div class="join-roles">
+      <div class="recruit-how">
+        <p class="section-label" data-en="How we work" data-es="Cómo trabajamos">How we work</p>
+        <p class="recruit-how-body" data-en="iMessage group chats and five-minute calls. We're keeping up with the growth as best we can. Most of all, we get our hands dirty at events — we don't stand back and film, we work alongside neighbourhoods and build relationships across boroughs. Whatever the role, connecting with communities next to your own is the point." data-es="Chats de grupo en iMessage y llamadas de cinco minutos. Vamos siguiendo el ritmo del crecimiento lo mejor que podemos. Sobre todo, nos ensuciamos las manos en los eventos — no nos quedamos atrás filmando: trabajamos junto a los vecindarios y construimos relaciones entre condados. Sea cual sea el rol, de eso se trata: conectar con las comunidades vecinas a la tuya.">iMessage group chats and five-minute calls. We're keeping up with the growth as best we can. Most of all, we get our hands dirty at events — we don't stand back and film, we work alongside neighbourhoods and build relationships across boroughs. Whatever the role, connecting with communities next to your own is the point.</p>
+      </div>
+
+      <div class="recruit-roles">
         {roles.map((r, i) => (
           <a class="role-card" href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es} style={`--accent:${r.accent}; --card-tilt:${i % 2 === 0 ? '-1deg' : '1deg'}`}>
-            <span class="role-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             {r.pace && (
               <span class="role-pace" data-en={r.pace.en} data-es={r.pace.es}>{r.pace.en}</span>
             )}
             <span class="role-title" data-en={r.title.en} data-es={r.title.es}>{r.title.en}</span>
             <span class="role-desc" data-en={r.desc.en} data-es={r.desc.es}>{r.desc.en}</span>
-            <span class="role-apply"><span data-en="Apply by email" data-es="Postúlate por correo">Apply by email</span> <span class="role-arrow" aria-hidden="true">→</span></span>
+            <span class="role-apply"><span data-en="Apply" data-es="Postúlate">Apply</span> <span class="role-arrow" aria-hidden="true">→</span></span>
           </a>
         ))}
       </div>
 
-      <div class="join-cta">
-        <p class="join-cta-note" data-en="Applications are email-only for now — write to us and tell us who you are." data-es="Por ahora las solicitudes son solo por correo — escríbenos y cuéntanos quién eres.">Applications are email-only for now — write to us and tell us who you are.</p>
-        <a class="join-cta-btn" href={mailto(generalSubject.en)} data-subject-en={generalSubject.en} data-subject-es={generalSubject.es}>
+      <div class="recruit-cta">
+        <p class="recruit-cta-note" data-en="Applications are email-only for now — write to us and tell us who you are." data-es="Por ahora las solicitudes son solo por correo — escríbenos y cuéntanos quién eres.">Applications are email-only for now — write to us and tell us who you are.</p>
+        <a class="recruit-cta-btn" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
           {TEAM_EMAIL}
         </a>
@@ -121,64 +116,43 @@ const generalSubject = {
 </BaseLayout>
 
 <style>
-  .join-page {
+  .recruit-page {
     background: var(--off-white);
     padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
     position: relative;
     overflow: hidden;
   }
 
-  .join-inner {
+  .recruit-inner {
     max-width: var(--container);
     margin: 0 auto;
     position: relative;
     z-index: 1;
   }
 
-  /* The statement stands on its own: big, plain, undecorated — the
-     copy is blunt by captain decision and nothing may undercut it */
-  .join-statement {
-    font-size: var(--step-2);
-    font-weight: 800;
+  /* Plain page title — deliberately no hero, no eyebrow, no ghost word
+     (captain, round 20). The second line takes a yellow marker so it
+     still reads street-poster without any hero machinery. */
+  .recruit-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-4);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
     color: var(--charcoal);
-    line-height: 1.45;
-    max-width: 44ch;
-    margin-bottom: var(--space-md);
-  }
-
-  .join-pillars {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem 1.6rem;
     margin-bottom: var(--space-lg);
+    max-width: 18ch;
   }
 
-  .join-pillars li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--charcoal);
-  }
-
-  /* Square marker in the poster voice: yellow fill, charcoal border */
-  .join-pillars li::before {
-    content: '';
-    width: 0.7rem;
-    height: 0.7rem;
+  .recruit-title-accent {
     background: var(--yellow);
-    border: 2px solid var(--charcoal);
-    flex-shrink: 0;
+    box-shadow: 0.12em 0.12em 0 var(--charcoal);
+    padding: 0 0.18em;
   }
 
-  /* The crew's note to applicants (round 13): a taped-up paper card.
-     On off-white it takes the standard charcoal press. */
-  .join-note {
+  /* The crew's note to applicants: a taped-up paper card (carried over
+     from the previous page — same device, now the opening content). */
+  .recruit-note {
     position: relative;
     max-width: 44rem;
     margin: 0 0 var(--space-lg);
@@ -190,7 +164,7 @@ const generalSubject = {
     transform: rotate(-0.5deg);
   }
 
-  .join-note::before {
+  .recruit-note::before {
     content: '';
     position: absolute;
     top: -12px;
@@ -201,7 +175,7 @@ const generalSubject = {
     background: rgba(245, 208, 0, 0.85);
   }
 
-  .join-note-label {
+  .recruit-note-label {
     font-family: 'Space Mono', monospace;
     font-size: 0.7rem;
     font-weight: 700;
@@ -211,14 +185,26 @@ const generalSubject = {
     margin-bottom: 0.55rem;
   }
 
-  .join-note-body {
+  .recruit-note-body {
     font-size: 1rem;
     font-weight: 600;
     color: var(--charcoal);
     line-height: 1.7;
   }
 
-  .join-roles {
+  .recruit-how {
+    max-width: 44rem;
+    margin-bottom: var(--space-lg);
+  }
+
+  .recruit-how-body {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    line-height: 1.7;
+  }
+
+  .recruit-roles {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
     gap: var(--space-md);
@@ -227,7 +213,8 @@ const generalSubject = {
 
   /* Role box: poster card. On the off-white page the press shadow is
      the standard charcoal one; accents appear only as bordered objects
-     (swatch bar + pace chip), never a raw edge. */
+     (swatch bar + pace chip), never a raw edge. No numbering (captain,
+     round 20). */
   .role-card {
     display: flex;
     flex-direction: column;
@@ -263,20 +250,8 @@ const generalSubject = {
     }
   }
 
-  .role-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    color: var(--accent);
-    background: var(--charcoal);
-    align-self: flex-start;
-    padding: 0.2em 0.5em;
-    border-radius: 3px;
-  }
-
-  /* The two videography roles differ in speed — the pace chip is what
-     makes fast-vs-slow legible at a glance, so it reads sticker-loud */
+  /* The two videography roles differ in rhythm — the pace chip makes
+     that legible at a glance, so it reads sticker-loud */
   .role-pace {
     align-self: flex-start;
     font-family: 'Space Mono', monospace;
@@ -327,13 +302,13 @@ const generalSubject = {
     .role-card:hover .role-arrow { transform: translateX(3px); }
   }
 
-  .join-cta {
+  .recruit-cta {
     max-width: 40rem;
     margin: 0 auto;
     text-align: center;
   }
 
-  .join-cta-note {
+  .recruit-cta-note {
     font-size: 0.95rem;
     font-weight: 600;
     color: #4a4850;
@@ -341,7 +316,7 @@ const generalSubject = {
     line-height: 1.6;
   }
 
-  .join-cta-btn {
+  .recruit-cta-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.6em;
@@ -361,26 +336,26 @@ const generalSubject = {
     transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
   }
 
-  .join-cta-btn svg {
+  .recruit-cta-btn svg {
     width: 1.2em;
     height: 1.2em;
     flex-shrink: 0;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .join-cta-btn:hover {
+    .recruit-cta-btn:hover {
       transform: rotate(0deg) translate(2px, 2px);
       box-shadow: 3px 3px 0 var(--charcoal);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .role-card, .role-arrow, .join-cta-btn { transition: none; }
+    .role-card, .role-arrow, .recruit-cta-btn { transition: none; }
   }
 </style>
 
 <script>
-  import { getCurrentLang, onLanguageChange, type Lang } from '../../lib/language';
+  import { getCurrentLang, onLanguageChange, type Lang } from '../lib/language';
 
   // Mailto subjects are baked into the hrefs in English at build time
   // (the no-JS default); setLang swaps textContent only, never
