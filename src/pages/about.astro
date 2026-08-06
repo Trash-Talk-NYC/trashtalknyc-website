@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PersonSocials from '../components/PersonSocials.astro';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 
@@ -91,7 +90,7 @@ const bioOrder = ['david', 'nandi', 'fabiola']
           />
           <h1 class="about-chip" data-en="About" data-es="Sobre Nosotros">About</h1>
           {people.map((p) => (
-            <span class="face-marker" data-person={p.id} style={`left:${p.face.x}%; top:${py(p.face.y + 28)}%;`} aria-hidden="true">{p.name}</span>
+            <span class="face-marker" data-person={p.id} style={`left:${p.face.x}%; top:${py(p.face.y + 34)}%;`} aria-hidden="true">{p.name}</span>
           ))}
           {people.map((p) => (
             <button
@@ -121,30 +120,24 @@ const bioOrder = ['david', 'nandi', 'fabiola']
       <div class="team-cards" id="teamCards">
         {bioOrder.map((p, i) => (
           <article class="team-entry" data-person={p.id} data-index={i}>
-            {/* Interaction model (round 14): hover/focus anywhere in
-                this block illuminates the person's tag on the photo
-                (bidirectional with the face hotspots), and the block
-                itself click-throughs to their page — real links inside
-                keep their own behavior. The name link and the arrow
-                are the explicit/keyboard paths. */}
-            <h2 class="team-name"><a href={`/about/${p.id}`}><mark>{p.name}</mark></a></h2>
+            {/* Interaction model (round 17): the NAME is the one link to
+                the person's page — the round-14 arrow and whole-block
+                click are gone (redundant beside a named link, and the
+                block click made text selection worse). Hover/focus
+                anywhere in the block still illuminates the person's tag
+                on the photo (bidirectional with the face hotspots). */}
+            <h2 class="team-name">
+              <a href={`/about/${p.id}`}>
+                <mark>{p.name}</mark>
+                <span class="sr-only" data-en={`— open ${p.name}'s page`} data-es={`— abrir la página de ${p.name}`}>— open {p.name}'s page</span>
+              </a>
+            </h2>
             <p class="team-role" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</p>
             <div class="team-bio">
               {p.bio.map((b) => (
                 <p data-en={b.en} data-es={b.es}>{b.en}</p>
               ))}
             </div>
-            <div class="team-socials">
-              <PersonSocials socials={p.socials} />
-            </div>
-            {/* Quiet navigation cue, not a button (captain, round 14):
-                a bare arrow whose accessible name says whose page it
-                opens. The whole bio block is also a click-through —
-                this is the visible hint and the keyboard path. */}
-            <a class="team-arrow" href={`/about/${p.id}`}>
-              <span class="sr-only" data-en={`Read ${p.name}'s full page`} data-es={`Ver la página completa de ${p.name}`}>Read {p.name}'s full page</span>
-              <span aria-hidden="true">→</span>
-            </a>
           </article>
         ))}
       </div>
@@ -427,9 +420,6 @@ const bioOrder = ['david', 'nandi', 'fabiola']
   .team-entry {
     --entry: 18px;
     --lift: 0px;
-    /* The whole block navigates to the person's page (real links inside
-       keep their own behavior; text stays selectable — see the script) */
-    cursor: pointer;
     opacity: 0;
     transform: translateY(calc(var(--entry) + var(--lift)));
     transition:
@@ -544,60 +534,6 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     max-width: 38ch;
   }
 
-  .team-socials {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    margin-top: 1.4rem;
-    flex-wrap: wrap;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--purple);
-    letter-spacing: 0.06em;
-  }
-
-  .team-socials :global(.social-link) {
-    border-bottom: 2px solid rgba(107, 63, 160, 0.25);
-    padding-bottom: 0.1rem;
-    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .team-socials :global(.social-link:hover) { color: var(--purple-light); border-color: var(--purple-light); }
-  }
-
-  /* The arrow to the person's page — a navigation cue, deliberately
-     not a button. Visually light but still a comfortable target: the
-     glyph is large, and coarse pointers get a full tap-sized box. */
-  .team-arrow {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 1.1rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 1.45rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--charcoal);
-    text-decoration: none;
-    min-width: var(--tap);
-    min-height: 1.6rem;
-    transition: color 160ms var(--ease-out), transform 160ms var(--ease-out);
-  }
-
-  @media (pointer: coarse) {
-    .team-arrow { min-height: var(--tap); }
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .team-arrow:hover { color: var(--purple); transform: translateX(4px); }
-  }
-
-  /* The raised (hovered/illuminated) entry nudges its arrow too, so
-     the cue answers the bidirectional hover */
-  .team-entry.is-raised .team-arrow { color: var(--purple); transform: translateX(4px); }
-
   /* ── JOIN POINTER (the section itself lives at /contact/join) ── */
   .join-pointer {
     background: var(--charcoal);
@@ -647,7 +583,7 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     }
     /* The chip illumination still switches — only its motion is removed */
     .face-marker { transition: none; }
-    .join-pointer-link, .team-arrow { transition: none; }
+    .join-pointer-link { transition: none; }
   }
 </style>
 
@@ -790,16 +726,13 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     });
   });
 
-  // ── Bidirectional hover + bio click-through (captain, round 14) ──
+  // ── Bidirectional hover (round 14, click-through removed round 17) ──
   // Hovering or keyboard-focusing a bio block illuminates that person's
-  // name tag exactly like hovering their face, and the block navigates
-  // to their page. Pattern: a JS click handler that ignores clicks
-  // landing on real links/buttons — chosen over a stretched-link
-  // overlay because an overlay would sit above the text and kill text
-  // selection, which must keep working (people copy names and bios).
-  // A live selection also suppresses navigation so select-drag never
-  // hijacks. Mobile scroll illumination is untouched (mouse-only
-  // pointer guards, same as the photo hotspots).
+  // name tag exactly like hovering their face. Navigation is the NAME
+  // link only (captain, round 17) — the block-level click handler was
+  // removed as redundant beside it, which also gives text selection
+  // back its ordinary behavior. Mobile scroll illumination is untouched
+  // (mouse-only pointer guards, same as the photo hotspots).
   entries.forEach((el, id) => {
     if (!id) return;
     el.addEventListener('pointerenter', (e) => {
@@ -826,12 +759,6 @@ const bioOrder = ['david', 'nandi', 'fabiola']
         pointerId = null;
         render();
       }
-    });
-    el.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).closest('a, button')) return;
-      const selection = window.getSelection();
-      if (selection && !selection.isCollapsed) return;
-      window.location.assign(`/about/${id}`);
     });
   });
 

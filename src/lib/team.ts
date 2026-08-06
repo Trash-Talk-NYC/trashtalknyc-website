@@ -102,9 +102,10 @@ export const team: TeamMember[] = [
   {
     id: 'fabiola',
     name: 'Fabiola',
-    role: { en: 'Team Member', es: 'Miembro del equipo' },
-    // INTERIM bio awaiting the captain's real text — same rule as
-    // Nandi's above: role-grounded, no invented personal facts.
+    role: { en: 'Technology', es: 'Tecnología' },
+    // INTERIM bio awaiting the captain's real text (the role above is
+    // real — captain, round 17): role-grounded, no invented personal
+    // facts.
     bio: [
       {
         en: "Fabiola is part of the crew keeping Trash Talk NYC moving — showing up for the cleanups and for the community that's grown around them.",
