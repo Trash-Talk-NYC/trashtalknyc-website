@@ -115,7 +115,7 @@ const bioOrder = ['david', 'nandi', 'fabiola']
          mobile before the first bio takes the spotlight. -->
     <section class="team-section grid-paper">
       <div class="team-intro">
-        <p data-en="Three of us, one crew. We pick up New York block by block, running cleanups anyone can join and filming them so the whole city catches on. Meet the people behind the grabbers." data-es="Somos tres, un solo equipo. Levantamos Nueva York cuadra por cuadra, con limpiezas abiertas a cualquiera que filmamos para que toda la ciudad se sume. Conoce a la gente detrás de las pinzas.">Three of us, one crew. We pick up New York block by block, running cleanups anyone can join and filming them so the whole city catches on. Meet the people behind the grabbers.</p>
+        <p data-en="This is us!" data-es="¡Estos somos nosotros!">This is us!</p>
       </div>
       <div class="team-cards" id="teamCards">
         {bioOrder.map((p, i) => (
@@ -201,6 +201,29 @@ const bioOrder = ['david', 'nandi', 'fabiola']
       position: sticky;
       top: var(--nav-h);
       z-index: 2;
+    }
+
+    /* The bio sheet reads as sliding OVER the pinned photo, not buried
+       under it (captain, round 24): stacked above the hero, top corners
+       rounded so the photo peeks behind them, and a hard upward
+       charcoal shadow — the site's press-shadow language, no soft
+       blur — casting onto the photo. The photo is deliberately NOT
+       dimmed (the veil was retired for good). The -14px overlap rides
+       over the hero's 8px tape seam; snap geometry is unaffected
+       because both the snap margins and scrollToEntry measure from the
+       element's document position, which shifts identically. */
+    .team-section {
+      z-index: 3;
+      margin-top: -14px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      box-shadow: 0 -6px 0 rgba(28, 28, 34, 0.55);
+    }
+
+    /* Restore the runway the round-24 three-word intro gave up: extra
+       neutral ground below it so the reader scrolls a beat before
+       David's entry claims the spotlight. */
+    .team-intro {
+      margin-bottom: calc(var(--space-xl) + 3rem);
     }
 
     /* Phased scroll: while the photo is pinned, the bios arrive as
@@ -381,10 +404,11 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     pointer-events: none;
   }
 
-  /* Editorial lede introducing the crew as a whole. On mobile it also
-     buys the resting photo more runway: the first bio starts lower, so
-     the reader scrolls through neutral ground (nobody spotlighted)
-     before David's entry claims the light. */
+  /* Three words by captain decision (round 24) — a statement, so it
+     carries display weight. The old multi-line lede also bought the
+     unlit photo scroll runway on mobile; that job now falls to the
+     extra intro margin in the ≤700px block below — shrink that and
+     David's spotlight fires almost immediately again. */
   .team-intro {
     max-width: var(--container);
     margin: 0 auto var(--space-xl);
@@ -392,15 +416,11 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     z-index: 1;
   }
 
-  /* Lede-sized on purpose: the type scale and the space-xl below are
-     what buy the resting photo its scroll runway on mobile — shrink
-     either and David's spotlight fires almost immediately again. */
   .team-intro p {
-    font-size: var(--step-2);
+    font-size: var(--step-3);
     font-weight: 800;
     color: var(--charcoal);
-    line-height: 1.45;
-    max-width: 40ch;
+    line-height: 1.1;
   }
 
   .team-cards {

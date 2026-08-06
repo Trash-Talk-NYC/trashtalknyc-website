@@ -78,29 +78,23 @@ const roles = [
       <h1 class="recruit-title" data-en="We need helping hands!" data-es="¡Necesitamos manos que ayuden!">We need helping hands!</h1>
 
       <!-- The note is the first substantial content on the page and is
-           now CAPTAIN'S COPY VERBATIM throughout (rounds 22–23): the
-           trying-it-out intro, the four preferences ("we move fast, and
-           with effort" keeps its comma; the third preference keeps its
-           quotation marks and has no full stop), the email-only line
-           ("anyways" is theirs — never correct it to "anyway"), and the
-           four-sentence events closer ("Stay a while!" ends the note).
-           Do not smooth, join, or formalize any of it, in either
-           language. -->
+           CAPTAIN'S COPY VERBATIM throughout (rounds 22–24): the
+           trying-it-out intro, "we move fast, and with effort" with its
+           comma, the messaging prose (round 24 — flowing prose on
+           purpose, never re-break it into bullets), the quoted
+           link-vs-drive line (kept pending the captain's word, round
+           24), the four-sentence events closer, and the email-only line
+           last ("anyways" and the double "!!" are theirs — never
+           correct either). Do not smooth, join, or formalize any of it,
+           in either language. -->
       <div class="recruit-note">
         <h2 class="recruit-note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h2>
         <p class="recruit-note-body" data-en="The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech." data-es="La mejor manera de saber si algo funciona es probarlo, y creemos que eso aplica a eventos, contenido, colaboraciones y tecnología.">The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech.</p>
         <p class="recruit-note-body" data-en="Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:" data-es="Dado el crecimiento de Trash Talk, nos movemos rápido, y con esfuerzo. Algunas preferencias para ilustrar:">Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:</p>
-        <!-- Four parallel statements, so one column, not key/value: a
-             faint tint and hairline separators give the "light contrast,
-             not a data table" the captain asked for -->
-        <ul class="recruit-prefs">
-          <li data-en="A quick phone call beats a 30 minute call in the evening." data-es="Una llamada rápida le gana a una llamada de 30 minutos por la noche.">A quick phone call beats a 30 minute call in the evening.</li>
-          <li data-en="An iMessage or WhatsApp group chat beats emails." data-es="Un chat de grupo en iMessage o WhatsApp le gana a los correos.">An iMessage or WhatsApp group chat beats emails.</li>
-          <li data-en="“Here's the link” instead of “I posted this in the drive”" data-es="“Aquí va el link” en vez de “lo subí al drive”">“Here's the link” instead of “I posted this in the drive”</li>
-          <li data-en="We know what teammates have on their plates on a given day, because we want to support each other." data-es="Sabemos qué tiene cada quien entre manos en un día dado, porque queremos apoyarnos entre nosotros.">We know what teammates have on their plates on a given day, because we want to support each other.</li>
-        </ul>
-        <p class="recruit-note-body" data-en="Applications are email-only. If you think you'd be a good fit but don't see a corresponding role, message us anyways!" data-es="Las solicitudes son solo por correo. Si crees que encajarías bien pero no ves un rol que corresponda, ¡escríbenos igual!">Applications are email-only. If you think you'd be a good fit but don't see a corresponding role, message us anyways!</p>
+        <p class="recruit-note-body" data-en="We never overlook the ease of iMessage, WhatsApp, and Signal. A quick phone call usually beats scheduling a 30 minute call. Instant messaging is how we stay updated with the team, along with many folks we get to meet at events." data-es="Nunca pasamos por alto la facilidad de iMessage, WhatsApp y Signal. Una llamada rápida suele ganarle a agendar una llamada de 30 minutos. La mensajería instantánea es como nos mantenemos al día con el equipo, y con mucha gente que conocemos en los eventos.">We never overlook the ease of iMessage, WhatsApp, and Signal. A quick phone call usually beats scheduling a 30 minute call. Instant messaging is how we stay updated with the team, along with many folks we get to meet at events.</p>
+        <p class="recruit-note-body" data-en="“Here's the link” instead of “I posted this in the drive”" data-es="“Aquí va el link” en vez de “lo subí al drive”">“Here's the link” instead of “I posted this in the drive”</p>
         <p class="recruit-note-body" data-en="The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk. We have a lot of fun. Stay a while!" data-es="Los eventos son especiales. Sea cual sea el rol, conectar con los vecinos es una parte vital de Trash Talk. Nos divertimos mucho. ¡Quédate un rato!">The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk. We have a lot of fun. Stay a while!</p>
+        <p class="recruit-note-body" data-en="Applications are email-only. If you think you are a good fit, but don't see a corresponding role, please message us anyways!!" data-es="Las solicitudes son solo por correo. Si crees que encajas bien, pero no ves un rol que corresponda, ¡¡escríbenos igual!!">Applications are email-only. If you think you are a good fit, but don't see a corresponding role, please message us anyways!!</p>
       </div>
 
       <div class="recruit-roles">
@@ -213,28 +207,6 @@ const roles = [
 
   .recruit-note-body + .recruit-note-body {
     margin-top: 0.85rem;
-  }
-
-  /* The captain's preferences: a distinct set, but light contrast only
-     ("not too big heavy weight"). Faint tint + hairline separators, no
-     table chrome. Single column flows fine at 390px. */
-  .recruit-prefs {
-    list-style: none;
-    margin: 0.8rem 0 0.85rem;
-    background: var(--purple-a06);
-    border-radius: var(--radius-sm);
-  }
-
-  .recruit-prefs li {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--charcoal);
-    line-height: 1.6;
-    padding: 0.6rem 0.9rem;
-  }
-
-  .recruit-prefs li + li {
-    border-top: 1px solid rgba(28, 28, 34, 0.08);
   }
 
   .recruit-roles {
