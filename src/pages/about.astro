@@ -4,8 +4,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PersonSocials from '../components/PersonSocials.astro';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
-import workDavidFabi from '../assets/film-david-fabi.jpg';
-import workNandiFabi from '../assets/film-holo-nandi-fabi.jpg';
 
 /**
  * The hero renders a fixed vertical crop of the landscape group shot:
@@ -158,7 +156,7 @@ const generalSubject = {
           />
           <h1 class="about-chip" data-en="About" data-es="Sobre Nosotros">About</h1>
           {people.map((p) => (
-            <span class="face-marker" data-person={p.id} style={`left:${p.face.x}%; top:${py(p.face.y + 22)}%;`} aria-hidden="true">{p.name}</span>
+            <span class="face-marker" data-person={p.id} style={`left:${p.face.x}%; top:${py(p.face.y + 28)}%;`} aria-hidden="true">{p.name}</span>
           ))}
           {people.map((p) => (
             <button
@@ -188,9 +186,12 @@ const generalSubject = {
       <div class="team-cards" id="teamCards">
         {bioOrder.map((p, i) => (
           <article class="team-entry" data-person={p.id} data-index={i}>
-            {/* Interaction split: taps/hovers on the PHOTO highlight and
-                scroll; the card's name and the "Full bio" link are the
-                explicit navigation to the person's own page. */}
+            {/* Interaction model (round 14): hover/focus anywhere in
+                this block illuminates the person's tag on the photo
+                (bidirectional with the face hotspots), and the block
+                itself click-throughs to their page — real links inside
+                keep their own behavior. The name link and the arrow
+                are the explicit/keyboard paths. */}
             <h2 class="team-name"><a href={`/about/${p.id}`}><mark>{p.name}</mark></a></h2>
             <p class="team-role" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</p>
             <div class="team-bio">
@@ -201,46 +202,20 @@ const generalSubject = {
             <div class="team-socials">
               <PersonSocials socials={p.socials} />
             </div>
-            <a class="team-more" href={`/about/${p.id}`} data-en="Full bio →" data-es="Biografía completa →">Full bio →</a>
+            {/* Quiet navigation cue, not a button (captain, round 14):
+                a bare arrow whose accessible name says whose page it
+                opens. The whole bio block is also a click-through —
+                this is the visible hint and the keyboard path. */}
+            <a class="team-arrow" href={`/about/${p.id}`}>
+              <span class="sr-only" data-en={`Read ${p.name}'s full page`} data-es={`Ver la página completa de ${p.name}`}>Read {p.name}'s full page</span>
+              <span aria-hidden="true">→</span>
+            </a>
           </article>
         ))}
       </div>
     </section>
 
   </div>
-
-  <!-- The cleanup frames — the only images on the site showing the
-       club mid-cleanup. Unlabelled on purpose; the images carry it.
-       They close the page. -->
-  <section class="team-tail grid-paper">
-    <div class="team-work">
-      <div class="team-work-grid">
-        <figure>
-          <Image
-            src={workDavidFabi}
-            alt="David holding a full refuse sack and Fabiola in a hi-vis vest holding up a pink polka-dot bag, mid-conversation on a park path"
-            class="team-work-img"
-            width={1080}
-            widths={[480, 720, 1080]}
-            sizes="(min-width: 700px) 34rem, 100vw"
-            loading="lazy"
-          />
-        </figure>
-        <figure>
-          <Image
-            src={workNandiFabi}
-            alt="Nandi with a litter grabber and Fabiola holding a bag open, both in hi-vis vests, walking through the park"
-            class="team-work-img"
-            width={1080}
-            widths={[480, 720, 1080]}
-            sizes="(min-width: 700px) 34rem, 100vw"
-            loading="lazy"
-          />
-        </figure>
-      </div>
-    </div>
-
-  </section>
 
   <!-- JOIN THE TEAM — the loud CTA moment of the page. Four role boxes,
        each a mailto: link with a per-role subject. Intake is email-only
@@ -457,7 +432,12 @@ const generalSubject = {
   }
 
   /* "About" rides the photo as part of the same paper set; same
-     proportional sizing (0.72rem at 390px ≈ 2.95vw) */
+     proportional sizing (0.72rem at 390px ≈ 2.95vw).
+     It carries a PERMANENT, gentler version of the name tags'
+     illumination (opaque paper, solid border, softer glow, no lift):
+     it is the page's title, so it is always "on" — hover-only
+     illumination would advertise an activation it doesn't have, which
+     is exactly the person-tag look the captain said to avoid. */
   .about-chip {
     position: absolute;
     left: 2.2%;
@@ -470,10 +450,13 @@ const generalSubject = {
     letter-spacing: 0.16em;
     line-height: 1;
     color: var(--charcoal);
-    background: var(--paper-a70);
-    border: 0.09em solid rgba(28, 28, 34, 0.35);
+    background: var(--off-white);
+    border: 0.09em solid var(--charcoal);
     border-radius: 0.26em;
     padding: 0.4em 0.7em;
+    box-shadow:
+      0 0 0.35em rgba(245, 208, 0, 0.6),
+      0 0 0.9em rgba(245, 208, 0, 0.35);
   }
 
   /* ── BIOS (editorial) ── */
@@ -543,6 +526,9 @@ const generalSubject = {
   .team-entry {
     --entry: 18px;
     --lift: 0px;
+    /* The whole block navigates to the person's page (real links inside
+       keep their own behavior; text stays selectable — see the script) */
+    cursor: pointer;
     opacity: 0;
     transform: translateY(calc(var(--entry) + var(--lift)));
     transition:
@@ -680,71 +666,36 @@ const generalSubject = {
     .team-socials :global(.social-link:hover) { color: var(--purple-light); border-color: var(--purple-light); }
   }
 
-  /* Explicit navigation to the person's own page (the photo taps only
-     highlight — see the interaction-split comment in the markup) */
-  .team-more {
+  /* The arrow to the person's page — a navigation cue, deliberately
+     not a button. Visually light but still a comfortable target: the
+     glyph is large, and coarse pointers get a full tap-sized box. */
+  .team-arrow {
     display: inline-flex;
     align-items: center;
-    margin-top: 1.3rem;
+    justify-content: flex-start;
+    margin-top: 1.1rem;
     font-family: 'Space Mono', monospace;
-    font-size: 0.74rem;
+    font-size: 1.45rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+    line-height: 1;
     color: var(--charcoal);
     text-decoration: none;
-    border-bottom: 2px solid var(--yellow);
-    padding-bottom: 0.15rem;
-    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+    min-width: var(--tap);
+    min-height: 1.6rem;
+    transition: color 160ms var(--ease-out), transform 160ms var(--ease-out);
   }
 
   @media (pointer: coarse) {
-    .team-more { min-height: var(--tap); }
+    .team-arrow { min-height: var(--tap); }
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .team-more:hover { color: var(--purple); border-color: var(--purple); }
+    .team-arrow:hover { color: var(--purple); transform: translateX(4px); }
   }
 
-  /* ── TAIL: cleanup frames + closing portrait ── */
-  .team-tail {
-    background: var(--off-white);
-    padding: 0 max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
-    position: relative;
-    overflow: hidden;
-  }
-
-  .team-tail::after {
-    content: '';
-    position: absolute;
-    right: -5%;
-    bottom: -20%;
-    width: 40vw;
-    height: 80%;
-    background: radial-gradient(ellipse at center, rgba(155, 93, 229, 0.06) 0%, transparent 65%);
-    pointer-events: none;
-  }
-
-  .team-work {
-    max-width: var(--container);
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
-
-  .team-work-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-    gap: var(--space-md);
-    align-items: start;
-  }
-
-  .team-work-grid figure { line-height: 0; }
-
-  .team-work-img {
-    width: 100%;
-    height: auto;
-  }
+  /* The raised (hovered/illuminated) entry nudges its arrow too, so
+     the cue answers the bidirectional hover */
+  .team-entry.is-raised .team-arrow { color: var(--purple); transform: translateX(4px); }
 
   /* ── JOIN THE TEAM (loud CTA closer) ── */
   .join-team {
@@ -1151,6 +1102,51 @@ const generalSubject = {
     btn.addEventListener('click', () => {
       const entry = entries.get(id);
       if (entry) scrollToEntry(entry);
+    });
+  });
+
+  // ── Bidirectional hover + bio click-through (captain, round 14) ──
+  // Hovering or keyboard-focusing a bio block illuminates that person's
+  // name tag exactly like hovering their face, and the block navigates
+  // to their page. Pattern: a JS click handler that ignores clicks
+  // landing on real links/buttons — chosen over a stretched-link
+  // overlay because an overlay would sit above the text and kill text
+  // selection, which must keep working (people copy names and bios).
+  // A live selection also suppresses navigation so select-drag never
+  // hijacks. Mobile scroll illumination is untouched (mouse-only
+  // pointer guards, same as the photo hotspots).
+  entries.forEach((el, id) => {
+    if (!id) return;
+    el.addEventListener('pointerenter', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      pointerId = id;
+      focusStrong = false;
+      render();
+    });
+    el.addEventListener('pointerleave', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      if (pointerId === id) {
+        pointerId = null;
+        render();
+      }
+    });
+    el.addEventListener('focusin', () => {
+      pointerId = id;
+      focusStrong = false;
+      render();
+    });
+    el.addEventListener('focusout', (e) => {
+      if (el.contains(e.relatedTarget as Node)) return;
+      if (pointerId === id) {
+        pointerId = null;
+        render();
+      }
+    });
+    el.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a, button')) return;
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) return;
+      window.location.assign(`/about/${id}`);
     });
   });
 
