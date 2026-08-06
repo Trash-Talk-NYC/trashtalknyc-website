@@ -279,10 +279,6 @@ export const server = {
       // Each tab routes to its own Brevo list. These env-var names are
       // short (no BREVO_LIST_ID_ prefix) because Netlify rejected the
       // longer names when the captain configured them — keep as-is.
-      // TODO(captain): the Brevo "sponsorship_list" does not exist yet —
-      // create it and set CONTACT_SPONSOR to its numeric ID in Netlify (all
-      // deploy contexts). Until then sponsor submissions fail loudly with
-      // form_env_missing instead of silently landing in another list.
       const listIdVars: Record<ContactInput['inquiryType'], string> = {
         general: 'CONTACT_GENERAL',
         partnership: 'CONTACT_COLLAB',

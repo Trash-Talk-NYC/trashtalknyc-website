@@ -29,10 +29,9 @@ Operational depth — the Authorized-IPs outage story, the debugging order, and 
 
 * **Authorized IPs must stay OFF** in Brevo's security settings.
 Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermittently block production form submissions (this caused a real incident).
-* **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact.
-Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
-All are set identically across all Netlify deploy contexts (verified 2026-07).
-The Sponsor contact tab reads `CONTACT_SPONSOR` (numeric ID of the Brevo list `sponsorship_list`), which is **not set yet** — the captain must create the list and set the var in all deploy contexts; until then sponsor submissions fail loudly (`form_env_missing`, generic error in the UI) rather than landing in another list.
+* **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact, 13 = sponsor contact.
+Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB`, `CONTACT_SPONSOR` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
+The first three are set identically across all Netlify deploy contexts (verified 2026-07); `CONTACT_SPONSOR=13` is documented in `.env.example` but **must also be set in Netlify (all deploy contexts)** — if missing, sponsor submissions fail loudly (`form_env_missing`, generic error in the UI) rather than landing in another list.
 Sponsor inquiries notify `SPONSOR_NOTIFY_TO` (sponsors@trashtalknyc.org in production) instead of `CONTACT_NOTIFY_TO`, with no fallback between the two — unset means the sponsor notification is skipped (`inquiry_notify_skipped`), never misrouted.
 * **Custom attribute map** (each must exist in the Brevo dashboard first or the upsert payload is rejected): `PHONE`, `INQUIRY_TYPE`, `WAIVER_ACCEPTED`, `MESSAGE`, `BOROUGH`, `HEAR_ABOUT_US`, `ORGANIZATION` (+ standard `FIRSTNAME`/`LASTNAME`).
 Signup sends FIRSTNAME, LASTNAME, BOROUGH, PHONE, MESSAGE (experience text), HEAR_ABOUT_US, WAIVER_ACCEPTED.
