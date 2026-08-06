@@ -62,7 +62,7 @@ Site-wide copy rule (captain, round 22): keep em dashes rare — roughly one per
 The round-15 verbatim opening statement ("This isn't cute. …") and the three pillars were removed in the round-20 restructure — they live in git history if the captain wants them back.
 The mailto subject is the captain's line with a deliberate fill-in placeholder: `I'm [your name] and I want to join Trash Talk NYC` (role boxes append `— <Role>`); a mailto can't know the sender, so the subject asks them to say so.
 English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
-Links to the page: the nav's About dropdown ("Open Roles"), the footer ("Open Roles"), the homepage crew callout, the About page's closing "Want to lend a hand?" CTA, the per-person `/about/{id}` pages, and the Contact page banner ("See more" → `/recruit` directly — it used to land on the About closing note instead of the roles).
+Links to the page: the nav's About dropdown ("Open Roles"), the footer ("Open Roles"), the homepage crew callout, the About page's closing "Want to lend a hand?" CTA, and the Contact page banner ("See more" → `/recruit` directly — it used to land on the About closing note instead of the roles).
 The About closing section still carries the legacy `#join-the-team` anchor id so old links keep landing somewhere sensible.
 The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`); the Blobs store may still hold applications submitted while the form was live.
 
@@ -98,7 +98,8 @@ Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descenda
 So an `aria-label` stays English after a toggle; give controls a bilingual accessible name with a visually-hidden `<span data-en data-es>` inside instead (see the photo hotspots in `about.astro`).
 * `<Image>` with `widths` but no `width` emits a fallback `src` at the source file's native resolution — the 5820px About group photo produced a 4.8 MB webp that way.
 Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallback.
-* Team identity (names, roles, bios, social-link slots, portrait crops, meta descriptions) lives in `src/lib/team.ts`, shared by the About page and the per-person `/about/{id}` pages (`src/pages/about/[person].astro`) — edit it once, both surfaces update.
+* Team identity (names, roles, bios, social-link slots, portrait crops, meta descriptions) lives in `src/lib/team.ts`, consumed by the About page.
+The per-person `/about/{id}` pages were pulled from this release to the `fm/about-individual-pages` branch (captain, round 23) — continue that work there; `socials`/`portrait`/`metaDescription` in `team.ts` are dormant data kept for their return, and the About bios' names are plain `<mark>` text (no links) until then.
 Nandi's and Fabiola's bios there are INTERIM role-grounded copy (no invented personal facts) and several social slots are `href="#"` placeholders awaiting the captain's URLs — flagged with TODO comments in the file.
 * The About team section (`about.astro`) keeps only photo-frame presentation: a `geometry` map of hotspot bands, face-chip anchors, and spotlight ellipses, all expressed as percentages of the photo frame.
 The hero renders a fixed build-time vertical crop of the group shot (the `CROP` constant; y-coordinates remap through `py()`) — never a viewport-dependent `object-fit`, which would silently misalign every hotspot and spotlight.

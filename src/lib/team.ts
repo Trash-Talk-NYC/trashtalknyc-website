@@ -1,8 +1,11 @@
 /**
- * The team, shared by the About page and the individual /about/{person}
- * pages so bios, roles, and social links have exactly one source.
- * About-page-only presentation (hotspot bands, spotlight ellipses) stays
- * in about.astro, keyed by these ids.
+ * The team — single source for names, roles, and bios, consumed by the
+ * About page. The individual /about/{person} pages were pulled from
+ * this release onto fm/about-individual-pages (captain, round 23);
+ * `socials`, `portrait`, and `metaDescription` are only consumed there,
+ * and are kept here so the data survives until those pages return.
+ * About-page-only presentation (hotspot bands, spotlight ellipses)
+ * stays in about.astro, keyed by these ids.
  *
  * All user-visible strings carry en/es pairs — the site's language
  * toggle swaps them via data-en/data-es in the templates.
@@ -98,7 +101,7 @@ export const team: TeamMember[] = [
   {
     id: 'david',
     name: 'David',
-    role: { en: 'Organizer', es: 'Organizador' },
+    role: { en: 'Lead Organizer', es: 'Organizador Principal' },
     bio: [
       {
         en: 'Trash Talk is my grassroots social media initiative to clean New York through educational entertainment.',

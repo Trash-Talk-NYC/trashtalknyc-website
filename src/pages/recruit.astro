@@ -77,20 +77,17 @@ const roles = [
     <div class="recruit-inner">
       <h1 class="recruit-title" data-en="We need helping hands!" data-es="¡Necesitamos manos que ayuden!">We need helping hands!</h1>
 
-      <!-- The note is the first substantial content on the page. It holds
-           the whole pitch — the promoted heading, then How we work and
-           Why email as signposts inside one continuous note (captain,
-           round 21). The How-we-work and Why-email copy is the CAPTAIN'S
-           OWN VOICE, approved verbatim — do not smooth it out: the
-           exclamation marks, "the trusty phone call", "chatting it up"
-           and the abruptness between sentences are the point. -->
+      <!-- The note is the first substantial content on the page and is
+           now CAPTAIN'S COPY VERBATIM throughout (rounds 22–23): the
+           trying-it-out intro, the four preferences ("we move fast, and
+           with effort" keeps its comma; the third preference keeps its
+           quotation marks and has no full stop), the email-only line
+           ("anyways" is theirs — never correct it to "anyway"), and the
+           four-sentence events closer ("Stay a while!" ends the note).
+           Do not smooth, join, or formalize any of it, in either
+           language. -->
       <div class="recruit-note">
         <h2 class="recruit-note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h2>
-        <p class="recruit-note-body" data-en="Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role." data-es="Presentarse en persona vale más que cualquier currículum. Probamos las cosas rápido, nos quedamos con lo que funciona y arreglamos lo que no. Y buscamos información que activa: cuando te escribamos, no vamos a proponer una reunión para algún día del futuro — te preguntamos qué haces ese mismo día. Si eso te suena, elige un rol.">Showing up in person counts for more than any resume. We try things quickly, keep what works, and fix what doesn't. And we're after information that activates — when we reach out, we don't float a meeting for some future date, we ask what you're doing that day. If that sounds like you, pick a role.</p>
-        <h3 class="recruit-note-sub" data-en="How we work" data-es="Cómo trabajamos">How we work</h3>
-        <!-- CAPTAIN'S COPY VERBATIM (round 22): "we move fast, and with
-             effort" keeps its comma, the third preference keeps its
-             quotation marks and has no full stop. Do not edit. -->
         <p class="recruit-note-body" data-en="The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech." data-es="La mejor manera de saber si algo funciona es probarlo, y creemos que eso aplica a eventos, contenido, colaboraciones y tecnología.">The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech.</p>
         <p class="recruit-note-body" data-en="Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:" data-es="Dado el crecimiento de Trash Talk, nos movemos rápido, y con esfuerzo. Algunas preferencias para ilustrar:">Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:</p>
         <!-- Four parallel statements, so one column, not key/value: a
@@ -102,8 +99,8 @@ const roles = [
           <li data-en="“Here's the link” instead of “I posted this in the drive”" data-es="“Aquí va el link” en vez de “lo subí al drive”">“Here's the link” instead of “I posted this in the drive”</li>
           <li data-en="We know what teammates have on their plates on a given day, because we want to support each other." data-es="Sabemos qué tiene cada quien entre manos en un día dado, porque queremos apoyarnos entre nosotros.">We know what teammates have on their plates on a given day, because we want to support each other.</li>
         </ul>
-        <h3 class="recruit-note-sub" data-en="Why email" data-es="¿Por qué correo?">Why email</h3>
-        <p class="recruit-note-body" data-en="Applications come by email — we move quickly, and we're not big on unnecessary scaffolding." data-es="Las solicitudes llegan por correo — nos movemos rápido y no nos gustan los trámites innecesarios.">Applications come by email — we move quickly, and we're not big on unnecessary scaffolding.</p>
+        <p class="recruit-note-body" data-en="Applications are email-only. If you think you'd be a good fit but don't see a corresponding role, message us anyways!" data-es="Las solicitudes son solo por correo. Si crees que encajarías bien pero no ves un rol que corresponda, ¡escríbenos igual!">Applications are email-only. If you think you'd be a good fit but don't see a corresponding role, message us anyways!</p>
+        <p class="recruit-note-body" data-en="The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk. We have a lot of fun. Stay a while!" data-es="Los eventos son especiales. Sea cual sea el rol, conectar con los vecinos es una parte vital de Trash Talk. Nos divertimos mucho. ¡Quédate un rato!">The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk. We have a lot of fun. Stay a while!</p>
       </div>
 
       <div class="recruit-roles">
@@ -120,7 +117,7 @@ const roles = [
       </div>
 
       <div class="recruit-cta">
-        <p class="recruit-cta-note" data-en="Applications are email-only for now. Write to us and tell us who you are." data-es="Por ahora las solicitudes son solo por correo. Escríbenos y cuéntanos quién eres.">Applications are email-only for now. Write to us and tell us who you are.</p>
+        <p class="recruit-cta-note" data-en="Write to us and tell us who you are." data-es="Escríbenos y cuéntanos quién eres.">Write to us and tell us who you are.</p>
         <a class="recruit-cta-btn" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
           {TEAM_EMAIL}
@@ -207,18 +204,6 @@ const roles = [
     margin-bottom: 0.7rem;
   }
 
-  /* Signposts inside one continuous note, not section breaks — they
-     reuse the old eyebrow voice so the note still reads as one card */
-  .recruit-note-sub {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    color: var(--purple);
-    margin: 1.2rem 0 0.45rem;
-  }
-
   .recruit-note-body {
     font-size: 1rem;
     font-weight: 600;
@@ -226,12 +211,16 @@ const roles = [
     line-height: 1.7;
   }
 
+  .recruit-note-body + .recruit-note-body {
+    margin-top: 0.85rem;
+  }
+
   /* The captain's preferences: a distinct set, but light contrast only
      ("not too big heavy weight"). Faint tint + hairline separators, no
      table chrome. Single column flows fine at 390px. */
   .recruit-prefs {
     list-style: none;
-    margin: 0.8rem 0 0.3rem;
+    margin: 0.8rem 0 0.85rem;
     background: var(--purple-a06);
     border-radius: var(--radius-sm);
   }

@@ -120,17 +120,14 @@ const bioOrder = ['david', 'nandi', 'fabiola']
       <div class="team-cards" id="teamCards">
         {bioOrder.map((p, i) => (
           <article class="team-entry" data-person={p.id} data-index={i}>
-            {/* Interaction model (round 17): the NAME is the one link to
-                the person's page — the round-14 arrow and whole-block
-                click are gone (redundant beside a named link, and the
-                block click made text selection worse). Hover/focus
-                anywhere in the block still illuminates the person's tag
-                on the photo (bidirectional with the face hotspots). */}
+            {/* Names are plain text this release: the individual pages
+                were pulled to fm/about-individual-pages (captain, round
+                23), so there is nowhere to link. The marker highlight
+                stays — it's the bios' visual identity, not a link
+                affordance. When the pages return, restore the round-17
+                name-link (and its sr-only suffix) from that branch. */}
             <h2 class="team-name">
-              <a href={`/about/${p.id}`}>
-                <mark>{p.name}</mark>
-                <span class="sr-only" data-en={`— open ${p.name}'s page`} data-es={`— abrir la página de ${p.name}`}>— open {p.name}'s page</span>
-              </a>
+              <mark>{p.name}</mark>
             </h2>
             <p class="team-role" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</p>
             <div class="team-bio">
@@ -165,7 +162,7 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     <div class="tape-seam" aria-hidden="true"></div>
     <div class="close-cta-inner">
       <h2 class="close-cta-title" data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
-      <p class="close-cta-sub" data-en="We're expanding: more blocks, more projects, more crew." data-es="Estamos creciendo: más cuadras, más proyectos, más equipo.">We're expanding: more blocks, more projects, more crew.</p>
+      <p class="close-cta-sub" data-en="We need your help!" data-es="¡Necesitamos tu ayuda!">We need your help!</p>
       <a class="close-cta-btn" href="/recruit">
         <span data-en="See the open roles" data-es="Ver los puestos abiertos">See the open roles</span>
         <span aria-hidden="true">→</span>
@@ -486,26 +483,12 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     margin-bottom: 0.35rem;
   }
 
-  /* The name links through to the person's own page; the marker swipe
-     stays, and on hover the swipe floods to a full highlight so the
-     link affordance reads without adding an underline. */
-  .team-name a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  /* Marker-highlight swipe behind the name */
+  /* Marker-highlight swipe behind the name — the bios' visual identity,
+     kept even though the names stopped being links (round 23) */
   .team-name mark {
     color: inherit;
     background: linear-gradient(transparent 52%, var(--yellow) 52%, var(--yellow) 94%, transparent 94%);
     padding-inline: 0.08em;
-    transition: background-color 160ms var(--ease-out);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .team-name a:hover mark {
-      background-color: var(--yellow);
-    }
   }
 
   /* Role dash — charcoal since round 13 (raw orange lines are out and
