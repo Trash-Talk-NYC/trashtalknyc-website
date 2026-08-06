@@ -250,12 +250,20 @@ describe('buildInquiryEmail', () => {
     expect(htmlContent).not.toContain('Organization');
   });
 
-  it('gives collaboration and general inquiries clearly different subject lines', () => {
+  it('gives each inquiry type a clearly different subject line', () => {
     const collab = buildInquiryEmail({ ...base, inquiryType: 'partnership', organization: 'Acme Org' }).subject;
     const general = buildInquiryEmail({ ...base, inquiryType: 'general' }).subject;
-    expect(collab).not.toBe(general);
+    const sponsor = buildInquiryEmail({ ...base, inquiryType: 'sponsor', organization: 'Acme Org' }).subject;
+    expect(new Set([collab, general, sponsor]).size).toBe(3);
     expect(collab.startsWith('New collaboration inquiry')).toBe(true);
     expect(general.startsWith('New contact message')).toBe(true);
+    expect(sponsor.startsWith('New sponsorship inquiry')).toBe(true);
+  });
+
+  it('surfaces the organization in a sponsorship subject like a collaboration one', () => {
+    expect(buildInquiryEmail({ ...base, inquiryType: 'sponsor', organization: 'Acme Org' }).subject).toBe(
+      'New sponsorship inquiry — Jane Doe · Acme Org',
+    );
   });
 
   it('drops the organization separator from a collaboration subject when no org is given', () => {

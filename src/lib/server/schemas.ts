@@ -41,13 +41,15 @@ export const signupSchema = z.object({
 export const contactSchema = z
   .object({
     ...baseFields,
-    inquiryType: z.enum(['general', 'partnership']),
+    inquiryType: z.enum(['general', 'partnership', 'sponsor']),
     phone: z.string().trim().max(50).optional(),
     organization: z.string().trim().max(300).optional(),
     message: z.string().trim().min(1, 'Message is required').max(5000),
   })
-  .refine((data) => data.inquiryType !== 'partnership' || !!data.organization?.trim(), {
-    message: 'Organization name is required for partnership inquiries',
+  // Both org-backed tabs (Collaborate and Sponsor) write in on behalf of an
+  // organization, so the org name is required for either.
+  .refine((data) => data.inquiryType === 'general' || !!data.organization?.trim(), {
+    message: 'Organization name is required for partnership and sponsorship inquiries',
     path: ['organization'],
   });
 

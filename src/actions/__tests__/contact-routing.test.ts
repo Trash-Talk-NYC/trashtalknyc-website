@@ -37,12 +37,14 @@ describe('contact action Brevo list routing', () => {
     process.env.BREVO_API_KEY = 'test-key';
     process.env.CONTACT_GENERAL = '111';
     process.env.CONTACT_COLLAB = '222';
+    process.env.CONTACT_SPONSOR = '333';
   });
 
   afterEach(() => {
     delete process.env.BREVO_API_KEY;
     delete process.env.CONTACT_GENERAL;
     delete process.env.CONTACT_COLLAB;
+    delete process.env.CONTACT_SPONSOR;
   });
 
   it('routes general inquiries to the CONTACT_GENERAL list', async () => {
@@ -64,6 +66,27 @@ describe('contact action Brevo list routing', () => {
     expect(upsertBrevoContact).toHaveBeenCalledWith('test-key', expect.objectContaining({ listId: 222 }));
   });
 
+  it('routes sponsor inquiries to the CONTACT_SPONSOR list', async () => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(
+      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }),
+      contactCtx(),
+    );
+
+    expect(upsertBrevoContact).toHaveBeenCalledTimes(1);
+    expect(upsertBrevoContact).toHaveBeenCalledWith('test-key', expect.objectContaining({ listId: 333 }));
+  });
+
+  it('fails loudly — no upsert, no fake success — when the sponsor list ID is not configured', async () => {
+    delete process.env.CONTACT_SPONSOR;
+
+    await expect(
+      // @ts-expect-error handler is untyped once defineAction is stubbed
+      server.contact.handler(contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }), contactCtx()),
+    ).rejects.toThrow();
+    expect(upsertBrevoContact).not.toHaveBeenCalled();
+  });
+
   it('records the message as a CRM note tagged with the tab-specific form name', async () => {
     getBrevoContactId.mockClear();
     createBrevoNote.mockClear();
@@ -79,6 +102,19 @@ describe('contact action Brevo list routing', () => {
     const noteText = createBrevoNote.mock.calls[0][2] as string;
     expect(noteText).toMatch(/^form=contact-collab \| field=message \| submitted=/);
     expect(noteText).toContain('Let us collaborate');
+  });
+
+  it('tags sponsor CRM notes with the contact-sponsor form name', async () => {
+    createBrevoNote.mockClear();
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(
+      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org', message: 'We want to sponsor' }),
+      contactCtx(),
+    );
+
+    expect(createBrevoNote).toHaveBeenCalledTimes(1);
+    expect(createBrevoNote.mock.calls[0][2] as string).toMatch(/^form=contact-sponsor \| field=message \| submitted=/);
   });
 
   it('does not fail the submission when note creation fails', async () => {
@@ -111,7 +147,9 @@ describe('contact action team notification', () => {
     process.env.BREVO_API_KEY = 'test-key';
     process.env.CONTACT_GENERAL = '111';
     process.env.CONTACT_COLLAB = '222';
+    process.env.CONTACT_SPONSOR = '333';
     process.env.CONTACT_NOTIFY_TO = 'team@trashtalknyc.org';
+    process.env.SPONSOR_NOTIFY_TO = 'sponsors@trashtalknyc.org';
     process.env.CONTACT_NOTIFY_FROM = 'site@trashtalknyc.org';
   });
 
@@ -119,11 +157,13 @@ describe('contact action team notification', () => {
     delete process.env.BREVO_API_KEY;
     delete process.env.CONTACT_GENERAL;
     delete process.env.CONTACT_COLLAB;
+    delete process.env.CONTACT_SPONSOR;
     delete process.env.CONTACT_NOTIFY_TO;
+    delete process.env.SPONSOR_NOTIFY_TO;
     delete process.env.CONTACT_NOTIFY_FROM;
   });
 
-  it('emails the team for both tabs, replying to the person who wrote in', async () => {
+  it('emails the team for every tab, replying to the person who wrote in', async () => {
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(contactInput({ inquiryType: 'general' }), contactCtx());
     // @ts-expect-error handler is untyped once defineAction is stubbed
@@ -139,6 +179,43 @@ describe('contact action team notification', () => {
         to: [{ email: 'team@trashtalknyc.org' }],
         replyTo: expect.objectContaining({ email: 'jane@example.com' }),
       }),
+    );
+  });
+
+  it('notifies the sponsorship inbox — not the general team address — for sponsor inquiries', async () => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(
+      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }),
+      contactCtx(),
+    );
+
+    expect(sendBrevoEmail).toHaveBeenCalledTimes(1);
+    expect(sendBrevoEmail).toHaveBeenCalledWith(
+      'test-key',
+      expect.objectContaining({ to: [{ email: 'sponsors@trashtalknyc.org' }] }),
+    );
+  });
+
+  it('sends no sponsor notification when SPONSOR_NOTIFY_TO is unset — never falls back to the general address', async () => {
+    delete process.env.SPONSOR_NOTIFY_TO;
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    const result = await server.contact.handler(
+      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }),
+      contactCtx(),
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(sendBrevoEmail).not.toHaveBeenCalled();
+  });
+
+  it('keeps general inquiries on CONTACT_NOTIFY_TO even when the sponsor address is set', async () => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(contactInput({ inquiryType: 'general' }), contactCtx());
+
+    expect(sendBrevoEmail).toHaveBeenCalledWith(
+      'test-key',
+      expect.objectContaining({ to: [{ email: 'team@trashtalknyc.org' }] }),
     );
   });
 
