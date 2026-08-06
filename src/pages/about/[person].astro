@@ -61,7 +61,17 @@ const imgTopPct = ((0.45 * FRAME_H - (fy * z) / PHOTO_AR) / FRAME_H) * 100;
         <p class="person-role" data-en={person.role.en} data-es={person.role.es}>{person.role.en}</p>
         <div class="person-bio">
           {person.bio.map((b) => (
-            <p data-en={b.en} data-es={b.es}>{b.en}</p>
+            b.parts ? (
+              <p>
+                {b.parts.map((seg) =>
+                  seg.href
+                    ? <a href={seg.href} data-en={seg.en} data-es={seg.es}>{seg.en}</a>
+                    : <span data-en={seg.en} data-es={seg.es}>{seg.en}</span>
+                )}
+              </p>
+            ) : (
+              <p data-en={b.en} data-es={b.es}>{b.en}</p>
+            )
           ))}
         </div>
         <div class="person-socials">
@@ -206,6 +216,18 @@ const imgTopPct = ((0.45 * FRAME_H - (fy * z) / PHOTO_AR) / FRAME_H) * 100;
     color: #4a4850;
     line-height: 1.75;
     max-width: 52ch;
+  }
+
+  /* Inline links inside bio copy — same treatment as the About cards */
+  .person-bio a {
+    color: var(--purple);
+    text-decoration: none;
+    border-bottom: 2px solid var(--yellow);
+    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .person-bio a:hover { color: var(--purple-light); border-color: var(--purple-light); }
   }
 
   .person-socials {

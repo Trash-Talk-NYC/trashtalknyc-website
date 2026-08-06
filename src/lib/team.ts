@@ -18,11 +18,34 @@ export interface TeamSocial {
   placeholder?: boolean;
 }
 
+/**
+ * One piece of a bio paragraph. Paragraphs are usually a single plain
+ * {en, es} pair, but a paragraph carrying an inline link must be split
+ * into leaf segments (`parts`): setLang only swaps textContent on LEAF
+ * elements with data-en/data-es, so a paragraph that contains an <a>
+ * can't translate as one block — each text run and the link label get
+ * their own leaf instead.
+ */
+export interface BioSegment {
+  en: string;
+  es: string;
+  /** When set, this segment renders as an inline link. */
+  href?: string;
+}
+
+export interface BioParagraph {
+  en?: string;
+  es?: string;
+  /** Mixed-content form — when present, templates render these leaf
+      segments and ignore en/es. */
+  parts?: BioSegment[];
+}
+
 export interface TeamMember {
   id: string;
   name: string;
   role: { en: string; es: string };
-  bio: { en: string; es: string }[];
+  bio: BioParagraph[];
   socials: TeamSocial[];
   /**
    * Portrait crop of the shared group photo for the person's own page
@@ -103,17 +126,34 @@ export const team: TeamMember[] = [
     id: 'fabiola',
     name: 'Fabiola',
     role: { en: 'Technology', es: 'Tecnología' },
-    // INTERIM bio awaiting the captain's real text (the role above is
-    // real — captain, round 17): role-grounded, no invented personal
-    // facts.
+    // The captain's own words (round 18) — VERBATIM, already through an
+    // editing pass and approved. "I'm on anything Trash Talk tech" and
+    // "this stuff" are deliberately casual; the em dashes are
+    // intentional pacing. Only the paragraph breaks are ours. The
+    // second paragraph is split into leaf segments so "please get in
+    // touch" can be a real link to /contact and still translate.
     bio: [
       {
-        en: "Fabiola is part of the crew keeping Trash Talk NYC moving — showing up for the cleanups and for the community that's grown around them.",
-        es: 'Fabiola es parte del equipo que mantiene a Trash Talk NYC en marcha — presente en las limpiezas y en la comunidad que ha crecido a su alrededor.',
+        en: "Hi, I'm Fabiola! I'm on anything Trash Talk tech — this website included. I care that this stuff actually works for everyone.",
+        es: '¡Hola, soy Fabiola! Ando metida en todo lo tech de Trash Talk — este sitio incluido. Me importa que estas cosas de verdad funcionen para todos.',
       },
       {
-        en: "Find her at the next event and she'll point you to a bag, a grabber, and a block that needs you. Her full bio lands here soon.",
-        es: 'Búscala en el próximo evento y te señalará una bolsa, una pinza y una cuadra que te necesita. Su biografía completa llegará aquí pronto.',
+        parts: [
+          {
+            en: "If you can't easily find an event, join our mailing list, or figure out how to support us, that's a problem — ",
+            es: 'Si no puedes encontrar un evento fácilmente, unirte a nuestra lista de correo o entender cómo apoyarnos, eso es un problema — ',
+          },
+          {
+            en: 'please get in touch',
+            es: 'por favor, escríbenos',
+            href: '/contact',
+          },
+          { en: '.', es: '.' },
+        ],
+      },
+      {
+        en: 'Alongside supporting Nandi and David, I like exploring technical solutions for more empowered communities and a cleaner New York.',
+        es: 'Además de apoyar a Nandi y David, me gusta explorar soluciones técnicas para comunidades más empoderadas y una Nueva York más limpia.',
       },
     ],
     socials: [
@@ -123,7 +163,7 @@ export const team: TeamMember[] = [
     ],
     portrait: { fx: 0.625, fy: 0.44, z: 3.6 },
     metaDescription:
-      "Meet Fabiola of the Trash Talk NYC crew — part of the team cleaning New York block by block; join her at the club's next volunteer cleanup event.",
+      "Meet Fabiola — Technology at Trash Talk NYC, building the club's website and tech so finding events, joining the list, and supporting the cleanups works for everyone.",
   },
 ];
 

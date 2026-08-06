@@ -135,7 +135,17 @@ const bioOrder = ['david', 'nandi', 'fabiola']
             <p class="team-role" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</p>
             <div class="team-bio">
               {p.bio.map((b) => (
-                <p data-en={b.en} data-es={b.es}>{b.en}</p>
+                b.parts ? (
+                  <p>
+                    {b.parts.map((seg) =>
+                      seg.href
+                        ? <a href={seg.href} data-en={seg.en} data-es={seg.es}>{seg.en}</a>
+                        : <span data-en={seg.en} data-es={seg.es}>{seg.en}</span>
+                    )}
+                  </p>
+                ) : (
+                  <p data-en={b.en} data-es={b.es}>{b.en}</p>
+                )
               ))}
             </div>
           </article>
@@ -532,6 +542,20 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     color: #4a4850;
     line-height: 1.7;
     max-width: 38ch;
+  }
+
+  /* Inline links inside bio copy (e.g. Fabiola's "please get in
+     touch"): purple with the yellow marker underline — noticeable in a
+     paragraph without shouting */
+  .team-bio a {
+    color: var(--purple);
+    text-decoration: none;
+    border-bottom: 2px solid var(--yellow);
+    transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .team-bio a:hover { color: var(--purple-light); border-color: var(--purple-light); }
   }
 
   /* ── JOIN POINTER (the section itself lives at /contact/join) ── */
