@@ -144,8 +144,13 @@ export const team: TeamMember[] = [
             es: 'Si no puedes encontrar un evento fácilmente, unirte a nuestra lista de correo o entender cómo apoyarnos, eso es un problema — ',
           },
           {
-            en: 'please get in touch',
-            es: 'por favor, escríbenos',
+            // "us", not "me" — her bio is first-person but the
+            // invitation is to the club (captain, round 19). /contact
+            // IS the General-form deep link: the General tab is
+            // statically `active` in contact.astro's server markup
+            // (JS-free included) and nothing URL-driven changes tabs.
+            en: 'please contact us',
+            es: 'por favor, contáctanos',
             href: '/contact',
           },
           { en: '.', es: '.' },

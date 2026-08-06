@@ -155,16 +155,18 @@ const bioOrder = ['david', 'nandi', 'fabiola']
 
   </div>
 
-  <!-- JOIN THE TEAM moved to its own page: /contact/join (captain,
-       round 15). This compact pointer keeps the old anchor alive — the
-       Contact page banner (another crewmate's branch) links to
-       /about#join-the-team, so the id must stay until that banner is
-       repointed straight at /contact/join once both branches merge. -->
-  <section class="join-pointer diag-texture" id="join-the-team">
+  <!-- CLOSING CTA (round 19) — the page's one closer: it absorbs and
+       replaces the round-15 pointer band rather than standing beside
+       it. The id is a stable contract: the Contact page banner
+       (another crewmate's branch) links to /about#join-the-team, so it
+       must stay until that banner is repointed at /contact/join. -->
+  <section class="close-cta diag-texture" id="join-the-team">
     <div class="tape-seam" aria-hidden="true"></div>
-    <div class="join-pointer-inner">
-      <p class="sticker" style="--tilt: 2deg" data-en="Now recruiting" data-es="Estamos reclutando">Now recruiting</p>
-      <a class="join-pointer-link" href="/contact/join">
+    <div class="close-cta-inner">
+      <p class="sticker close-cta-eyebrow" style="--tilt: 2deg" data-en="Now recruiting" data-es="Estamos reclutando">Now recruiting</p>
+      <h2 class="close-cta-title" data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
+      <p class="close-cta-sub" data-en="We're expanding — more blocks, more projects, more crew." data-es="Estamos creciendo — más cuadras, más proyectos, más equipo.">We're expanding — more blocks, more projects, more crew.</p>
+      <a class="close-cta-btn" href="/contact/join">
         <span data-en="Join the team" data-es="Únete al equipo">Join the team</span>
         <span aria-hidden="true">→</span>
       </a>
@@ -558,44 +560,75 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     .team-bio a:hover { color: var(--purple-light); border-color: var(--purple-light); }
   }
 
-  /* ── JOIN POINTER (the section itself lives at /contact/join) ── */
-  .join-pointer {
+  /* ── CLOSING CTA (the join route, findable from the page itself;
+        the Join the Team content lives at /contact/join) ── */
+  .close-cta {
     background: var(--charcoal);
     position: relative;
     overflow: hidden;
   }
 
-  .join-pointer-inner {
+  .close-cta-inner {
     max-width: var(--container);
     margin: 0 auto;
-    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.1rem;
+    gap: 0.9rem;
     text-align: center;
     position: relative;
     z-index: 1;
   }
 
-  .join-pointer-link {
+  .close-cta-eyebrow { margin-bottom: 0.4rem; }
+
+  .close-cta-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: var(--step-3);
     line-height: 1;
     letter-spacing: 0.05em;
     color: var(--off-white);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.35em;
     text-shadow: 3px 3px 0 rgba(107, 63, 160, 0.55);
-    transition: color 160ms var(--ease-out), transform 160ms var(--ease-out);
   }
 
-  .join-pointer-link span[aria-hidden] { color: var(--yellow); }
+  .close-cta-sub {
+    font-size: var(--step-0);
+    font-weight: 600;
+    color: var(--paper-a70);
+    max-width: 44ch;
+    line-height: 1.6;
+  }
+
+  /* Primary action: yellow plate, charcoal border, purple press (the
+     dark-section press convention) */
+  .close-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 0.7rem;
+    background: var(--yellow);
+    color: var(--charcoal);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    padding: 0.9em 1.5em;
+    min-height: var(--tap);
+    border: 3px solid var(--charcoal);
+    border-radius: var(--radius-sm);
+    box-shadow: 5px 5px 0 var(--purple-light);
+    transform: rotate(-1deg);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+  }
 
   @media (hover: hover) and (pointer: fine) {
-    .join-pointer-link:hover { color: var(--yellow); transform: translateX(4px); }
+    .close-cta-btn:hover {
+      transform: rotate(0deg) translate(2px, 2px);
+      box-shadow: 3px 3px 0 var(--purple-light);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -607,7 +640,7 @@ const bioOrder = ['david', 'nandi', 'fabiola']
     }
     /* The chip illumination still switches — only its motion is removed */
     .face-marker { transition: none; }
-    .join-pointer-link { transition: none; }
+    .close-cta-btn { transition: none; }
   }
 </style>
 
