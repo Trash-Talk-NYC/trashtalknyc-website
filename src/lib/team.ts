@@ -104,8 +104,10 @@ export const team: TeamMember[] = [
     role: { en: 'Lead Organizer', es: 'Organizador Principal' },
     bio: [
       {
-        en: 'Trash Talk is my grassroots social media initiative to clean New York through educational entertainment.',
-        es: 'Trash Talk es mi iniciativa de base impulsada por las redes sociales para limpiar Nueva York a través del entretenimiento educativo.',
+        // "Hello!" not "Hi," — the captain's exact opener (round 28),
+        // deliberately not identical to Nandi's and Fabiola's "Hi, I'm"
+        en: 'Hello! I\'m David. Trash Talk is my grassroots social media initiative to clean New York through educational entertainment.',
+        es: '¡Hola! Soy David. Trash Talk es mi iniciativa de base impulsada por las redes sociales para limpiar Nueva York a través del entretenimiento educativo.',
       },
       {
         en: 'By growing a national and international following, I hope to clean my neighborhood and the city through fun volunteer events and community engagement. Funds for the projects come from donations and sponsorships.',

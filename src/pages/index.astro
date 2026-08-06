@@ -217,10 +217,15 @@ const orgSchema = {
 
     <div class="bento-box donate-box" id="donate">
       <div class="sticker bento-label bento-label-purple" data-en="Donate" data-es="Donar">Donate</div>
-      <h3 class="donate-title" data-en="We are crushing it." data-es="Lo estamos logrando.">We are crushing it.</h3>
+      <h3 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h3>
       <div class="gfm-widget-wrap">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
+      <!-- Two quiet lines under the widget: the fact as context, then
+           what the money does. Deliberately flat — the raised total
+           above does the talking (captain, round 28 amendment). -->
+      <p class="donate-fact" data-en="Trash Talk started in late May 2026." data-es="Trash Talk empezó a fines de mayo de 2026.">Trash Talk started in late May 2026.</p>
+      <p class="donate-note" data-en="Funds help scale cleanups, flower-planting, and builds." data-es="Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Funds help scale cleanups, flower-planting, and builds.</p>
       <a href="/about" class="donate-subtle-link" data-en="Where does our money go?" data-es="¿A dónde va nuestro dinero?">Where does our money go?</a>
     </div>
 
@@ -948,6 +953,26 @@ const orgSchema = {
     border-radius: var(--radius-md);
     overflow: hidden;
     margin-bottom: 1rem;
+  }
+
+  /* Two quiet lines under the GoFundMe embed — neither competes with
+     the widget's call to action. The fact reads a shade firmer
+     (context), the funds line a shade softer (what happens next), so
+     they relate without merging into one block or competing. */
+  .donate-fact {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4a4850;
+    line-height: 1.5;
+    margin-bottom: 0.2rem;
+  }
+
+  .donate-note {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray);
+    line-height: 1.5;
+    margin-bottom: 0.4rem;
   }
 
   .donate-subtle-link {
