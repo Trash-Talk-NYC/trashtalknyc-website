@@ -32,7 +32,8 @@ This took down all 3 form paths in production and preview with HTTP 500 for ~2 d
 | 13 | sponsor contact | `CONTACT_SPONSOR` (documented as 13 in `.env.example`; must also be set in Netlify all deploy contexts — if missing, sponsor submissions fail loudly with `form_env_missing`) |
 
 The contact env var names are short because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones — keep as-is.
-`BREVO_API_KEY` plus all three list vars are set identically across all Netlify deploy contexts (verified 2026-07).
+Do not assume the vars match across Netlify deploy contexts: a 2026-08 validation found `deploy-preview` missing the list IDs, the Turnstile secret and both notify addresses while production was complete (the earlier "identical across all contexts, verified 2026-07" claim was false; firstmate has since copied them across).
+Verify per context when debugging — `form_env_missing` in the function logs is the tell.
 
 ## Custom attribute map
 

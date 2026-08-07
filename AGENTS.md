@@ -31,7 +31,9 @@ Operational depth — the Authorized-IPs outage story, the debugging order, and 
 Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermittently block production form submissions (this caused a real incident).
 * **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact, 13 = sponsor contact.
 Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB`, `CONTACT_SPONSOR` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
-The first three are set identically across all Netlify deploy contexts (verified 2026-07); `CONTACT_SPONSOR=13` is documented in `.env.example` but **must also be set in Netlify (all deploy contexts)** — if missing, sponsor submissions fail loudly (`form_env_missing`, generic error in the UI) rather than landing in another list.
+Do **not** assume env vars match across Netlify deploy contexts: a 2026-08 forms validation found `deploy-preview` missing the three list IDs, the Turnstile secret, and both notify addresses while production was complete (the earlier "set identically across all contexts, verified 2026-07" claim was false).
+Firstmate has since copied the missing vars across, but verify per-context rather than trusting this — `form_env_missing` in the function logs is the tell.
+`CONTACT_SPONSOR=13` is documented in `.env.example` and **must be set in Netlify per context** — if missing, sponsor submissions fail loudly (`form_env_missing`, generic error in the UI) rather than landing in another list.
 Sponsor inquiries notify `SPONSOR_NOTIFY_TO` (sponsors@trashtalknyc.org in production) instead of `CONTACT_NOTIFY_TO`, with no fallback between the two — unset means the sponsor notification is skipped (`inquiry_notify_skipped`), never misrouted.
 * **Custom attribute map** (each must exist in the Brevo dashboard first or the upsert payload is rejected): `PHONE`, `INQUIRY_TYPE`, `WAIVER_ACCEPTED`, `MESSAGE`, `BOROUGH`, `HEAR_ABOUT_US`, `ORGANIZATION` (+ standard `FIRSTNAME`/`LASTNAME`).
 Signup sends FIRSTNAME, LASTNAME, BOROUGH, PHONE, MESSAGE (experience text), HEAR_ABOUT_US, WAIVER_ACCEPTED.
@@ -45,14 +47,20 @@ Before debugging "missing Brevo fields", check the contact's custom attributes v
 * **Attributes are last-write-wins.**
 Full submission history is preserved as Brevo CRM notes with a queryable header (`form=… | field=… | submitted=<ISO>` then the raw content) — see `buildNoteText` in `src/lib/server/brevo.ts`.
 
-## Turnstile bot check — pending real keys
+## Turnstile bot check — LIVE in production
 
 Both forms carry a Cloudflare Turnstile widget verified server-side in the actions (`requireTurnstile` in `src/actions/index.ts`, `src/lib/server/turnstile.ts`), layered on top of — not replacing — the honeypot/timing heuristics.
-**The feature is dormant until real keys exist:** with `PUBLIC_TURNSTILE_SITE_KEY` unset, no widget renders and the actions skip verification, logging `turnstile_not_configured` per submission.
-**Captain action required to go live:** create a Turnstile widget for the production domain in the Cloudflare dashboard, set `PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in Netlify (all deploy contexts), then trigger a redeploy — the site key bakes into the prerendered pages at build time, so enforcement without a rebuild would break the forms.
-Once the site key is set, a missing secret fails closed (`form_env_missing` pattern); verification failures log `form_turnstile_rejected` and show the same generic error as other validation failures.
+**Turnstile is live:** production holds a real site key and real secret (the secret appears nowhere in this repo).
+The old "dormant until real keys exist" behavior still applies wherever `PUBLIC_TURNSTILE_SITE_KEY` is unset (no widget, verification skipped, `turnstile_not_configured` logged), and the site key bakes into the prerendered pages at build time, so key changes need a redeploy.
+Once a site key is set, a missing secret fails closed (`form_env_missing` pattern); verification failures log `form_turnstile_rejected` and show the same generic error as other validation failures.
+The real site key's hostname allowlist does not include `*--trashtalknyc.netlify.app` draft/preview hosts, so the widget hard-fails there with error `110200` — that is an allowlist gap, not a code bug.
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
+
+**Netlify secrets scanning vs the documented dummy secret — a real build-breaker (2026-08).**
+PR #34's preview builds failed three times with `Build script returned non-zero exit code: 2` and the code was never at fault: firstmate had set `TURNSTILE_SECRET_KEY` in the non-production contexts to Cloudflare's documented dummy value so previews could exercise the forms, and Netlify's secrets scanner matched that env var's *value* against this repo — where the same string legitimately appears as documentation (`.env.example`, this file, the e2e-testing skill) — and refused the build.
+The fix is a Netlify setting, not code: `SECRETS_SCAN_OMIT_KEYS=TURNSTILE_SECRET_KEY` in `deploy-preview`, `branch-deploy` and `dev` **only**.
+The asymmetry is deliberate and must survive: the dummy key is safe to document and safe to use in non-production, but only with that omission in place, and **the omission must never be added to production**, where the real secret stays fully scanned (production never failed, because the real secret appears nowhere in the repo).
 
 ## Open Roles — top-level page at /recruit, intake EMAIL-ONLY
 
@@ -110,7 +118,7 @@ The real cause was finally isolated with a standalone on-device test bench (`hea
 The device-confirmed fix ships in `global.css`: the grain is a document overlay instead — `position: relative` on `body`, `position: absolute` on `body::after` — visually identical because the grain is uniform noise.
 The separate rubber-band overscroll reveal is handled by explicitly painting **both** `html` and `body` charcoal (also device-confirmed); earlier claims that iOS 26 "ignores theme-color and samples the body specifically, verified by pixel-sampling" came from iOS 18 simulator experiments and are unverified on iOS 26 — keep both surfaces matched, keep the cream page background on `main`, and keep the `theme-color` meta for iOS 15–17.
 Refuted along the way, do not resurrect: chrome-color fixes (PRs #18, #22, #25), `nav::before` bleeds, negative-margin covers, hide-on-scroll, per-frame JS re-pinning (visibly glitches on-device), and the theory that Apple forums threads 800798/801028 describe a top-edge clipping mechanism (both are bottom-edge reports; the best-matching documented bug is WebKit 297779).
-One known symptom remains and is tracked separately in the header-astro-demo task: after keyboard use the header can shift up and cover content — very likely the documented iOS 26 stale-viewport bug (WebKit 297779 / Apple thread 800125). Do NOT attempt CSS or JS fixes for it here.
+One known symptom remains: after keyboard use the header can shift up and cover content — the documented iOS 26 stale-viewport bug (WebKit 297779 / Apple thread 800125), which page CSS cannot fix and which **the captain has accepted as a known limitation**. Do NOT attempt CSS or JS fixes for it here (per-frame JS re-pinning was tried and visibly glitches on-device).
 `cover` stays out because nothing needs to draw under the status bar: without it, iOS letterboxes the band itself, painted from the charcoal `html`/`body`; the nav's safe-area padding was removed outright, so reintroducing `cover` requires revisiting the nav (`NavBar.astro`) as well as the `max()` fallbacks elsewhere. All `env(safe-area-inset-*)` resolve to 0 with `cover` gone.
 Six rounds were lost because each inherited the previous round's written-down guess as established fact — never record a chrome theory as verified without real-device evidence.
 Chrome-adjacent changes can be sanity-checked in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), but simulators max out at iOS 18 and passed every failed theory above — the captain's iOS 26 phone is the only acceptance gate.
