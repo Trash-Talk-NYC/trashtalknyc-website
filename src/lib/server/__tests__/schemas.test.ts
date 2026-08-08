@@ -94,10 +94,16 @@ describe('contactSchema', () => {
     expect(contactSchema.safeParse({ ...validContact, inquiryType: 'sales' }).success).toBe(false);
   });
 
-  it('requires organization for partnership inquiries', () => {
-    const partnership = { ...validContact, inquiryType: 'partnership' };
-    expect(contactSchema.safeParse(partnership).success).toBe(false);
-    expect(contactSchema.safeParse({ ...partnership, organization: '  ' }).success).toBe(false);
-    expect(contactSchema.safeParse({ ...partnership, organization: 'Acme Co' }).success).toBe(true);
+  it.each(['partnership', 'sponsor'])('requires organization for %s inquiries', (inquiryType) => {
+    const orgBacked = { ...validContact, inquiryType };
+    expect(contactSchema.safeParse(orgBacked).success).toBe(false);
+    expect(contactSchema.safeParse({ ...orgBacked, organization: '  ' }).success).toBe(false);
+    expect(contactSchema.safeParse({ ...orgBacked, organization: 'Acme Co' }).success).toBe(true);
+  });
+
+  it('accepts a complete sponsor inquiry', () => {
+    expect(
+      contactSchema.safeParse({ ...validContact, inquiryType: 'sponsor', organization: 'Acme Co' }).success,
+    ).toBe(true);
   });
 });

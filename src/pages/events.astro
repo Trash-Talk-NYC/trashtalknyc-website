@@ -31,7 +31,6 @@ const nextEvent = upcoming[0]?.props ?? null;
     <div class="events-hero-inner">
 
       <div class="events-hero-left">
-        <div class="hero-page-label" data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</div>
         <h1 class="hero-title">
           <span data-en="Club" data-es="Eventos">Club</span>
           <span class="accent" data-en="Events" data-es="del Club">Events</span>
@@ -79,9 +78,9 @@ const nextEvent = upcoming[0]?.props ?? null;
         </div>
       ) : (
         <div class="no-events-cta">
-          <p data-en="No upcoming events right now — stay tuned on our Eventbrite page for new dates." data-es="No hay eventos próximos. ¡Síguenos en Eventbrite para nuevas fechas!">No upcoming events right now — stay tuned on our Eventbrite page for new dates.</p>
+          <p data-en="No upcoming events right now. Stay tuned on our Eventbrite page for new dates." data-es="No hay eventos próximos. ¡Síguenos en Eventbrite para nuevas fechas!">No upcoming events right now. Stay tuned on our Eventbrite page for new dates.</p>
           <a class="eb-cta-btn" href="https://trashtalknyc.eventbrite.com" target="_blank" rel="noopener" data-en="See us on Eventbrite →" data-es="Vernos en Eventbrite →">See us on Eventbrite →</a>
-          <a class="signup-nudge" href="/#signup" data-en="Or join the club list — hear about new dates first →" data-es="O únete a la lista del club — entérate primero de nuevas fechas →">Or join the club list — hear about new dates first →</a>
+          <a class="signup-nudge" href="/#signup" data-en="Or join the club list and hear about new dates first →" data-es="O únete a la lista del club y entérate primero de las nuevas fechas →">Or join the club list and hear about new dates first →</a>
         </div>
       )}
     </div>
@@ -275,7 +274,10 @@ const nextEvent = upcoming[0]?.props ?? null;
     background: var(--charcoal);
     position: relative;
     overflow: hidden;
-    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+    /* --space-xl on top (rest of the page uses --space-lg): the headline lost
+       its eyebrow line, so the extra token step keeps it from sitting jammed
+       under the nav */
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
   }
   .events-hero::after {
     content: '';
@@ -291,12 +293,6 @@ const nextEvent = upcoming[0]?.props ?? null;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
     gap: var(--space-lg); align-items: center;
   }
-  .hero-page-label {
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em;
-    color: var(--purple-light); margin-bottom: 0.75rem;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .hero-page-label::before { content: ''; display: inline-block; width: 1.25rem; height: 3px; background: var(--purple-light); border-radius: 2px; }
   .hero-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: var(--step-display);

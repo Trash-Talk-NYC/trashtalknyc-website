@@ -29,12 +29,16 @@ Operational depth — the Authorized-IPs outage story, the debugging order, and 
 
 * **Authorized IPs must stay OFF** in Brevo's security settings.
 Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermittently block production form submissions (this caused a real incident).
-* **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact.
-Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
-All are set identically across all Netlify deploy contexts (verified 2026-07).
+* **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact, 13 = sponsor contact.
+Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB`, `CONTACT_SPONSOR` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
+Do **not** assume env vars match across Netlify deploy contexts: a 2026-08 forms validation found `deploy-preview` missing the three list IDs, the Turnstile secret, and both notify addresses while production was complete (the earlier "set identically across all contexts, verified 2026-07" claim was false).
+Firstmate has since copied the missing vars across, but verify per-context rather than trusting this — `form_env_missing` in the function logs is the tell.
+`CONTACT_SPONSOR=13` is documented in `.env.example` and **must be set in Netlify per context** — if missing, sponsor submissions fail loudly (`form_env_missing`, generic error in the UI) rather than landing in another list.
+Sponsor inquiries notify `SPONSOR_NOTIFY_TO` (sponsors@trashtalknyc.org in production) instead of `CONTACT_NOTIFY_TO`, with no fallback between the two — unset means the sponsor notification is skipped (`inquiry_notify_skipped`), never misrouted.
 * **Custom attribute map** (each must exist in the Brevo dashboard first or the upsert payload is rejected): `PHONE`, `INQUIRY_TYPE`, `WAIVER_ACCEPTED`, `MESSAGE`, `BOROUGH`, `HEAR_ABOUT_US`, `ORGANIZATION` (+ standard `FIRSTNAME`/`LASTNAME`).
 Signup sends FIRSTNAME, LASTNAME, BOROUGH, PHONE, MESSAGE (experience text), HEAR_ABOUT_US, WAIVER_ACCEPTED.
-Contact sends FIRSTNAME, LASTNAME, PHONE, INQUIRY_TYPE, ORGANIZATION (collab tab only), MESSAGE.
+Contact sends FIRSTNAME, LASTNAME, PHONE, INQUIRY_TYPE (`general` | `partnership` | `sponsor`), ORGANIZATION (collab + sponsor tabs), MESSAGE.
+`INQUIRY_TYPE` is a plain text attribute (verified via the attributes API 2026-08), so new inquiry-type values need no Brevo dashboard work.
 Empty-string fields are dropped before upsert so updates never blank existing values (`buildAttributes` in `src/lib/server/brevo.ts`).
 * **`PHONE` is a custom text attribute, not Brevo's native SMS/phone field.**
 The Brevo UI shows the native field prominently and shows custom attributes only in the contact's attribute panel (or as manually added list columns), so `PHONE`/`ORGANIZATION` can look "missing" in the UI while being present via API.
@@ -43,14 +47,40 @@ Before debugging "missing Brevo fields", check the contact's custom attributes v
 * **Attributes are last-write-wins.**
 Full submission history is preserved as Brevo CRM notes with a queryable header (`form=… | field=… | submitted=<ISO>` then the raw content) — see `buildNoteText` in `src/lib/server/brevo.ts`.
 
-## Turnstile bot check — pending real keys
+## Turnstile bot check — LIVE in production
 
 Both forms carry a Cloudflare Turnstile widget verified server-side in the actions (`requireTurnstile` in `src/actions/index.ts`, `src/lib/server/turnstile.ts`), layered on top of — not replacing — the honeypot/timing heuristics.
-**The feature is dormant until real keys exist:** with `PUBLIC_TURNSTILE_SITE_KEY` unset, no widget renders and the actions skip verification, logging `turnstile_not_configured` per submission.
-**Captain action required to go live:** create a Turnstile widget for the production domain in the Cloudflare dashboard, set `PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in Netlify (all deploy contexts), then trigger a redeploy — the site key bakes into the prerendered pages at build time, so enforcement without a rebuild would break the forms.
-Once the site key is set, a missing secret fails closed (`form_env_missing` pattern); verification failures log `form_turnstile_rejected` and show the same generic error as other validation failures.
+**Turnstile is live:** production holds a real site key and real secret (the secret appears nowhere in this repo).
+The old "dormant until real keys exist" behavior still applies wherever `PUBLIC_TURNSTILE_SITE_KEY` is unset (no widget, verification skipped, `turnstile_not_configured` logged), and the site key bakes into the prerendered pages at build time, so key changes need a redeploy.
+Once a site key is set, a missing secret fails closed (`form_env_missing` pattern); verification failures log `form_turnstile_rejected` and show the same generic error as other validation failures.
+The real site key's hostname allowlist does not include `*--trashtalknyc.netlify.app` draft/preview hosts, so the widget hard-fails there with error `110200` — that is an allowlist gap, not a code bug.
 For local dev, Cloudflare's public test keys always pass: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always-fail variants: site `2x00000000000000000000AB`, secret `2x0000000000000000000000000000000AA`).
 Turnstile tokens are single-use, so the page scripts call `window.turnstile.reset()` after every consumed submission attempt — keep that when touching the form submit handlers.
+
+**Netlify secrets scanning vs the documented dummy secret — a real build-breaker (2026-08).**
+PR #34's preview builds failed three times with `Build script returned non-zero exit code: 2` and the code was never at fault: firstmate had set `TURNSTILE_SECRET_KEY` in the non-production contexts to Cloudflare's documented dummy value so previews could exercise the forms, and Netlify's secrets scanner matched that env var's *value* against this repo — where the same string legitimately appears as documentation (`.env.example`, this file, the e2e-testing skill) — and refused the build.
+The fix is a Netlify setting, not code: `SECRETS_SCAN_OMIT_KEYS=TURNSTILE_SECRET_KEY` in `deploy-preview`, `branch-deploy` and `dev` **only**.
+The asymmetry is deliberate and must survive: the dummy key is safe to document and safe to use in non-production, but only with that omission in place, and **the omission must never be added to production**, where the real secret stays fully scanned (production never failed, because the real secret appears nowhere in the repo).
+
+## Open Roles — top-level page at /recruit, intake EMAIL-ONLY
+
+The recruitment page lives at **`/recruit`** (`src/pages/recruit.astro`; captain round 20 — moved from `/contact/join`, where it was "Join the Team"): a boxed title ("We need helping hands!" in an orange bordered box — no `PageHero`, no eyebrow, no ghost word, by captain decision), the note-before-you-apply card (a real heading plus "How we work" / "Why email" subheadings inside one continuous note), three roles (Social Media Manager, Content Videographer/Editor, Long-form Videographer/Editor), and a `mailto:` CTA to **team@trashtalknyc.org**. No form, no role numbering, no "Now recruiting" anywhere (phrase retired, round 20).
+The How-we-work copy (the "best way to know if something works" intro plus the four preferences, round 22) and the Why-email line are the **captain's own voice, approved verbatim** — "we move fast, and with effort" keeps its comma, the third preference keeps its quotation marks and has no full stop; do not smooth, formalize, or add connective tissue, in English or Spanish.
+Site-wide copy rule (captain, round 22): keep em dashes rare — roughly one per page, for a real aside — and avoid staccato fragment rhythm; prefer commas, colons, and full sentences. The waiver's legal dashes and "Page — Trash Talk NYC" title separators are deliberate exceptions.
+The round-15 verbatim opening statement ("This isn't cute. …") and the three pillars were removed in the round-20 restructure — they live in git history if the captain wants them back.
+The mailto subject is the captain's line with a deliberate fill-in placeholder: `I'm [your name] and I want to join Trash Talk NYC` (role boxes append `— <Role>`); a mailto can't know the sender, so the subject asks them to say so.
+English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
+Links to the page: the nav's About dropdown ("Open Roles"), the footer ("Open Roles"), the homepage crew callout, the About page's closing "Want to lend a hand?" CTA, and the Contact page banner ("See more" → `/recruit` directly — it used to land on the About closing note instead of the roles).
+The About closing section still carries the legacy `#join-the-team` anchor id so old links keep landing somewhere sensible.
+The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`); the Blobs store may still hold applications submitted while the form was live.
+
+## Projects page — decoupled to `fm/projects-tree-guard`
+
+The Projects page (`/projects`, with its CSS-3D tree-guard model and intentionally-pending placeholder content) was **removed from the release at the captain's request** and lives in full on the `fm/projects-tree-guard` branch — continue Projects work there, not here.
+The nav's About dropdown ships with two items: **The Team** (`/about`) and **Open Roles** (`/recruit` — the recruitment page; both live on this consolidated branch).
+"Open Roles" is the captain's chosen label (round 20; ES `Puestos Abiertos`): it must **never be relabelled "Join"** (the nav CTA already uses Join for the mailing list) and "Work With Us" was rejected as confusable with Contact.
+`/recruit` highlights the **About** parent (top-level route, so Contact can't double-light); Projects rejoins the dropdown when `fm/projects-tree-guard` lands.
+Do not link to `/projects` from anything on this branch — the route does not exist here and it is filtered from nothing (it simply isn't built), so a link would 404.
 
 ## E2E Testing
 
@@ -66,17 +96,32 @@ See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling a
 
 * `src/styles/global.css` holds only true globals: design tokens (brand hues, fluid type/space scales, safe-area vars), reset, base typography, grain overlay, and cross-page utilities (`.section-title`, `.tape-seam`, `.diag-texture`).
 * Everything else is component-scoped: nav/footer/social bar/lang toggle live in `src/components/` with their own `<style>` blocks. Add styles next to the component, not to global.css.
-* Layout is fluid-first: `clamp()` tokens and `auto-fit`/`minmax()` grids instead of stacking breakpoints; heroes use `svh` (not `vh`); chrome pads with `env(safe-area-inset-*)` under `viewport-fit=cover`.
+* Layout is fluid-first: `clamp()` tokens and `auto-fit`/`minmax()` grids instead of stacking breakpoints; heroes use `svh` (not `vh`); components pad with `max(<design spacing>, env(safe-area-inset-*))` — the env() values are all 0 now that `viewport-fit=cover` is gone (see the safe-area bullet below), but the `max()` pattern keeps every layout correct under either viewport mode, so keep using it for new chrome-adjacent UI.
 * The visual language is "street poster / club zine": hard offset press shadows (`--press`, `--press-sm`), tilted `.sticker` chips, `.sign-plate` street-sign titles, giant outlined Bebas background words, the `.tape-seam` caution divider, and `.grid-paper` texture on light sections. New UI should reuse these devices rather than soft shadows or new decorative styles.
 * EN/ES translation is attribute-driven (`data-en`/`data-es`, state in `src/lib/language.ts`); dynamic text (dates, tab-dependent copy) is re-rendered by the owning component on `onLanguageChange`.
 * Images live in `src/assets/` and render through `<Image>` from `astro:assets` — never `public/` (raw files there bypass optimization; the 529 KB logo alone would have blown the bandwidth budget at target traffic).
 The adapter sets `imageCDN: false` deliberately, so optimization happens at build time via sharp into immutable `/_astro/*.webp` files — keep it that way.
 Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descendant selector in a scoped `<style>` is fragile against the component's rendered output), and `<Image>` always emits `width`/`height` attributes, so any CSS `aspect-ratio` crop needs an explicit `height: auto` or the height attribute wins (this silently broke the About polaroid once).
-* The strip iOS Safari paints between the system status bar and the page is browser chrome — page CSS (like the `nav::before` bleed that covers rubber-band/toolbar-transition gaps) can never paint over it.
-What colors it depends on the iOS version, and this burned us twice: iOS 15–17 use the `theme-color` meta in `BaseLayout.astro`, but iOS 26 (Liquid Glass) **ignores `theme-color` entirely** and samples the **`body` element's `background-color`** — not the `html` canvas, not the sticky nav, not pseudo-elements (verified by pixel-sampling simulator screenshots).
-That's why `body` stays nav charcoal (`#1c1c22`) and the cream page background lives on `main` (see `global.css`); keep the `theme-color` meta too for older iOS.
-Verify chrome-adjacent changes in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), not just desktop emulation.
-Local simulators max out at iOS 18, which still honors `theme-color`, so to emulate iOS 26 chrome behavior temporarily remove the `theme-color` meta and confirm the strip still renders charcoal from the body background alone.
+* `setLang` in `src/lib/language.ts` swaps `textContent` only, and only on leaf elements carrying `data-en`/`data-es` — it never translates attributes.
+So an `aria-label` stays English after a toggle; give controls a bilingual accessible name with a visually-hidden `<span data-en data-es>` inside instead (see the photo hotspots in `about.astro`).
+* `<Image>` with `widths` but no `width` emits a fallback `src` at the source file's native resolution — the 5820px About group photo produced a 4.8 MB webp that way.
+Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallback.
+* Team identity (names, roles, bios, social-link slots, portrait crops, meta descriptions) lives in `src/lib/team.ts`, consumed by the About page.
+The per-person `/about/{id}` pages were pulled from this release to the `fm/about-individual-pages` branch (captain, round 23) — continue that work there; `socials`/`portrait`/`metaDescription` in `team.ts` are dormant data kept for their return, and the About bios' names are plain `<mark>` text (no links) until then.
+Nandi's and Fabiola's bios there are INTERIM role-grounded copy (no invented personal facts) and several social slots are `href="#"` placeholders awaiting the captain's URLs — flagged with TODO comments in the file.
+* The About team section (`about.astro`) keeps only photo-frame presentation: a `geometry` map of hotspot bands, face-chip anchors, and spotlight ellipses, all expressed as percentages of the photo frame.
+The hero renders a fixed build-time vertical crop of the group shot (the `CROP` constant; y-coordinates remap through `py()`) — never a viewport-dependent `object-fit`, which would silently misalign every hotspot and spotlight.
+On mobile the photo plate pins (sticky) while the bios scroll past, the spotlight follows whichever bio owns the viewport (nobody owns it until the reader actually scrolls — the photo rests fully lit at page open), and the bio band pages with CSS scroll-snap whose snap positions are deliberately kept equal to `scrollToEntry`'s JS offset — change one and you must change the other or tap-to-scroll gets re-snapped elsewhere.
+* **The header is a plain always-sticky nav on all widths; `viewport-fit=cover` is deliberately absent; and no `position: fixed` full-viewport layer may ever sit above the nav. Read this bullet's history before touching any of that.**
+The captain's device (iOS 26) showed a persistent gap between the header and the status bar with page content visible in it; six successive CSS theories "fixed" it, passed every emulator and ≤iOS 18 simulator, and failed on-device.
+The real cause was finally isolated with a standalone on-device test bench (`header-astro-demo-z4`, 2026-08, bisected on the captain's iPhone): **the grain texture as a full-viewport `position: fixed` layer at `z-index: 9999` above the sticky nav makes iOS 26 Safari misplace the header on scroll-direction changes.**
+The device-confirmed fix ships in `global.css`: the grain is a document overlay instead — `position: relative` on `body`, `position: absolute` on `body::after` — visually identical because the grain is uniform noise.
+The separate rubber-band overscroll reveal is handled by explicitly painting **both** `html` and `body` charcoal (also device-confirmed); earlier claims that iOS 26 "ignores theme-color and samples the body specifically, verified by pixel-sampling" came from iOS 18 simulator experiments and are unverified on iOS 26 — keep both surfaces matched, keep the cream page background on `main`, and keep the `theme-color` meta for iOS 15–17.
+Refuted along the way, do not resurrect: chrome-color fixes (PRs #18, #22, #25), `nav::before` bleeds, negative-margin covers, hide-on-scroll, per-frame JS re-pinning (visibly glitches on-device), and the theory that Apple forums threads 800798/801028 describe a top-edge clipping mechanism (both are bottom-edge reports; the best-matching documented bug is WebKit 297779).
+One known symptom remains: after keyboard use the header can shift up and cover content — the documented iOS 26 stale-viewport bug (WebKit 297779 / Apple thread 800125), which page CSS cannot fix and which **the captain has accepted as a known limitation**. Do NOT attempt CSS or JS fixes for it here (per-frame JS re-pinning was tried and visibly glitches on-device).
+`cover` stays out because nothing needs to draw under the status bar: without it, iOS letterboxes the band itself, painted from the charcoal `html`/`body`; the nav's safe-area padding was removed outright, so reintroducing `cover` requires revisiting the nav (`NavBar.astro`) as well as the `max()` fallbacks elsewhere. All `env(safe-area-inset-*)` resolve to 0 with `cover` gone.
+Six rounds were lost because each inherited the previous round's written-down guess as established fact — never record a chrome theory as verified without real-device evidence.
+Chrome-adjacent changes can be sanity-checked in the iOS Simulator (`xcrun simctl openurl booted <dev-url>` + `simctl io booted screenshot`), but simulators max out at iOS 18 and passed every failed theory above — the captain's iOS 26 phone is the only acceptance gate.
 
 ## SEO & share metadata
 

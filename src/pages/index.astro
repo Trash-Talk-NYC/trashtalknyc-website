@@ -106,7 +106,13 @@ const orgSchema = {
   <div class="bento-inner">
 
     <div class="bento-box deepclean-box" id="deep-clean">
-      <div class="sticker bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
+      {/* The card is the nearest-event RSVP when events exist, a socials list
+          when none do — the sticker has to name what's actually inside */}
+      {defaultEvent ? (
+        <div class="sticker bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
+      ) : (
+        <div class="sticker bento-label" data-en="Connect on social media" data-es="Conéctate en redes sociales">Connect on social media</div>
+      )}
       {defaultEvent ? (
         <div class="dc-body" id="dcBody">
           <div class="dc-eyebrow">
@@ -145,7 +151,7 @@ const orgSchema = {
         </div>
       ) : (
         <div class="dc-fallback">
-          <p class="dc-fallback-note" data-en="No upcoming events right now — follow us for updates:" data-es="No hay eventos próximos — síguenos para actualizaciones:">No upcoming events right now — follow us for updates:</p>
+          <p class="dc-fallback-note" data-en="No upcoming events right now. Follow us for updates:" data-es="No hay eventos próximos. Síguenos para actualizaciones:">No upcoming events right now. Follow us for updates:</p>
           <div class="dc-socials">
             <a class="dc-social-row dc-social-primary" href="https://www.instagram.com/trashtalk_nyc/" target="_blank" rel="noopener" aria-label="Instagram — follow @trashtalk_nyc">
               <span class="dc-social-icon dc-social-icon-ig" aria-hidden="true">
@@ -175,8 +181,18 @@ const orgSchema = {
               </span>
               <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
             </a>
+            <a class="dc-social-row dc-social-li" href="https://www.linkedin.com/company/trash-talk-nyc/" target="_blank" rel="noopener" aria-label="LinkedIn — Trash Talk NYC">
+              <span class="dc-social-icon dc-social-icon-li" aria-hidden="true">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg>
+              </span>
+              <span class="dc-social-text">
+                <span class="dc-social-net">LinkedIn</span>
+                <span class="dc-social-handle">Trash Talk NYC</span>
+              </span>
+              <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
+            </a>
           </div>
-          <a href="#signup" class="dc-fallback-list-link" data-en="or join the club list ↓" data-es="o únete a la lista del club ↓">or join the club list ↓</a>
+          <a href="#signup" class="dc-fallback-list-link" data-en="find out about neighborhood events ↓" data-es="entérate de los eventos en tu vecindario ↓">find out about neighborhood events ↓</a>
         </div>
       )}
       {hasEventCoords && (
@@ -201,24 +217,18 @@ const orgSchema = {
 
     <div class="bento-box donate-box" id="donate">
       <div class="sticker bento-label bento-label-purple" data-en="Donate" data-es="Donar">Donate</div>
-      <h3 class="donate-title" data-en="We are crushing it." data-es="Lo estamos logrando.">We are crushing it.</h3>
+      <h3 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h3>
       <div class="gfm-widget-wrap">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
-      <a href="/about" class="donate-subtle-link" data-en="Where does our money go?" data-es="¿A dónde va nuestro dinero?">Where does our money go?</a>
+      <!-- One flat paragraph under the widget — deliberately even, no
+           emphasis anywhere; the raised total above does the talking
+           (captain, rounds 28–30). -->
+      <p class="donate-note" data-en="Trash Talk started in late May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk empezó a fines de mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk started in late May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
     </div>
 
   </div>
 </section>
-
-<!-- CAN'T ATTEND CTA -->
-<div class="cant-attend-cta grid-paper">
-  <a href="#signup" class="cant-attend-link">
-    <span class="cta-arrow" aria-hidden="true">&darr;</span>
-    <span data-en="Can't attend just yet?" data-es="¿Aún no puedes asistir?">Can't attend just yet?</span>
-    <span class="cta-arrow" aria-hidden="true">&darr;</span>
-  </a>
-</div>
 
 <!-- SIGNUP -->
 <section class="signup" id="signup">
@@ -226,6 +236,11 @@ const orgSchema = {
     <div class="signup-header">
       <h2 class="sign-plate" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
       <p class="signup-subtitle" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</p>
+      <p
+        class="signup-blurb"
+        data-en="We'll email you when cleanups are happening."
+        data-es="Te avisaremos por correo cuando haya limpiezas."
+      >We'll email you when cleanups are happening.</p>
     </div>
 
     <div class="form-wrap">
@@ -345,6 +360,22 @@ const orgSchema = {
         <p data-en="We'll be in touch. See you out there." data-es="Estaremos en contacto. Nos vemos allá.">We'll be in touch. See you out there.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- The site's signature seam marks the handoff from the mailing-list ask
+     to the crew ask — the captain found the bare transition abrupt -->
+<div class="tape-seam" aria-hidden="true"></div>
+
+<!-- CREW CALLOUT: the signup above is the mailing list and is for everyone;
+     this is the pitch for people who want to WORK on Trash Talk (roles live
+     at /recruit), so it deliberately reads as a different ask: dark band,
+     ghost button, no form -->
+<section class="crew-callout diag-texture">
+  <div class="crew-callout-inner">
+    <h2 class="crew-title" data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
+    <p class="crew-copy" data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
+    <a href="/recruit" class="btn-secondary" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
   </div>
 </section>
 
@@ -592,6 +623,12 @@ const orgSchema = {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
     gap: clamp(1.25rem, 2.5vw, 1.75rem);
+    /* When the boxes stack, the Donate sticker tab overhangs its box top by
+       1rem (.bento-label top: -1rem) and the card above casts a 6px press
+       shadow into the seam — so the stacked row gets the section token PLUS
+       the tab's overhang, keeping clear air around the tab itself. Row-gap is
+       invisible in the side-by-side layout, so desktop is unaffected. */
+    row-gap: calc(var(--space-lg) + 1rem);
     align-items: stretch;
   }
 
@@ -794,6 +831,8 @@ const orgSchema = {
 
   /* Text-glyph "e", matching the site's text-wordmark treatment of the
      Eventbrite brand (.eb-logo) */
+  .dc-social-icon-li { background: #0a66c2; }
+
   .dc-social-icon-eb {
     background: #f8623a;
     color: #fff;
@@ -823,6 +862,9 @@ const orgSchema = {
   .dc-social-primary .dc-social-net { color: var(--purple); }
   .dc-social-tt .dc-social-net { color: var(--yellow); }
   .dc-social-eb .dc-social-net { color: #f8623a; }
+  /* Brand #0a66c2 fails contrast for tiny caps on the charcoal card; this is
+     LinkedIn's own dark-mode blue */
+  .dc-social-li .dc-social-net { color: #70b5f9; }
 
   .dc-social-handle {
     font-size: 0.92rem;
@@ -911,54 +953,50 @@ const orgSchema = {
     margin-bottom: 1rem;
   }
 
-  .donate-subtle-link {
-    font-size: 0.72rem;
+  /* One flat supporting paragraph under the GoFundMe embed — a single
+     weight and size throughout (captain, round 30), quiet enough never
+     to compete with the widget's call to action */
+  .donate-note {
+    font-size: 0.85rem;
     font-weight: 600;
-    color: var(--gray);
-    text-decoration: none;
-    align-self: flex-start;
-    margin-top: auto;
-    min-height: 32px;
-    display: inline-flex;
-    align-items: center;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.15s, color 0.15s;
+    color: #4a4850;
+    line-height: 1.55;
   }
 
-  .donate-subtle-link:hover { color: var(--purple); border-color: var(--purple-light); }
-
-  /* ── CAN'T ATTEND CTA ── */
-  .cant-attend-cta {
-    background: var(--off-white);
-    padding: 0 max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
+  /* ── CREW CALLOUT ── */
+  .crew-callout {
+    background: var(--charcoal);
+    color: var(--off-white);
+    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
     text-align: center;
   }
 
-  .cant-attend-link {
-    display: inline-flex;
+  .crew-callout-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.85rem;
-    min-height: var(--tap);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--charcoal);
-    text-decoration: none;
-    transition: color 0.15s;
+    gap: var(--space-sm);
+    position: relative;
+    z-index: 1;
   }
 
-  .cant-attend-link:hover { color: var(--purple); }
-
-  .cta-arrow {
-    font-size: 1.1rem;
-    color: var(--purple-light);
-    transition: transform 0.15s;
-    display: inline-block;
+  .crew-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-3);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
   }
 
-  .cant-attend-link:hover .cta-arrow { transform: translateY(3px); }
+  .crew-copy {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--paper-a70);
+    max-width: 44ch;
+  }
 
   /* ── RSVP MODAL ── */
   .modal-overlay {
@@ -1053,6 +1091,17 @@ const orgSchema = {
     color: rgba(247, 244, 237, 0.75);
     margin-top: 1.1rem;
     letter-spacing: 0.02em;
+  }
+
+  /* Supporting copy under the section header: answers "what am I signing
+     up to?" so it stays quieter than the subtitle above it */
+  .signup-blurb {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--paper-a70);
+    max-width: 46ch;
+    margin: 0.75rem auto 0;
   }
 
   /* ── FORM — club-card treatment ── */

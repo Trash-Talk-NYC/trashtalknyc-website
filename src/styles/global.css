@@ -7,7 +7,11 @@
 
 /* ── DESIGN TOKENS ── */
 :root {
-  /* Brand hues — fixed; do not add new hues, derive from these */
+  /* Brand hues — fixed; do not add new hues, derive from these.
+     (Safety orange added 2026-08 by captain decision — hi-vis vest /
+     traffic-cone orange, accents only: small marks and rules, never
+     large fills or a third headline colour. 3.0:1 on off-white, so
+     non-text marks only there; 5.1:1 on charcoal.) */
   --charcoal: #1c1c22;
   --off-white: #f7f4ed;
   --cream: #ede9df;
@@ -16,6 +20,7 @@
   --purple: #6b3fa0;
   --purple-light: #9b5de5;
   --purple-pale: #f0e8ff;
+  --orange: #f35b04;
   --green: #2a6b2a;
   --green-light: #3d9e3d;
   --gray: #7a7a8a;
@@ -33,6 +38,9 @@
   --purple-a20: rgba(107, 63, 160, 0.2);
   --purple-lt-a12: rgba(155, 93, 229, 0.12);
   --purple-lt-a30: rgba(155, 93, 229, 0.3);
+
+  /* Alpha variant — safety-orange wash */
+  --orange-a35: rgba(243, 91, 4, 0.35);
 
   /* Fluid type scale — rem floor/ceiling with a viewport-driven middle */
   --step--1: clamp(0.72rem, 0.68rem + 0.2vw, 0.8rem);
@@ -60,7 +68,11 @@
   --radius-md: 12px;
   --radius-lg: 18px;
 
-  /* Device safe areas (notch / dynamic island / home indicator) */
+  /* Device safe areas (notch / dynamic island / home indicator).
+     All 0 today: viewport-fit=cover is deliberately absent (see
+     BaseLayout.astro — re-adding it reintroduces the iOS 26 header
+     gap). Kept so chrome-adjacent components stay correct under
+     either viewport mode via max(<design spacing>, var(--safe-*)). */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -96,14 +108,17 @@ html {
 }
 
 /* ── BODY / BASE TYPOGRAPHY ── */
-/* iOS 26 Safari (Liquid Glass) ignores theme-color and paints the strip
-   between the system status bar and the page from the BODY's
-   background-color specifically — not the html canvas, not the sticky
-   nav, not pseudo-elements (verified by pixel-sampling iOS Simulator
-   screenshots with the theme-color meta removed). Body must stay
-   charcoal so that strip reads as an extension of the nav; the cream
-   page background lives on <main> instead. */
+/* BOTH html and body stay nav charcoal. Which surface iOS paints into
+   the status-bar band and the rubber-band overscroll reveal varies by
+   iOS version, so matching both is the belt-and-braces that finally
+   held on the captain's device (header-astro-demo page 16, 2026-08).
+   Earlier "iOS 26 samples the body specifically" claims came from iOS 18
+   simulator sampling and are NOT verified for iOS 26 — don't rely on
+   either surface alone. The cream page background lives on <main>;
+   position: relative anchors the grain overlay below (see body::after —
+   the overlay must scroll with the document, not pin to the viewport). */
 body {
+  position: relative;
   background: var(--charcoal);
   color: var(--charcoal);
   font-family: 'Nunito', sans-serif;
@@ -126,10 +141,18 @@ img, svg, video { max-width: 100%; }
   outline-offset: 2px;
 }
 
-/* grain texture overlay — identical across all pages */
+/* grain texture overlay — identical across all pages.
+   MUST stay position: absolute (a document overlay on the relative body,
+   scrolling with the page). As position: fixed — a full-viewport layer
+   pinned above the sticky nav — it made iOS 26 Safari misplace the
+   header on scroll-direction changes: THE cause of the long-standing
+   header-gap reports, isolated and fix-confirmed on the captain's
+   device (header-astro-demo-z4 pages 8/14, 2026-08). The grain is
+   uniform static noise, so scrolling with the document is visually
+   indistinguishable from the old screen-pinned layer. */
 body::after {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none;
@@ -175,12 +198,27 @@ body::after {
    mix of solid border-bottoms. */
 .tape-seam {
   height: 8px;
+  /* Staccato third voice: two orange bars at uneven positions in an
+     eight-bar cycle (gaps of 2 and 4 yellow bars), so the orange reads
+     as punctuation, not a candy stripe. Yellow stays dominant. */
   background: repeating-linear-gradient(
     -45deg,
-    var(--yellow) 0,
-    var(--yellow) 14px,
-    var(--charcoal) 14px,
-    var(--charcoal) 28px
+    var(--yellow) 0 14px,
+    var(--charcoal) 14px 28px,
+    var(--orange) 28px 42px,
+    var(--charcoal) 42px 56px,
+    var(--yellow) 56px 70px,
+    var(--charcoal) 70px 84px,
+    var(--yellow) 84px 98px,
+    var(--charcoal) 98px 112px,
+    var(--orange) 112px 126px,
+    var(--charcoal) 126px 140px,
+    var(--yellow) 140px 154px,
+    var(--charcoal) 154px 168px,
+    var(--yellow) 168px 182px,
+    var(--charcoal) 182px 196px,
+    var(--yellow) 196px 210px,
+    var(--charcoal) 210px 224px
   );
 }
 

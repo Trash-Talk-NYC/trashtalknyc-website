@@ -29,9 +29,11 @@ This took down all 3 form paths in production and preview with HTTP 500 for ~2 d
 | 9 | signup (`signups_list`) | `BREVO_LIST_ID_SIGNUP` |
 | 10 | general contact | `CONTACT_GENERAL` |
 | 11 | collab/partnership contact | `CONTACT_COLLAB` |
+| 13 | sponsor contact | `CONTACT_SPONSOR` (documented as 13 in `.env.example`; must also be set in Netlify all deploy contexts — if missing, sponsor submissions fail loudly with `form_env_missing`) |
 
 The contact env var names are short because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones — keep as-is.
-`BREVO_API_KEY` plus all three list vars are set identically across all Netlify deploy contexts (verified 2026-07).
+Do not assume the vars match across Netlify deploy contexts: a 2026-08 validation found `deploy-preview` missing the list IDs, the Turnstile secret and both notify addresses while production was complete (the earlier "identical across all contexts, verified 2026-07" claim was false; firstmate has since copied them across).
+Verify per context when debugging — `form_env_missing` in the function logs is the tell.
 
 ## Custom attribute map
 
@@ -48,8 +50,8 @@ Empty-string fields are dropped before upsert (`buildAttributes`) so updates nev
 | `MESSAGE` | ✓ (experience text) | ✓ (message text) |
 | `HEAR_ABOUT_US` | ✓ (values must match the Brevo enum exactly) | — |
 | `WAIVER_ACCEPTED` | ✓ (`'true'` only when both waiver and age checkboxes validated) | — |
-| `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership`) |
-| `ORGANIZATION` | — | ✓ (partnership tab only, required there) |
+| `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership` \| `sponsor`; plain text attribute — verified via the attributes API 2026-08, so new values need no dashboard work) |
+| `ORGANIZATION` | — | ✓ (partnership + sponsor tabs, required there) |
 
 ## Submission history: CRM notes, because attributes are last-write-wins
 

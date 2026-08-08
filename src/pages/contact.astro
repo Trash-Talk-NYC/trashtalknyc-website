@@ -11,7 +11,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
 <BaseLayout
   title="Contact — Trash Talk NYC"
-  description="Get in touch with Trash Talk NYC — questions, press, or collaborations with creators, organizations, and companies that want to help clean up New York City."
+  description="Get in touch with Trash Talk NYC for questions, press, or collaborations with creators, organizations, and companies that want to help clean up New York City."
 >
 
   <!-- Turnstile bot check on the contact form; implicit rendering picks up the
@@ -32,10 +32,13 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
           <button type="button" class="contact-tab" id="tabPartnership" data-type="partnership" role="tab" aria-selected="false">
             <span data-en="Collaborate" data-es="Colaborar">Collaborate</span>
           </button>
+          <button type="button" class="contact-tab" id="tabSponsor" data-type="sponsor" role="tab" aria-selected="false">
+            <span data-en="Sponsor" data-es="Patrocinar">Sponsor</span>
+          </button>
         </div>
 
         <h2 class="form-heading" id="formHeading">Message Trash Talk NYC</h2>
-        <p class="form-intro" id="formIntro">Questions, concerns, or a bug to report — we typically respond within 24 hours.</p>
+        <p class="form-intro" id="formIntro">Questions, concerns, or a bug to report. We typically respond within 24 hours.</p>
 
         <div class="form-success" id="formSuccess">
           <div class="success-icon">✓</div>
@@ -92,6 +95,16 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
           <p class="form-error" id="contactFormError" aria-live="polite"></p>
         </form>
       </div>
+
+      <!-- Recruiting invitation: links straight to the roles page at
+           /recruit (round 20 — it previously landed on the About page's
+           closing note instead of the roles, captain-flagged). Copy is
+           the captain's round-20 wording; "Now recruiting" was retired. -->
+      <aside class="join-banner" aria-labelledby="joinBannerHeading">
+        <h2 class="join-banner-heading" id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
+        <p class="join-banner-copy" data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo o alguien que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
+        <a class="join-banner-link" href="/recruit" data-en="See more →" data-es="Ver más →">See more →</a>
+      </aside>
     </div>
   </section>
 </BaseLayout>
@@ -123,24 +136,27 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   .contact-tabs {
     display: flex;
-    gap: 0.5rem;
+    gap: clamp(0.35rem, 1.5vw, 0.5rem);
     margin-bottom: 1.5rem;
   }
 
   /* Tabs styled as pressable sign plates: the active tab sits "pressed
-     down" (translated into its shadow) in charcoal + yellow */
+     down" (translated into its shadow) in charcoal + yellow. Font size and
+     inline padding are fluid so all three labels ("Collaborate" is the
+     longest) stay on one line each down to 390px. */
   .contact-tab {
     flex: 1;
     background: var(--off-white);
     border: 2px solid var(--charcoal);
     border-radius: 8px;
-    padding: 0.65rem 1rem;
+    padding: 0.65rem clamp(0.3rem, 1.5vw, 1rem);
     min-height: var(--tap);
     font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
+    font-size: clamp(0.66rem, 0.3rem + 1.5vw, 0.85rem);
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
     color: var(--gray);
     cursor: pointer;
     box-shadow: var(--press-sm);
@@ -286,6 +302,63 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     color: var(--gray);
     font-size: 0.9rem;
   }
+
+  /* ── JOIN-THE-TEAM BANNER ── */
+  /* Inverted palette (charcoal on the grid-paper section) plus a purple press
+     shadow and a slight tilt so it reads as its own poster object, not part
+     of the white form card above it */
+  .join-banner {
+    position: relative;
+    margin-top: clamp(2.5rem, 6vw, 3.5rem);
+    background: var(--charcoal);
+    border: 2.5px solid var(--charcoal);
+    border-radius: var(--radius-md);
+    box-shadow: 6px 6px 0 var(--purple-light);
+    padding: clamp(2rem, 5vw, 2.75rem) clamp(1.25rem, 4vw, 2.5rem) clamp(1.75rem, 4.5vw, 2.25rem);
+    text-align: center;
+    transform: rotate(-0.6deg);
+  }
+
+  .join-banner-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--step-2);
+    letter-spacing: 0.05em;
+    color: var(--yellow);
+    margin-bottom: 0.5rem;
+  }
+
+  .join-banner-copy {
+    color: var(--cream);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    max-width: 38ch;
+    margin: 0 auto 1.4rem;
+  }
+
+  .join-banner-link {
+    display: inline-block;
+    background: var(--yellow);
+    color: var(--charcoal);
+    border: 2px solid var(--charcoal);
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    padding: 0.7rem 1.4rem;
+    min-height: var(--tap);
+    /* Charcoal press shadows vanish on the charcoal banner, so the button
+       presses into the same purple as the banner's own shadow */
+    box-shadow: 3px 3px 0 var(--purple-light);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+  }
+
+  .join-banner-link:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--purple-light);
+  }
 </style>
 
 <script>
@@ -298,8 +371,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   const orgGroup = document.getElementById('orgGroup') as HTMLElement | null;
   const orgInput = document.getElementById('organization') as HTMLInputElement | null;
   const inquiryTypeInput = document.getElementById('inquiryType') as HTMLInputElement | null;
-  const tabGeneral = document.getElementById('tabGeneral') as HTMLButtonElement | null;
-  const tabPartnership = document.getElementById('tabPartnership') as HTMLButtonElement | null;
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.contact-tab'));
   const headingEl = document.getElementById('formHeading') as HTMLElement | null;
   const introEl = document.getElementById('formIntro') as HTMLElement | null;
   const startedAtInput = document.getElementById('contactStartedAt') as HTMLInputElement | null;
@@ -307,7 +379,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   if (startedAtInput) startedAtInput.value = String(Date.now());
 
-  type ContactType = 'general' | 'partnership';
+  type ContactType = 'general' | 'partnership' | 'sponsor';
   let currentType: ContactType = 'general';
 
   // formHeading/formIntro intentionally carry no data-en/data-es attributes —
@@ -319,8 +391,12 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       es: { heading: 'Escríbenos', intro: 'Preguntas, comentarios o reporta un error en el sitio.' },
     },
     partnership: {
-      en: { heading: 'Collaborate with Trash Talk NYC', intro: "Have an idea to create something together? Organizations, creators, and community partners — let's discuss!" },
-      es: { heading: 'Colabora con Trash Talk NYC', intro: '¿Tienes una idea para crear algo juntos? Organizaciones, creadores y aliados comunitarios — ¡hablemos!' },
+      en: { heading: 'Collaborate with Trash Talk NYC', intro: "Have an idea to create something together? Whether you're an organization, a creator, or a community partner, let's discuss!" },
+      es: { heading: 'Colabora con Trash Talk NYC', intro: '¿Tienes una idea para crear algo juntos? Seas una organización, creador o aliado comunitario, ¡hablemos!' },
+    },
+    sponsor: {
+      en: { heading: 'Sponsor Trash Talk NYC', intro: 'Companies and brands: put your name behind cleanup events, supplies, and a cleaner New York City.' },
+      es: { heading: 'Patrocina a Trash Talk NYC', intro: 'Empresas y marcas: pongan su nombre detrás de eventos de limpieza, materiales y una Nueva York más limpia.' },
     },
   };
 
@@ -354,13 +430,17 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   function setType(type: ContactType) {
     currentType = type;
-    tabGeneral?.classList.toggle('active', type === 'general');
-    tabPartnership?.classList.toggle('active', type === 'partnership');
-    tabGeneral?.setAttribute('aria-selected', String(type === 'general'));
-    tabPartnership?.setAttribute('aria-selected', String(type === 'partnership'));
+    tabs.forEach((tab) => {
+      const active = tab.dataset.type === type;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
 
-    if (orgGroup) orgGroup.hidden = type !== 'partnership';
-    if (orgInput) orgInput.required = type === 'partnership';
+    // Both org-backed inquiries (Collaborate and Sponsor) come from an
+    // organization, so the org field shows and is required for either
+    const needsOrg = type !== 'general';
+    if (orgGroup) orgGroup.hidden = !needsOrg;
+    if (orgInput) orgInput.required = needsOrg;
     if (inquiryTypeInput) inquiryTypeInput.value = type;
 
     // The error belonged to the previous inquiry attempt
@@ -370,8 +450,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     applyCopy();
   }
 
-  tabGeneral?.addEventListener('click', () => setType('general'));
-  tabPartnership?.addEventListener('click', () => setType('partnership'));
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => setType(tab.dataset.type as ContactType));
+  });
 
   // Keep heading/intro (and any visible submit error) in sync when the
   // user switches language
