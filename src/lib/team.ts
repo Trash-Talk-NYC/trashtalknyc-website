@@ -70,7 +70,7 @@ export const team: TeamMember[] = [
   {
     id: 'nandi',
     name: 'Nandi',
-    role: { en: 'Brand Management & Programming', es: 'Gestión de Marca y Programación' },
+    role: { en: 'Brand Management & Programs', es: 'Gestión de Marca y Programas' },
     // Nandi's own words, passed on by the captain (round 16) — VERBATIM.
     // Do not edit wording, punctuation, or order; only the paragraph
     // breaks are ours. "Events & Infrastructure Pilot Programs" reads as
@@ -96,26 +96,27 @@ export const team: TeamMember[] = [
     ],
     portrait: { fx: 0.295, fy: 0.38, z: 3.6 },
     metaDescription:
-      'Meet Nandi, Brand Management & Programming at Trash Talk NYC, working to curb littering through convenient, engaging infrastructure and community effort.',
+      'Meet Nandi, Brand Management & Programs at Trash Talk NYC, working to curb littering through convenient, engaging infrastructure and community effort.',
   },
   {
     id: 'david',
     name: 'David',
     role: { en: 'Lead Organizer', es: 'Organizador Principal' },
+    // The captain's own words — VERBATIM (superseding round 28's text;
+    // the "Hello!" opener stays deliberately distinct from Nandi's and
+    // Fabiola's "Hi, I'm"). Only the paragraph breaks are ours.
     bio: [
       {
-        // "Hello!" not "Hi," — the captain's exact opener (round 28),
-        // deliberately not identical to Nandi's and Fabiola's "Hi, I'm"
-        en: 'Hello! I\'m David. Trash Talk is my grassroots social media initiative to clean New York through educational entertainment.',
-        es: '¡Hola! Soy David. Trash Talk es mi iniciativa de base impulsada por las redes sociales para limpiar Nueva York a través del entretenimiento educativo.',
+        en: "Hello! I'm David. Trash Talk NYC is my grassroots social media initiative to clean New York City through educational entertainment, litter infrastructure, and events.",
+        es: '¡Hola! Soy David. Trash Talk NYC es mi iniciativa de base impulsada por las redes sociales para limpiar la ciudad de Nueva York a través del entretenimiento educativo, la infraestructura contra la basura y los eventos.',
       },
       {
-        en: 'By growing a national and international following, I hope to clean my neighborhood and the city through fun volunteer events and community engagement. Funds for the projects come from donations and sponsorships.',
-        es: 'Al generar una comunidad de seguidores a nivel nacional e internacional, espero limpiar mi vecindario y la ciudad a través de eventos de voluntariado divertidos y la participación comunitaria. Los fondos para los proyectos se reciben mediante donaciones y patrocinios.',
+        en: 'By growing a national and international following, I hope to clean my neighborhood and the city through fun volunteer events and community engagement. Funds for the projects come from community contributions and sponsorships.',
+        es: 'Al generar una comunidad de seguidores a nivel nacional e internacional, espero limpiar mi vecindario y la ciudad a través de eventos de voluntariado divertidos y la participación comunitaria. Los fondos para los proyectos se reciben mediante aportes de la comunidad y patrocinios.',
       },
       {
-        en: "This is an incredibly complex and exciting project, and I hope you'll join us to clean New York!",
-        es: '¡Este es un proyecto increíblemente complejo y emocionante, y espero que te unas a nosotros para limpiar Nueva York!',
+        en: "This is an incredibly complex and exciting project, and I hope you'll join us to clean New York City!",
+        es: '¡Este es un proyecto increíblemente complejo y emocionante, y espero que te unas a nosotros para limpiar la ciudad de Nueva York!',
       },
     ],
     socials: [
