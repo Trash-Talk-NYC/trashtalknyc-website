@@ -22,7 +22,7 @@ Stack:
 Pages:
 - Home
 - Events -> (Club Events)
-- About -> (The Team; From Our Founder -> `/about/from-our-founder`, a first-person account of how Trash Talk NYC started, English verbatim, attributed to David via `team.ts` in both the on-page byline and the meta description (captain confirmed 2026-08-13), closing with his "Sincerely, David" sign-off — see AGENTS.md, "From Our Founder")
+- About -> (The Team; From Our Founder -> `/about/from-our-founder`, a first-person account of how Trash Talk NYC started, English verbatim, attributed to David via `src/lib/founder.ts` reading `team.ts` in both the on-page byline and the meta description (captain confirmed 2026-08-13), closing with his "Sincerely, David" sign-off — see AGENTS.md, "From Our Founder")
 - Open Roles -> (`/recruit`; a top-level route listed under About in the nav; recruitment page, email-only intake — see AGENTS.md, "Open Roles")
 - Contact
 - 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
