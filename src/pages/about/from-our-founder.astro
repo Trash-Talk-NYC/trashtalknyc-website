@@ -4,13 +4,14 @@ import PageHero from '../../components/PageHero.astro';
 import { getTeamMember } from '../../lib/team';
 
 /**
- * Letter from Founder — /about/letter-from-founder: David's
- * first-person account of how Trash Talk NYC started, received via
- * Nandi (2026-08-12) and confirmed as his by the captain (2026-08-13).
- * Renamed from "Our Story" at /about/our-story (captain, 2026-08-13)
- * before anything went live, so it is a clean rename with no redirect —
- * the old URL never existed publicly. The nav label is "Letter from
- * Founder" (ES "Carta del Fundador").
+ * From Our Founder — /about/from-our-founder: David's first-person
+ * account of how Trash Talk NYC started, received via Nandi
+ * (2026-08-12) and confirmed as his by the captain (2026-08-13).
+ * Renamed twice pre-launch by the captain (2026-08-13): "Our Story"
+ * (/about/our-story) → "Letter from Founder"
+ * (/about/letter-from-founder) → "From Our Founder". Clean renames
+ * with no redirects — neither old URL ever existed publicly. The nav
+ * label is "From Our Founder" (ES "De Nuestro Fundador").
  *
  * THE ENGLISH STORY IS VERBATIM — do not reword, tighten, reorder, or
  * "improve" a single sentence, and keep the Spanish tracking whatever
@@ -34,7 +35,7 @@ import { getTeamMember } from '../../lib/team';
 // fail the build instead.
 const author = getTeamMember('david');
 if (!author) {
-  throw new Error("The Letter from Founder byline needs the 'david' entry in src/lib/team.ts, which is missing.");
+  throw new Error("The From Our Founder byline needs the 'david' entry in src/lib/team.ts, which is missing.");
 }
 const byline = {
   en: `By ${author.name}, ${author.role.en}`,
@@ -114,13 +115,13 @@ const story: Block[] = [
 ];
 ---
 
-<BaseLayout title="Letter from Founder — Trash Talk NYC" description={metaDescription}>
+<BaseLayout title="From Our Founder — Trash Talk NYC" description={metaDescription}>
   <!-- The h1 is the captain's chosen page name (rename, 2026-08-13),
        split into two leaves so the language toggle can restructure it:
-       EN "Letter from / Founder" becomes ES "Carta del / Fundador"
+       EN "From Our / Founder" becomes ES "De Nuestro / Fundador"
        leaf by leaf. -->
-  <PageHero eyebrowEn="About · Letter from Founder" eyebrowEs="Nosotros · Carta del Fundador" word="88 DAYS">
-    <span data-en="Letter from" data-es="Carta del">Letter from</span><br />
+  <PageHero eyebrowEn="About · From Our Founder" eyebrowEs="Nosotros · De Nuestro Fundador" word="88 DAYS">
+    <span data-en="From Our" data-es="De Nuestro">From Our</span><br />
     <span class="accent" data-en="Founder" data-es="Fundador">Founder</span>
   </PageHero>
 
