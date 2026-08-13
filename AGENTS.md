@@ -1,9 +1,9 @@
 # Trash Talk NYC Website
 
-## What this project is  
+## What this project is
 
-This is a website for Trash Talk NYC associated with @trashtalk_nyc (same handle on Instagram and TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest. 
-He reached out to me, Fabi, to make the website. 
+This is a website for Trash Talk NYC associated with @trashtalk_nyc (same handle on Instagram and TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest.
+He reached out to me, Fabi, to make the website.
 
 ## What the website does
 * Act as centralized place to find Trash Talk NYC Cleanup Events that anyone can attend
@@ -19,7 +19,7 @@ He reached out to me, Fabi, to make the website.
 * Netlify hosting
 * Astro Actions for both forms (validation, spam checks, Blobs rate limiting, Brevo upsert — `src/actions/`, `src/lib/server/`)
 * Brevo for emailing tens of thousands of people
-* Eventbrite integration 
+* Eventbrite integration
 * GoFundMe embeds
 
 ## Brevo integration — sharp edges
