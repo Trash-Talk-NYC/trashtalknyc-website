@@ -22,7 +22,9 @@ Stack:
 Pages:
 - Home
 - Events -> (Club Events)
-- About
+- About -> (The Team)
+- Our Story -> (`/about/our-story`; the founder's first-person account, English verbatim — see AGENTS.md, "Our Story")
+- Open Roles -> (`/recruit`; recruitment page, email-only intake — see AGENTS.md, "Open Roles")
 - Contact
 - 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
 
