@@ -3,17 +3,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 
 /**
- * Our Story — /about/our-story: the founder's first-person account of
- * how Trash Talk NYC started (the captain's own words, received via
- * Nandi, 2026-08-12). The author's given title is "Trash Talk NYC's
- * Story"; the nav label is "Our Story".
+ * Our Story — /about/our-story: a first-person account of how Trash
+ * Talk NYC started, received via Nandi (2026-08-12). Who narrates it is
+ * not established, so the page names no author — see the `byline`
+ * comment below. The author's given title is "Trash Talk NYC's Story";
+ * the nav label is "Our Story".
  *
  * THE ENGLISH STORY IS VERBATIM — do not reword, tighten, reorder, or
  * "improve" a single sentence, and keep the Spanish tracking whatever
  * the English says rather than smoothing it.
  *
  * NOTHING IS ADDED — a captain decision (revision, 2026-08-13): the
- * page is the author's paragraphs, in her order, with nothing between
+ * page is the author's paragraphs, in their order, with nothing between
  * them. The section headings, pull-quote, byline, and closing CTA that
  * shipped in the first cut were stripped on that instruction; the wall
  * of text is the intended outcome, so do not reintroduce rhythm
@@ -22,15 +23,20 @@ import PageHero from '../../components/PageHero.astro';
  * typographic curly quotes where the source had straight ones.
  */
 
-// Attribution may come back as a captain decision. To restore the
-// byline, swap `null` for the team.ts-derived value so a role rename
-// keeps propagating (including the ES swap):
+// The story is attributed nowhere — not on the page, not in the meta
+// description below — because the narrator cannot be verified from what
+// we were given (the copy reached us via Nandi but reads as the founder
+// in the first person), and a public, indexable claim of the wrong
+// author is worse than none. Attribution may come back as a captain
+// decision; both halves restore from here. Swap `null` for the team.ts
+// value so a role rename keeps propagating (including the ES swap):
 //   import { getTeamMember } from '../../lib/team';
 //   const author = getTeamMember('david')!;
 //   const byline = {
 //     en: `By ${author.name}, ${author.role.en}`,
 //     es: `Por ${author.name}, ${author.role.es}`,
 //   };
+// and end the meta description with ", told by David, Lead Organizer."
 const byline: { en: string; es: string } | null = null;
 
 type Block = { kind: 'lede' | 'p'; en: string; es: string };
@@ -101,7 +107,7 @@ const story: Block[] = [
 
 <BaseLayout
   title="Our Story — Trash Talk NYC"
-  description="The story of how Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across New York City, told by David, Lead Organizer."
+  description="The story of how Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across New York City."
 >
   <!-- The h1 is the author's given title, split into two leaves so the
        language toggle can restructure it: EN "Trash Talk NYC's / Story"
@@ -128,7 +134,7 @@ const story: Block[] = [
 
 <style>
   .story-section {
-    background: var(--off-white);
+    background-color: var(--off-white);
     padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
   }
 

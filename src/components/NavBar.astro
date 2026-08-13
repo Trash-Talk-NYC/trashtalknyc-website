@@ -15,9 +15,10 @@ const pathname = Astro.url.pathname;
 
 const isHome     = pathname === '/' || pathname === '';
 const isEvents   = pathname === '/events' || pathname.startsWith('/events/');
-// Our Story lives under /about/, so test it before the generic prefix
-// below — otherwise "The Team" would double-light on the story page
 const isStory    = pathname === '/about/our-story' || pathname.startsWith('/about/our-story/');
+// Our Story lives under /about/, which isTeam's prefix also matches, so
+// the `!isStory` guard below is what stops "The Team" double-lighting on
+// the story page. Keep the guard — declaration order alone does nothing.
 const isTeam     = !isStory && (pathname === '/about' || pathname.startsWith('/about/'));
 // The recruitment page is top-level at /recruit but belongs to the About menu
 const isRecruit  = pathname === '/recruit' || pathname.startsWith('/recruit/');

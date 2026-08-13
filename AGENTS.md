@@ -82,16 +82,20 @@ The nav's About dropdown ships with three items: **The Team** (`/about`), **Our 
 `/recruit` highlights the **About** parent (top-level route, so Contact can't double-light); Projects rejoins the dropdown when `fm/projects-tree-guard` lands.
 Do not link to `/projects` from anything on this branch — the route does not exist here and it is filtered from nothing (it simply isn't built), so a link would 404.
 
-## Our Story — /about/our-story, the founder's account VERBATIM
+## Our Story — /about/our-story, the account VERBATIM and unattributed
 
-The story page (`src/pages/about/our-story.astro`) carries David's first-person account of how Trash Talk NYC started, received via Nandi (2026-08-12); the canonical source text lived at `firstmate/data/our-story-page/copy.md`.
+The story page (`src/pages/about/our-story.astro`) carries a first-person account of how Trash Talk NYC started, received via Nandi (2026-08-12); the canonical source text lived at `firstmate/data/our-story-page/copy.md`.
+**Who narrates it is not established** and the page asserts no author anywhere: the copy reached us from Nandi ("Source: Nandi Brooks email") but the details read as the founder, so the record is ambiguous and only the captain can settle it — until then say "the author", not a name, in copy, metadata, and these notes.
 The English story is the author's own words, **verbatim**: do not reword, tighten, reorder, or re-punctuate a single sentence, and keep the Spanish tracking whatever the English says rather than smoothing it.
 The author's given title is "Trash Talk NYC's Story"; the nav/footer label is "Our Story" (ES `Nuestra Historia`).
-**Nothing is added to the story** — a captain decision (revision, 2026-08-13): the page is her paragraphs, in her order, with nothing between them, and the wall of text at phone widths is the intended outcome — do not reintroduce section headings, pull-quotes, a byline, or a closing CTA (the first cut shipped all four; all were stripped on this instruction).
+**Nothing is added to the story** — a captain decision (revision, 2026-08-13): the page is the author's paragraphs, in their order, with nothing between them, and the wall of text at phone widths is the intended outcome — do not reintroduce section headings, pull-quotes, a byline, or a closing CTA (the first cut shipped all four; all were stripped on this instruction).
 The only presentation liberties, allowed as typesetting rather than addition: the lede sizing of the opening paragraph and typographic curly quotes where the source email had straight ones.
 The byline machinery is kept dormant for an easy restore (attribution may return as a captain decision): `byline` in the page frontmatter is a constant set to `null` with the `getTeamMember('david')` restore recipe commented beside it, and the `.story-byline` CSS stays in place; it must not render until the captain says so.
-The page's meta description is the one exception: it ends "told by David, Lead Organizer" with the English role spelled out (metas are English-only, so they can't read from the bilingual `role` object), which makes it a third rename touchpoint alongside Nandi's and Fabiola's `metaDescription` in `team.ts`.
-In `NavBar.astro`, `isStory` is tested before the generic `/about/` prefix so "The Team" doesn't double-light on the story page while the About parent still does.
+The meta description carries **no author clause** for the same reason — an unverified attribution in a meta ships to Google and social scrapers where nobody on the page can catch it — and the phrasing to append if the captain names an author ("told by David, Lead Organizer") is parked in that same comment, so attribution returns from one place.
+Because that clause is gone, the story page is **not** a role-rename touchpoint; it becomes one the moment attribution is restored, since metas are English-only and can't read from the bilingual `role` object.
+In `NavBar.astro`, the `!isStory` guard on `isTeam` is what stops "The Team" double-lighting on the story page while the About parent still does — the `/about/` prefix would otherwise match. Declaration order is not the protection; keep the guard.
+`.story-section` sets `background-color`, never the `background` shorthand: the shorthand resets `background-image`, and the scoped rule out-specifies the global `.grid-paper`, so the texture would silently stop painting.
+The same latent suppression exists today on `.recruit-page`, `.bento`, and `.team-section` — deliberately left alone here, flagged for a separate pass.
 
 ## E2E Testing
 
@@ -121,7 +125,7 @@ Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallb
 The per-person `/about/{id}` pages were pulled from this release to the `fm/about-individual-pages` branch (captain, round 23) — continue that work there; `socials`/`portrait`/`metaDescription` in `team.ts` are dormant data kept for their return, and the About bios' names are plain `<mark>` text (no links) until then.
 All three bios reach us through the captain and their English is kept **verbatim** (David's own words, superseding round 28's text; Nandi's own words, round 16; Fabiola's from the captain, rounds 18/27 with a single flagged firstmate edit): do not reword, tighten, or re-punctuate them, and keep the Spanish tracking whatever the English says rather than smoothing it.
 Only the paragraph breaks are ours, and the per-bio comments in `team.ts` record which round each came from and which quirks (David's "Hello!" opener, Fabiola's four-dot ellipses) are deliberate.
-A role rename has to land in two places for Nandi and Fabiola, whose `metaDescription` embeds the English role verbatim ("Meet Nandi, `<role>` at Trash Talk NYC, …"); David's paraphrases the title instead ("organizer of Trash Talk NYC"), so it survives a rename — but the Our Story page's meta description spells his English role out, so a rename of David's role has to land there (see "Our Story" above).
+A role rename has to land in two places for Nandi and Fabiola, whose `metaDescription` embeds the English role verbatim ("Meet Nandi, `<role>` at Trash Talk NYC, …"); David's paraphrases the title instead ("organizer of Trash Talk NYC"), so it survives a rename. The Our Story page is not a touchpoint while its meta carries no author clause, but it becomes one if attribution is ever restored (see "Our Story" above).
 Several social slots are `href="#"` placeholders awaiting the captain's URLs — flagged with TODO comments in the file.
 * The About team section (`about.astro`) keeps only photo-frame presentation: a `geometry` map of hotspot bands, face-chip anchors, and spotlight ellipses, all expressed as percentages of the photo frame.
 The hero renders a fixed build-time vertical crop of the group shot (the `CROP` constant; y-coordinates remap through `py()`) — never a viewport-dependent `object-fit`, which would silently misalign every hotspot and spotlight.
