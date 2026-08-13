@@ -121,12 +121,14 @@ const story: Block[] = [
            shoulders, and chest. The name and the "Founder" half of the
            title are page-local literals from founder.ts — deliberately
            NOT team.ts values; see the comments there before "fixing"
-           any mismatch. The alt is the proper-noun name, identical in
-           both languages, because setLang never translates attributes. -->
+           any mismatch. The alt is empty on purpose: the photo is
+           captioned by the visible name beside it, so naming it again
+           would just make screen readers announce "David Clarke"
+           twice. -->
       <div class="story-byline">
         <Image
           src={founderPhoto}
-          alt={founderDisplayName}
+          alt=""
           class="byline-photo"
           width={192}
           widths={[64, 128, 192]}

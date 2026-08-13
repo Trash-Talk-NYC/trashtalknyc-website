@@ -10,21 +10,25 @@
  * fixed full-viewport layer above this nav.
  */
 import LangToggle from './LangToggle.astro';
+import { FOUNDER_PATH } from '../lib/founder';
 
 const pathname = Astro.url.pathname;
 
+/** A route is current when it is the page itself or anything beneath it. */
+const isUnder = (base: string) => pathname === base || pathname.startsWith(base + '/');
+
 const isHome     = pathname === '/' || pathname === '';
-const isEvents   = pathname === '/events' || pathname.startsWith('/events/');
-const isFounder  = pathname === '/about/from-the-founder' || pathname.startsWith('/about/from-the-founder/');
+const isEvents   = isUnder('/events');
+const isFounder  = isUnder(FOUNDER_PATH);
 // The founder page lives under /about/, which isTeam's prefix also matches, so
 // the `!isFounder` guard below is what stops "The Team" double-lighting on
 // the founder page. Keep the guard — declaration order alone does nothing.
-const isTeam     = !isFounder && (pathname === '/about' || pathname.startsWith('/about/'));
+const isTeam     = !isFounder && isUnder('/about');
 // The recruitment page is top-level at /recruit but belongs to the About menu
-const isRecruit  = pathname === '/recruit' || pathname.startsWith('/recruit/');
+const isRecruit  = isUnder('/recruit');
 // The About parent highlights when any of its children is current
 const isAbout    = isTeam || isFounder || isRecruit;
-const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
+const isContact  = isUnder('/contact');
 ---
 
 <nav aria-label="Main">
@@ -61,7 +65,7 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
       </button>
       <ul class="nav-drop-menu" id="aboutDropMenu">
         <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
-        <li><a href="/about/from-the-founder" class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
+        <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
         <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
       </ul>
     </li>

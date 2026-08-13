@@ -15,6 +15,16 @@ if (!author) {
 }
 
 /**
+ * The page's route, owned here so the nav and footer link to the same
+ * place the nav's active-state check tests for. The page was renamed
+ * three times in a single day, and a rename that misses NavBar's
+ * `isFounder` check fails silently — both links still work, but "The
+ * Team" starts double-lighting on this page, which is exactly what the
+ * `!isFounder` guard exists to prevent.
+ */
+export const FOUNDER_PATH = '/about/from-the-founder';
+
+/**
  * Untranslated on purpose — a proper noun, used by the "Sincerely,"
  * sign-off. Reads team.ts so the sign-off tracks the About page.
  */
@@ -54,5 +64,9 @@ export const META_DESCRIPTION_LIMIT = 155;
  * comes from team.ts and a rename there would otherwise lengthen this
  * silently. If a longer role title ever pushes it over, trim the lead-in
  * further — never the byline.
+ *
+ * The attribution is composed from the same two values the byline card
+ * renders, so a search result can never credit a different name or title
+ * than the page visibly shows.
  */
-export const founderMetaDescription = `How Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across the city. By ${author.name}, ${author.role.en}.`;
+export const founderMetaDescription = `How Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across the city. By ${founderDisplayName}, ${founderTitle.en}.`;

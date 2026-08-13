@@ -5,6 +5,7 @@
  * different centered layouts on events/about) with one centered design.
  */
 import SocialLinks from './SocialLinks.astro';
+import { FOUNDER_PATH } from '../lib/founder';
 
 const year = new Date().getFullYear();
 ---
@@ -16,7 +17,7 @@ const year = new Date().getFullYear();
     <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
     <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
     <li><a href="/about" data-en="About" data-es="Nosotros">About</a></li>
-    <li><a href="/about/from-the-founder" data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
+    <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
     <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
     <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
   </ul>

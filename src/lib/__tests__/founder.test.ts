@@ -1,5 +1,9 @@
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  FOUNDER_PATH,
   META_DESCRIPTION_LIMIT,
   founderDisplayName,
   founderMetaDescription,
@@ -25,7 +29,22 @@ describe('From the Founder attribution', () => {
 
   it('carries the attribution the length guard is protecting', () => {
     expect(david).toBeDefined();
-    expect(founderMetaDescription).toContain(`By ${david!.name}, ${david!.role.en}.`);
+    // The meta must credit exactly what the byline card shows — a search
+    // result naming a different person or title than the visible page is
+    // the drift this guard exists to catch.
+    expect(founderMetaDescription).toContain(`By ${founderDisplayName}, ${founderTitle.en}.`);
+  });
+
+  it('points FOUNDER_PATH at the page that actually exists', () => {
+    // The nav link, the footer link, and NavBar's active-state check all
+    // read this constant, so a rename that misses the page file (or vice
+    // versa) breaks every link at once instead of silently.
+    // Built with join() rather than new URL(): Vite rewrites dynamic
+    // `new URL(..., import.meta.url)` into an asset lookup that resolves
+    // to undefined here.
+    const pagesDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'pages');
+    const page = join(pagesDir, `${FOUNDER_PATH}.astro`);
+    expect(existsSync(page), page).toBe(true);
   });
 
   it('composes the byline title from the live team role plus the Founder literal', () => {
