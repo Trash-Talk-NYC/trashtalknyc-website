@@ -1,43 +1,42 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import { getTeamMember } from '../../lib/team';
 
 /**
- * Our Story — /about/our-story: a first-person account of how Trash
- * Talk NYC started, received via Nandi (2026-08-12). Who narrates it is
- * not established, so the page names no author — see the `byline`
- * comment below. The author's given title is "Trash Talk NYC's Story";
- * the nav label is "Our Story".
+ * Our Story — /about/our-story: David's first-person account of how
+ * Trash Talk NYC started, received via Nandi (2026-08-12) and confirmed
+ * as his by the captain (2026-08-13). His given title is "Trash Talk
+ * NYC's Story"; the nav label is "Our Story".
  *
  * THE ENGLISH STORY IS VERBATIM — do not reword, tighten, reorder, or
  * "improve" a single sentence, and keep the Spanish tracking whatever
  * the English says rather than smoothing it.
  *
  * NOTHING IS ADDED — a captain decision (revision, 2026-08-13): the
- * page is the author's paragraphs, in their order, with nothing between
- * them. The section headings, pull-quote, byline, and closing CTA that
- * shipped in the first cut were stripped on that instruction; the wall
- * of text is the intended outcome, so do not reintroduce rhythm
- * devices. The only presentation liberties (allowed as typesetting,
+ * page is his paragraphs, in his order, with nothing between them. The
+ * section headings, pull-quote, and closing CTA that shipped in the
+ * first cut were stripped on that instruction; the wall of text is the
+ * intended outcome, so do not reintroduce rhythm devices. The byline
+ * came back on the captain's 2026-08-13 confirmation and is the one
+ * exception. The only presentation liberties (allowed as typesetting,
  * not addition): the lede sizing of the opening paragraph and
  * typographic curly quotes where the source had straight ones.
  */
 
-// The story is attributed nowhere — not on the page, not in the meta
-// description below — because the narrator cannot be verified from what
-// we were given (the copy reached us via Nandi but reads as the founder
-// in the first person), and a public, indexable claim of the wrong
-// author is worse than none. Attribution may come back as a captain
-// decision; both halves restore from here. Swap `null` for the team.ts
-// value so a role rename keeps propagating (including the ES swap):
-//   import { getTeamMember } from '../../lib/team';
-//   const author = getTeamMember('david')!;
-//   const byline = {
-//     en: `By ${author.name}, ${author.role.en}`,
-//     es: `Por ${author.name}, ${author.role.es}`,
-//   };
-// and end the meta description with ", told by David, Lead Organizer."
-const byline: { en: string; es: string } | null = null;
+// Name and role are read from team.ts rather than written out, so a
+// role rename propagates here (both languages, and the meta below)
+// without this page becoming a rename touchpoint. Missing means the
+// page would silently drop the attribution the captain asked for, so
+// fail the build instead.
+const author = getTeamMember('david');
+if (!author) {
+  throw new Error("Our Story byline needs the 'david' entry in src/lib/team.ts, which is missing.");
+}
+const byline = {
+  en: `By ${author.name}, ${author.role.en}`,
+  es: `Por ${author.name}, ${author.role.es}`,
+};
 
 type Block = { kind: 'lede' | 'p'; en: string; es: string };
 
@@ -107,21 +106,20 @@ const story: Block[] = [
 
 <BaseLayout
   title="Our Story — Trash Talk NYC"
-  description="The story of how Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across New York City."
+  description={`The story of how Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across New York City, told by ${author.name}, ${author.role.en}.`}
 >
-  <!-- The h1 is the author's given title, split into two leaves so the
-       language toggle can restructure it: EN "Trash Talk NYC's / Story"
-       becomes ES "La historia de / Trash Talk NYC" leaf by leaf. -->
+  <!-- The h1 is David's given title, split into two leaves so the
+       language toggle can restructure it: EN "Trash Talk NYC’s / Story"
+       becomes ES "La historia de / Trash Talk NYC" leaf by leaf. The
+       apostrophe is curly like every other one on the page. -->
   <PageHero eyebrowEn="About · Our Story" eyebrowEs="Nosotros · Nuestra Historia" word="88 DAYS">
-    <span data-en="Trash Talk NYC's" data-es="La historia de">Trash Talk NYC's</span><br />
+    <span data-en="Trash Talk NYC’s" data-es="La historia de">Trash Talk NYC’s</span><br />
     <span class="accent" data-en="Story" data-es="Trash Talk NYC">Story</span>
   </PageHero>
 
   <section class="story-section grid-paper">
     <article class="story">
-      {byline && (
-        <p class="story-byline" data-en={byline.en} data-es={byline.es}>{byline.en}</p>
-      )}
+      <p class="story-byline" data-en={byline.en} data-es={byline.es}>{byline.en}</p>
 
       {story.map((b) => (
         <p class:list={['story-p', { 'story-lede': b.kind === 'lede' }]} data-en={b.en} data-es={b.es}>
@@ -146,8 +144,9 @@ const story: Block[] = [
     margin: 0 auto;
   }
 
-  /* Dormant while `byline` is null (captain: nothing added) — kept so
-     restoring attribution is a one-constant change in the frontmatter. */
+  /* The one line above the story that is not David's own text —
+     kept to the mono/uppercase credit voice so it reads as a credit
+     rather than as an opening the captain did not write. */
   .story-byline {
     display: flex;
     align-items: center;
