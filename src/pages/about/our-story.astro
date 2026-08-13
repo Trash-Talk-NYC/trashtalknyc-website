@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import { getTeamMember } from '../../lib/team';
 
 /**
  * Our Story — /about/our-story: the founder's first-person account of
@@ -13,26 +12,28 @@ import { getTeamMember } from '../../lib/team';
  * "improve" a single sentence, and keep the Spanish tracking whatever
  * the English says rather than smoothing it.
  *
- * Presentation-only additions that are OURS (firstmate), not the
- * author's:
- *   - the four section headings ('h2' blocks below),
- *   - the lede treatment of the opening paragraph,
- *   - lifting "We joked that we were replacing the engine in a burning
- *     car." into a pull-quote — the sentence keeps its original reading
- *     position between its neighbors; nothing is removed or duplicated,
- *   - typographic curly quotes where the source had straight ones.
+ * NOTHING IS ADDED — a captain decision (revision, 2026-08-13): the
+ * page is the author's paragraphs, in her order, with nothing between
+ * them. The section headings, pull-quote, byline, and closing CTA that
+ * shipped in the first cut were stripped on that instruction; the wall
+ * of text is the intended outcome, so do not reintroduce rhythm
+ * devices. The only presentation liberties (allowed as typesetting,
+ * not addition): the lede sizing of the opening paragraph and
+ * typographic curly quotes where the source had straight ones.
  */
 
-// Byline: single source of truth — name and role come from team.ts, so
-// a role rename there lands here (and in the ES swap) automatically.
-const author = getTeamMember('david')!;
+// Attribution may come back as a captain decision. To restore the
+// byline, swap `null` for the team.ts-derived value so a role rename
+// keeps propagating (including the ES swap):
+//   import { getTeamMember } from '../../lib/team';
+//   const author = getTeamMember('david')!;
+//   const byline = {
+//     en: `By ${author.name}, ${author.role.en}`,
+//     es: `Por ${author.name}, ${author.role.es}`,
+//   };
+const byline: { en: string; es: string } | null = null;
 
-const byline = {
-  en: `By ${author.name}, ${author.role.en}`,
-  es: `Por ${author.name}, ${author.role.es}`,
-};
-
-type Block = { kind: 'lede' | 'p' | 'pull' | 'h2'; en: string; es: string };
+type Block = { kind: 'lede' | 'p'; en: string; es: string };
 
 const story: Block[] = [
   {
@@ -46,11 +47,6 @@ const story: Block[] = [
     es: 'Empecé Trash Talk NYC para recoger basura en mi vecindario. Gasté $40 en una pinza recogedora, bolsas de basura y un soporte de cuello para el teléfono. No tenía ninguna experiencia en redes sociales. Mi primer video fue un reel de 20 minutos grabado en horizontal, pero ya me había fijado una misión. Por alguna razón inexplicable, nombré la serie “Cleaning New York” y ese video fue su primer día. Publiqué casi todos los días durante las siguientes cuatro semanas, y el proyecto se transformó de manera explosiva.',
   },
   {
-    kind: 'h2',
-    en: 'The subway pointed the way',
-    es: 'El metro marcó el camino',
-  },
-  {
     kind: 'p',
     en: 'Every day, I visited a new location in New York City. On the subway, I started conversations with other passengers about litter and illegal dumping in their neighborhoods. They were invariably surprised, but when they learned that I was cleaning and studying these areas, they would provide a neighborhood or block that needed attention.',
     es: 'Cada día visitaba un lugar nuevo de la ciudad de Nueva York. En el metro, entablaba conversaciones con otros pasajeros sobre la basura y los vertidos ilegales en sus vecindarios. Siempre se sorprendían, pero cuando se enteraban de que yo estaba limpiando y estudiando esas zonas, me daban un vecindario o una cuadra que necesitaba atención.',
@@ -59,11 +55,6 @@ const story: Block[] = [
     kind: 'p',
     en: 'That system of crowd-sourced sites launched Trash Talk NYC across the Bronx, Queens, Manhattan, and Brooklyn. It sent me to open-air drug markets, dump-sites under bridges, beautiful parks, efficient business districts, and even subway stations.',
     es: 'Ese sistema de lugares sugeridos por la propia gente lanzó a Trash Talk NYC por el Bronx, Queens, Manhattan y Brooklyn. Me llevó a mercados de droga al aire libre, vertederos debajo de puentes, parques hermosos, distritos comerciales eficientes e incluso estaciones del metro.',
-  },
-  {
-    kind: 'h2',
-    en: 'Then it took off',
-    es: 'Y entonces despegó',
   },
   {
     kind: 'p',
@@ -77,28 +68,13 @@ const story: Block[] = [
   },
   {
     kind: 'p',
-    en: 'At the center of this attention wave, my small team was constantly buffeted by challenges.',
-    es: 'En el centro de esta ola de atención, los desafíos golpeaban constantemente a mi pequeño equipo.',
-  },
-  {
-    kind: 'pull',
-    en: 'We joked that we were replacing the engine in a burning car.',
-    es: 'Bromeábamos con que estábamos cambiando el motor de un auto en llamas.',
-  },
-  {
-    kind: 'p',
-    en: 'We designed and redesigned nearly every component of Trash Talk NYC on a weekly basis.',
-    es: 'Diseñábamos y rediseñábamos casi cada componente de Trash Talk NYC semana tras semana.',
+    en: 'At the center of this attention wave, my small team was constantly buffeted by challenges. We joked that we were replacing the engine in a burning car. We designed and redesigned nearly every component of Trash Talk NYC on a weekly basis.',
+    es: 'En el centro de esta ola de atención, los desafíos golpeaban constantemente a mi pequeño equipo. Bromeábamos con que estábamos cambiando el motor de un auto en llamas. Diseñábamos y rediseñábamos casi cada componente de Trash Talk NYC semana tras semana.',
   },
   {
     kind: 'p',
     en: 'Email chains had to be recreated, trash grabbers had to be upgraded, wagons were replaced by cars, and purchase partners were replaced by local sponsors.',
     es: 'Hubo que rehacer cadenas de correos, hubo que mejorar las pinzas recogedoras, los carritos fueron reemplazados por autos y los aliados de compras fueron reemplazados por patrocinadores locales.',
-  },
-  {
-    kind: 'h2',
-    en: 'Beyond picking up litter',
-    es: 'Más allá de recoger basura',
   },
   {
     kind: 'p',
@@ -114,11 +90,6 @@ const story: Block[] = [
     kind: 'p',
     en: 'Without a supply sponsor, wooden tree guards cost $150 excluding tools and labor. The plants, mulch, and compost add an additional $100. For a business that receives littering fines, $250 is a small amount to take a stand against litter and create a beautiful monument on their block.',
     es: 'Sin un patrocinador de materiales, los protectores de madera para árboles cuestan $150 sin contar herramientas ni mano de obra. Las plantas, el mantillo y la composta suman $100 más. Para un negocio que recibe multas por basura, $250 es una cantidad pequeña para plantarse frente a la basura y crear un hermoso monumento en su cuadra.',
-  },
-  {
-    kind: 'h2',
-    en: 'Where this goes',
-    es: 'Hacia dónde va esto',
   },
   {
     kind: 'p',
@@ -142,40 +113,16 @@ const story: Block[] = [
 
   <section class="story-section grid-paper">
     <article class="story">
-      <p class="story-byline" data-en={byline.en} data-es={byline.es}>{byline.en}</p>
+      {byline && (
+        <p class="story-byline" data-en={byline.en} data-es={byline.es}>{byline.en}</p>
+      )}
 
-      {story.map((b) => {
-        if (b.kind === 'h2') {
-          return <h2 class="story-h" data-en={b.en} data-es={b.es}>{b.en}</h2>;
-        }
-        if (b.kind === 'pull') {
-          return (
-            <blockquote class="story-pull">
-              <p data-en={b.en} data-es={b.es}>{b.en}</p>
-            </blockquote>
-          );
-        }
-        return (
-          <p class:list={['story-p', { 'story-lede': b.kind === 'lede' }]} data-en={b.en} data-es={b.es}>
-            {b.en}
-          </p>
-        );
-      })}
+      {story.map((b) => (
+        <p class:list={['story-p', { 'story-lede': b.kind === 'lede' }]} data-en={b.en} data-es={b.es}>
+          {b.en}
+        </p>
+      ))}
     </article>
-  </section>
-
-  <!-- Closing CTA — page furniture (ours, not the author's), in the
-       About page's close-cta idiom: the story ends on volunteers, so
-       the page hands the reader the events calendar. -->
-  <section class="close-cta diag-texture">
-    <div class="tape-seam" aria-hidden="true"></div>
-    <div class="close-cta-inner">
-      <h2 class="close-cta-title" data-en="Want to be part of the story?" data-es="¿Quieres ser parte de la historia?">Want to be part of the story?</h2>
-      <a class="close-cta-btn" href="/events">
-        <span data-en="See upcoming cleanups" data-es="Ver las próximas limpiezas">See upcoming cleanups</span>
-        <span aria-hidden="true">→</span>
-      </a>
-    </div>
   </section>
 </BaseLayout>
 
@@ -193,6 +140,8 @@ const story: Block[] = [
     margin: 0 auto;
   }
 
+  /* Dormant while `byline` is null (captain: nothing added) — kept so
+     restoring attribution is a one-constant change in the frontmatter. */
   .story-byline {
     display: flex;
     align-items: center;
@@ -231,116 +180,5 @@ const story: Block[] = [
     font-size: var(--step-1);
     font-weight: 700;
     line-height: 1.55;
-  }
-
-  .story-h {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: 0.03em;
-    color: var(--charcoal);
-    margin-top: 2.4em;
-  }
-
-  /* Orange rule under each heading — same small-mark rule as the byline */
-  .story-h::after {
-    content: '';
-    display: block;
-    width: 2.4rem;
-    height: 4px;
-    background: var(--orange);
-    border-radius: 2px;
-    margin-top: 0.35rem;
-  }
-
-  .story-h + .story-p {
-    margin-top: 0.9em;
-  }
-
-  /* Pull-quote: the site's yellow marker swipe at display size, tilted
-     like the sticker devices. box-decoration-break keeps the highlight
-     hugging each wrapped line. */
-  .story-pull {
-    margin: 1.6em 0;
-    transform: rotate(-0.5deg);
-  }
-
-  .story-pull p {
-    display: inline;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    font-weight: 400;
-    line-height: 1.35;
-    letter-spacing: 0.03em;
-    color: var(--charcoal);
-    background: var(--yellow);
-    padding: 0.06em 0.22em;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-  }
-
-  /* ── CLOSING CTA — mirrors about.astro's close-cta ── */
-  .close-cta {
-    background: var(--charcoal);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .close-cta-inner {
-    max-width: var(--container);
-    margin: 0 auto;
-    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.9rem;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .close-cta-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-3);
-    line-height: 1;
-    letter-spacing: 0.05em;
-    color: var(--off-white);
-    text-shadow: 3px 3px 0 rgba(107, 63, 160, 0.55);
-  }
-
-  /* Primary action: yellow plate, charcoal border, purple press (the
-     dark-section press convention) */
-  .close-cta-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5em;
-    margin-top: 0.7rem;
-    background: var(--yellow);
-    color: var(--charcoal);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.95rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    text-decoration: none;
-    padding: 0.9em 1.5em;
-    min-height: var(--tap);
-    border: 3px solid var(--charcoal);
-    border-radius: var(--radius-sm);
-    box-shadow: 5px 5px 0 var(--purple-light);
-    transform: rotate(-1deg);
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .close-cta-btn:hover {
-      transform: rotate(0deg) translate(2px, 2px);
-      box-shadow: 3px 3px 0 var(--purple-light);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .close-cta-btn { transition: none; }
   }
 </style>
