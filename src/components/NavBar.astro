@@ -15,7 +15,7 @@ const pathname = Astro.url.pathname;
 
 const isHome     = pathname === '/' || pathname === '';
 const isEvents   = pathname === '/events' || pathname.startsWith('/events/');
-const isFounder  = pathname === '/about/from-our-founder' || pathname.startsWith('/about/from-our-founder/');
+const isFounder  = pathname === '/about/from-the-founder' || pathname.startsWith('/about/from-the-founder/');
 // The founder page lives under /about/, which isTeam's prefix also matches, so
 // the `!isFounder` guard below is what stops "The Team" double-lighting on
 // the founder page. Keep the guard — declaration order alone does nothing.
@@ -61,7 +61,7 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
       </button>
       <ul class="nav-drop-menu" id="aboutDropMenu">
         <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
-        <li><a href="/about/from-our-founder" class:list={{ active: isFounder }} data-en="From Our Founder" data-es="De Nuestro Fundador">From Our Founder</a></li>
+        <li><a href="/about/from-the-founder" class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
         <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
       </ul>
     </li>

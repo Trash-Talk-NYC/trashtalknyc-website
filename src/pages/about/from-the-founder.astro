@@ -1,17 +1,20 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import { founderByline, founderMetaDescription, founderName } from '../../lib/founder';
+import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
+import founderPhoto from '../../assets/david-founder.jpg';
 
 /**
- * From Our Founder — /about/from-our-founder: David's first-person
+ * From the Founder — /about/from-the-founder: David's first-person
  * account of how Trash Talk NYC started, received via Nandi
  * (2026-08-12) and confirmed as his by the captain (2026-08-13).
- * Renamed twice pre-launch by the captain (2026-08-13): "Our Story"
- * (/about/our-story) → "Letter from Founder"
- * (/about/letter-from-founder) → "From Our Founder". Clean renames
- * with no redirects — neither old URL ever existed publicly. The nav
- * label is "From Our Founder" (ES "De Nuestro Fundador").
+ * Renamed three times pre-launch by the captain (2026-08-13):
+ * "Our Story" (/about/our-story) → "Letter from Founder"
+ * (/about/letter-from-founder) → "From Our Founder"
+ * (/about/from-our-founder) → "From the Founder". Clean renames with
+ * no redirects — none of the old URLs ever existed publicly. The nav
+ * label is "From the Founder" (ES "Del Fundador").
  *
  * THE ENGLISH STORY IS VERBATIM — do not reword, tighten, reorder, or
  * "improve" a single sentence, and keep the Spanish tracking whatever
@@ -28,10 +31,10 @@ import { founderByline, founderMetaDescription, founderName } from '../../lib/fo
  * typographic curly quotes where the source had straight ones.
  */
 
-// The byline, the sign-off name, and the meta description all read
-// David's name and role from team.ts through src/lib/founder.ts, which
-// owns the composition so the length guard in its test asserts the
-// strings this page actually renders.
+// The byline card, the sign-off name, and the meta description all
+// come from src/lib/founder.ts, which owns the composition so its test
+// guards assert the strings this page actually renders — including the
+// page-local literals that are deliberately NOT team.ts values.
 
 type Block = { kind: 'lede' | 'p'; en: string; es: string };
 
@@ -99,19 +102,42 @@ const story: Block[] = [
 ];
 ---
 
-<BaseLayout title="From Our Founder — Trash Talk NYC" description={founderMetaDescription}>
+<BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
   <!-- The h1 is the captain's chosen page name (rename, 2026-08-13),
        split into two leaves so the language toggle can restructure it:
-       EN "From Our / Founder" becomes ES "De Nuestro / Fundador"
-       leaf by leaf. -->
-  <PageHero eyebrowEn="About · From Our Founder" eyebrowEs="Nosotros · De Nuestro Fundador" word="88 DAYS">
-    <span data-en="From Our" data-es="De Nuestro">From Our</span><br />
+       EN "From the / Founder" becomes ES "Del / Fundador" leaf by
+       leaf. -->
+  <PageHero eyebrowEn="About · From the Founder" eyebrowEs="Nosotros · Del Fundador" word="88 DAYS">
+    <span data-en="From the" data-es="Del">From the</span><br />
     <span class="accent" data-en="Founder" data-es="Fundador">Founder</span>
   </PageHero>
 
   <section class="story-section grid-paper">
     <article class="story">
-      <p class="story-byline" data-en={founderByline.en} data-es={founderByline.es}>{founderByline.en}</p>
+      <!-- Byline card (captain, 2026-08-13): circular photo + name +
+           title, replacing the text-only byline. david-founder.jpg is a
+           committed square crop of IMG_0952_Original.jpeg (sharp
+           extract 1183,876 / 1226×1226 → 640×640) framing face,
+           shoulders, and chest. The name and the "Founder" half of the
+           title are page-local literals from founder.ts — deliberately
+           NOT team.ts values; see the comments there before "fixing"
+           any mismatch. The alt is the proper-noun name, identical in
+           both languages, because setLang never translates attributes. -->
+      <div class="story-byline">
+        <Image
+          src={founderPhoto}
+          alt={founderDisplayName}
+          class="byline-photo"
+          width={192}
+          widths={[64, 128, 192]}
+          sizes="64px"
+          loading="eager"
+        />
+        <p class="byline-text">
+          <span class="byline-name">{founderDisplayName}</span>
+          <span class="byline-title" data-en={founderTitle.en} data-es={founderTitle.es}>{founderTitle.en}</span>
+        </p>
+      </div>
 
       {story.map((b) => (
         <p class:list={['story-p', { 'story-lede': b.kind === 'lede' }]} data-en={b.en} data-es={b.es}>
@@ -146,32 +172,47 @@ const story: Block[] = [
     margin: 0 auto;
   }
 
-  /* The one line above the story that is not David's own text —
-     kept to the mono/uppercase credit voice so it reads as a credit
-     rather than as an opening the captain did not write. */
+  /* Byline card — the one element above the story that is not David's
+     own text. The photo replaced the old orange rule as the byline's
+     mark; the title keeps the mono/uppercase credit voice so it still
+     reads as a credit, not as an opening the captain did not write. */
   .story-byline {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--purple);
+    gap: 0.9rem;
     margin-bottom: var(--space-md);
   }
 
-  /* Safety-orange mark before the byline — a small rule, the sanctioned
-     orange usage on off-white (non-text marks only) */
-  .story-byline::before {
-    content: '';
-    display: inline-block;
-    width: 1.4rem;
-    height: 3px;
-    background: var(--orange);
-    border-radius: 2px;
+  /* Fixed-size circle in the sticker voice (charcoal border, small
+     press shadow). Explicit height overrides the width/height attrs
+     <Image> always emits; the source is square, so no crop drift. */
+  .byline-photo {
+    width: 64px;
+    height: 64px;
     flex-shrink: 0;
+    border-radius: 50%;
+    border: 2.5px solid var(--charcoal);
+    box-shadow: var(--press-sm);
+    object-fit: cover;
+  }
+
+  .byline-name {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--charcoal);
+    line-height: 1.2;
+  }
+
+  .byline-title {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--purple);
   }
 
   .story-p {

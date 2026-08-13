@@ -1,15 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { META_DESCRIPTION_LIMIT, founderByline, founderMetaDescription, founderName } from '../founder';
+import {
+  META_DESCRIPTION_LIMIT,
+  founderDisplayName,
+  founderMetaDescription,
+  founderName,
+  founderTitle,
+} from '../founder';
 import { getTeamMember } from '../team';
 
 /**
- * The From Our Founder meta description quotes David's role from
- * team.ts, so a role rename lengthens it with no signal — and the
- * captain restored that byline deliberately, so silently pushing it past
- * where search engines truncate defeats the point. This is the guard the
- * "trim the lead-in, never the byline" comment in founder.ts assumes.
+ * The From the Founder meta description and byline title quote David's
+ * role from team.ts, so a role rename changes them with no signal — and
+ * the captain restored that attribution deliberately, so silently
+ * pushing the meta past where search engines truncate defeats the
+ * point. This is the guard the "trim the lead-in, never the byline"
+ * comment in founder.ts assumes.
  */
-describe('From Our Founder attribution', () => {
+describe('From the Founder attribution', () => {
   const david = getTeamMember('david');
 
   it('keeps the meta description within the truncation window WITH the attribution', () => {
@@ -21,9 +28,17 @@ describe('From Our Founder attribution', () => {
     expect(founderMetaDescription).toContain(`By ${david!.name}, ${david!.role.en}.`);
   });
 
-  it('bylines both languages from the live team entry', () => {
+  it('composes the byline title from the live team role plus the Founder literal', () => {
+    expect(founderTitle.en).toBe(`${david!.role.en} / Founder`);
+    expect(founderTitle.es).toBe(`${david!.role.es} / Fundador`);
+  });
+
+  it('keeps the display name a page-local literal, independent of team.ts', () => {
+    // "David Clarke" is deliberately NOT david.name ("David") — see the
+    // founderDisplayName comment. This asserts the literal so a future
+    // "fix" that points it at team.ts (renaming him on the About page)
+    // fails loudly instead of passing silently.
+    expect(founderDisplayName).toBe('David Clarke');
     expect(founderName).toBe(david!.name);
-    expect(founderByline.en).toBe(`By ${david!.name}, ${david!.role.en}`);
-    expect(founderByline.es).toBe(`Por ${david!.name}, ${david!.role.es}`);
   });
 });

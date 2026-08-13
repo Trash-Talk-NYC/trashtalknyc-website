@@ -242,11 +242,11 @@ body::after {
 }
 
 /* Faint graph-paper texture for light sections (bento, event list, forms,
-   team, recruit, and the From Our Founder story). A consuming section
+   team, recruit, and the From the Founder story). A consuming section
    must set its own paper colour with `background-color`, never the
    `background` shorthand: the shorthand resets background-image, and the
    component's scoped rule out-specifies this one, so the texture silently
-   stops painting (see AGENTS.md, "From Our Founder"). */
+   stops painting (see AGENTS.md, "From the Founder"). */
 .grid-paper {
   background-image:
     linear-gradient(rgba(28, 28, 34, 0.045) 1px, transparent 1px),
