@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import { getTeamMember } from '../../lib/team';
+import { founderByline, founderMetaDescription, founderName } from '../../lib/founder';
 
 /**
  * From Our Founder — /about/from-our-founder: David's first-person
@@ -28,26 +28,10 @@ import { getTeamMember } from '../../lib/team';
  * typographic curly quotes where the source had straight ones.
  */
 
-// Name and role are read from team.ts rather than written out, so a
-// role rename propagates here (both languages, and the meta below)
-// without this page becoming a rename touchpoint. Missing means the
-// page would silently drop the attribution the captain asked for, so
-// fail the build instead.
-const author = getTeamMember('david');
-if (!author) {
-  throw new Error("The From Our Founder byline needs the 'david' entry in src/lib/team.ts, which is missing.");
-}
-const byline = {
-  en: `By ${author.name}, ${author.role.en}`,
-  es: `Por ${author.name}, ${author.role.es}`,
-};
-
-// Must stay under ~155 characters WITH the attribution included: search
-// engines truncate around there, and the captain restored that byline
-// deliberately, so letting it fall outside the visible window defeats
-// the point. If a longer role title ever pushes this over, trim the
-// lead-in further — never the byline.
-const metaDescription = `How Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across the city. By ${author.name}, ${author.role.en}.`;
+// The byline, the sign-off name, and the meta description all read
+// David's name and role from team.ts through src/lib/founder.ts, which
+// owns the composition so the length guard in its test asserts the
+// strings this page actually renders.
 
 type Block = { kind: 'lede' | 'p'; en: string; es: string };
 
@@ -115,7 +99,7 @@ const story: Block[] = [
 ];
 ---
 
-<BaseLayout title="From Our Founder — Trash Talk NYC" description={metaDescription}>
+<BaseLayout title="From Our Founder — Trash Talk NYC" description={founderMetaDescription}>
   <!-- The h1 is the captain's chosen page name (rename, 2026-08-13),
        split into two leaves so the language toggle can restructure it:
        EN "From Our / Founder" becomes ES "De Nuestro / Fundador"
@@ -127,7 +111,7 @@ const story: Block[] = [
 
   <section class="story-section grid-paper">
     <article class="story">
-      <p class="story-byline" data-en={byline.en} data-es={byline.es}>{byline.en}</p>
+      <p class="story-byline" data-en={founderByline.en} data-es={founderByline.es}>{founderByline.en}</p>
 
       {story.map((b) => (
         <p class:list={['story-p', { 'story-lede': b.kind === 'lede' }]} data-en={b.en} data-es={b.es}>
@@ -142,7 +126,7 @@ const story: Block[] = [
            data attributes, so the toggle leaves it alone. -->
       <p class:list={['story-p', 'story-signoff']}>
         <span data-en="Sincerely," data-es="Atentamente,">Sincerely,</span><br />
-        <span>{author.name}</span>
+        <span>{founderName}</span>
       </p>
     </article>
   </section>
