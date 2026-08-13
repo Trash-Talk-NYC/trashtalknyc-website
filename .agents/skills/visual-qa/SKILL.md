@@ -41,7 +41,7 @@ At each width, check:
 - Language toggle — check the change in both EN and ES. Static text swaps via `data-en`/`data-es` attributes; dynamic text (dates, tab-dependent copy) is re-rendered by the owning component on `onLanguageChange`, so toggle *after* interacting with the component, not just on page load. Spanish copy is usually longer — watch for new overflow.
 - Overflow and wrapping — long text, long unbreakable strings, and large datasets wrap or truncate deliberately instead of breaking the layout.
 - Spacing consistency — gaps, padding, and margins follow the fluid space tokens in `src/styles/global.css`, not ad hoc per-element values.
-- Visual language — new UI reuses the site's "street poster / club zine" devices (press shadows `--press`/`--press-sm`, `.sticker` chips, `.sign-plate` titles, `.tape-seam`, `.grid-paper`) rather than introducing soft shadows or new decorative styles.
+- Visual language — new UI reuses the site's "street poster / club zine" devices (press shadows `--press`/`--press-sm`, `.sticker` chips, `.sign-plate` titles, `.tape-seam`, `.grid-paper`) rather than introducing soft shadows or new decorative styles. Captain-approved exceptions are recorded in AGENTS.md and are not findings — the From the Founder byline portrait keeps its charcoal outline with no press shadow on purpose.
 - Accessibility — contrast is sufficient, interactive elements are reachable by keyboard, and images and controls have accessible names.
 - Empty states — the UI says something useful when there is no data (e.g. no upcoming events), not a blank region.
 - Success and error states — the result of an action (form submit, tab switch) is visible, not inferable only from the absence of failure.
