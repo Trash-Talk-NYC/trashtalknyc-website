@@ -77,10 +77,20 @@ The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pe
 ## Projects page — decoupled to `fm/projects-tree-guard`
 
 The Projects page (`/projects`, with its CSS-3D tree-guard model and intentionally-pending placeholder content) was **removed from the release at the captain's request** and lives in full on the `fm/projects-tree-guard` branch — continue Projects work there, not here.
-The nav's About dropdown ships with two items: **The Team** (`/about`) and **Open Roles** (`/recruit` — the recruitment page; both live on this consolidated branch).
+The nav's About dropdown ships with three items: **The Team** (`/about`), **Our Story** (`/about/our-story` — see its own section below), and **Open Roles** (`/recruit` — the recruitment page).
 "Open Roles" is the captain's chosen label (round 20; ES `Puestos Abiertos`): it must **never be relabelled "Join"** (the nav CTA already uses Join for the mailing list) and "Work With Us" was rejected as confusable with Contact.
 `/recruit` highlights the **About** parent (top-level route, so Contact can't double-light); Projects rejoins the dropdown when `fm/projects-tree-guard` lands.
 Do not link to `/projects` from anything on this branch — the route does not exist here and it is filtered from nothing (it simply isn't built), so a link would 404.
+
+## Our Story — /about/our-story, the founder's account VERBATIM
+
+The story page (`src/pages/about/our-story.astro`) carries David's first-person account of how Trash Talk NYC started, received via Nandi (2026-08-12); the canonical source text lived at `firstmate/data/our-story-page/copy.md`.
+The English story is the author's own words, **verbatim**: do not reword, tighten, reorder, or re-punctuate a single sentence, and keep the Spanish tracking whatever the English says rather than smoothing it.
+The author's given title is "Trash Talk NYC's Story"; the nav/footer label is "Our Story" (ES `Nuestra Historia`).
+Presentation-only additions that are firstmate's, not the author's (the page's frontmatter comment lists them too): the four section headings, the lede treatment of the opening paragraph, the pull-quote — "We joked that we were replacing the engine in a burning car.", kept in its original reading position between its neighboring sentences, never duplicated — and typographic curly quotes where the source email had straight ones.
+The closing "Want to be part of the story?" CTA is page furniture (ours), pointing at `/events`.
+The byline renders from `getTeamMember('david')` in `src/lib/team.ts`, so a role rename there lands on the story page (and its ES swap) automatically.
+In `NavBar.astro`, `isStory` is tested before the generic `/about/` prefix so "The Team" doesn't double-light on the story page while the About parent still does.
 
 ## E2E Testing
 

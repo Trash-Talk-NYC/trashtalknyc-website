@@ -15,11 +15,14 @@ const pathname = Astro.url.pathname;
 
 const isHome     = pathname === '/' || pathname === '';
 const isEvents   = pathname === '/events' || pathname.startsWith('/events/');
-const isTeam     = pathname === '/about' || pathname.startsWith('/about/');
+// Our Story lives under /about/, so test it before the generic prefix
+// below — otherwise "The Team" would double-light on the story page
+const isStory    = pathname === '/about/our-story' || pathname.startsWith('/about/our-story/');
+const isTeam     = !isStory && (pathname === '/about' || pathname.startsWith('/about/'));
 // The recruitment page is top-level at /recruit but belongs to the About menu
 const isRecruit  = pathname === '/recruit' || pathname.startsWith('/recruit/');
-// The About parent highlights when either of its children is current
-const isAbout    = isTeam || isRecruit;
+// The About parent highlights when any of its children is current
+const isAbout    = isTeam || isStory || isRecruit;
 const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
 ---
 
@@ -57,6 +60,7 @@ const isContact  = pathname === '/contact' || pathname.startsWith('/contact/');
       </button>
       <ul class="nav-drop-menu" id="aboutDropMenu">
         <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
+        <li><a href="/about/our-story" class:list={{ active: isStory }} data-en="Our Story" data-es="Nuestra Historia">Our Story</a></li>
         <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
       </ul>
     </li>
