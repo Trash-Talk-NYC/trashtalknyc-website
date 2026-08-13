@@ -63,16 +63,7 @@ const { eyebrowEn, eyebrowEs, word } = Astro.props;
     color: var(--off-white);
     letter-spacing: 0.06em;
     line-height: 1.05;
-    /* Captain (2026-08-13): a real black outline on the glyphs instead
-       of the old offset press shadow. paint-order paints the stroke
-       BEHIND the fill, so the letterforms keep their full weight and
-       only half the stroke shows as a rim; browsers that don't support
-       paint-order on HTML text centre the stroke instead, which reads
-       slightly thinner but never broken. The em width tracks the
-       clamped display size so the rim stays proportional and Bebas's
-       tight counters don't close up. */
-    -webkit-text-stroke: 0.06em var(--charcoal);
-    paint-order: stroke fill;
+    text-shadow: 4px 4px 0 rgba(107, 63, 160, 0.55);
   }
 
   .page-hero h1 :global(.accent) { color: var(--yellow); }
