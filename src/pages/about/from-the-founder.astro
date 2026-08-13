@@ -1,0 +1,243 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
+import founderPhoto from '../../assets/david-founder.jpg';
+
+/**
+ * From the Founder — /about/from-the-founder: David's first-person
+ * account of how Trash Talk NYC started, received via Nandi
+ * (2026-08-12) and confirmed as his by the captain (2026-08-13).
+ * Renamed three times pre-launch by the captain (2026-08-13):
+ * "Our Story" (/about/our-story) → "Letter from Founder"
+ * (/about/letter-from-founder) → "From Our Founder"
+ * (/about/from-our-founder) → "From the Founder". Clean renames with
+ * no redirects — none of the old URLs ever existed publicly. The nav
+ * label is "From the Founder" (ES "Del Fundador").
+ *
+ * THE ENGLISH STORY IS VERBATIM — do not reword, tighten, reorder, or
+ * "improve" a single sentence, and keep the Spanish tracking whatever
+ * the English says rather than smoothing it.
+ *
+ * NOTHING IS ADDED — a captain decision (revision, 2026-08-13): the
+ * page is his paragraphs, in his order, with nothing between them. The
+ * section headings, pull-quote, and closing CTA that shipped in the
+ * first cut were stripped on that instruction; the wall of text is the
+ * intended outcome, so do not reintroduce rhythm devices. The byline
+ * came back on the captain's 2026-08-13 confirmation and is the one
+ * exception. The only presentation liberties (allowed as typesetting,
+ * not addition): the lede sizing of the opening paragraph and
+ * typographic curly quotes where the source had straight ones.
+ */
+
+// The byline card, the sign-off name, and the meta description all
+// come from src/lib/founder.ts, which owns the composition so its test
+// guards assert the strings this page actually renders — including the
+// page-local literals that are deliberately NOT team.ts values.
+
+type Block = { kind: 'lede' | 'p'; en: string; es: string };
+
+const story: Block[] = [
+  {
+    kind: 'lede',
+    en: 'This is the story of the 88 days that changed my life and might change New York City. I live in Washington Heights. For those who don’t know, Washington Heights is a Dominican neighborhood in Upper Manhattan. Its history dances between Columbia takeovers, a lasting drug problem, and a strong sense of community. On summer nights, Dominican music and excited conversation fill the main streets, but mine has been silent.',
+    es: 'Esta es la historia de los 88 días que cambiaron mi vida y podrían cambiar la ciudad de Nueva York. Yo vivo en Washington Heights. Para quien no lo conozca, Washington Heights es un vecindario dominicano en el Alto Manhattan. Su historia baila entre las tomas de Columbia, un problema de drogas que persiste y un fuerte sentido de comunidad. En las noches de verano, la música dominicana y las conversaciones animadas llenan las calles principales, pero la mía ha estado en silencio.',
+  },
+  {
+    kind: 'p',
+    en: 'I started Trash Talk NYC to pick up litter in my neighborhood. I spent $40 on a trash grabber, trash bags, and a neck mount for my phone. I had no background in social media. My first video was a 20-minute reel filmed in horizontal, but I’d already settled on a mission. For some inexplicable reason, I named the series “Cleaning New York” and that video was its first day. I posted nearly every day for the next four weeks, and the project transformed explosively.',
+    es: 'Empecé Trash Talk NYC para recoger basura en mi vecindario. Gasté $40 en una pinza recogedora, bolsas de basura y un soporte de cuello para el teléfono. No tenía ninguna experiencia en redes sociales. Mi primer video fue un reel de 20 minutos grabado en horizontal, pero ya me había fijado una misión. Por alguna razón inexplicable, nombré la serie “Cleaning New York” y ese video fue su primer día. Publiqué casi todos los días durante las siguientes cuatro semanas, y el proyecto se transformó de manera explosiva.',
+  },
+  {
+    kind: 'p',
+    en: 'Every day, I visited a new location in New York City. On the subway, I started conversations with other passengers about litter and illegal dumping in their neighborhoods. They were invariably surprised, but when they learned that I was cleaning and studying these areas, they would provide a neighborhood or block that needed attention.',
+    es: 'Cada día visitaba un lugar nuevo de la ciudad de Nueva York. En el metro, entablaba conversaciones con otros pasajeros sobre la basura y los vertidos ilegales en sus vecindarios. Siempre se sorprendían, pero cuando se enteraban de que yo estaba limpiando y estudiando esas zonas, me daban un vecindario o una cuadra que necesitaba atención.',
+  },
+  {
+    kind: 'p',
+    en: 'That system of crowd-sourced sites launched Trash Talk NYC across the Bronx, Queens, Manhattan, and Brooklyn. It sent me to open-air drug markets, dump-sites under bridges, beautiful parks, efficient business districts, and even subway stations.',
+    es: 'Ese sistema de lugares sugeridos por la propia gente lanzó a Trash Talk NYC por el Bronx, Queens, Manhattan y Brooklyn. Me llevó a mercados de droga al aire libre, vertederos debajo de puentes, parques hermosos, distritos comerciales eficientes e incluso estaciones del metro.',
+  },
+  {
+    kind: 'p',
+    en: 'The account’s growth was unbelievable. For an account its size, you would expect a healthy growth rate of 5-10% a month. Instead, I saw 20% growth every week and doubling every month. By the end of Trash Talk NYC’s first quarter, it had reached 85K followers on Instagram and 25K on TikTok.',
+    es: 'El crecimiento de la cuenta fue increíble. Para una cuenta de su tamaño, uno esperaría una tasa de crecimiento saludable del 5-10% al mes. En cambio, yo veía un crecimiento del 20% cada semana, y la cuenta se duplicaba cada mes. Para el final de su primer trimestre, Trash Talk NYC había alcanzado 85 mil seguidores en Instagram y 25 mil en TikTok.',
+  },
+  {
+    kind: 'p',
+    en: 'Within weeks of the account’s formation, I already received messages from Assembly Members and Council Members. I had already received calls from police detectives and fire fighters. People begged me to clean their block, and we fielded up to 100 volunteers in a single weekend.',
+    es: 'A las pocas semanas de crear la cuenta, ya recibía mensajes de asambleístas y concejales. Ya había recibido llamadas de detectives de la policía y de bomberos. La gente me rogaba que limpiara su cuadra, y llegamos a coordinar hasta 100 voluntarios en un solo fin de semana.',
+  },
+  {
+    kind: 'p',
+    en: 'At the center of this attention wave, my small team was constantly buffeted by challenges. We joked that we were replacing the engine in a burning car. We designed and redesigned nearly every component of Trash Talk NYC on a weekly basis.',
+    es: 'En el centro de esta ola de atención, los desafíos golpeaban constantemente a mi pequeño equipo. Bromeábamos con que estábamos cambiando el motor de un auto en llamas. Diseñábamos y rediseñábamos casi cada componente de Trash Talk NYC semana tras semana.',
+  },
+  {
+    kind: 'p',
+    en: 'Email chains had to be recreated, trash grabbers had to be upgraded, wagons were replaced by cars, and purchase partners were replaced by local sponsors.',
+    es: 'Hubo que rehacer cadenas de correos, hubo que mejorar las pinzas recogedoras, los carritos fueron reemplazados por autos y los aliados de compras fueron reemplazados por patrocinadores locales.',
+  },
+  {
+    kind: 'p',
+    en: 'I started Trash Talk NYC to pick up my neighborhood’s litter, but now I don’t want to just pick up litter. Picking up trash is a band-aid solution to a deeper cultural and infrastructural problem. Instead, I want to give people hope and appreciation for a community they want to preserve. Traveling around New York City, I’ve visited many communities where “conservation” and “litter pickup” appear as ridiculous concepts. Dead trees, empty tree beds, and cracked, littered sidewalks scream underfunding and neglect. Like many others, I wondered “why preserve a community that couldn’t be beautiful even with a caring steward?”',
+    es: 'Empecé Trash Talk NYC para recoger la basura de mi vecindario, pero ahora no quiero solo recoger basura. Recoger basura es una curita sobre un problema cultural y de infraestructura más profundo. Lo que quiero es darle a la gente esperanza y aprecio por una comunidad que quiera preservar. Recorriendo la ciudad de Nueva York, he visitado muchas comunidades donde la “conservación” y la “recogida de basura” parecen conceptos ridículos. Árboles muertos, canteros de árboles vacíos y aceras agrietadas y llenas de basura gritan falta de fondos y abandono. Como muchos otros, me pregunté: “¿por qué preservar una comunidad que no podría ser hermosa ni siquiera con alguien que la cuide con esmero?”',
+  },
+  {
+    kind: 'p',
+    en: 'But I realized that neighborhoods could become and remain beautiful, and they could even do so cheaply. Tree beds are an incredible opportunity in New York City. However, few people have the knowledge or permits to do their neighborhood justice. We have learned effective ways for individual community members to more actively shape their environments, and we’re eager to share them. If we can provide people with simple resources to care for their communities, we can activate thousands of NYC residents to launch grassroots campaigns.',
+    es: 'Pero me di cuenta de que los vecindarios podían volverse hermosos y mantenerse así, y de que además podían lograrlo con poco dinero. Los canteros de árboles son una oportunidad increíble en la ciudad de Nueva York. Sin embargo, poca gente tiene los conocimientos o los permisos para hacerle justicia a su vecindario. Hemos aprendido maneras efectivas de que cada miembro de la comunidad moldee su entorno más activamente, y tenemos muchas ganas de compartirlas. Si podemos darle a la gente recursos sencillos para cuidar sus comunidades, podemos activar a miles de residentes de NYC para lanzar campañas de base.',
+  },
+  {
+    kind: 'p',
+    en: 'Without a supply sponsor, wooden tree guards cost $150 excluding tools and labor. The plants, mulch, and compost add an additional $100. For a business that receives littering fines, $250 is a small amount to take a stand against litter and create a beautiful monument on their block.',
+    es: 'Sin un patrocinador de materiales, los protectores de madera para árboles cuestan $150 sin contar herramientas ni mano de obra. Las plantas, el mantillo y la composta suman $100 más. Para un negocio que recibe multas por basura, $250 es una cantidad pequeña para plantarse frente a la basura y crear un hermoso monumento en su cuadra.',
+  },
+  {
+    kind: 'p',
+    en: 'I want to use artistic expression, intelligent landscaping, sociology, and urban design to reduce littering rates. Visibility, efficiency, and decentralization are key components of this mission. New York City has a ready population waiting to help. By making the processes clear and efficient, we can activate a volunteer network to make visible and meaningful changes in our city.',
+    es: 'Quiero usar la expresión artística, el paisajismo inteligente, la sociología y el diseño urbano para reducir los índices de basura en las calles. La visibilidad, la eficiencia y la descentralización son componentes clave de esta misión. La ciudad de Nueva York tiene una población lista y esperando para ayudar. Si hacemos los procesos claros y eficientes, podemos activar una red de voluntarios para lograr cambios visibles y significativos en nuestra ciudad.',
+  },
+];
+---
+
+<BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
+  <!-- The h1 is the captain's chosen page name (rename, 2026-08-13),
+       split into two leaves so the language toggle can restructure it:
+       EN "From the / Founder" becomes ES "Del / Fundador" leaf by
+       leaf. -->
+  <PageHero eyebrowEn="About · From the Founder" eyebrowEs="Nosotros · Del Fundador" word="88 DAYS">
+    <span data-en="From the" data-es="Del">From the</span><br />
+    <span class="accent" data-en="Founder" data-es="Fundador">Founder</span>
+  </PageHero>
+
+  <section class="story-section grid-paper">
+    <article class="story">
+      <!-- Byline card (captain, 2026-08-13): circular photo + name +
+           title, replacing the text-only byline. david-founder.jpg is a
+           committed square crop of IMG_0952_Original.jpeg (sharp
+           extract 1183,876 / 1226×1226 → 640×640) framing face,
+           shoulders, and chest. The name and the "Founder" half of the
+           title are page-local literals from founder.ts — deliberately
+           NOT team.ts values; see the comments there before "fixing"
+           any mismatch. The alt is empty on purpose: the photo is
+           captioned by the visible name beside it, so naming it again
+           would just make screen readers announce "David Clarke"
+           twice. -->
+      <div class="story-byline">
+        <Image
+          src={founderPhoto}
+          alt=""
+          class="byline-photo"
+          width={192}
+          widths={[64, 128, 192]}
+          sizes="64px"
+          loading="eager"
+        />
+        <p class="byline-text">
+          <span class="byline-name">{founderDisplayName}</span>
+          <span class="byline-title" data-en={founderTitle.en} data-es={founderTitle.es}>{founderTitle.en}</span>
+        </p>
+      </div>
+
+      {story.map((b) => (
+        <p class:list={['story-p', { 'story-lede': b.kind === 'lede' }]} data-en={b.en} data-es={b.es}>
+          {b.en}
+        </p>
+      ))}
+
+      <!-- Sign-off — captain-supplied (2026-08-13): "Sincerely, David"
+           as an email farewell after the final paragraph, deliberately
+           NOT a new section. The ES farewell is our translation per
+           site convention; the name is a proper noun and carries no
+           data attributes, so the toggle leaves it alone. -->
+      <p class:list={['story-p', 'story-signoff']}>
+        <span data-en="Sincerely," data-es="Atentamente,">Sincerely,</span><br />
+        <span>{founderName}</span>
+      </p>
+    </article>
+  </section>
+</BaseLayout>
+
+<style>
+  .story-section {
+    background-color: var(--off-white);
+    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  }
+
+  /* One measured reading column: ~66ch of Nunito at body size. The
+     recruit note proved 1rem/600/1.7 comfortable for long text on this
+     paper; the story keeps that voice. */
+  .story {
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+
+  /* Byline card — the one element above the story that is not David's
+     own text. The photo replaced the old orange rule as the byline's
+     mark; the title keeps the mono/uppercase credit voice so it still
+     reads as a credit, not as an opening the captain did not write. */
+  .story-byline {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: var(--space-md);
+  }
+
+  /* Fixed-size circle: flat charcoal outline, deliberately NO press
+     shadow — the captain wants the black outline without the
+     dimensional offset look (2026-08-13). Explicit height overrides
+     the width/height attrs <Image> always emits; the source is square,
+     so no crop drift. */
+  .byline-photo {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2.5px solid var(--charcoal);
+    object-fit: cover;
+  }
+
+  .byline-name {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--charcoal);
+    line-height: 1.2;
+  }
+
+  .byline-title {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--purple);
+  }
+
+  .story-p {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    line-height: 1.75;
+    margin-top: 1.2em;
+  }
+
+  .story-lede {
+    margin-top: 0;
+    font-size: var(--step-1);
+    font-weight: 700;
+    line-height: 1.55;
+  }
+
+  /* Email-farewell sign-off: composes .story-p so it keeps body voice
+     verbatim if body type ever changes, and only adds a blank line's
+     worth of air above it — nothing decorative, so it reads like the
+     end of a letter rather than a new device. */
+  .story-signoff {
+    margin-top: 2.4em;
+  }
+</style>

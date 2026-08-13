@@ -33,13 +33,18 @@ describe('team data', () => {
     }
   });
 
-  // Only Nandi's metaDescription names her role verbatim ("Meet Nandi,
-  // <role> at Trash Talk NYC, …"), so it is the one that goes stale when
-  // the title changes — as it did on the Programming → Programs rename.
-  it("keeps Nandi's metaDescription quoting her current English role", () => {
-    const nandi = team.find((member) => member.id === 'nandi');
+  // Nandi's and Fabiola's metaDescriptions name their role verbatim
+  // ("Meet <name>, <role> at Trash Talk NYC, …"), so a rename has to land
+  // in two places for each of them — as it did on the Programming →
+  // Programs rename. David's paraphrases the title ("organizer of Trash
+  // Talk NYC") instead, so it survives a rename and is not guarded here.
+  it.each(['nandi', 'fabiola'])(
+    "keeps %s's metaDescription quoting their current English role",
+    (id) => {
+      const member = team.find((entry) => entry.id === id);
 
-    expect(nandi).toBeDefined();
-    expect(nandi!.metaDescription).toContain(nandi!.role.en);
-  });
+      expect(member).toBeDefined();
+      expect(member!.metaDescription).toContain(member!.role.en);
+    },
+  );
 });

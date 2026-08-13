@@ -1,9 +1,9 @@
 # Trash Talk NYC Website
 
-## What this project is  
+## What this project is
 
-This is a website for Trash Talk NYC associated with @trashtalk_nyc (same handle on Instagram and TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest. 
-He reached out to me, Fabi, to make the website. 
+This is a website for Trash Talk NYC associated with @trashtalk_nyc (same handle on Instagram and TikTok). David Clarke is behind the account, and posts short-form videos cleaning up NYC-literally, with a grabber and trash bag and the phone strapped to his chest.
+He reached out to me, Fabi, to make the website.
 
 ## What the website does
 * Act as centralized place to find Trash Talk NYC Cleanup Events that anyone can attend
@@ -19,7 +19,7 @@ He reached out to me, Fabi, to make the website.
 * Netlify hosting
 * Astro Actions for both forms (validation, spam checks, Blobs rate limiting, Brevo upsert — `src/actions/`, `src/lib/server/`)
 * Brevo for emailing tens of thousands of people
-* Eventbrite integration 
+* Eventbrite integration
 * GoFundMe embeds
 
 ## Brevo integration — sharp edges
@@ -72,15 +72,45 @@ The mailto subject is the captain's line with a deliberate fill-in placeholder: 
 English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
 Links to the page: the nav's About dropdown ("Open Roles"), the footer ("Open Roles"), the homepage crew callout, the About page's closing "Want to lend a hand?" CTA, and the Contact page banner ("See more" → `/recruit` directly — it used to land on the About closing note instead of the roles).
 The About closing section still carries the legacy `#join-the-team` anchor id so old links keep landing somewhere sensible.
+That move kept a permanent `/contact/join` → `/recruit` 301, declared in `astro.config.mjs` (`redirects`, the single source of truth the Netlify adapter emits `_redirects` from — never hand-write that file); the From the Founder renames below deliberately got no such rule because those URLs were never public.
 The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`); the Blobs store may still hold applications submitted while the form was live.
 
 ## Projects page — decoupled to `fm/projects-tree-guard`
 
 The Projects page (`/projects`, with its CSS-3D tree-guard model and intentionally-pending placeholder content) was **removed from the release at the captain's request** and lives in full on the `fm/projects-tree-guard` branch — continue Projects work there, not here.
-The nav's About dropdown ships with two items: **The Team** (`/about`) and **Open Roles** (`/recruit` — the recruitment page; both live on this consolidated branch).
+The nav's About dropdown ships with three items: **The Team** (`/about`), **From the Founder** (`/about/from-the-founder` — see its own section below), and **Open Roles** (`/recruit` — the recruitment page).
 "Open Roles" is the captain's chosen label (round 20; ES `Puestos Abiertos`): it must **never be relabelled "Join"** (the nav CTA already uses Join for the mailing list) and "Work With Us" was rejected as confusable with Contact.
 `/recruit` highlights the **About** parent (top-level route, so Contact can't double-light); Projects rejoins the dropdown when `fm/projects-tree-guard` lands.
 Do not link to `/projects` from anything on this branch — the route does not exist here and it is filtered from nothing (it simply isn't built), so a link would 404.
+
+## From the Founder — /about/from-the-founder, David's account VERBATIM
+
+The founder page (`src/pages/about/from-the-founder.astro`) carries a first-person account of how Trash Talk NYC started, received via Nandi (2026-08-12); the canonical source text lived at `firstmate/data/our-story-page/copy.md`.
+**The captain confirmed on 2026-08-13 that it is David's story**, settling the earlier ambiguity (the copy arrived from Nandi — "Source: Nandi Brooks email" — but reads as the founder in the first person), and both attributions were restored on that word: the on-page byline (now a photo card — see below) and the meta description's closing "By `<name>`, `<role>`." clause.
+That confirmation supersedes the strip-everything instruction **for attribution only** — headings, pull-quote, and closing CTA stay stripped.
+The English story is David's own words, **verbatim**: do not reword, tighten, reorder, or re-punctuate a single sentence, and keep the Spanish tracking whatever the English says rather than smoothing it.
+The page was **renamed three times pre-launch by the captain** (all 2026-08-13): "Our Story" (`/about/our-story`) → "Letter from Founder" (`/about/letter-from-founder`) → "From Our Founder" (`/about/from-our-founder`) → **"From the Founder"** (ES `Del Fundador`) — clean renames with **no redirects**, deliberate because nothing had gone live, so none of the old URLs ever existed publicly; the author's original title "Trash Talk NYC's Story" lives in git history if it ever returns.
+The page opens with the site-standard `PageHero` (eyebrow "About · From the Founder", ghost word "88 DAYS") carrying the page name, split into two leaves so the toggle can restructure it — EN "From the / Founder" becomes ES "Del / Fundador" leaf by leaf, because `setLang` swaps leaves and cannot reorder a heading.
+The nothing-added rule below governs the story body, not that page chrome.
+**Nothing else is added to the story** — a captain decision (revision, 2026-08-13): the page is his paragraphs, in his order, with nothing between them, and the wall of text at phone widths is the intended outcome — do not reintroduce section headings, pull-quotes, or a closing CTA (the first cut shipped those alongside the byline; only the byline came back).
+The byline is a **photo card** (captain, 2026-08-13): a 64px circular crop of David — `src/assets/david-founder.jpg`, a committed 640×640 square cut from the full-size shot at `assets/IMG_0952_Original.jpeg` with sharp (`extract left 1183, top 876, 1226×1226`) to frame face, shoulders, and chest — beside "David Clarke" over "Lead Organizer / Founder" (ES `Organizador Principal / Fundador`).
+Its `alt` is **empty on purpose**: the visible name sits right beside the photo and captions it, so naming him in the alt too would make screen readers announce "David Clarke" twice — do not "fix" it as a missing-alt finding.
+The portrait carries a **flat 2.5px charcoal outline and deliberately no `--press-sm` shadow** (captain, 2026-08-13): he wants the black ring without the dimensional offset look, so this is a sanctioned exception to the press-shadow idiom below — do not "restore" the shadow as a visual-language fix.
+That decision arrived as feedback on the byline portrait and was first misread as being about the `PageHero` h1; the hero experiment was reverted whole (the h1 keeps its purple offset `text-shadow` and gets no stroke of its own — the only `-webkit-text-stroke` in `PageHero.astro` is the ghost word's, which was never in question), so treat that revert pair in the history as the correction, not as churn.
+**"David Clarke" and the "Founder" half of the title are deliberate page-local literals in `founder.ts`, NOT team.ts values**: team.ts stays `name: 'David'` / role "Lead Organizer" because the About page presents the team that way — do not "fix" the mismatch by editing team.ts, which would rename him on the About page; the role half of the title DOES derive from team.ts so a role rename still propagates.
+The one sanctioned addition inside the story column besides the byline is the sign-off — "Sincerely, / David" as an email farewell after the final paragraph (captain-supplied, 2026-08-13; ES farewell `Atentamente,` is our translation, the name is untranslated) — deliberately styled as plain body text, not a new device.
+The only presentation liberties, allowed as typesetting rather than addition: the lede sizing of the opening paragraph and typographic curly quotes throughout the story body, where the source email had straight ones — they must stay curly in both the rendered text and the `data-en`/`data-es` attributes the toggle restores.
+The byline card, the sign-off name, and the meta clause are composed in `src/lib/founder.ts`; the sign-off reads `getTeamMember('david')` and the meta clause reuses the byline card's own display name and title (so it always credits exactly what the page shows, and a role rename still propagates through the title's team.ts half), while the display name and the Founder literal are guarded as page-local by `src/lib/__tests__/founder.test.ts`.
+The lookup throws at build time if the `david` entry disappears, because the alternative is silently shipping the story unattributed again.
+The meta description must stay under 155 characters **with** that trailing "By …" clause included, since search engines truncate around there and a cut-off byline defeats the attribution the captain asked for — if a longer role title ever pushes it over, trim the lead-in ("How Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across the city."), never the byline.
+That ceiling is enforced by `src/lib/__tests__/founder.test.ts`, not by eye: because the role comes from `team.ts`, a rename there would otherwise lengthen the description with no signal at all.
+The composition lives in the lib module rather than inline in the page precisely so that guard asserts the string the page actually ships — a copy of the template in the test would keep passing while the page drifted.
+Discovery is **deliberately** just the nav's About dropdown and the footer — the About page is not linked to the story and must not be without the captain's say-so: the About page was out of scope for this change, the captain asked for nothing added, and the story launches via an email linking straight to `/about/from-the-founder`, so this is a deferral, not an oversight.
+In `NavBar.astro`, the `!isFounder` guard on `isTeam` is what stops "The Team" double-lighting on the founder page while the About parent still does — the `/about/` prefix would otherwise match.
+Declaration order is not the protection; keep the guard.
+The route itself is `FOUNDER_PATH` in `src/lib/founder.ts`, consumed by that guard, the nav link, and the footer link, so a fifth rename cannot light the wrong nav item or leave a dead link behind; `founder.test.ts` asserts the constant still points at an existing page file.
+`.story-section` sets `background-color`, never the `background` shorthand: the shorthand resets `background-image`, and the scoped rule out-specifies the global `.grid-paper`, so the texture would silently stop painting.
+The same latent suppression exists today on `.recruit-page`, `.bento`, and `.team-section` — deliberately left alone here, flagged for a separate pass.
 
 ## E2E Testing
 
@@ -98,6 +128,7 @@ See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling a
 * Everything else is component-scoped: nav/footer/social bar/lang toggle live in `src/components/` with their own `<style>` blocks. Add styles next to the component, not to global.css.
 * Layout is fluid-first: `clamp()` tokens and `auto-fit`/`minmax()` grids instead of stacking breakpoints; heroes use `svh` (not `vh`); components pad with `max(<design spacing>, env(safe-area-inset-*))` — the env() values are all 0 now that `viewport-fit=cover` is gone (see the safe-area bullet below), but the `max()` pattern keeps every layout correct under either viewport mode, so keep using it for new chrome-adjacent UI.
 * The visual language is "street poster / club zine": hard offset press shadows (`--press`, `--press-sm`), tilted `.sticker` chips, `.sign-plate` street-sign titles, giant outlined Bebas background words, the `.tape-seam` caution divider, and `.grid-paper` texture on light sections. New UI should reuse these devices rather than soft shadows or new decorative styles.
+Reusing a device is the default, not a rule: the From the Founder byline portrait wears the charcoal outline with the press shadow deliberately removed on the captain's call (see "From the Founder" above), so a bare outline is not automatically an idiom violation.
 * EN/ES translation is attribute-driven (`data-en`/`data-es`, state in `src/lib/language.ts`); dynamic text (dates, tab-dependent copy) is re-rendered by the owning component on `onLanguageChange`.
 * Images live in `src/assets/` and render through `<Image>` from `astro:assets` — never `public/` (raw files there bypass optimization; the 529 KB logo alone would have blown the bandwidth budget at target traffic).
 The adapter sets `imageCDN: false` deliberately, so optimization happens at build time via sharp into immutable `/_astro/*.webp` files — keep it that way.
@@ -106,11 +137,12 @@ Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descenda
 So an `aria-label` stays English after a toggle; give controls a bilingual accessible name with a visually-hidden `<span data-en data-es>` inside instead (see the photo hotspots in `about.astro`).
 * `<Image>` with `widths` but no `width` emits a fallback `src` at the source file's native resolution — the 5820px About group photo produced a 4.8 MB webp that way.
 Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallback.
-* Team identity (names, roles, bios, social-link slots, portrait crops, meta descriptions) lives in `src/lib/team.ts`, consumed by the About page.
+* Team identity (names, roles, bios, social-link slots, portrait crops, meta descriptions) lives in `src/lib/team.ts`, consumed by the About page and — through `getTeamMember('david')` in `src/lib/founder.ts` — by the From the Founder sign-off, byline title, and meta description.
 The per-person `/about/{id}` pages were pulled from this release to the `fm/about-individual-pages` branch (captain, round 23) — continue that work there; `socials`/`portrait`/`metaDescription` in `team.ts` are dormant data kept for their return, and the About bios' names are plain `<mark>` text (no links) until then.
 All three bios reach us through the captain and their English is kept **verbatim** (David's own words, superseding round 28's text; Nandi's own words, round 16; Fabiola's from the captain, rounds 18/27 with a single flagged firstmate edit): do not reword, tighten, or re-punctuate them, and keep the Spanish tracking whatever the English says rather than smoothing it.
 Only the paragraph breaks are ours, and the per-bio comments in `team.ts` record which round each came from and which quirks (David's "Hello!" opener, Fabiola's four-dot ellipses) are deliberate.
 A role rename has to land in two places for Nandi and Fabiola, whose `metaDescription` embeds the English role verbatim ("Meet Nandi, `<role>` at Trash Talk NYC, …"); David's paraphrases the title instead ("organizer of Trash Talk NYC"), so it survives a rename.
+The From the Founder page names David's role in its byline title and meta description but reads both from `team.ts` at build time, so it is not a touchpoint (see "From the Founder" above).
 Several social slots are `href="#"` placeholders awaiting the captain's URLs — flagged with TODO comments in the file.
 * The About team section (`about.astro`) keeps only photo-frame presentation: a `geometry` map of hotspot bands, face-chip anchors, and spotlight ellipses, all expressed as percentages of the photo frame.
 The hero renders a fixed build-time vertical crop of the group shot (the `CROP` constant; y-coordinates remap through `py()`) — never a viewport-dependent `object-fit`, which would silently misalign every hotspot and spotlight.
