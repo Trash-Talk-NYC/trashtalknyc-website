@@ -1,6 +1,8 @@
 /**
  * The team — single source for names, roles, and bios, consumed by the
- * About page. The individual /about/{person} pages were pulled from
+ * About page and by the Our Story page, whose byline and meta
+ * description read David's name and role from here rather than spelling
+ * them out. The individual /about/{person} pages were pulled from
  * this release onto fm/about-individual-pages (captain, round 23);
  * `socials`, `portrait`, and `metaDescription` are only consumed there,
  * and are kept here so the data survives until those pages return.
@@ -185,6 +187,11 @@ export const team: TeamMember[] = [
   },
 ];
 
+/**
+ * Look a member up by id. Unknown ids return undefined, so a caller that
+ * cannot render without the person (the Our Story byline) should fail
+ * loudly rather than quietly ship the page without them.
+ */
 export function getTeamMember(id: string): TeamMember | undefined {
   return team.find((p) => p.id === id);
 }
