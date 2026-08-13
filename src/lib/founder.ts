@@ -2,7 +2,8 @@ import { getTeamMember } from './team';
 
 /**
  * From the Founder attribution — the byline card, sign-off name, and
- * meta description for /about/from-the-founder.
+ * meta description for the founder page, whose route this module also
+ * owns (FOUNDER_PATH below, shared with the nav and footer links).
  *
  * These live here rather than inline in the page so the guards in
  * __tests__/founder.test.ts assert the exact strings the page ships: a

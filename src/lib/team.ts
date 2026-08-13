@@ -1,9 +1,14 @@
 /**
  * The team — single source for names, roles, and bios, consumed by the
- * About page and by the From the Founder page, whose sign-off and meta
- * description read David's name and role from here rather than spelling
- * them out. The individual /about/{person} pages were pulled from
- * this release onto fm/about-individual-pages (captain, round 23);
+ * About page and, through `src/lib/founder.ts`, by the From the Founder
+ * page: its sign-off reads David's name from here, and its byline title
+ * and meta description read his role from here, so a role rename
+ * propagates. The name that page displays in the byline and the meta is
+ * NOT this entry's — "David Clarke" is a deliberate page-local literal
+ * there, because the About page presents him as "David" (captain,
+ * 2026-08-13); do not unify them by editing this file. The individual
+ * /about/{person} pages were pulled from this release onto
+ * fm/about-individual-pages (captain, round 23);
  * `socials`, `portrait`, and `metaDescription` are only consumed there,
  * and are kept here so the data survives until those pages return.
  * About-page-only presentation (hotspot bands, spotlight ellipses)
