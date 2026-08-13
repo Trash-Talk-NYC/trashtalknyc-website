@@ -185,16 +185,17 @@ const story: Block[] = [
     margin-bottom: var(--space-md);
   }
 
-  /* Fixed-size circle in the sticker voice (charcoal border, small
-     press shadow). Explicit height overrides the width/height attrs
-     <Image> always emits; the source is square, so no crop drift. */
+  /* Fixed-size circle: flat charcoal outline, deliberately NO press
+     shadow — the captain wants the black outline without the
+     dimensional offset look (2026-08-13). Explicit height overrides
+     the width/height attrs <Image> always emits; the source is square,
+     so no crop drift. */
   .byline-photo {
     width: 64px;
     height: 64px;
     flex-shrink: 0;
     border-radius: 50%;
     border: 2.5px solid var(--charcoal);
-    box-shadow: var(--press-sm);
     object-fit: cover;
   }
 
