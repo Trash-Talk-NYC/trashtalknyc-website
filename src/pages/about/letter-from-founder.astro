@@ -41,6 +41,13 @@ const byline = {
   es: `Por ${author.name}, ${author.role.es}`,
 };
 
+// Must stay under ~155 characters WITH the attribution included: search
+// engines truncate around there, and the captain restored that byline
+// deliberately, so letting it fall outside the visible window defeats
+// the point. If a longer role title ever pushes this over, trim the
+// lead-in further — never the byline.
+const metaDescription = `How Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across the city. By ${author.name}, ${author.role.en}.`;
+
 type Block = { kind: 'lede' | 'p'; en: string; es: string };
 
 const story: Block[] = [
@@ -107,10 +114,7 @@ const story: Block[] = [
 ];
 ---
 
-<BaseLayout
-  title="Letter from Founder — Trash Talk NYC"
-  description={`A letter from the founder on how Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across New York City. By ${author.name}, ${author.role.en}.`}
->
+<BaseLayout title="Letter from Founder — Trash Talk NYC" description={metaDescription}>
   <!-- The h1 is the captain's chosen page name (rename, 2026-08-13),
        split into two leaves so the language toggle can restructure it:
        EN "Letter from / Founder" becomes ES "Carta del / Fundador"
@@ -135,7 +139,7 @@ const story: Block[] = [
            NOT a new section. The ES farewell is our translation per
            site convention; the name is a proper noun and carries no
            data attributes, so the toggle leaves it alone. -->
-      <p class="story-signoff">
+      <p class:list={['story-p', 'story-signoff']}>
         <span data-en="Sincerely," data-es="Atentamente,">Sincerely,</span><br />
         <span>{author.name}</span>
       </p>
@@ -200,14 +204,11 @@ const story: Block[] = [
     line-height: 1.55;
   }
 
-  /* Email-farewell sign-off: body voice, a blank line's worth of air
-     above it, nothing decorative — it should read like the end of a
-     letter, not a new device. */
+  /* Email-farewell sign-off: composes .story-p so it keeps body voice
+     verbatim if body type ever changes, and only adds a blank line's
+     worth of air above it — nothing decorative, so it reads like the
+     end of a letter rather than a new device. */
   .story-signoff {
     margin-top: 2.4em;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--charcoal);
-    line-height: 1.75;
   }
 </style>
