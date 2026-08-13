@@ -194,8 +194,8 @@ export const team: TeamMember[] = [
 
 /**
  * Look a member up by id. Unknown ids return undefined, so a caller that
- * cannot render without the person (the From the Founder attribution) should fail
- * loudly rather than quietly ship the page without them.
+ * cannot render without the person (the From the Founder attribution)
+ * should fail loudly rather than quietly ship the page without them.
  */
 export function getTeamMember(id: string): TeamMember | undefined {
   return team.find((p) => p.id === id);
