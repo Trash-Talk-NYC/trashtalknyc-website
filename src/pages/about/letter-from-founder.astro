@@ -4,10 +4,13 @@ import PageHero from '../../components/PageHero.astro';
 import { getTeamMember } from '../../lib/team';
 
 /**
- * Our Story — /about/our-story: David's first-person account of how
- * Trash Talk NYC started, received via Nandi (2026-08-12) and confirmed
- * as his by the captain (2026-08-13). His given title is "Trash Talk
- * NYC's Story"; the nav label is "Our Story".
+ * Letter from Founder — /about/letter-from-founder: David's
+ * first-person account of how Trash Talk NYC started, received via
+ * Nandi (2026-08-12) and confirmed as his by the captain (2026-08-13).
+ * Renamed from "Our Story" at /about/our-story (captain, 2026-08-13)
+ * before anything went live, so it is a clean rename with no redirect —
+ * the old URL never existed publicly. The nav label is "Letter from
+ * Founder" (ES "Carta del Fundador").
  *
  * THE ENGLISH STORY IS VERBATIM — do not reword, tighten, reorder, or
  * "improve" a single sentence, and keep the Spanish tracking whatever
@@ -31,7 +34,7 @@ import { getTeamMember } from '../../lib/team';
 // fail the build instead.
 const author = getTeamMember('david');
 if (!author) {
-  throw new Error("Our Story byline needs the 'david' entry in src/lib/team.ts, which is missing.");
+  throw new Error("The Letter from Founder byline needs the 'david' entry in src/lib/team.ts, which is missing.");
 }
 const byline = {
   en: `By ${author.name}, ${author.role.en}`,
@@ -105,16 +108,16 @@ const story: Block[] = [
 ---
 
 <BaseLayout
-  title="Our Story — Trash Talk NYC"
-  description={`The story of how Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across New York City, told by ${author.name}, ${author.role.en}.`}
+  title="Letter from Founder — Trash Talk NYC"
+  description={`A letter from the founder on how Trash Talk NYC began: 88 days from a $40 cleanup kit in Washington Heights to cleanups across New York City. By ${author.name}, ${author.role.en}.`}
 >
-  <!-- The h1 is David's given title, split into two leaves so the
-       language toggle can restructure it: EN "Trash Talk NYC’s / Story"
-       becomes ES "La historia de / Trash Talk NYC" leaf by leaf. The
-       apostrophe is curly like every other one on the page. -->
-  <PageHero eyebrowEn="About · Our Story" eyebrowEs="Nosotros · Nuestra Historia" word="88 DAYS">
-    <span data-en="Trash Talk NYC’s" data-es="La historia de">Trash Talk NYC’s</span><br />
-    <span class="accent" data-en="Story" data-es="Trash Talk NYC">Story</span>
+  <!-- The h1 is the captain's chosen page name (rename, 2026-08-13),
+       split into two leaves so the language toggle can restructure it:
+       EN "Letter from / Founder" becomes ES "Carta del / Fundador"
+       leaf by leaf. -->
+  <PageHero eyebrowEn="About · Letter from Founder" eyebrowEs="Nosotros · Carta del Fundador" word="88 DAYS">
+    <span data-en="Letter from" data-es="Carta del">Letter from</span><br />
+    <span class="accent" data-en="Founder" data-es="Fundador">Founder</span>
   </PageHero>
 
   <section class="story-section grid-paper">
@@ -126,6 +129,16 @@ const story: Block[] = [
           {b.en}
         </p>
       ))}
+
+      <!-- Sign-off — captain-supplied (2026-08-13): "Sincerely, David"
+           as an email farewell after the final paragraph, deliberately
+           NOT a new section. The ES farewell is our translation per
+           site convention; the name is a proper noun and carries no
+           data attributes, so the toggle leaves it alone. -->
+      <p class="story-signoff">
+        <span data-en="Sincerely," data-es="Atentamente,">Sincerely,</span><br />
+        <span>{author.name}</span>
+      </p>
     </article>
   </section>
 </BaseLayout>
@@ -185,5 +198,16 @@ const story: Block[] = [
     font-size: var(--step-1);
     font-weight: 700;
     line-height: 1.55;
+  }
+
+  /* Email-farewell sign-off: body voice, a blank line's worth of air
+     above it, nothing decorative — it should read like the end of a
+     letter, not a new device. */
+  .story-signoff {
+    margin-top: 2.4em;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    line-height: 1.75;
   }
 </style>
