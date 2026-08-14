@@ -60,7 +60,7 @@ Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 re
 
 Turnstile (bot check, added 2026-07 after the security-scale audit flagged bot list-pollution):
 - Widget renders on both forms only when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time; the token lands as the `cf-turnstile-response` form field.
-- The actions enforce verification only when that site key is set at runtime, so the feature is dormant until the keys are provisioned (logged as `turnstile_not_configured` on every submission meanwhile).
+- The actions enforce verification only when that site key is set at runtime; production has one, so verification runs there, and any context without a site key skips it (logged as `turnstile_not_configured` on every submission).
 - Once the site key is set, a missing `TURNSTILE_SECRET_KEY` fails closed (`form_env_missing`), and any verification failure rejects with the same generic message as other validation failures (`form_turnstile_rejected` in logs).
 - Turnstile sits alongside the honeypot/timing heuristics, not instead of them; setting the keys in Netlify requires a redeploy because the site key bakes into the prerendered pages.
 
@@ -116,7 +116,7 @@ Shipped:
 - Signup and contact forms migrated from Netlify Function + Web3Forms to Astro Actions + Brevo (2026-07 redesign)
 - Per-submission Brevo CRM note history (full history vs. the MESSAGE attribute's latest-value-only)
 - Persistent, screen-reader-announced submit error (`aria-live="polite"`) on both forms, alongside the existing transient button-text swap
-- Cloudflare Turnstile bot check on both forms (security audit X1); dormant until the captain provisions real keys — see Forms above
+- Cloudflare Turnstile bot check on both forms (security audit X1); live in production — see Forms above and `AGENTS.md`, "Turnstile bot check"
 - SEO & share-metadata overhaul (2026-07): complete OG/Twitter tags, favicon set + share card generated from the hero logo, JSON-LD Organization schema, sitemap + robots.txt + canonicals — see Website above
 
 Medium:
