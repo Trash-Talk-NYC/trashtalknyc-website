@@ -85,7 +85,10 @@ Do not link to `/projects` from anything on this branch — the route does not e
 
 ## From the Founder — /about/from-the-founder, David's account VERBATIM
 
-The founder page (`src/pages/about/from-the-founder.astro`) carries a first-person account of how Trash Talk NYC started, received via Nandi (2026-08-12); the canonical source text lived at `firstmate/data/our-story-page/copy.md`.
+The founder page (`src/pages/about/from-the-founder.astro`) carries a first-person account of how Trash Talk NYC started, received via Nandi (2026-08-12).
+The canonical source text is the **latest** revision the captain sent, currently `firstmate/data/founder-story-revision-m4/source-en.md` (revision m4, 2026-08-14, which dropped the "Its history dances between Columbia takeovers…" sentence, changed "up to 100" volunteers to "upwards of 80", and reworded "appear as ridiculous concepts"/"scream underfunding").
+The original intake text at `firstmate/data/our-story-page/copy.md` is **superseded and must not be used to reconcile the page** — it still carries the pre-m4 wording, so treating it as canonical would silently revert the captain's edits.
+Any future revision must update this pointer in the same commit that changes the page, or the next agent reconciling against the documented source will undo it.
 **The captain confirmed on 2026-08-13 that it is David's story**, settling the earlier ambiguity (the copy arrived from Nandi — "Source: Nandi Brooks email" — but reads as the founder in the first person), and both attributions were restored on that word: the on-page byline (now a photo card — see below) and the meta description's closing "By `<name>`, `<role>`." clause.
 That confirmation supersedes the strip-everything instruction **for attribution only** — headings, pull-quote, and closing CTA stay stripped.
 The English story is David's own words, **verbatim**: do not reword, tighten, reorder, or re-punctuate a single sentence, and keep the Spanish tracking whatever the English says rather than smoothing it.

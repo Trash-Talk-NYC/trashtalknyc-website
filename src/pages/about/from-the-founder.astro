@@ -18,7 +18,11 @@ import founderPhoto from '../../assets/david-founder.jpg';
  *
  * THE ENGLISH STORY IS VERBATIM — do not reword, tighten, reorder, or
  * "improve" a single sentence, and keep the Spanish tracking whatever
- * the English says rather than smoothing it.
+ * the English says rather than smoothing it. The blocks below carry
+ * revision m4 (2026-08-14); its source text, not the superseded intake
+ * copy, is the one to reconcile against — AGENTS.md ("From the
+ * Founder") holds the current source pointer and must be updated in
+ * the same commit as any future revision.
  *
  * NOTHING IS ADDED — a captain decision (revision, 2026-08-13): the
  * page is his paragraphs, in his order, with nothing between them. The
@@ -41,8 +45,8 @@ type Block = { kind: 'lede' | 'p'; en: string; es: string };
 const story: Block[] = [
   {
     kind: 'lede',
-    en: 'This is the story of the 88 days that changed my life and might change New York City. I live in Washington Heights. For those who don’t know, Washington Heights is a Dominican neighborhood in Upper Manhattan. Its history dances between Columbia takeovers, a lasting drug problem, and a strong sense of community. On summer nights, Dominican music and excited conversation fill the main streets, but mine has been silent.',
-    es: 'Esta es la historia de los 88 días que cambiaron mi vida y podrían cambiar la ciudad de Nueva York. Yo vivo en Washington Heights. Para quien no lo conozca, Washington Heights es un vecindario dominicano en el Alto Manhattan. Su historia baila entre las tomas de Columbia, un problema de drogas que persiste y un fuerte sentido de comunidad. En las noches de verano, la música dominicana y las conversaciones animadas llenan las calles principales, pero la mía ha estado en silencio.',
+    en: 'This is the story of the 88 days that changed my life and might change New York City. I live in Washington Heights. For those who don’t know, Washington Heights is a Dominican neighborhood in Upper Manhattan. On summer nights, Dominican music and excited conversation fill the main streets, but mine has been silent.',
+    es: 'Esta es la historia de los 88 días que cambiaron mi vida y podrían cambiar la ciudad de Nueva York. Yo vivo en Washington Heights. Para quien no lo conozca, Washington Heights es un vecindario dominicano en el Alto Manhattan. En las noches de verano, la música dominicana y las conversaciones animadas llenan las calles principales, pero la mía ha estado en silencio.',
   },
   {
     kind: 'p',
@@ -66,8 +70,8 @@ const story: Block[] = [
   },
   {
     kind: 'p',
-    en: 'Within weeks of the account’s formation, I already received messages from Assembly Members and Council Members. I had already received calls from police detectives and fire fighters. People begged me to clean their block, and we fielded up to 100 volunteers in a single weekend.',
-    es: 'A las pocas semanas de crear la cuenta, ya recibía mensajes de asambleístas y concejales. Ya había recibido llamadas de detectives de la policía y de bomberos. La gente me rogaba que limpiara su cuadra, y llegamos a coordinar hasta 100 voluntarios en un solo fin de semana.',
+    en: 'Within weeks of the account’s formation, I already received messages from Assembly Members and Council Members. I had already received calls from police detectives and fire fighters. People begged me to clean their block, and we fielded upwards of 80 volunteers in a single weekend.',
+    es: 'A las pocas semanas de crear la cuenta, ya recibía mensajes de asambleístas y concejales. Ya había recibido llamadas de detectives de la policía y de bomberos. La gente me rogaba que limpiara su cuadra, y llegamos a coordinar más de 80 voluntarios en un solo fin de semana.',
   },
   {
     kind: 'p',
@@ -81,8 +85,8 @@ const story: Block[] = [
   },
   {
     kind: 'p',
-    en: 'I started Trash Talk NYC to pick up my neighborhood’s litter, but now I don’t want to just pick up litter. Picking up trash is a band-aid solution to a deeper cultural and infrastructural problem. Instead, I want to give people hope and appreciation for a community they want to preserve. Traveling around New York City, I’ve visited many communities where “conservation” and “litter pickup” appear as ridiculous concepts. Dead trees, empty tree beds, and cracked, littered sidewalks scream underfunding and neglect. Like many others, I wondered “why preserve a community that couldn’t be beautiful even with a caring steward?”',
-    es: 'Empecé Trash Talk NYC para recoger la basura de mi vecindario, pero ahora no quiero solo recoger basura. Recoger basura es una curita sobre un problema cultural y de infraestructura más profundo. Lo que quiero es darle a la gente esperanza y aprecio por una comunidad que quiera preservar. Recorriendo la ciudad de Nueva York, he visitado muchas comunidades donde la “conservación” y la “recogida de basura” parecen conceptos ridículos. Árboles muertos, canteros de árboles vacíos y aceras agrietadas y llenas de basura gritan falta de fondos y abandono. Como muchos otros, me pregunté: “¿por qué preservar una comunidad que no podría ser hermosa ni siquiera con alguien que la cuide con esmero?”',
+    en: 'I started Trash Talk NYC to pick up my neighborhood’s litter, but now I don’t want to just pick up litter. Picking up trash is a band-aid solution to a deeper cultural and infrastructural problem. Instead, I want to give people hope and appreciation for a community they want to preserve. Traveling around New York City, I’ve visited many communities where “conservation” and “litter pickup” are ridiculous concepts. Dead trees, empty tree beds, and cracked, littered sidewalks scream of underfunding and neglect. Like many others, I wondered “why preserve a community that couldn’t be beautiful even with a caring steward?”',
+    es: 'Empecé Trash Talk NYC para recoger la basura de mi vecindario, pero ahora no quiero solo recoger basura. Recoger basura es una curita sobre un problema cultural y de infraestructura más profundo. Lo que quiero es darle a la gente esperanza y aprecio por una comunidad que quiera preservar. Recorriendo la ciudad de Nueva York, he visitado muchas comunidades donde la “conservación” y la “recogida de basura” son conceptos ridículos. Árboles muertos, canteros de árboles vacíos y aceras agrietadas y llenas de basura gritan falta de fondos y abandono. Como muchos otros, me pregunté: “¿por qué preservar una comunidad que no podría ser hermosa ni siquiera con alguien que la cuide con esmero?”',
   },
   {
     kind: 'p',
