@@ -1,8 +1,11 @@
-import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions';
-import { signupSchema, contactSchema, type ContactInput } from '../lib/server/schemas';
+import { defineAction, ActionError, ActionInputError, type ActionAPIContext } from 'astro:actions';
+import { signupSchema, contactSchema, leadSchema, NOT_IN_NYC, type ContactInput } from '../lib/server/schemas';
+import { ADDRESS_UNAVAILABLE, ADDRESS_UNVERIFIED } from '../lib/addressErrors';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
+import { verifyNycAddress, type GeoVerifyResult } from '../lib/server/geosearch';
+import { MAX_PHOTOS, deleteLeadPhotos, processPhoto, storeLeadPhotos } from '../lib/server/photos';
 import {
   buildAttributes,
   buildInquiryEmail,
@@ -11,10 +14,11 @@ import {
   getBrevoContactId,
   sendBrevoEmail,
   upsertBrevoContact,
+  type InquiryEmailInput,
 } from '../lib/server/brevo';
 
 /**
- * Server actions for the two site forms. Flow per submission:
+ * Server actions for the site forms. Flow per submission:
  * spam heuristics → per-IP rate limit → Turnstile verification →
  * env check → Brevo contact upsert.
  *
@@ -22,9 +26,31 @@ import {
  * deliberately exclude API keys and submitted PII.
  */
 
-type FormName = 'signup' | 'contact';
+type FormName = 'signup' | 'contact' | 'lead';
 
 const GENERIC_FAILURE = 'Something went wrong. Please try again.';
+
+/**
+ * Verifies one picked route address, throwing a field-level input error
+ * (whose message the page maps onto that picker) when it can't be.
+ */
+async function verifyAddressField(
+  field: 'startAddress' | 'endAddress',
+  label: string,
+  featureId: string,
+  point: string,
+): Promise<Extract<GeoVerifyResult, { ok: true }>> {
+  const verified = await verifyNycAddress(label, featureId, point);
+  if (verified.ok) return verified;
+  log('warn', 'form_address_rejected', { form: 'lead', field, reason: verified.reason });
+  throw new ActionInputError([
+    {
+      code: 'custom',
+      path: [field],
+      message: verified.reason === 'unavailable' ? ADDRESS_UNAVAILABLE : ADDRESS_UNVERIFIED,
+    },
+  ]);
+}
 
 function log(level: 'info' | 'warn' | 'error', evt: string, fields: Record<string, string | number> = {}) {
   console[level](JSON.stringify({ evt, ...fields }));
@@ -95,19 +121,32 @@ async function requireTurnstile(form: FormName, ctx: ActionAPIContext, token: st
   }
 }
 
-async function upsertOrThrow(
-  form: FormName,
-  email: string,
-  attributes: Record<string, string>,
-  listIdVar: string,
-): Promise<void> {
+interface BrevoTarget {
+  apiKey: string;
+  listId: number;
+}
+
+/**
+ * Resolves the Brevo key and list for a form, failing closed when either
+ * is missing or invalid. Separate from the upsert so a form with side
+ * effects before the upsert (lead photos) can check its env first.
+ */
+function requireBrevoTarget(form: FormName, listIdVar: string): BrevoTarget {
   const apiKey = requireEnv('BREVO_API_KEY', form);
   const listId = Number(requireEnv(listIdVar, form));
   if (!Number.isFinite(listId) || listId <= 0) {
     log('error', 'form_env_invalid', { form, var: listIdVar });
     throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: GENERIC_FAILURE });
   }
+  return { apiKey, listId };
+}
 
+async function upsertOrThrow(
+  form: FormName,
+  email: string,
+  attributes: Record<string, string>,
+  { apiKey, listId }: BrevoTarget,
+): Promise<void> {
   const result = await upsertBrevoContact(apiKey, { email, attributes, listId });
   if (!result.ok) {
     log('error', 'brevo_upsert_failed', { form, status: result.status ?? 0, detail: result.detail });
@@ -121,37 +160,40 @@ async function upsertOrThrow(
  * Records the free-text field as a Brevo CRM note so the full submission
  * history survives (the MESSAGE attribute only keeps the latest value).
  * Best-effort: a note failure is logged but never fails the submission —
- * the contact upsert already succeeded.
+ * the contact upsert already succeeded. Resolves true only when the note
+ * was created.
  */
-async function tryCreateNote(noteForm: string, email: string, content: string | undefined): Promise<void> {
+async function tryCreateNote(noteForm: string, email: string, content: string | undefined): Promise<boolean> {
   // Outer guard: the contact upsert already succeeded, so nothing in the
   // note flow — including bugs — may fail the user's submission.
   try {
     const trimmed = content?.trim();
-    if (!trimmed) return;
+    if (!trimmed) return false;
 
     const apiKey = getEnv('BREVO_API_KEY');
-    if (!apiKey) return; // upsert would have thrown already; belt and braces
+    if (!apiKey) return false; // upsert would have thrown already; belt and braces
 
     const contact = await getBrevoContactId(apiKey, email);
     if (!contact.ok) {
       log('warn', 'brevo_note_failed', { form: noteForm, stage: 'contact_lookup', status: contact.status ?? 0, detail: contact.detail });
-      return;
+      return false;
     }
 
     const note = await createBrevoNote(apiKey, contact.id, buildNoteText(noteForm, 'message', trimmed));
     if (!note.ok) {
       log('warn', 'brevo_note_failed', { form: noteForm, stage: 'create_note', status: note.status ?? 0, detail: note.detail });
-      return;
+      return false;
     }
 
     log('info', 'brevo_note_created', { form: noteForm });
+    return true;
   } catch (err) {
     log('warn', 'brevo_note_failed', {
       form: noteForm,
       stage: 'unexpected',
       detail: err instanceof Error ? err.message : 'unknown',
     });
+    return false;
   }
 }
 
@@ -168,13 +210,14 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
  * throws: the contact upsert already succeeded and must not be undone by a
  * notification failure.
  */
-async function tryNotifyInquiry(input: ContactInput): Promise<void> {
+async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
+  const form: FormName = input.inquiryType === 'lead' ? 'lead' : 'contact';
   try {
     const apiKey = getEnv('BREVO_API_KEY');
     const to = getEnv(input.inquiryType === 'sponsor' ? 'SPONSOR_NOTIFY_TO' : 'CONTACT_NOTIFY_TO');
     const from = getEnv('CONTACT_NOTIFY_FROM');
     if (!apiKey || !to || !from) {
-      log('info', 'inquiry_notify_skipped', { form: 'contact', inquiry: input.inquiryType });
+      log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
       return;
     }
 
@@ -186,19 +229,11 @@ async function tryNotifyInquiry(input: ContactInput): Promise<void> {
       .filter(Boolean)
       .map((email) => ({ email }));
     if (recipients.length === 0) {
-      log('info', 'inquiry_notify_skipped', { form: 'contact', inquiry: input.inquiryType });
+      log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
       return;
     }
 
-    const { subject, htmlContent } = buildInquiryEmail({
-      inquiryType: input.inquiryType,
-      fname: input.fname,
-      lname: input.lname,
-      email: input.email,
-      message: input.message,
-      phone: input.phone,
-      organization: input.organization,
-    });
+    const { subject, htmlContent } = buildInquiryEmail(input);
 
     const result = await sendBrevoEmail(apiKey, {
       sender: { email: from, name: 'Trash Talk NYC Website' },
@@ -210,7 +245,7 @@ async function tryNotifyInquiry(input: ContactInput): Promise<void> {
 
     if (!result.ok) {
       log('warn', 'inquiry_notify_failed', {
-        form: 'contact',
+        form,
         inquiry: input.inquiryType,
         status: result.status ?? 0,
         detail: result.detail,
@@ -218,10 +253,10 @@ async function tryNotifyInquiry(input: ContactInput): Promise<void> {
       return;
     }
 
-    log('info', 'inquiry_notify_sent', { form: 'contact', inquiry: input.inquiryType });
+    log('info', 'inquiry_notify_sent', { form, inquiry: input.inquiryType });
   } catch (err) {
     log('warn', 'inquiry_notify_failed', {
-      form: 'contact',
+      form,
       stage: 'unexpected',
       detail: err instanceof Error ? err.message : 'unknown',
     });
@@ -242,19 +277,28 @@ export const server = {
 
       await requireTurnstile('signup', ctx, input['cf-turnstile-response']);
 
+      // Outside-NYC signups: BOROUGH is omitted (its live option set may
+      // not include "Not in NYC") and the location lands in the COUNTRY /
+      // CITY / ZIP_CODE attributes instead — COUNTRY present exactly when
+      // BOROUGH is absent, so the two states stay distinguishable.
+      const outsideNyc = input.borough === NOT_IN_NYC;
+
       await upsertOrThrow(
         'signup',
         input.email,
         buildAttributes({
           FIRSTNAME: input.fname,
           LASTNAME: input.lname,
-          BOROUGH: input.borough,
+          BOROUGH: outsideNyc ? undefined : input.borough,
+          COUNTRY: outsideNyc ? input.country : undefined,
+          CITY: outsideNyc ? input.city : undefined,
+          ZIP_CODE: outsideNyc ? input.zip : undefined,
           PHONE: input.phone,
           MESSAGE: input.experience,
           HEAR_ABOUT_US: input.hear,
           WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
         }),
-        'BREVO_LIST_ID_SIGNUP',
+        requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
       );
 
       await tryCreateNote('signup', input.email, input.experience);
@@ -297,7 +341,7 @@ export const server = {
           ORGANIZATION: input.organization,
           MESSAGE: input.message,
         }),
-        listIdVar,
+        requireBrevoTarget('contact', listIdVar),
       );
 
       const noteForms: Record<ContactInput['inquiryType'], string> = {
@@ -308,6 +352,115 @@ export const server = {
       const noteForm = noteForms[input.inquiryType];
       await tryCreateNote(noteForm, input.email, input.message);
       await tryNotifyInquiry(input);
+
+      return { ok: true };
+    },
+  }),
+
+  leadCleanup: defineAction({
+    accept: 'form',
+    input: leadSchema,
+    handler: async (input, ctx) => {
+      const dropped = await shouldSilentlyDrop('lead', ctx, {
+        botcheck: input.botcheck,
+        startedAt: input.startedAt,
+      });
+      if (dropped) return { ok: true };
+
+      await requireTurnstile('lead', ctx, input['cf-turnstile-response']);
+
+      const brevo = requireBrevoTarget('lead', 'BREVO_LIST_ID_LEADS');
+
+      // Re-verify the exact GeoSearch features the picker submitted. Any
+      // address that cannot be verified (bypassed picker, mismatched
+      // label, outside NYC, or GeoSearch unreachable) rejects the
+      // application rather than storing an unchecked or substituted one,
+      // as an error on that address field so the applicant knows to
+      // re-pick it (or retry, when the map service is down).
+      const start = await verifyAddressField('startAddress', input.startAddress, input.startAddressId, input.startAddressPoint);
+      const end =
+        input.routeType === 'oneway'
+          ? await verifyAddressField('endAddress', input.endAddress ?? '', input.endAddressId ?? '', input.endAddressPoint ?? '')
+          : undefined;
+
+      // Route photos: content-validated, re-encoded (metadata including
+      // GPS stripped), stored privately under random keys. File inputs
+      // submit one empty File when nothing was chosen — drop those first.
+      const files = (input.photos ?? []).filter((f) => f.size > 0);
+      if (files.length > MAX_PHOTOS) {
+        log('warn', 'lead_photos_rejected', { form: 'lead', reason: 'too_many', count: files.length });
+        throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
+      }
+      const jpegs: Buffer[] = [];
+      for (const file of files) {
+        const result = await processPhoto(new Uint8Array(await file.arrayBuffer()));
+        if (!result.ok) {
+          log('warn', 'lead_photos_rejected', { form: 'lead', reason: result.error });
+          throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
+        }
+        jpegs.push(result.jpeg);
+      }
+      let photoKeys: string[] = [];
+      if (jpegs.length > 0) {
+        const stored = await storeLeadPhotos(jpegs);
+        if (!stored.ok) {
+          // The applicant believes the photos were sent — failing loudly
+          // beats silently dropping attachments.
+          log('error', 'lead_photo_store_failed', { form: 'lead', detail: stored.detail });
+          throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: GENERIC_FAILURE });
+        }
+        photoKeys = stored.keys;
+      }
+
+      try {
+        await upsertOrThrow(
+          'lead',
+          input.email,
+          buildAttributes({
+            FIRSTNAME: input.fname,
+            LASTNAME: input.lname,
+            PHONE: input.phone,
+            INQUIRY_TYPE: 'lead',
+            LEAD_BEHALF: input.behalf,
+            MAILING_ADDRESS: input.mailingAddress,
+            ROUTE_TYPE: input.routeType,
+            ROUTE_START: start.label,
+            ROUTE_END: end?.label,
+            PREFERRED_MONTH: input.preferredMonth,
+          }),
+          brevo,
+        );
+      } catch (err) {
+        const { failed } = await deleteLeadPhotos(photoKeys);
+        if (failed > 0) log('error', 'lead_photo_cleanup_failed', { form: 'lead', count: failed });
+        throw err;
+      }
+
+      // The CRM note preserves the full application (attributes are
+      // last-write-wins), including where the private photos live.
+      const noteLines = [
+        `Applying on behalf of: ${input.behalf}`,
+        `Mailing address: ${input.mailingAddress}`,
+        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${start.label}${end ? ` — end: ${end.label}` : ''}`,
+        `Preferred month: ${input.preferredMonth}`,
+        photoKeys.length > 0
+          ? `Photos (${photoKeys.length}, private Blobs store lead-route-photos): ${photoKeys.join(', ')}`
+          : 'Photos: none attached',
+      ];
+      const noted = await tryCreateNote('contact-lead', input.email, noteLines.join('\n'));
+      if (!noted && photoKeys.length > 0) {
+        log('warn', 'lead_photo_keys_unrecorded', { form: 'lead', keys: photoKeys.join(', ') });
+      }
+
+      await tryNotifyInquiry({
+        inquiryType: 'lead',
+        fname: input.fname,
+        lname: input.lname,
+        email: input.email,
+        phone: input.phone,
+        message: noteLines.join('\n'),
+        extraRows: [['Preferred month', input.preferredMonth]],
+      });
 
       return { ok: true };
     },

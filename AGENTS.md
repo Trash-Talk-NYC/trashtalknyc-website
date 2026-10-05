@@ -17,10 +17,12 @@ He reached out to me, Fabi, to make the website.
 
 * Astro framework (static output + `@astrojs/netlify` adapter so Astro Actions run on-demand)
 * Netlify hosting
-* Astro Actions for both forms (validation, spam checks, Blobs rate limiting, Brevo upsert — `src/actions/`, `src/lib/server/`)
+* Astro Actions for the forms (validation, spam checks, Blobs rate limiting, Brevo upsert — `src/actions/`, `src/lib/server/`): `signup`, `contact`, and `leadCleanup`
 * Brevo for emailing tens of thousands of people
 * Eventbrite integration
 * GoFundMe embeds
+* `libphonenumber-js` for phone validation on both client and server; `sharp` at runtime for route-photo re-encoding (and at build time for `<Image>`)
+* NYC Planning Labs GeoSearch (free, keyless) for the Lead a Cleanup address picker + server re-validation; Open-Meteo geocoding (free, keyless) for the newsletter's outside-NYC city picker
 
 ## Brevo integration — sharp edges
 
@@ -31,13 +33,15 @@ Operational depth — the Authorized-IPs outage story, the debugging order, and 
 Netlify Functions egress from dynamic AWS IPs, so any IP allowlist will intermittently block production form submissions (this caused a real incident).
 * **List IDs:** 9 = signup, 10 = general contact, 11 = collab contact, 13 = sponsor contact.
 Env vars: `BREVO_LIST_ID_SIGNUP`, `CONTACT_GENERAL`, `CONTACT_COLLAB`, `CONTACT_SPONSOR` (short names because Netlify rejected longer `BREVO_LIST_ID_`-prefixed ones), plus `BREVO_API_KEY`.
+The Lead a Cleanup form (2026-10) reads `BREVO_LIST_ID_LEADS` — a Brevo list and the Netlify env var must exist per context before the form can submit; missing means `form_env_missing` and the generic error, same pattern as the others.
 Do **not** assume env vars match across Netlify deploy contexts: a 2026-08 forms validation found `deploy-preview` missing the three list IDs, the Turnstile secret, and both notify addresses while production was complete (the earlier "set identically across all contexts, verified 2026-07" claim was false).
 Firstmate has since copied the missing vars across, but verify per-context rather than trusting this — `form_env_missing` in the function logs is the tell.
 `CONTACT_SPONSOR=13` is documented in `.env.example` and **must be set in Netlify per context** — if missing, sponsor submissions fail loudly (`form_env_missing`, generic error in the UI) rather than landing in another list.
 Sponsor inquiries notify `SPONSOR_NOTIFY_TO` (sponsors@trashtalknyc.org in production) instead of `CONTACT_NOTIFY_TO`, with no fallback between the two — unset means the sponsor notification is skipped (`inquiry_notify_skipped`), never misrouted.
-* **Custom attribute map** (each must exist in the Brevo dashboard first or the upsert payload is rejected): `PHONE`, `INQUIRY_TYPE`, `WAIVER_ACCEPTED`, `MESSAGE`, `BOROUGH`, `HEAR_ABOUT_US`, `ORGANIZATION` (+ standard `FIRSTNAME`/`LASTNAME`).
-Signup sends FIRSTNAME, LASTNAME, BOROUGH, PHONE, MESSAGE (experience text), HEAR_ABOUT_US, WAIVER_ACCEPTED.
+* **Custom attribute map** (each must exist in the Brevo dashboard first or the upsert payload is rejected): `PHONE`, `INQUIRY_TYPE`, `WAIVER_ACCEPTED`, `MESSAGE`, `BOROUGH`, `HEAR_ABOUT_US`, `ORGANIZATION` (+ standard `FIRSTNAME`/`LASTNAME`), and since the 2026-10 redesign: `COUNTRY`, `CITY`, `ZIP_CODE` (outside-NYC signups) and `LEAD_BEHALF`, `MAILING_ADDRESS`, `ROUTE_TYPE`, `ROUTE_START`, `ROUTE_END`, `PREFERRED_MONTH` (lead applications) — the new ones must be created in the dashboard before the flows can land.
+Signup sends FIRSTNAME, LASTNAME, BOROUGH, PHONE, MESSAGE (experience text), HEAR_ABOUT_US, WAIVER_ACCEPTED; when the borough choice is "Not in NYC" it omits BOROUGH (whose live option set may not include that value) and sends COUNTRY, CITY, and — for the US — ZIP_CODE instead, so COUNTRY present ⇔ BOROUGH absent.
 Contact sends FIRSTNAME, LASTNAME, PHONE, INQUIRY_TYPE (`general` | `partnership` | `sponsor`), ORGANIZATION (collab + sponsor tabs), MESSAGE.
+Lead a Cleanup (`leadCleanup` action) sends FIRSTNAME, LASTNAME, PHONE, INQUIRY_TYPE=`lead`, LEAD_BEHALF, MAILING_ADDRESS, ROUTE_TYPE, ROUTE_START/ROUTE_END (GeoSearch-verified labels), PREFERRED_MONTH, plus a CRM note carrying the full application and the private Blobs keys of any route photos (store `lead-route-photos`; photos are content-validated, re-encoded by sharp with metadata/GPS stripped, never public — see `src/lib/server/photos.ts`).
 `INQUIRY_TYPE` is a plain text attribute (verified via the attributes API 2026-08), so new inquiry-type values need no Brevo dashboard work.
 Empty-string fields are dropped before upsert so updates never blank existing values (`buildAttributes` in `src/lib/server/brevo.ts`).
 * **`PHONE` is a custom text attribute, not Brevo's native SMS/phone field.**
@@ -49,7 +53,7 @@ Full submission history is preserved as Brevo CRM notes with a queryable header 
 
 ## Turnstile bot check — LIVE in production
 
-Both forms carry a Cloudflare Turnstile widget verified server-side in the actions (`requireTurnstile` in `src/actions/index.ts`, `src/lib/server/turnstile.ts`), layered on top of — not replacing — the honeypot/timing heuristics.
+All three forms (signup, contact, Lead a Cleanup) carry a Cloudflare Turnstile widget verified server-side in the actions (`requireTurnstile` in `src/actions/index.ts`, `src/lib/server/turnstile.ts`), layered on top of — not replacing — the honeypot/timing heuristics.
 **Turnstile is live:** production holds a real site key and real secret (the secret appears nowhere in this repo).
 The old "dormant until real keys exist" behavior still applies wherever `PUBLIC_TURNSTILE_SITE_KEY` is unset (no widget, verification skipped, `turnstile_not_configured` logged), and the site key bakes into the prerendered pages at build time, so key changes need a redeploy.
 Once a site key is set, a missing secret fails closed (`form_env_missing` pattern); verification failures log `form_turnstile_rejected` and show the same generic error as other validation failures.
@@ -64,7 +68,8 @@ The asymmetry is deliberate and must survive: the dummy key is safe to document 
 
 ## Open Roles — top-level page at /recruit, intake EMAIL-ONLY
 
-The recruitment page lives at **`/recruit`** (`src/pages/recruit.astro`; captain round 20 — moved from `/contact/join`, where it was "Join the Team"): a boxed title ("We need helping hands!" in an orange bordered box — no `PageHero`, no eyebrow, no ghost word, by captain decision), the note-before-you-apply card (a real heading plus "How we work" / "Why email" subheadings inside one continuous note), three roles (Social Media Manager, Content Videographer/Editor, Long-form Videographer/Editor), and a `mailto:` CTA to **team@trashtalknyc.org**. No form, no role numbering, no "Now recruiting" anywhere (phrase retired, round 20).
+The recruitment page lives at **`/recruit`** (`src/pages/recruit.astro`; captain round 20 — moved from `/contact/join`, where it was "Join the Team").
+Since the 2026-10 redesign it has **no hero and no page title box** (the round-20 orange "We need helping hands!" box was retired with the old identity, captain decision): "A note before you apply" sits directly on the brick wall as one wheatpasted letter and is the page's `h1`, followed by the three roles as purple/green/black poster cards (Social Media Manager, Content Videographer/Editor, Long-form Videographer/Editor) and a `mailto:` CTA to **team@trashtalknyc.org**. No form, no role numbering, no "Now recruiting" anywhere (phrase retired, round 20).
 The How-we-work copy (the "best way to know if something works" intro plus the four preferences, round 22) and the Why-email line are the **captain's own voice, approved verbatim** — "we move fast, and with effort" keeps its comma, the third preference keeps its quotation marks and has no full stop; do not smooth, formalize, or add connective tissue, in English or Spanish.
 Site-wide copy rule (captain, round 22): keep em dashes rare — roughly one per page, for a real aside — and avoid staccato fragment rhythm; prefer commas, colons, and full sentences. The waiver's legal dashes and "Page — Trash Talk NYC" title separators are deliberate exceptions.
 The round-15 verbatim opening statement ("This isn't cute. …") and the three pillars were removed in the round-20 restructure — they live in git history if the captain wants them back.
@@ -93,13 +98,12 @@ Any future revision must update this pointer in the same commit that changes the
 That confirmation supersedes the strip-everything instruction **for attribution only** — headings, pull-quote, and closing CTA stay stripped.
 The English story is David's own words, **verbatim**: do not reword, tighten, reorder, or re-punctuate a single sentence, and keep the Spanish tracking whatever the English says rather than smoothing it.
 The page was **renamed three times pre-launch by the captain** (all 2026-08-13): "Our Story" (`/about/our-story`) → "Letter from Founder" (`/about/letter-from-founder`) → "From Our Founder" (`/about/from-our-founder`) → **"From the Founder"** (ES `Del Fundador`) — clean renames with **no redirects**, deliberate because nothing had gone live, so none of the old URLs ever existed publicly; the author's original title "Trash Talk NYC's Story" lives in git history if it ever returns.
-The page opens with the site-standard `PageHero` (eyebrow "About · From the Founder", ghost word "88 DAYS") carrying the page name, split into two leaves so the toggle can restructure it — EN "From the / Founder" becomes ES "Del / Fundador" leaf by leaf, because `setLang` swaps leaves and cannot reorder a heading.
+The page opens with a brick-framed hero (2026-10 redesign; `PageHero` and its ghost word are gone site-wide): a slightly-larger Space Mono "About" accent line above the page name, which stays split into two leaves so the toggle can restructure it — EN "From the / Founder" becomes ES "Del / Fundador" leaf by leaf, because `setLang` swaps leaves and cannot reorder a heading.
 The nothing-added rule below governs the story body, not that page chrome.
 **Nothing else is added to the story** — a captain decision (revision, 2026-08-13): the page is his paragraphs, in his order, with nothing between them, and the wall of text at phone widths is the intended outcome — do not reintroduce section headings, pull-quotes, or a closing CTA (the first cut shipped those alongside the byline; only the byline came back).
 The byline is a **photo card** (captain, 2026-08-13): a 64px circular crop of David — `src/assets/david-founder.jpg`, a committed 640×640 square cut from the full-size shot at `assets/IMG_0952_Original.jpeg` with sharp (`extract left 1183, top 876, 1226×1226`) to frame face, shoulders, and chest — beside "David Clarke" over "Lead Organizer / Founder" (ES `Organizador Principal / Fundador`).
 Its `alt` is **empty on purpose**: the visible name sits right beside the photo and captions it, so naming him in the alt too would make screen readers announce "David Clarke" twice — do not "fix" it as a missing-alt finding.
-The portrait carries a **flat 2.5px charcoal outline and deliberately no `--press-sm` shadow** (captain, 2026-08-13): he wants the black ring without the dimensional offset look, so this is a sanctioned exception to the press-shadow idiom below — do not "restore" the shadow as a visual-language fix.
-That decision arrived as feedback on the byline portrait and was first misread as being about the `PageHero` h1; the hero experiment was reverted whole (the h1 keeps its purple offset `text-shadow` and gets no stroke of its own — the only `-webkit-text-stroke` in `PageHero.astro` is the ghost word's, which was never in question), so treat that revert pair in the history as the correction, not as churn.
+The portrait carries a **flat 2.5px ink outline and deliberately no offset shadow** (captain, 2026-08-13): he wants the black ring without the dimensional offset look — do not "restore" a shadow as a visual-language fix.
 **"David Clarke" and the "Founder" half of the title are deliberate page-local literals in `founder.ts`, NOT team.ts values**: team.ts stays `name: 'David'` / role "Lead Organizer" because the About page presents the team that way — do not "fix" the mismatch by editing team.ts, which would rename him on the About page; the role half of the title DOES derive from team.ts so a role rename still propagates.
 The one sanctioned addition inside the story column besides the byline is the sign-off — "Sincerely, / David" as an email farewell after the final paragraph (captain-supplied, 2026-08-13; ES farewell `Atentamente,` is our translation, the name is untranslated) — deliberately styled as plain body text, not a new device.
 The only presentation liberties, allowed as typesetting rather than addition: the lede sizing of the opening paragraph and typographic curly quotes throughout the story body, where the source email had straight ones — they must stay curly in both the rendered text and the `data-en`/`data-es` attributes the toggle restores.
@@ -112,8 +116,7 @@ Discovery is **deliberately** just the nav's About dropdown and the footer — t
 In `NavBar.astro`, the `!isFounder` guard on `isTeam` is what stops "The Team" double-lighting on the founder page while the About parent still does — the `/about/` prefix would otherwise match.
 Declaration order is not the protection; keep the guard.
 The route itself is `FOUNDER_PATH` in `src/lib/founder.ts`, consumed by that guard, the nav link, and the footer link, so a fifth rename cannot light the wrong nav item or leave a dead link behind; `founder.test.ts` asserts the constant still points at an existing page file.
-`.story-section` sets `background-color`, never the `background` shorthand: the shorthand resets `background-image`, and the scoped rule out-specifies the global `.grid-paper`, so the texture would silently stop painting.
-The same latent suppression exists today on `.recruit-page`, `.bento`, and `.team-section` — deliberately left alone here, flagged for a separate pass.
+Wheatpasted surfaces (`.paste` in `global.css`) set `background-color`, never the `background` shorthand: the shorthand would reset the `::before` crease gradients' interplay with any future background-image utility, and the convention predates the redesign (`.grid-paper` had exactly this failure mode).
 
 ## E2E Testing
 
@@ -127,17 +130,22 @@ See the `visual-qa` skill (`.agents/skills/visual-qa/SKILL.md`) before calling a
 
 ## Frontend architecture
 
-* `src/styles/global.css` holds only true globals: design tokens (brand hues, fluid type/space scales, safe-area vars), reset, base typography, grain overlay, and cross-page utilities (`.section-title`, `.tape-seam`, `.diag-texture`).
+* **2026-10 redesign (TTNYC Style Guide):** the whole site moved to the official brand identity — colors Poster Beige `#EAE9DA`, Post No Bills Green `#4E6E65`, Deep Purple `#65409A`, Street Sign Yellow `#F3CF02`, Roadtop Black `#1D1D23`, Lavender `#A57DD7` (families/teens accent); type Londrina Solid Regular for display (never a heavier weight), Barlow Semi Condensed for body (event names are body type), Space Mono Bold for accents in normal case (never forced all-caps); web-safe fallbacks Impact / Tahoma / Courier New Bold.
+Pages have a dark Roadtop Black ground but keep a light Poster Beige header.
+The approved mockups live at `firstmate/.lavish/ttnyc-site/` (shared `site.css` where later "round N" blocks override earlier ones, plus per-page `src/*.body.html`).
+* `src/styles/global.css` holds only true globals: design tokens, reset, base typography, the grain overlay, and cross-page utilities (`.wrap`, `.mono`, the `.btn` family, `.paste`, `.bricks`, `.slap`, the form kit — `.field`/`.chips`/`.addr`/`.f-err`).
 * Everything else is component-scoped: nav/footer/social bar/lang toggle live in `src/components/` with their own `<style>` blocks. Add styles next to the component, not to global.css.
-* Layout is fluid-first: `clamp()` tokens and `auto-fit`/`minmax()` grids instead of stacking breakpoints; heroes use `svh` (not `vh`); components pad with `max(<design spacing>, env(safe-area-inset-*))` — the env() values are all 0 now that `viewport-fit=cover` is gone (see the safe-area bullet below), but the `max()` pattern keeps every layout correct under either viewport mode, so keep using it for new chrome-adjacent UI.
-* The visual language is "street poster / club zine": hard offset press shadows (`--press`, `--press-sm`), tilted `.sticker` chips, `.sign-plate` street-sign titles, giant outlined Bebas background words, the `.tape-seam` caution divider, and `.grid-paper` texture on light sections. New UI should reuse these devices rather than soft shadows or new decorative styles.
-Reusing a device is the default, not a rule: the From the Founder byline portrait wears the charcoal outline with the press shadow deliberately removed on the captain's call (see "From the Founder" above), so a bare outline is not automatically an idiom violation.
+* Layout is fluid-first: `clamp()` tokens and fluid grids with one phone/desktop breakpoint at 760/761px (carried over from the approved mockups' container queries); components pad with `max(<design spacing>, env(safe-area-inset-*))` — the env() values are all 0 now that `viewport-fit=cover` is gone (see the safe-area bullet below), but the `max()` pattern keeps every layout correct under either viewport mode, so keep using it for new chrome-adjacent UI.
+* The visual language is "the site IS the flyer, without being flyers" (captain): the brick drawing split into two halves framing heroes edge to edge, wheatpasted `.paste` cards (flat, faint crease gradients, no outline, no lifted shadow), the official line illustrations used generously (bricks, trash can, tree bed, gloves, family vests — pre-colored SVGs in `src/assets/`), the vest sticker logo, and die-cut circular sticker social icons.
+Explicitly banned by the captain: photo backgrounds, tape strips, tilted label chips, giant outlined background words, scrolling tickers, and tear-off tabs — do not resurrect the old devices (`--press` shadows, `.sticker`, `.sign-plate`, `.tape-seam`, `.grid-paper`, ghost words are all gone).
+Hard offset shadows survive only on buttons and the sticker drops; on the dark ground they are translucent beige, on paper they are ink (see `.btn-*` in global.css).
+Reusing a device is the default, not a rule: the From the Founder byline portrait wears the ink outline with no offset shadow on the captain's call (see "From the Founder" above), so a bare outline is not automatically an idiom violation.
 * EN/ES translation is attribute-driven (`data-en`/`data-es`, state in `src/lib/language.ts`); dynamic text (dates, tab-dependent copy) is re-rendered by the owning component on `onLanguageChange`.
 * Images live in `src/assets/` and render through `<Image>` from `astro:assets` — never `public/` (raw files there bypass optimization; the 529 KB logo alone would have blown the bandwidth budget at target traffic).
 The adapter sets `imageCDN: false` deliberately, so optimization happens at build time via sharp into immutable `/_astro/*.webp` files — keep it that way.
 Two gotchas: pass a `class` to `<Image>` and select by it (a bare `img` descendant selector in a scoped `<style>` is fragile against the component's rendered output), and `<Image>` always emits `width`/`height` attributes, so any CSS `aspect-ratio` crop needs an explicit `height: auto` or the height attribute wins (this silently broke the About polaroid once).
 * `setLang` in `src/lib/language.ts` swaps `textContent` only, and only on leaf elements carrying `data-en`/`data-es` — it never translates attributes.
-So an `aria-label` stays English after a toggle; give controls a bilingual accessible name with a visually-hidden `<span data-en data-es>` inside instead (see the photo hotspots in `about.astro`).
+So an `aria-label` stays English after a toggle; give controls a bilingual accessible name with a visually-hidden `<span data-en data-es>` inside instead, and keep attribute-borne copy (mailto subjects, placeholders) on the `data-subject-*`/`data-placeholder-*` conventions the page scripts and the bilingual-completeness test already cover.
 * `<Image>` with `widths` but no `width` emits a fallback `src` at the source file's native resolution — the 5820px About group photo produced a 4.8 MB webp that way.
 Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallback.
 * Team identity (names, roles, bios, social-link slots, portrait crops, meta descriptions) lives in `src/lib/team.ts`, consumed by the About page and — through `getTeamMember('david')` in `src/lib/founder.ts` — by the From the Founder sign-off, byline title, and meta description.
@@ -147,14 +155,14 @@ Only the paragraph breaks are ours, and the per-bio comments in `team.ts` record
 A role rename has to land in two places for Nandi and Fabiola, whose `metaDescription` embeds the English role verbatim ("Meet Nandi, `<role>` at Trash Talk NYC, …"); David's paraphrases the title instead ("organizer of Trash Talk NYC"), so it survives a rename.
 The From the Founder page names David's role in its byline title and meta description but reads both from `team.ts` at build time, so it is not a touchpoint (see "From the Founder" above).
 Several social slots are `href="#"` placeholders awaiting the captain's URLs — flagged with TODO comments in the file.
-* The About team section (`about.astro`) keeps only photo-frame presentation: a `geometry` map of hotspot bands, face-chip anchors, and spotlight ellipses, all expressed as percentages of the photo frame.
-The hero renders a fixed build-time vertical crop of the group shot (the `CROP` constant; y-coordinates remap through `py()`) — never a viewport-dependent `object-fit`, which would silently misalign every hotspot and spotlight.
-On mobile the photo plate pins (sticky) while the bios scroll past, the spotlight follows whichever bio owns the viewport (nobody owns it until the reader actually scrolls — the photo rests fully lit at page open), and the bio band pages with CSS scroll-snap whose snap positions are deliberately kept equal to `scrollToEntry`'s JS offset — change one and you must change the other or tap-to-scroll gets re-snapped elsewhere.
+* The About team section (`about.astro`, rebuilt in the 2026-10 redesign) is the group photo pasted inside the brick hero plus three static wheatpasted bio cards — the old hotspot/spotlight/scroll-snap machinery is gone (it lives in git history with the previous identity).
+Each bio card carries a round face chip cropped from the group photo via `background-size`/`background-position` percentages (the `faceCrops` map, tuned by eye in the approved mockups — resolution-independent, so they survive image optimization).
+Card order is photo order (Nandi, David, Fabiola) on desktop and David-first on phones, done purely with CSS `order`.
 * **The header is a plain always-sticky nav on all widths; `viewport-fit=cover` is deliberately absent; and no `position: fixed` full-viewport layer may ever sit above the nav. Read this bullet's history before touching any of that.**
 The captain's device (iOS 26) showed a persistent gap between the header and the status bar with page content visible in it; six successive CSS theories "fixed" it, passed every emulator and ≤iOS 18 simulator, and failed on-device.
 The real cause was finally isolated with a standalone on-device test bench (`header-astro-demo-z4`, 2026-08, bisected on the captain's iPhone): **the grain texture as a full-viewport `position: fixed` layer at `z-index: 9999` above the sticky nav makes iOS 26 Safari misplace the header on scroll-direction changes.**
 The device-confirmed fix ships in `global.css`: the grain is a document overlay instead — `position: relative` on `body`, `position: absolute` on `body::after` — visually identical because the grain is uniform noise.
-The separate rubber-band overscroll reveal is handled by explicitly painting **both** `html` and `body` charcoal (also device-confirmed); earlier claims that iOS 26 "ignores theme-color and samples the body specifically, verified by pixel-sampling" came from iOS 18 simulator experiments and are unverified on iOS 26 — keep both surfaces matched, keep the cream page background on `main`, and keep the `theme-color` meta for iOS 15–17.
+The separate rubber-band overscroll reveal is handled by explicitly painting **both** `html` and `body` charcoal (also device-confirmed); earlier claims that iOS 26 "ignores theme-color and samples the body specifically, verified by pixel-sampling" came from iOS 18 simulator experiments and are unverified on iOS 26 — keep both surfaces matched, keep the page ground on `main` (Roadtop Black since the 2026-10 redesign, same hue as `html`/`body`), and keep the `theme-color` meta for iOS 15–17.
 Refuted along the way, do not resurrect: chrome-color fixes (PRs #18, #22, #25), `nav::before` bleeds, negative-margin covers, hide-on-scroll, per-frame JS re-pinning (visibly glitches on-device), and the theory that Apple forums threads 800798/801028 describe a top-edge clipping mechanism (both are bottom-edge reports; the best-matching documented bug is WebKit 297779).
 One known symptom remains: after keyboard use the header can shift up and cover content — the documented iOS 26 stale-viewport bug (WebKit 297779 / Apple thread 800125), which page CSS cannot fix and which **the captain has accepted as a known limitation**. Do NOT attempt CSS or JS fixes for it here (per-frame JS re-pinning was tried and visibly glitches on-device).
 `cover` stays out because nothing needs to draw under the status bar: without it, iOS letterboxes the band itself, painted from the charcoal `html`/`body`; the nav's safe-area padding was removed outright, so reintroducing `cover` requires revisiting the nav (`NavBar.astro`) as well as the `max()` fallbacks elsewhere. All `env(safe-area-inset-*)` resolve to 0 with `cover` gone.
@@ -184,3 +192,10 @@ Prioritize:
 4. Accessibility
 5. Performance
 6. Clear architecture
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.

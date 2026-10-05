@@ -1,230 +1,113 @@
 ---
+import { Image } from 'astro:assets';
 import type { EventCardProps } from '../lib/events';
 import { formatDate, formatTime } from '../lib/events';
+import vestSticker from '../assets/vest-sticker.png';
 
-interface Props extends EventCardProps {}
+/**
+ * The next club event as a wheatpasted poster inside the Club Events
+ * brick hero: "Next club event" accent line, the event name in body
+ * type (per the style guide, event names are Barlow, not display),
+ * date/time/place rows, and the RSVP button wired to the same
+ * Eventbrite widget bootstrap as the list cards.
+ */
+type Props = EventCardProps;
 
-const { id, name, url, startIso, endIso, location, mapUrls } = Astro.props;
+const { id, name, url, startIso, endIso, location } = Astro.props;
 
 const dateStr = formatDate(startIso, 'en');
+const dateStrEs = formatDate(startIso, 'es');
 const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
 
-const rsvpBtnId = `eb-trigger-hero-${id}`;
+const btnId = `eb-hero-${id}`;
 ---
 
-<div class="next-event-card" data-start={startIso}>
-  <div class="sticker card-eyebrow">
-    <span class="pulse-dot"></span>
-    <span data-en="Next club event" data-es="Próximo evento">Next club event</span>
-  </div>
-
-  <div class="card-event-name">{name}</div>
-
-  <div class="card-meta">
-    <div class="card-meta-row">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      <span class="hero-date-text" data-start-iso={startIso}>{dateStr}</span>
-    </div>
-    <div class="card-meta-row">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-      <span>{timeStr}</span>
-    </div>
+<article class="next paste">
+  <Image src={vestSticker} alt="" class="slap next-slap" width={96} densities={[1, 2]} />
+  <div class="mono" data-en="Next club event" data-es="Próximo evento del club">Next club event</div>
+  <h2>{name}</h2>
+  <div class="ev-details">
+    <span>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+      <span data-en={dateStr} data-es={dateStrEs}>{dateStr}</span>
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+      {timeStr}
+    </span>
     {location && (
-      <div class="card-meta-row">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-        <span>{location}</span>
-      </div>
-    )}
-    {mapUrls && (
-      <div class="card-meta-row">
-        <span class="map-links">
-          <a class="map-link" href={mapUrls.google} target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-            Google Maps
-          </a>
-          <a class="map-link" href={mapUrls.apple} target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-            Apple Maps
-          </a>
-        </span>
-      </div>
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+        {location}
+      </span>
     )}
   </div>
-
-  <div class="card-countdown">
-    <span class="cd-label-top" data-en="Time left" data-es="Tiempo restante">Time left</span>
-    <div class="cd-unit"><span class="cd-num" id="cdD">--</span><span class="cd-sub" data-en="days" data-es="días">days</span></div>
-    <span class="cd-sep">:</span>
-    <div class="cd-unit"><span class="cd-num" id="cdH">--</span><span class="cd-sub" data-en="hrs" data-es="hrs">hrs</span></div>
-    <span class="cd-sep">:</span>
-    <div class="cd-unit"><span class="cd-num" id="cdM">--</span><span class="cd-sub" data-en="min" data-es="min">min</span></div>
-  </div>
-
-  <a
-    class="btn-rsvp"
-    id={rsvpBtnId}
-    href={url}
-    target="_blank"
-    rel="noopener"
+  <button
+    class="btn btn-purple next-rsvp"
+    id={btnId}
     data-event-id={id}
     data-url={url}
     data-name={name}
     data-date={dateStr}
     data-time={timeStr}
     data-loc={location}
-    data-en="RSVP for this event"
-    data-es="Regístrate aquí"
+    data-en="RSVP →"
+    data-es="Regístrate →"
   >
-    RSVP for this event
-  </a>
-</div>
-
-<script>
-  import { createCountdown } from '../lib/countdown';
-  import { getCurrentLang, onLanguageChange } from '../lib/language';
-  import { formatDate } from '../lib/events';
-
-  const card = document.querySelector<HTMLElement>('.next-event-card[data-start]');
-  if (card) {
-    const startIso = card.dataset.start!;
-    const pad = (n: number) => String(n).padStart(2, '0');
-
-    const cleanup = createCountdown(startIso, ({ days, hours, minutes }) => {
-      const dEl = document.getElementById('cdD');
-      if (!dEl) return;
-      dEl.textContent = pad(days);
-      document.getElementById('cdH')!.textContent = pad(hours);
-      document.getElementById('cdM')!.textContent = pad(minutes);
-    });
-
-    document.addEventListener('astro:before-swap', cleanup, { once: true });
-
-    // The formatted date is generated text, not a data-en/data-es pair,
-    // so this component re-renders it itself on language change
-    const dateEl = card.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
-    if (dateEl) {
-      const applyDate = (lang: 'en' | 'es') => {
-        dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
-      };
-      onLanguageChange(applyDate);
-      if (getCurrentLang() !== 'en') applyDate(getCurrentLang());
-    }
-  }
-</script>
+    RSVP &rarr;
+  </button>
+</article>
 
 <style>
-  /* Bulletin card: light card pinned onto the dark hero, sticker label
-     over the top edge, hard press shadow */
-  .next-event-card {
-    background: var(--off-white);
-    border: 2.5px solid var(--charcoal);
-    border-radius: var(--radius-md);
-    padding: clamp(1.75rem, 3.5vw, 2.25rem) clamp(1.25rem, 4vw, 2.25rem) clamp(1.25rem, 3.5vw, 2rem);
+  .next {
     position: relative;
-    box-shadow: 6px 6px 0 var(--purple-light);
-    color: var(--charcoal);
+    width: min(560px, 100%);
+    background-color: var(--paper);
+    color: var(--purple);
+    padding: 24px 18px 20px;
   }
 
-  .card-eyebrow {
-    position: absolute;
-    top: -1rem;
-    left: 1.25rem;
-  }
-  .pulse-dot {
-    width: 7px; height: 7px; background: var(--charcoal); border-radius: 50%;
-    display: inline-block; flex-shrink: 0;
-    animation: pulseDot 1.6s ease-in-out infinite;
-  }
-  @keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.3; transform: scale(0.55); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .pulse-dot { animation: none; }
+  .next .mono { color: var(--black); }
+
+  .next h2 {
+    font-family: var(--body);
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.02;
+    font-size: 2.3rem;
+    margin: 10px 0 18px;
   }
 
-  .card-event-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
-    color: var(--charcoal); line-height: 1; letter-spacing: 0.02em; margin-bottom: 1.1rem;
+  .ev-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font-weight: 600;
+    font-size: 1rem;
   }
 
-  .card-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .card-meta-row {
-    display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.78rem; font-weight: 700; color: var(--gray);
-  }
-  .card-meta-row svg { width: 12px; height: 12px; color: var(--purple); flex-shrink: 0; }
+  .ev-details > span { display: inline-flex; align-items: center; gap: 7px; }
+  .ev-details svg { width: 17px; height: 17px; stroke: var(--purple); fill: none; flex: none; }
 
-  .map-links { gap: 0.5rem; margin-top: 0.5rem; }
-  .map-link {
-    font-size: 0.65rem; padding: 0.5rem 0.8rem; border-radius: 6px; min-height: 36px;
-    color: var(--charcoal);
-    background: #fff; border: 1.5px solid var(--charcoal);
-    display: inline-flex; align-items: center; gap: 0.2rem;
-    text-decoration: none; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-    white-space: nowrap; box-shadow: 2px 2px 0 var(--warm-gray);
-    transition: box-shadow 0.15s, transform 0.15s, color 0.15s;
-  }
-  .map-link:hover { color: var(--purple); transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--warm-gray); }
-  .map-link svg { width: 10px; height: 10px; flex-shrink: 0; }
+  .next-rsvp { margin-top: 22px; width: 100%; }
 
-  .card-countdown {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; padding: 0.85rem 1rem;
-    background: var(--charcoal);
-    border-radius: 8px;
-  }
-  .cd-label-top {
-    font-size: 0.55rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em;
-    color: var(--paper-a55); margin-right: auto; white-space: nowrap;
-  }
-  .cd-unit { text-align: center; min-width: 36px; }
-  .cd-num {
-    font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem;
-    color: var(--yellow); line-height: 1; display: block;
-  }
-  .cd-sub {
-    font-family: 'Space Mono', monospace; font-size: 0.44rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.14em;
-    color: var(--paper-a55); display: block; margin-top: 1px;
-  }
-  .cd-sep {
-    font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
-    color: var(--paper-a35); margin-top: -4px; align-self: flex-start; padding-top: 2px;
+  .next :global(.next-slap) {
+    top: -30px;
+    right: -6px;
+    width: 72px;
+    height: auto;
+    transform: rotate(10deg);
   }
 
-  .btn-rsvp {
-    background: var(--yellow); color: var(--charcoal);
-    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.14em;
-    padding: 0.7rem 1.4rem; border: 2.5px solid var(--charcoal); border-radius: 6px;
-    cursor: pointer; white-space: nowrap; text-decoration: none;
-    display: inline-flex; align-items: center; justify-content: center; min-height: 48px;
-    box-shadow: 4px 4px 0 var(--charcoal);
-    transition: transform 120ms var(--ease-out), box-shadow 160ms var(--ease-out);
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .btn-rsvp:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--charcoal); }
-    .btn-rsvp:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--charcoal); transition-duration: 80ms; }
+  @media (min-width: 761px) {
+    .next { padding: 30px 28px 26px; }
+    .next h2 { font-size: clamp(2.2rem, 4vw, 3.2rem); }
+    .next-rsvp { width: auto; }
+
+    .next :global(.next-slap) {
+      top: -40px;
+      right: -22px;
+      width: 96px;
+    }
   }
 </style>

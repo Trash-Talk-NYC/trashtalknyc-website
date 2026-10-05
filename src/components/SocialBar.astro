@@ -1,8 +1,9 @@
 ---
 /**
- * Purple strip above the nav pointing at club socials.
- * Hidden on small screens (decision: docs/decisions — mobile keeps
- * chrome minimal; socials remain reachable in the footer).
+ * Black strip above the nav pointing at club socials, with the
+ * Instagram / YouTube / TikTok sticker icons. Visible on all widths
+ * (the 2026-10 redesign keeps it on phones; it is the black band the
+ * status bar blends into at the top of the page).
  */
 import SocialLinks from './SocialLinks.astro';
 ---
@@ -10,42 +11,29 @@ import SocialLinks from './SocialLinks.astro';
 <div class="social-bar">
   <span class="social-bar-text" data-en="Keep up with club socials" data-es="Síguenos en redes">Keep up with club socials</span>
   <div class="social-bar-divider" aria-hidden="true"></div>
-  <SocialLinks />
+  <SocialLinks ids={['instagram', 'youtube', 'tiktok']} />
 </div>
 
 <style>
   .social-bar {
-    background: var(--purple);
+    background: var(--black);
+    color: var(--beige);
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: clamp(0.75rem, 2vw, 1.5rem);
-    padding: 0.45rem max(var(--gutter), var(--safe-right)) 0.45rem max(var(--gutter), var(--safe-left));
-    flex-wrap: wrap;
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-  }
-
-  .social-bar :global(.social-link:hover) { opacity: 0.75; }
-
-  .social-bar-text {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+    align-items: center;
+    gap: 10px;
+    padding: 12px max(16px, var(--safe-right)) 12px max(16px, var(--safe-left));
+    font-size: 0.8rem;
+    font-weight: 600;
   }
 
   .social-bar-divider {
     width: 1px;
-    height: 14px;
-    background: rgba(255, 255, 255, 0.3);
+    height: 16px;
+    background: rgba(234, 233, 218, 0.35);
   }
 
-  /* Mobile keeps top chrome minimal; socials stay in the footer */
-  @media (max-width: 768px) {
-    .social-bar { display: none; }
+  @media (min-width: 761px) {
+    .social-bar { gap: 16px; font-size: 0.9rem; }
   }
 </style>

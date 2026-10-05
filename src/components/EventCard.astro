@@ -2,14 +2,19 @@
 import type { EventCardProps } from '../lib/events';
 import { formatDate, formatTime } from '../lib/events';
 
+/**
+ * One upcoming event as a wheatpasted date strip: purple date stub,
+ * body-type event name (the style guide sets event names in Barlow,
+ * not display type), time/place rows, map links, RSVP. The `.past`
+ * class is only ever added client-side by the staleness check on the
+ * events page — the page no longer renders a past-events section.
+ */
 interface Props extends EventCardProps {
-  isPast?: boolean;
   latLng?: { lat: number; lng: number } | null;
 }
 
 const {
   id, name, url, startIso, endIso, location, mapUrls,
-  isPast = false,
   latLng = null,
 } = Astro.props;
 
@@ -26,196 +31,153 @@ const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
 const btnId = `eb-trigger-${id}`;
 ---
 
-<div
-  class:list={['event-card', isPast ? 'past' : 'upcoming']}
+<article
+  class="ev-card paste upcoming"
   data-event-id={id}
   data-end={endIso}
   data-lat={latLng?.lat ?? undefined}
   data-lng={latLng?.lng ?? undefined}
 >
-  <div class="event-date-block">
-    <span class="month" data-en={monthEN} data-es={monthES}>{monthEN}</span>
-    <span class="day">{day}</span>
-    <span class="dow" data-en={dowEN} data-es={dowES}>{dowEN}</span>
+  <div class="date">
+    <span class="m" data-en={monthEN} data-es={monthES}>{monthEN}</span>
+    <span class="d">{day}</span>
+    <span class="w" data-en={dowEN} data-es={dowES}>{dowEN}</span>
   </div>
 
-  <div class="event-info">
-    <div class="event-name">{name}</div>
-    <div class="event-details">
-      <span class="event-detail">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
+  <div class="ev-info">
+    <div class="ev-name">{name}</div>
+    <div class="ev-details">
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
         {timeStr}
       </span>
       {location && (
-        <>
-          <span class="event-detail">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            {location}
-          </span>
-          {mapUrls && (
-            <span class="map-links">
-              <a class="map-link" href={mapUrls.google} target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Google Maps
-              </a>
-              <a class="map-link" href={mapUrls.apple} target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Apple Maps
-              </a>
-            </span>
-          )}
-        </>
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+          {location}
+        </span>
       )}
     </div>
-  </div>
-
-  <div class="event-cta">
-    {isPast ? (
-      <span class="card-status" data-en="Past" data-es="Pasado">Past</span>
-    ) : (
-      <button
-        class="btn-card btn-card-purple"
-        id={btnId}
-        data-event-id={id}
-        data-url={url}
-        data-name={name}
-        data-date={dateStr}
-        data-time={timeStr}
-        data-loc={location}
-      >
-        RSVP &rarr;
-      </button>
+    {mapUrls && (
+      <div class="maps">
+        <a href={mapUrls.google} target="_blank" rel="noopener">Google Maps</a>
+        <a href={mapUrls.apple} target="_blank" rel="noopener">Apple Maps</a>
+      </div>
     )}
   </div>
-</div>
+
+  <button
+    class="btn btn-purple ev-rsvp"
+    id={btnId}
+    data-event-id={id}
+    data-url={url}
+    data-name={name}
+    data-date={dateStr}
+    data-time={timeStr}
+    data-loc={location}
+    data-en="RSVP →"
+    data-es="Regístrate →"
+  >
+    RSVP &rarr;
+  </button>
+</article>
 
 <style>
-  /* Ticket-stub card: charcoal date stub + dashed perforation line */
-  .event-card {
-    background: white;
-    border: 2px solid var(--charcoal);
-    border-radius: 10px;
-    padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3.5vw, 1.75rem);
+  .ev-card {
     display: grid;
-    grid-template-columns: 84px 1fr auto;
-    gap: clamp(0.9rem, 2.5vw, 1.5rem);
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
     align-items: center;
-    opacity: 0;
-    transform: translateY(8px);
-    animation: cardIn 260ms var(--ease-out) forwards;
-    transition: box-shadow 150ms var(--ease-out);
-  }
-  @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
-  .event-card:nth-child(1) { animation-delay: 0ms; }
-  .event-card:nth-child(2) { animation-delay: 45ms; }
-  .event-card:nth-child(3) { animation-delay: 90ms; }
-  .event-card:nth-child(4) { animation-delay: 135ms; }
-  .event-card:nth-child(5) { animation-delay: 180ms; }
-  @media (prefers-reduced-motion: reduce) { .event-card { animation: none; opacity: 1; transform: none; } }
-  @media (hover: hover) and (pointer: fine) {
-    .event-card:hover { box-shadow: 5px 5px 0 var(--purple-light); }
-  }
-  .event-card.past { opacity: 0.5; animation: none; border-color: var(--warm-gray); }
-  .event-card.past .event-date-block { background: var(--warm-gray); }
-
-  .event-date-block {
-    text-align: center;
-    background: var(--charcoal);
-    border-radius: 6px;
-    padding: 0.6rem 0.5rem;
-    flex-shrink: 0;
-    position: relative;
-  }
-  /* perforation between the stub and the rest of the ticket */
-  .event-date-block::after {
-    content: '';
-    position: absolute;
-    top: 8%;
-    bottom: 8%;
-    right: calc(clamp(0.9rem, 2.5vw, 1.5rem) / -2);
-    border-right: 2px dashed #d8d3c8;
-  }
-  .event-date-block .month {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
-    color: var(--yellow); display: block;
-  }
-  .event-date-block .day {
-    font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--off-white);
-    line-height: 1; display: block;
-  }
-  .event-date-block .dow {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.55rem; font-weight: 700; color: var(--paper-a55);
-    text-transform: uppercase; letter-spacing: 0.1em; display: block;
+    background-color: var(--paper);
+    color: var(--black);
+    padding: 16px 14px;
   }
 
-  .event-info { min-width: 0; }
-  .event-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.35rem; letter-spacing: 0.03em; margin-bottom: 0.3rem;
-  }
-  .event-details { display: flex; flex-wrap: wrap; gap: 1rem; }
-  .event-detail {
-    display: flex; align-items: center; gap: 0.35rem;
-    font-size: 0.75rem; font-weight: 700; color: var(--gray);
-  }
-  .event-detail svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .ev-card.past { opacity: 0.6; }
+  .ev-card.past .date { background: var(--black); }
 
-  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
-  .map-link {
-    display: inline-flex; align-items: center; gap: 0.2rem;
-    font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-    color: rgba(122,122,138,0.7); text-decoration: none;
-    border: 1px solid rgba(122,122,138,0.3); border-radius: 4px;
-    padding: 0.1rem 0.4rem; transition: border-color 0.15s, color 0.15s; white-space: nowrap;
-  }
-  .map-link:hover { color: var(--purple); border-color: var(--purple); }
-  .map-link svg { width: 9px; height: 9px; flex-shrink: 0; }
-
-  .event-cta {
-    flex-shrink: 0; text-align: right;
-    display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;
-  }
-  .btn-card {
-    display: inline-flex; align-items: center; font-family: 'Nunito', sans-serif;
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    padding: 0.4rem 1.1rem; min-height: 40px; border-radius: 6px; border: 2px solid;
-    cursor: pointer; text-decoration: none; background: none;
-    transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), background 150ms var(--ease-out), color 150ms var(--ease-out);
-    white-space: nowrap;
-  }
-  .btn-card-purple {
-    color: var(--charcoal); border-color: var(--charcoal); background: var(--yellow);
-    box-shadow: 3px 3px 0 var(--charcoal);
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .btn-card-purple:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--charcoal); }
-    .btn-card-purple:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--charcoal); }
-  }
-  .card-status {
-    font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--warm-gray);
+  .date {
+    display: grid;
+    justify-items: center;
+    width: 66px;
+    padding: 10px 0;
+    background: var(--purple);
+    color: var(--beige);
+    border-radius: 4px;
+    line-height: 1;
   }
 
-  @media (max-width: 768px) {
-    .event-card { grid-template-columns: 72px 1fr; }
-    .event-date-block::after { display: none; }
-    .event-cta { grid-column: 1 / -1; display: flex; justify-content: flex-start; padding-top: 0.25rem; }
-    .event-card.past .event-cta { display: none; }
+  .date .m {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  .date .d {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 2.2rem;
+    margin: 2px 0;
+  }
+
+  .date .w {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    color: var(--yellow);
+  }
+
+  .ev-info { min-width: 0; }
+
+  .ev-name {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1.05;
+    color: var(--purple);
+  }
+
+  .ev-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+
+  .ev-details span { display: inline-flex; align-items: center; gap: 7px; }
+  .ev-details svg { width: 17px; height: 17px; stroke: var(--purple); fill: none; flex: none; }
+
+  .maps { display: flex; gap: 14px; margin-top: 8px; font-size: 0.92rem; }
+  .maps a {
+    color: var(--purple);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+
+  .ev-rsvp { grid-column: 1 / -1; width: 100%; padding: 11px 18px; }
+  .ev-card.past .ev-rsvp { display: none; }
+
+  @media (min-width: 761px) {
+    .ev-card {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 24px;
+      padding: 20px 24px;
+    }
+
+    .date { width: 86px; }
+    .date .d { font-size: 2.8rem; }
+    .ev-name { font-size: 1.75rem; }
+    .ev-details { font-size: 1rem; }
+    .ev-rsvp { grid-column: auto; width: auto; }
+  }
+
+  @media (pointer: coarse) {
+    .maps a { min-height: var(--tap); }
   }
 </style>
