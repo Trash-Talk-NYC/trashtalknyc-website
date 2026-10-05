@@ -255,16 +255,18 @@ const nextEvent = upcoming[0]?.props ?? null;
     padding: calc(100vw * 0.16) 22px calc(100vw * 0.16);
   }
 
+  /* The vw term only bites below ~380px, where the brick sides close in
+     on "Eventos". */
   .ev-title {
-    font-size: 3.8rem;
+    font-size: min(3.8rem, 16vw);
     color: var(--beige);
     text-align: center;
   }
 
   .ev-title .accent { color: var(--lavender); }
 
-  /* Phones stack the two leaves ("Club" over "Events", "Eventos" over
-     "del Club") so the title fits the opening between the side bricks. */
+  /* Every width stacks the two leaves ("Club" over "Events", "Eventos"
+     over "del Club"): one-line Spanish outgrows the brick opening. */
   .ev-title span { display: block; }
 
   .next-empty {
@@ -279,7 +281,6 @@ const nextEvent = upcoming[0]?.props ?? null;
   @media (min-width: 761px) {
     .ev-hero-inner { gap: 30px; padding: calc(100vw * 0.085) 16px calc(100vw * 0.085); }
     .ev-title { font-size: clamp(4.4rem, 8vw, 7rem); }
-    .ev-title span { display: inline; }
   }
 
   /* ── LIST ── */

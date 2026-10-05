@@ -108,7 +108,10 @@ export const prerender = true;
     margin-top: 6px;
   }
 
+  /* The vw term only bites below ~370px, where the bottom bricks close
+     in on "Ver Eventos de Limpieza". */
   .nf-actions .plain {
+    font-size: min(1em, 4.6vw);
     font-weight: 700;
     color: var(--lavender);
     display: inline-flex;
