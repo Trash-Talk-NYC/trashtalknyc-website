@@ -263,6 +263,10 @@ const nextEvent = upcoming[0]?.props ?? null;
 
   .ev-title .accent { color: var(--lavender); }
 
+  /* Phones stack the two leaves ("Club" over "Events", "Eventos" over
+     "del Club") so the title fits the opening between the side bricks. */
+  .ev-title span { display: block; }
+
   .next-empty {
     width: min(560px, 100%);
     background-color: var(--paper);
@@ -275,6 +279,7 @@ const nextEvent = upcoming[0]?.props ?? null;
   @media (min-width: 761px) {
     .ev-hero-inner { gap: 30px; padding: calc(100vw * 0.085) 16px calc(100vw * 0.085); }
     .ev-title { font-size: clamp(4.4rem, 8vw, 7rem); }
+    .ev-title span { display: inline; }
   }
 
   /* ── LIST ── */

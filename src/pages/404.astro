@@ -97,9 +97,11 @@ export const prerender = true;
     color: var(--beige);
   }
 
+  /* Phones stack the link under the button so it stays inside the
+     opening between the side bricks instead of running into them. */
   .nf-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 14px;
     justify-content: center;
     align-items: center;
@@ -117,5 +119,6 @@ export const prerender = true;
   @media (min-width: 761px) {
     .nf-inner { padding: 48px 30px; }
     .nf h1 { font-size: clamp(2.2rem, 4.4vw, 3.8rem); }
+    .nf-actions { flex-direction: row; flex-wrap: wrap; }
   }
 </style>
