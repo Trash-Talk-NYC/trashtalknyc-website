@@ -14,6 +14,7 @@ const validLead = {
   routeType: 'loop',
   startAddress: '708 WEST 171 STREET, New York, NY, USA',
   startAddressId: 'nycpad:venue:337433',
+  startAddressPoint: '-73.938,40.843',
   preferredMonth: currentMonth,
 };
 
@@ -26,7 +27,7 @@ describe('leadSchema', () => {
     expect(leadSchema.safeParse({ ...validLead, behalf: 'organization' }).success).toBe(true);
   });
 
-  it.each(['fname', 'lname', 'email', 'phone', 'mailingAddress', 'startAddress', 'startAddressId', 'preferredMonth'])(
+  it.each(['fname', 'lname', 'email', 'phone', 'mailingAddress', 'startAddress', 'startAddressId', 'startAddressPoint', 'preferredMonth'])(
     'rejects a missing %s (all required)',
     (field) => {
       expect(leadSchema.safeParse({ ...validLead, [field]: '' }).success).toBe(false);
@@ -49,6 +50,15 @@ describe('leadSchema', () => {
         routeType: 'oneway',
         endAddress: '710 WEST 171 STREET, New York, NY, USA',
         endAddressId: 'nycpad:venue:337434',
+      }).success,
+    ).toBe(false);
+    expect(
+      leadSchema.safeParse({
+        ...validLead,
+        routeType: 'oneway',
+        endAddress: '710 WEST 171 STREET, New York, NY, USA',
+        endAddressId: 'nycpad:venue:337434',
+        endAddressPoint: '-73.938,40.843',
       }).success,
     ).toBe(true);
     // Loop never needs one

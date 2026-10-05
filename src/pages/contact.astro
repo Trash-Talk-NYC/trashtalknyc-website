@@ -176,8 +176,10 @@ const monthOptions = rollingMonths();
             <div class="addr">
               <input id="l-start" name="startAddress" class="addr-in" autocomplete="off" required placeholder="Start typing an NYC address" data-placeholder-en="Start typing an NYC address" data-placeholder-es="Empieza a escribir una dirección de NYC" role="combobox" aria-autocomplete="list" aria-expanded="false" />
               <input type="hidden" name="startAddressId" class="addr-id" />
+              <input type="hidden" name="startAddressPoint" class="addr-point" />
               <ul class="addr-list" id="l-start-list" role="listbox" hidden></ul>
               <p class="addr-ok" hidden data-en="✓ Found on the map" data-es="✓ Encontrada en el mapa">✓ Found on the map</p>
+              <p class="addr-err f-err" id="l-start-err" aria-live="polite" hidden></p>
             </div>
           </div>
           <div class="field" id="endGroup" hidden>
@@ -185,8 +187,10 @@ const monthOptions = rollingMonths();
             <div class="addr">
               <input id="l-end" name="endAddress" class="addr-in" autocomplete="off" placeholder="Start typing an NYC address" data-placeholder-en="Start typing an NYC address" data-placeholder-es="Empieza a escribir una dirección de NYC" role="combobox" aria-autocomplete="list" aria-expanded="false" />
               <input type="hidden" name="endAddressId" class="addr-id" />
+              <input type="hidden" name="endAddressPoint" class="addr-point" />
               <ul class="addr-list" id="l-end-list" role="listbox" hidden></ul>
               <p class="addr-ok" hidden data-en="✓ Found on the map" data-es="✓ Encontrada en el mapa">✓ Found on the map</p>
+              <p class="addr-err f-err" id="l-end-err" aria-live="polite" hidden></p>
             </div>
           </div>
 
@@ -515,11 +519,12 @@ const monthOptions = rollingMonths();
 </style>
 
 <script>
-  import { actions } from 'astro:actions';
+  import { actions, isInputError } from 'astro:actions';
   import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
   import { attachFieldValidation, setFieldError } from '../lib/clientValidation';
   import { rollingMonths } from '../lib/months';
-  import { attachCombobox, fetchJson, type ComboOption, type Combobox } from '../lib/combobox';
+  import { attachCombobox, fetchJson, type BilingualText, type ComboOption, type Combobox } from '../lib/combobox';
+  import { ADDRESS_UNAVAILABLE } from '../lib/addressErrors';
 
   attachFieldValidation();
 
@@ -657,13 +662,13 @@ const monthOptions = rollingMonths();
     const oneway = v === 'oneway';
     endGroup.hidden = !oneway;
     endInput.required = oneway;
-    if (!oneway) addressPickers.get(endInput)?.reset();
+    if (!oneway) addressPickers.get(endInput)?.combo.reset();
   });
 
   // ── NYC ADDRESS PICKER (GeoSearch autocomplete) ──
   // People pick a real suggestion; free text never satisfies the field.
-  // The chosen feature's id travels with its label so the action can
-  // verify that exact feature server-side. GeoSearch being unreachable
+  // The chosen feature's id and map point travel with its label so the
+  // action can verify that exact feature server-side. GeoSearch being unreachable
   // blocks the pick (the server rejects unverifiable addresses anyway),
   // so the applicant is told to retry instead of hitting a generic error.
   const ADDR_MSG = {
@@ -673,31 +678,58 @@ const monthOptions = rollingMonths();
   };
 
   type GeoSearchAutocomplete = {
-    features?: Array<{ properties?: { gid?: string; label?: string; name?: string; borough?: string; postalcode?: string } }>;
+    features?: Array<{
+      geometry?: { coordinates?: number[] };
+      properties?: { gid?: string; label?: string; name?: string; borough?: string; postalcode?: string };
+    }>;
   };
+
+  /** GeoJSON `lon,lat` of every suggested feature, keyed by gid. */
+  const featurePoints = new Map<string, string>();
 
   async function searchNycAddresses(query: string): Promise<ComboOption[]> {
     const data = await fetchJson<GeoSearchAutocomplete>(
       `https://geosearch.planninglabs.nyc/v2/autocomplete?text=${encodeURIComponent(query)}&size=6`,
     );
     return (data.features ?? [])
-      .map((f) => f.properties)
-      .filter((p): p is NonNullable<typeof p> => !!p?.label && !!p.gid)
+      .filter((f) => !!f.properties?.label && !!f.properties.gid && f.geometry?.coordinates?.length === 2)
       .slice(0, 6)
-      .map((p) => ({
-        value: p.label ?? '',
-        text: p.name ?? p.label ?? '',
-        detail: [p.borough, p.postalcode].filter(Boolean).join(' ') || undefined,
-        id: p.gid,
-      }));
+      .map(({ geometry, properties: p }) => {
+        featurePoints.set(p!.gid!, geometry!.coordinates!.join(','));
+        return {
+          value: p!.label!,
+          text: p!.name ?? p!.label!,
+          detail: [p!.borough, p!.postalcode].filter(Boolean).join(' ') || undefined,
+          id: p!.gid,
+        };
+      });
   }
 
-  const addressPickers = new Map<HTMLInputElement, Combobox>();
+  type AddressPicker = { combo: Combobox; reject: () => void; unavailable: () => void };
+  const addressPickers = new Map<HTMLInputElement, AddressPicker>();
 
   document.querySelectorAll<HTMLElement>('#leadForm .addr').forEach((wrap) => {
     const input = wrap.querySelector<HTMLInputElement>('.addr-in')!;
     const idInput = wrap.querySelector<HTMLInputElement>('.addr-id')!;
+    const pointInput = wrap.querySelector<HTMLInputElement>('.addr-point')!;
     const ok = wrap.querySelector<HTMLParagraphElement>('.addr-ok')!;
+    const err = wrap.querySelector<HTMLParagraphElement>('.addr-err')!;
+
+    function showError(message: BilingualText | null) {
+      err.hidden = !message;
+      err.textContent = message ? message[getCurrentLang()] : '';
+      if (message) {
+        err.setAttribute('data-en', message.en);
+        err.setAttribute('data-es', message.es);
+        input.setAttribute('aria-describedby', err.id);
+      } else {
+        err.removeAttribute('data-en');
+        err.removeAttribute('data-es');
+        input.removeAttribute('aria-describedby');
+      }
+      input.setAttribute('aria-invalid', String(!!message));
+    }
+
     const combo = attachCombobox({
       input,
       list: wrap.querySelector<HTMLUListElement>('.addr-list')!,
@@ -706,11 +738,27 @@ const monthOptions = rollingMonths();
       emptyMessage: ADDR_MSG.none,
       onChange: (option) => {
         idInput.value = option?.id ?? '';
+        pointInput.value = (option?.id && featurePoints.get(option.id)) ?? '';
         ok.hidden = !option;
+        showError(null);
       },
       onUnavailable: (picker) => picker.setInvalid(ADDR_MSG.unavailable),
     });
-    addressPickers.set(input, combo);
+    addressPickers.set(input, {
+      combo,
+      // The server couldn't verify this pick: clear it so the applicant
+      // re-picks, and say why right under the field.
+      reject() {
+        combo.reset();
+        combo.setInvalid(ADDR_MSG.pick);
+        showError(ADDR_MSG.pick);
+      },
+      // The map service was down at submit: the pick itself may be fine,
+      // so it stays and the applicant can simply resubmit shortly.
+      unavailable() {
+        showError(ADDR_MSG.unavailable);
+      },
+    });
   });
 
   // ── ROLLING MONTHS ──
@@ -845,7 +893,7 @@ const monthOptions = rollingMonths();
     leadForm.reset();
     pickBehalf('individual');
     pickRoute('loop');
-    addressPickers.forEach((picker) => picker.reset());
+    addressPickers.forEach((picker) => picker.combo.reset());
     monthSelect.selectedIndex = 0;
     pickedPhotos = [];
     thumbs.replaceChildren();
@@ -855,8 +903,39 @@ const monthOptions = rollingMonths();
     leadErrorEl.textContent = '';
   }
 
+  const startInput = document.getElementById('l-start') as HTMLInputElement;
+
+  /**
+   * Puts the server's address rejections on the address fields
+   * themselves. Returns true when every rejected field was an address,
+   * so the generic form error isn't needed.
+   */
+  function showAddressErrors(error: unknown): boolean {
+    if (!isInputError(error)) return false;
+    const fields = Object.entries(error.fields) as Array<[string, string[] | undefined]>;
+    let addressOnly = fields.length > 0;
+    for (const [field, messages] of fields) {
+      const input = field.startsWith('startAddress') ? startInput : field.startsWith('endAddress') ? endInput : null;
+      const picker = input && addressPickers.get(input);
+      if (!picker) {
+        addressOnly = false;
+        continue;
+      }
+      if (messages?.includes(ADDRESS_UNAVAILABLE)) picker.unavailable();
+      else picker.reject();
+    }
+    const first = [startInput, endInput].find((input) => input.getAttribute('aria-invalid') === 'true');
+    first?.focus();
+    return addressOnly;
+  }
+
   // ── SUBMITS ──
-  function wireSubmit(form: HTMLFormElement, errorEl: HTMLElement, send: (data: FormData) => Promise<{ error: unknown }>) {
+  function wireSubmit(
+    form: HTMLFormElement,
+    errorEl: HTMLElement,
+    send: (data: FormData) => Promise<{ error: unknown }>,
+    showFieldErrors: (error: unknown) => boolean = () => false,
+  ) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = form.querySelector<HTMLButtonElement>('.form-submit')!;
@@ -890,6 +969,12 @@ const monthOptions = rollingMonths();
       // this one, so reset the widget or a retry would submit a spent token
       resetTurnstile(form);
 
+      if (showFieldErrors(error)) {
+        btn.textContent = originalText;
+        btn.disabled = false;
+        return;
+      }
+
       errorEl.textContent = submitErrorText(getCurrentLang());
       btn.textContent = submitErrorText(getCurrentLang());
       btn.disabled = false;
@@ -898,5 +983,5 @@ const monthOptions = rollingMonths();
   }
 
   wireSubmit(msgForm, contactErrorEl, (data) => actions.contact(data));
-  wireSubmit(leadForm, leadErrorEl, (data) => actions.leadCleanup(data));
+  wireSubmit(leadForm, leadErrorEl, (data) => actions.leadCleanup(data), showAddressErrors);
 </script>

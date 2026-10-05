@@ -1,5 +1,6 @@
-import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions';
+import { defineAction, ActionError, ActionInputError, type ActionAPIContext } from 'astro:actions';
 import { signupSchema, contactSchema, leadSchema, NOT_IN_NYC, type ContactInput } from '../lib/server/schemas';
+import { ADDRESS_UNAVAILABLE, ADDRESS_UNVERIFIED } from '../lib/addressErrors';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
@@ -28,6 +29,28 @@ import {
 type FormName = 'signup' | 'contact' | 'lead';
 
 const GENERIC_FAILURE = 'Something went wrong. Please try again.';
+
+/**
+ * Verifies one picked route address, throwing a field-level input error
+ * (whose message the page maps onto that picker) when it can't be.
+ */
+async function verifyAddressField(
+  field: 'startAddress' | 'endAddress',
+  label: string,
+  featureId: string,
+  point: string,
+): Promise<Extract<GeoVerifyResult, { ok: true }>> {
+  const verified = await verifyNycAddress(label, featureId, point);
+  if (verified.ok) return verified;
+  log('warn', 'form_address_rejected', { form: 'lead', field, reason: verified.reason });
+  throw new ActionInputError([
+    {
+      code: 'custom',
+      path: [field],
+      message: verified.reason === 'unavailable' ? ADDRESS_UNAVAILABLE : ADDRESS_UNVERIFIED,
+    },
+  ]);
+}
 
 function log(level: 'info' | 'warn' | 'error', evt: string, fields: Record<string, string | number> = {}) {
   console[level](JSON.stringify({ evt, ...fields }));
@@ -351,21 +374,14 @@ export const server = {
       // Re-verify the exact GeoSearch features the picker submitted. Any
       // address that cannot be verified (bypassed picker, mismatched
       // label, outside NYC, or GeoSearch unreachable) rejects the
-      // application rather than storing an unchecked or substituted one.
-      const start = await verifyNycAddress(input.startAddress, input.startAddressId);
-      if (!start.ok) {
-        log('warn', 'form_address_rejected', { form: 'lead', field: 'startAddress', reason: start.reason });
-        throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
-      }
-      let end: Extract<GeoVerifyResult, { ok: true }> | undefined;
-      if (input.routeType === 'oneway') {
-        const verified = await verifyNycAddress(input.endAddress ?? '', input.endAddressId ?? '');
-        if (!verified.ok) {
-          log('warn', 'form_address_rejected', { form: 'lead', field: 'endAddress', reason: verified.reason });
-          throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
-        }
-        end = verified;
-      }
+      // application rather than storing an unchecked or substituted one,
+      // as an error on that address field so the applicant knows to
+      // re-pick it (or retry, when the map service is down).
+      const start = await verifyAddressField('startAddress', input.startAddress, input.startAddressId, input.startAddressPoint);
+      const end =
+        input.routeType === 'oneway'
+          ? await verifyAddressField('endAddress', input.endAddress ?? '', input.endAddressId ?? '', input.endAddressPoint ?? '')
+          : undefined;
 
       // Route photos: content-validated, re-encoded (metadata including
       // GPS stripped), stored privately under random keys. File inputs
