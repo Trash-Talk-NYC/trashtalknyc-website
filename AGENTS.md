@@ -53,7 +53,7 @@ Full submission history is preserved as Brevo CRM notes with a queryable header 
 
 ## Turnstile bot check — LIVE in production
 
-Both forms carry a Cloudflare Turnstile widget verified server-side in the actions (`requireTurnstile` in `src/actions/index.ts`, `src/lib/server/turnstile.ts`), layered on top of — not replacing — the honeypot/timing heuristics.
+All three forms (signup, contact, Lead a Cleanup) carry a Cloudflare Turnstile widget verified server-side in the actions (`requireTurnstile` in `src/actions/index.ts`, `src/lib/server/turnstile.ts`), layered on top of — not replacing — the honeypot/timing heuristics.
 **Turnstile is live:** production holds a real site key and real secret (the secret appears nowhere in this repo).
 The old "dormant until real keys exist" behavior still applies wherever `PUBLIC_TURNSTILE_SITE_KEY` is unset (no widget, verification skipped, `turnstile_not_configured` logged), and the site key bakes into the prerendered pages at build time, so key changes need a redeploy.
 Once a site key is set, a missing secret fails closed (`form_env_missing` pattern); verification failures log `form_turnstile_rejected` and show the same generic error as other validation failures.

@@ -25,7 +25,7 @@ Pages:
 - About -> (The Team; From the Founder -> `/about/from-the-founder`, a first-person account of how Trash Talk NYC started, English verbatim, attributed to David via a photo byline card and the meta description composed in `src/lib/founder.ts` (captain confirmed 2026-08-13), closing with his "Sincerely, David" sign-off — see AGENTS.md, "From the Founder")
 - Open Roles -> (`/recruit`; a top-level route listed under About in the nav; recruitment page, email-only intake — see AGENTS.md, "Open Roles")
 - Contact
-- 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
+- 404 -> (Not Found; prerendered dead-end block — the split brick frame, a yellow "Dead End" sign beside the trash can illustration — bilingual, links to Home and Events)
 
 SEO & share metadata (2026-07 overhaul):
 - `src/layouts/BaseLayout.astro` owns the head: per-page title + required description feed the meta description, canonical URL, and full Open Graph/Twitter tags; the homepage adds JSON-LD Organization schema via `slot="head"`
@@ -60,7 +60,7 @@ Phone numbers are validated with `libphonenumber-js` on both client and server (
 Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign.
 
 Turnstile (bot check, added 2026-07 after the security-scale audit flagged bot list-pollution):
-- Widget renders on both forms only when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time; the token lands as the `cf-turnstile-response` form field.
+- Widget renders on all three forms (signup, contact, Lead a Cleanup) only when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time; the token lands as the `cf-turnstile-response` form field.
 - The actions enforce verification only when that site key is set at runtime; production has one, so verification runs there, and any context without a site key skips it (logged as `turnstile_not_configured` on every submission).
 - Once the site key is set, a missing `TURNSTILE_SECRET_KEY` fails closed (`form_env_missing`), and any verification failure rejects with the same generic message as other validation failures (`form_turnstile_rejected` in logs).
 - Turnstile sits alongside the honeypot/timing heuristics, not instead of them; setting the keys in Netlify requires a redeploy because the site key bakes into the prerendered pages.

@@ -25,7 +25,7 @@ Verify every UI change at each of these widths, using real rendering (a browser 
 Three site-specific additions:
 
 - The layout is fluid (`clamp()` tokens and `auto-fit`/`minmax()` grids, not stacked breakpoints), so also drag through intermediate widths rather than only sampling the four above — fluid layouts break *between* named breakpoints. Phone landscape (~844×390) is a known blind spot worth a look.
-- Anything touching the nav, hero heights, or full-bleed sections: heroes use `svh` units, and `viewport-fit=cover` is deliberately absent (see the safe-area bullet in AGENTS.md — do not re-add it), so `env(safe-area-inset-*)` is always 0; check under device emulation, with a notched-device emulation if the change is chrome-adjacent.
+- Anything touching the nav, hero heights, or full-bleed sections: heroes size from the split brick frame (edge-to-edge halves), and `viewport-fit=cover` is deliberately absent (see the safe-area bullet in AGENTS.md — do not re-add it), so `env(safe-area-inset-*)` is always 0; check under device emulation, with a notched-device emulation if the change is chrome-adjacent.
 - The header is a plain always-sticky nav on all widths — deliberately, after multiple failed positioning tricks (see the safe-area bullet in AGENTS.md); flag any reintroduction of transforms, negative offsets, or hide-on-scroll on the nav as a regression.
 
 Do not verify only the width you developed at: most visual regressions live at the widths nobody was looking at.
