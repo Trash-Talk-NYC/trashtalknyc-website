@@ -1,8 +1,10 @@
 import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions';
-import { signupSchema, contactSchema, type ContactInput } from '../lib/server/schemas';
+import { signupSchema, contactSchema, leadSchema, NOT_IN_NYC, type ContactInput } from '../lib/server/schemas';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
+import { verifyNycAddress } from '../lib/server/geosearch';
+import { MAX_PHOTOS, processPhoto, storeLeadPhotos } from '../lib/server/photos';
 import {
   buildAttributes,
   buildInquiryEmail,
@@ -11,10 +13,11 @@ import {
   getBrevoContactId,
   sendBrevoEmail,
   upsertBrevoContact,
+  type InquiryEmailInput,
 } from '../lib/server/brevo';
 
 /**
- * Server actions for the two site forms. Flow per submission:
+ * Server actions for the site forms. Flow per submission:
  * spam heuristics → per-IP rate limit → Turnstile verification →
  * env check → Brevo contact upsert.
  *
@@ -22,7 +25,7 @@ import {
  * deliberately exclude API keys and submitted PII.
  */
 
-type FormName = 'signup' | 'contact';
+type FormName = 'signup' | 'contact' | 'lead';
 
 const GENERIC_FAILURE = 'Something went wrong. Please try again.';
 
@@ -168,7 +171,7 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
  * throws: the contact upsert already succeeded and must not be undone by a
  * notification failure.
  */
-async function tryNotifyInquiry(input: ContactInput): Promise<void> {
+async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
   try {
     const apiKey = getEnv('BREVO_API_KEY');
     const to = getEnv(input.inquiryType === 'sponsor' ? 'SPONSOR_NOTIFY_TO' : 'CONTACT_NOTIFY_TO');
@@ -190,15 +193,7 @@ async function tryNotifyInquiry(input: ContactInput): Promise<void> {
       return;
     }
 
-    const { subject, htmlContent } = buildInquiryEmail({
-      inquiryType: input.inquiryType,
-      fname: input.fname,
-      lname: input.lname,
-      email: input.email,
-      message: input.message,
-      phone: input.phone,
-      organization: input.organization,
-    });
+    const { subject, htmlContent } = buildInquiryEmail(input);
 
     const result = await sendBrevoEmail(apiKey, {
       sender: { email: from, name: 'Trash Talk NYC Website' },
@@ -242,13 +237,22 @@ export const server = {
 
       await requireTurnstile('signup', ctx, input['cf-turnstile-response']);
 
+      // Outside-NYC signups: BOROUGH is omitted (its live option set may
+      // not include "Not in NYC") and the location lands in the COUNTRY /
+      // CITY / ZIP_CODE attributes instead — COUNTRY present exactly when
+      // BOROUGH is absent, so the two states stay distinguishable.
+      const outsideNyc = input.borough === NOT_IN_NYC;
+
       await upsertOrThrow(
         'signup',
         input.email,
         buildAttributes({
           FIRSTNAME: input.fname,
           LASTNAME: input.lname,
-          BOROUGH: input.borough,
+          BOROUGH: outsideNyc ? undefined : input.borough,
+          COUNTRY: outsideNyc ? input.country : undefined,
+          CITY: outsideNyc ? input.city : undefined,
+          ZIP_CODE: outsideNyc ? input.zip : undefined,
           PHONE: input.phone,
           MESSAGE: input.experience,
           HEAR_ABOUT_US: input.hear,
@@ -308,6 +312,111 @@ export const server = {
       const noteForm = noteForms[input.inquiryType];
       await tryCreateNote(noteForm, input.email, input.message);
       await tryNotifyInquiry(input);
+
+      return { ok: true };
+    },
+  }),
+
+  leadCleanup: defineAction({
+    accept: 'form',
+    input: leadSchema,
+    handler: async (input, ctx) => {
+      const dropped = await shouldSilentlyDrop('lead', ctx, {
+        botcheck: input.botcheck,
+        startedAt: input.startedAt,
+      });
+      if (dropped) return { ok: true };
+
+      await requireTurnstile('lead', ctx, input['cf-turnstile-response']);
+
+      // Re-verify the route addresses against NYC GeoSearch — the page's
+      // picker already forces choosing a real suggestion, so a no-match
+      // here is a bypassed client, not a typo. The verified label (when
+      // available) is what gets stored.
+      const start = await verifyNycAddress(input.startAddress);
+      if (!start.ok) {
+        log('warn', 'form_address_rejected', { form: 'lead', field: 'startAddress' });
+        throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
+      }
+      let endLabel: string | undefined;
+      if (input.routeType === 'oneway') {
+        const end = await verifyNycAddress(input.endAddress ?? '');
+        if (!end.ok) {
+          log('warn', 'form_address_rejected', { form: 'lead', field: 'endAddress' });
+          throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
+        }
+        endLabel = end.label;
+      }
+
+      // Route photos: content-validated, re-encoded (metadata including
+      // GPS stripped), stored privately under random keys. File inputs
+      // submit one empty File when nothing was chosen — drop those first.
+      const files = (input.photos ?? []).filter((f) => f.size > 0);
+      if (files.length > MAX_PHOTOS) {
+        log('warn', 'lead_photos_rejected', { form: 'lead', reason: 'too_many', count: files.length });
+        throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
+      }
+      const jpegs: Buffer[] = [];
+      for (const file of files) {
+        const result = await processPhoto(new Uint8Array(await file.arrayBuffer()));
+        if (!result.ok) {
+          log('warn', 'lead_photos_rejected', { form: 'lead', reason: result.error });
+          throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
+        }
+        jpegs.push(result.jpeg);
+      }
+      let photoKeys: string[] = [];
+      if (jpegs.length > 0) {
+        const stored = await storeLeadPhotos(jpegs);
+        if (!stored.ok) {
+          // The applicant believes the photos were sent — failing loudly
+          // beats silently dropping attachments.
+          log('error', 'lead_photo_store_failed', { form: 'lead', detail: stored.detail });
+          throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: GENERIC_FAILURE });
+        }
+        photoKeys = stored.keys;
+      }
+
+      await upsertOrThrow(
+        'lead',
+        input.email,
+        buildAttributes({
+          FIRSTNAME: input.fname,
+          LASTNAME: input.lname,
+          PHONE: input.phone,
+          INQUIRY_TYPE: 'lead',
+          LEAD_BEHALF: input.behalf,
+          MAILING_ADDRESS: input.mailingAddress,
+          ROUTE_TYPE: input.routeType,
+          ROUTE_START: start.label,
+          ROUTE_END: endLabel,
+          PREFERRED_MONTH: input.preferredMonth,
+        }),
+        'BREVO_LIST_ID_LEADS',
+      );
+
+      // The CRM note preserves the full application (attributes are
+      // last-write-wins), including where the private photos live.
+      const noteLines = [
+        `Applying on behalf of: ${input.behalf}`,
+        `Mailing address: ${input.mailingAddress}`,
+        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${start.label}${endLabel ? ` — end: ${endLabel}` : ''}`,
+        `Preferred month: ${input.preferredMonth}`,
+        photoKeys.length > 0
+          ? `Photos (${photoKeys.length}, private Blobs store lead-route-photos): ${photoKeys.join(', ')}`
+          : 'Photos: none attached',
+      ];
+      await tryCreateNote('contact-lead', input.email, noteLines.join('\n'));
+
+      await tryNotifyInquiry({
+        inquiryType: 'lead',
+        fname: input.fname,
+        lname: input.lname,
+        email: input.email,
+        phone: input.phone,
+        message: noteLines.join('\n'),
+        extraRows: [['Preferred month', input.preferredMonth]],
+      });
 
       return { ok: true };
     },

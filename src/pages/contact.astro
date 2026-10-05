@@ -1,394 +1,553 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PageHero from '../components/PageHero.astro';
 import { actions } from 'astro:actions';
+import { rollingMonths } from '../lib/months';
+import bricksTop from '../assets/bricks-top-lav.svg';
+import bricksBottom from '../assets/bricks-bottom-lav.svg';
+import illGloveShovel from '../assets/ill-glove-shovel.svg';
+import illFamilyVestsPurple from '../assets/ill-family-vests-purple.svg';
+import illTreebed from '../assets/ill-treebed.svg';
+import illTrashPurple from '../assets/ill-trash-purple.svg';
+import illFamilyVestsBeige from '../assets/ill-family-vests-beige.svg';
+import illTrashLav from '../assets/ill-trash-lav.svg';
+
+/**
+ * Contact — TALK TRASH. The choices are poster tiles in the captain's
+ * order (Lead a Cleanup / Collaborate / Sponsor / General) and no form
+ * shows until a tile is picked. General, Collaborate and Sponsor share
+ * one message form (the existing contact action); Lead a Cleanup is
+ * its own application form backed by the leadCleanup action, with NYC
+ * GeoSearch address picking, libphonenumber validation, and secure
+ * route photos.
+ */
 
 // Baked in at build time (pages are prerendered): when unset, no widget
-// renders and the contact action skips Turnstile verification. After setting
+// renders and the actions skip Turnstile verification. After setting
 // the key in Netlify, a redeploy is required for the widget to appear.
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+
+// Build-time rendering of the rolling months; the page script re-derives
+// them on load so a stale build can never offer a month already past.
+const monthOptions = rollingMonths();
 ---
 
 <BaseLayout
   title="Contact — Trash Talk NYC"
-  description="Get in touch with Trash Talk NYC for questions, press, or collaborations with creators, organizations, and companies that want to help clean up New York City."
+  description="Get in touch with Trash Talk NYC: apply to lead a cleanup, collaborate on content, sponsor cleanups, or ask us anything."
 >
 
-  <!-- Turnstile bot check on the contact form; implicit rendering picks up the
-       .cf-turnstile div. Only loaded when a site key was set at build time. -->
+  <!-- Turnstile bot check on both forms; implicit rendering picks up the
+       .cf-turnstile divs. Only loaded when a site key was set at build time. -->
   {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-  <PageHero eyebrowEn="Contact" eyebrowEs="Contacto" word="HELLO">
-    <span data-en="TALK TO" data-es="HABLA CON">TALK TO</span><br /><span class="accent" data-en="TRASH TALK" data-es="TRASH TALK">TRASH TALK</span>
-  </PageHero>
+  <!-- HERO -->
+  <section class="ct-hero">
+    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
+    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+    <div class="ct-hero-inner">
+      <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
+      <h1 class="ct-title"><span data-en="TALK" data-es="HABLA">TALK</span><br /><span class="accent" data-en="TRASH" data-es="BASURA">TRASH</span></h1>
+    </div>
+  </section>
 
-  <section class="contact-section grid-paper">
-    <div class="contact-inner">
-      <div class="form-wrap">
-        <div class="contact-tabs" role="tablist">
-          <button type="button" class="contact-tab active" id="tabGeneral" data-type="general" role="tab" aria-selected="true">
-            <span data-en="General" data-es="General">General</span>
-          </button>
-          <button type="button" class="contact-tab" id="tabPartnership" data-type="partnership" role="tab" aria-selected="false">
-            <span data-en="Collaborate" data-es="Colaborar">Collaborate</span>
-          </button>
-          <button type="button" class="contact-tab" id="tabSponsor" data-type="sponsor" role="tab" aria-selected="false">
-            <span data-en="Sponsor" data-es="Patrocinar">Sponsor</span>
-          </button>
-        </div>
+  <section class="wrap ct-body">
+    <div class="ct-form paste">
+      <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
+      <div class="tiles" role="group" aria-labelledby="pickLabel">
+        <button type="button" class="tile" aria-pressed="false" data-type="lead">
+          <img src={illGloveShovel.src} alt="" />
+          <b data-en="Lead a Cleanup" data-es="Lidera una Limpieza">Lead a Cleanup</b>
+          <small data-en="Apply to lead a cleanup with Trash Talk NYC" data-es="Postúlate para liderar una limpieza con Trash Talk NYC">Apply to lead a cleanup with Trash Talk NYC</small>
+        </button>
+        <button type="button" class="tile" aria-pressed="false" data-type="partnership">
+          <img src={illFamilyVestsPurple.src} alt="" />
+          <b data-en="Collaborate" data-es="Colaborar">Collaborate</b>
+          <small data-en="For content or podcast collaborations" data-es="Para colaboraciones de contenido o pódcast">For content or podcast collaborations</small>
+        </button>
+        <button type="button" class="tile" aria-pressed="false" data-type="sponsor">
+          <img src={illTreebed.src} alt="" />
+          <b data-en="Sponsor" data-es="Patrocinar">Sponsor</b>
+          <small data-en="Put your name behind cleanups" data-es="Pon tu nombre detrás de las limpiezas">Put your name behind cleanups</small>
+        </button>
+        <button type="button" class="tile" aria-pressed="false" data-type="general">
+          <img src={illTrashPurple.src} alt="" />
+          <b data-en="General" data-es="General">General</b>
+          <small data-en="For questions, concerns, or a website bug" data-es="Para preguntas, comentarios o un error del sitio">For questions, concerns, or a website bug</small>
+        </button>
+      </div>
 
-        <h2 class="form-heading" id="formHeading">Message Trash Talk NYC</h2>
-        <p class="form-intro" id="formIntro">Questions, concerns, or a bug to report. We typically respond within 24 hours.</p>
+      <div class="form-area" id="formArea" hidden>
+        <h2 id="formHeading">Message Trash Talk NYC</h2>
+        <p class="intro" id="formIntro">Questions, concerns, or report a bug on the site.</p>
 
         <div class="form-success" id="formSuccess">
-          <div class="success-icon">✓</div>
+          <div class="success-icon" aria-hidden="true">✓</div>
           <h3 data-en="Message sent!" data-es="¡Mensaje enviado!">Message sent!</h3>
           <p data-en="We'll get back to you as soon as we can." data-es="Te responderemos lo antes posible.">We'll get back to you as soon as we can.</p>
         </div>
 
+        <!-- GENERAL / COLLABORATE / SPONSOR -->
         <form id="contactForm" method="POST" action={actions.contact}>
           <input type="hidden" name="botcheck" value="" />
-          <input type="hidden" name="startedAt" id="contactStartedAt" value="" />
+          <input type="hidden" name="startedAt" data-started-at value="" />
           <input type="hidden" name="inquiryType" id="inquiryType" value="general" />
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="fname" data-en="First name *" data-es="Nombre *">First name *</label>
-              <input type="text" id="fname" name="fname" required placeholder="Jane" autocomplete="given-name" data-placeholder-en="Jane" data-placeholder-es="Jane" />
-            </div>
-            <div class="form-group">
-              <label for="lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
-              <input type="text" id="lname" name="lname" required placeholder="Doe" autocomplete="family-name" data-placeholder-en="Doe" data-placeholder-es="Doe" />
-            </div>
+          <div class="field">
+            <label for="c-fname" data-en="First name *" data-es="Nombre *">First name *</label>
+            <input type="text" id="c-fname" name="fname" required placeholder="Jane" autocomplete="given-name" />
           </div>
-
-          <div class="form-group">
-            <label for="email" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
-            <input type="email" id="email" name="email" required placeholder="jane@example.com" autocomplete="email" data-placeholder-en="jane@example.com" data-placeholder-es="jane@ejemplo.com" />
+          <div class="field">
+            <label for="c-lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
+            <input type="text" id="c-lname" name="lname" required placeholder="Doe" autocomplete="family-name" />
           </div>
-
-          <div class="form-group">
-            <label for="phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
-            <input type="tel" id="phone" name="phone" placeholder="(212) 555-0100" autocomplete="tel" />
+          <div class="field">
+            <label for="c-email" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
+            <input type="email" id="c-email" name="email" required placeholder="jane@example.com" autocomplete="email" />
           </div>
-
-          <div class="form-group" id="orgGroup" hidden>
-            <label for="organization" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
-            <input type="text" id="organization" name="organization" autocomplete="organization" />
+          <div class="field">
+            <label for="c-phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+            <input type="tel" id="c-phone" name="phone" autocomplete="tel" />
           </div>
-
-          <div class="form-group">
-            <label for="message" data-en="Message *" data-es="Mensaje *">Message *</label>
-            <textarea id="message" name="message" required></textarea>
+          <div class="field full" id="orgGroup" hidden>
+            <label for="c-org" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
+            <input type="text" id="c-org" name="organization" autocomplete="organization" />
+          </div>
+          <div class="field full">
+            <label for="c-msg" data-en="Message *" data-es="Mensaje *">Message *</label>
+            <textarea id="c-msg" name="message" required></textarea>
           </div>
 
           {turnstileSiteKey && (
-            <div class="form-group turnstile-group">
+            <div class="field full turnstile-group">
               <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-action="contact" data-theme="light"></div>
             </div>
           )}
 
-          <button type="submit" class="form-submit" id="submitBtn" data-en="Send message →" data-es="Enviar mensaje →">Send message →</button>
-          <!-- No data-en/data-es here: setLang() would inject the error text on
-               every toggle even when no error occurred; the submit handler and
-               onLanguageChange own this element's content -->
-          <p class="form-error" id="contactFormError" aria-live="polite"></p>
+          <button type="submit" class="btn btn-primary full form-submit" data-en="Send message →" data-es="Enviar mensaje →">Send message →</button>
+          <p class="form-error full" id="contactFormError" aria-live="polite"></p>
+        </form>
+
+        <!-- LEAD A CLEANUP -->
+        <form id="leadForm" method="POST" action={actions.leadCleanup} hidden>
+          <input type="hidden" name="botcheck" value="" />
+          <input type="hidden" name="startedAt" data-started-at value="" />
+          <input type="hidden" name="behalf" id="behalfInput" value="individual" />
+          <input type="hidden" name="routeType" id="routeTypeInput" value="loop" />
+
+          <fieldset class="field full bare-fieldset">
+            <legend class="lbl" data-en="Applying on behalf of *" data-es="Postulación en nombre de *">Applying on behalf of *</legend>
+            <div class="chips" role="radiogroup" aria-label="Applying on behalf of">
+              <button type="button" class="chip-btn" role="radio" aria-checked="true" data-behalf="individual" data-en="An individual" data-es="Una persona">An individual</button>
+              <button type="button" class="chip-btn" role="radio" aria-checked="false" data-behalf="organization" data-en="An organization" data-es="Una organización">An organization</button>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="l-fname" data-en="First name *" data-es="Nombre *">First name *</label>
+            <input type="text" id="l-fname" name="fname" required autocomplete="given-name" />
+          </div>
+          <div class="field">
+            <label for="l-lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
+            <input type="text" id="l-lname" name="lname" required autocomplete="family-name" />
+          </div>
+          <div class="field full">
+            <label for="l-mail" data-en="Mailing address *" data-es="Dirección postal *">Mailing address *</label>
+            <input type="text" id="l-mail" name="mailingAddress" required autocomplete="street-address" placeholder="Street, apt, city, state, ZIP" data-placeholder-en="Street, apt, city, state, ZIP" data-placeholder-es="Calle, apto, ciudad, estado, ZIP" />
+          </div>
+          <div class="field">
+            <label for="l-email" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
+            <input type="email" id="l-email" name="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="l-phone" data-en="Phone number *" data-es="Teléfono *">Phone number *</label>
+            <input type="tel" id="l-phone" name="phone" required autocomplete="tel" />
+          </div>
+
+          <fieldset class="field full bare-fieldset">
+            <legend class="lbl" data-en="Route type *" data-es="Tipo de ruta *">Route type *</legend>
+            <div class="chips" role="radiogroup" aria-label="Route type">
+              <button type="button" class="chip-btn" role="radio" aria-checked="true" data-route="loop" data-en="Loop" data-es="Circuito">Loop</button>
+              <button type="button" class="chip-btn" role="radio" aria-checked="false" data-route="oneway" data-en="One-way route" data-es="Ruta de ida">One-way route</button>
+            </div>
+          </fieldset>
+
+          <div class="field" id="startGroup">
+            <label for="l-start" data-en="Starting address *" data-es="Dirección de inicio *">Starting address *</label>
+            <div class="addr">
+              <input id="l-start" name="startAddress" class="addr-in" autocomplete="off" required placeholder="Start typing an NYC address" data-placeholder-en="Start typing an NYC address" data-placeholder-es="Empieza a escribir una dirección de NYC" role="combobox" aria-autocomplete="list" aria-expanded="false" />
+              <ul class="addr-list" role="listbox" hidden></ul>
+              <p class="addr-ok" hidden data-en="✓ Found on the map" data-es="✓ Encontrada en el mapa">✓ Found on the map</p>
+            </div>
+          </div>
+          <div class="field" id="endGroup" hidden>
+            <label for="l-end" data-en="End address *" data-es="Dirección final *">End address *</label>
+            <div class="addr">
+              <input id="l-end" name="endAddress" class="addr-in" autocomplete="off" placeholder="Start typing an NYC address" data-placeholder-en="Start typing an NYC address" data-placeholder-es="Empieza a escribir una dirección de NYC" role="combobox" aria-autocomplete="list" aria-expanded="false" />
+              <ul class="addr-list" role="listbox" hidden></ul>
+              <p class="addr-ok" hidden data-en="✓ Found on the map" data-es="✓ Encontrada en el mapa">✓ Found on the map</p>
+            </div>
+          </div>
+
+          <!-- Captain's note, verbatim -->
+          <p class="route-note full" data-en="We recommend 4 blocks max. Beauty is about the detail, not necessarily scale." data-es="Recomendamos 4 cuadras como máximo. La belleza está en el detalle, no necesariamente en la escala.">We recommend 4 blocks max. Beauty is about the detail, not necessarily scale.</p>
+
+          <div class="field full">
+            <label for="l-month" data-en="Preferred month for your cleanup *" data-es="Mes preferido para tu limpieza *">Preferred month for your cleanup *</label>
+            <select id="l-month" name="preferredMonth" required>
+              <option value="" selected disabled data-en="Choose a month" data-es="Elige un mes">Choose a month</option>
+              {monthOptions.map((m) => (
+                <option value={m.value} data-en={m.en} data-es={m.es}>{m.en}</option>
+              ))}
+            </select>
+          </div>
+
+          <div class="field full">
+            <label for="l-photos"><span data-en="Photos of the route" data-es="Fotos de la ruta">Photos of the route</span> <span class="opt" data-en="(optional · up to 5 photos, JPG, PNG, WebP or HEIC, 10 MB each)" data-es="(opcional · hasta 5 fotos, JPG, PNG, WebP o HEIC, 10 MB cada una)">(optional · up to 5 photos, JPG, PNG, WebP or HEIC, 10 MB each)</span></label>
+            <label class="drop-zone" for="l-photos">
+              <!-- No HEIC in accept on purpose: iOS then hands over a JPEG
+                   conversion of HEIC photos itself; anything still exotic is
+                   converted (or rejected) by the picker script below. -->
+              <input id="l-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+              <span class="dz-text"><b data-en="Add photos" data-es="Agrega fotos">Add photos</b> <span data-en="or drag them here" data-es="o arrástralas aquí">or drag them here</span></span>
+            </label>
+            <div class="thumbs" id="thumbs"></div>
+            <p class="dz-err f-err" id="dzErr" hidden></p>
+            <p class="dz-note" data-en="Kept secure — photos are stored privately and stripped of location data." data-es="Se guardan de forma segura — las fotos se almacenan en privado y sin datos de ubicación.">Kept secure — photos are stored privately and stripped of location data.</p>
+          </div>
+
+          {turnstileSiteKey && (
+            <div class="field full turnstile-group">
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-action="lead" data-theme="light"></div>
+            </div>
+          )}
+
+          <button type="submit" class="btn btn-primary full form-submit" data-en="Apply to lead →" data-es="Postúlate para liderar →">Apply to lead →</button>
+          <p class="form-error full" id="leadFormError" aria-live="polite"></p>
         </form>
       </div>
+    </div>
 
-      <!-- Recruiting invitation: links straight to the roles page at
-           /recruit (round 20 — it previously landed on the About page's
-           closing note instead of the roles, captain-flagged). Copy is
-           the captain's round-20 wording; "Now recruiting" was retired. -->
-      <aside class="join-banner" aria-labelledby="joinBannerHeading">
-        <h2 class="join-banner-heading" id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
-        <p class="join-banner-copy" data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo o alguien que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
-        <a class="join-banner-link" href="/recruit" data-en="See more →" data-es="Ver más →">See more →</a>
+    <div class="side">
+      <aside class="banner paste" aria-labelledby="joinBannerHeading">
+        <img class="ill" src={illFamilyVestsBeige.src} alt="" />
+        <h2 id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
+        <p data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo o alguien que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
+        <a class="btn btn-primary" href="/recruit" data-en="See more →" data-es="Ver más →">See more →</a>
       </aside>
+      <img class="deco" src={illTrashLav.src} alt="" />
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .contact-section {
-    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
-  }
-
-  .contact-inner {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .form-wrap {
-    background: #fff;
-    border-radius: var(--radius-md);
-    border: 2.5px solid var(--charcoal);
-    box-shadow: var(--press);
-    padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3.5vw, 2rem);
-    text-align: center;
-  }
-
-  .form-wrap :global(form),
-  .form-wrap .form-group,
-  .form-wrap .form-row {
-    text-align: left;
-  }
-
-  .contact-tabs {
-    display: flex;
-    gap: clamp(0.35rem, 1.5vw, 0.5rem);
-    margin-bottom: 1.5rem;
-  }
-
-  /* Tabs styled as pressable sign plates: the active tab sits "pressed
-     down" (translated into its shadow) in charcoal + yellow. Font size and
-     inline padding are fluid so all three labels ("Collaborate" is the
-     longest) stay on one line each down to 390px. */
-  .contact-tab {
-    flex: 1;
-    background: var(--off-white);
-    border: 2px solid var(--charcoal);
-    border-radius: 8px;
-    padding: 0.65rem clamp(0.3rem, 1.5vw, 1rem);
-    min-height: var(--tap);
-    font-family: 'Nunito', sans-serif;
-    font-size: clamp(0.66rem, 0.3rem + 1.5vw, 0.85rem);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
-    color: var(--gray);
-    cursor: pointer;
-    box-shadow: var(--press-sm);
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.15s, color 0.15s;
-  }
-
-  .contact-tab:hover { color: var(--charcoal); }
-
-  .contact-tab.active {
-    background: var(--charcoal);
-    color: var(--yellow);
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 var(--charcoal);
-  }
-
-  .form-heading {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    letter-spacing: 0.04em;
-    color: var(--charcoal);
-    margin-bottom: 0.5rem;
-  }
-
-  .form-intro {
-    font-size: 0.92rem;
-    color: var(--gray);
-    margin-bottom: 1.75rem;
-    line-height: 1.5;
-  }
-
-  .form-group {
-    margin-bottom: 1.25rem;
-  }
-
-  .form-row {
+  /* ── HERO ── */
+  .ct-hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: var(--ink);
+    min-height: calc(min(780px, 100vw) * 0.72);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-    gap: 0 1rem;
+    align-items: center;
   }
 
-  .form-group label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--charcoal);
-    margin-bottom: 0.4rem;
+  .ct-hero .bricks {
+    width: min(780px, 100%);
+    left: 50%;
+    transform: translateX(-50%);
   }
 
-  .form-optional { font-size: 0.7rem; color: var(--gray); margin-left: 0.2rem; font-weight: 400; }
-
-  /* 16px input text so iOS Safari doesn't zoom the page on focus */
-  .form-group input,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.7rem 0.9rem;
-    min-height: var(--tap);
-    border: 1.5px solid var(--cream);
-    border-radius: 8px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
-    color: var(--charcoal);
-    background: var(--off-white);
-    transition: border-color 0.15s;
-    outline: none;
+  .ct-hero-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 40px 30px;
   }
 
-  .form-group input:focus,
-  .form-group textarea:focus {
+  .ct-eyebrow { color: var(--yellow); }
+
+  .ct-title {
+    font-size: 4rem;
+    color: var(--beige);
+    text-align: center;
+    line-height: 0.92;
+  }
+
+  .ct-title .accent { color: var(--lavender); }
+
+  @media (min-width: 761px) {
+    .ct-title { font-size: clamp(4.6rem, 9.5vw, 8rem); }
+  }
+
+  /* ── BODY ── */
+  .ct-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    padding-block: 30px 44px;
+  }
+
+  .ct-form {
+    background-color: var(--paper);
+    color: var(--black);
+    padding: 22px 14px;
+  }
+
+  .pick-label { color: var(--black); margin-bottom: 10px; }
+
+  /* ── TILES ── */
+  .tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .tile {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+    align-content: start;
+    text-align: left;
+    padding: 12px;
+    border: var(--ink);
+    border-radius: 10px;
+    background: var(--paper-bright);
+    color: var(--black);
+    cursor: pointer;
+    transition: transform 0.12s;
+  }
+
+  .tile:hover { transform: translate(-1px, -2px); background: var(--yellow); }
+
+  .tile img {
+    width: 52px;
+    height: 44px;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
+
+  .tile b {
+    font-family: var(--body);
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1.05;
+  }
+
+  .tile small { font-size: 0.9rem; line-height: 1.25; opacity: 0.8; }
+
+  .tile[aria-pressed='true'] {
+    background: var(--purple);
+    color: var(--beige);
     border-color: var(--purple);
   }
 
-  .form-group textarea {
-    resize: vertical;
-    min-height: 130px;
+  .tile[aria-pressed='true'] img { filter: brightness(0) invert(0.92); }
+
+  /* ── FORM AREA ── */
+  .form-area {
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 2px dashed var(--black);
   }
 
-  /* Reserve the widget's rendered height (normal size is 65px) so the
-     submit button doesn't jump when the Turnstile iframe loads in */
-  .turnstile-group {
-    min-height: 65px;
+  .form-area[hidden] { display: none; }
+
+  .form-area h2 {
+    font-size: clamp(2.2rem, 3.6vw, 3rem);
+    color: var(--purple);
+    margin-bottom: 16px;
   }
 
-  .form-submit {
-    width: 100%;
-    padding: 0.85rem 1.5rem;
-    min-height: 52px;
-    background: var(--yellow);
-    color: var(--charcoal);
-    border: 2.5px solid var(--charcoal);
-    border-radius: 8px;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+  .form-area .intro { margin: -6px 0 20px; font-size: 1.08rem; }
+
+  .form-area form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 10px;
+  }
+
+  .form-area form[hidden] { display: none; }
+  .form-area :global(.field[hidden]) { display: none; }
+
+  .form-area label { font-size: 0.88rem; }
+
+  .form-area input:not([type='checkbox']):not([type='file']),
+  .form-area select,
+  .form-area textarea { font-size: 0.95rem; padding: 8px 10px; }
+
+  .form-area textarea { min-height: 120px; }
+
+  .bare-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .bare-fieldset legend { padding: 0; margin-bottom: 6px; }
+
+  .route-note {
+    margin: -2px 0 0;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--green);
+  }
+
+  /* ── PHOTO DROP ZONE ── */
+  .drop-zone {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 96px;
+    border: 2.5px dashed var(--black);
+    border-radius: 10px;
+    background: var(--paper-bright);
     cursor: pointer;
-    box-shadow: 4px 4px 0 var(--charcoal);
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.15s;
-    margin-top: 0.75rem;
+    text-align: center;
+    padding: 14px;
   }
 
-  .form-submit:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--charcoal);
-  }
-  .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: var(--press-sm); }
+  .drop-zone:hover,
+  .drop-zone.over { background: var(--yellow); }
 
-  /* Stays rendered (never display:none) so screen readers announce text
-     inserted into the aria-live region; :empty just collapses the gap */
+  .drop-zone input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    opacity: 0;
+  }
+
+  .drop-zone:focus-within { outline: 3px solid var(--purple); outline-offset: 2px; }
+
+  .dz-text { font-size: 1rem; }
+
+  .thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .thumbs:empty { display: none; }
+
+  .thumbs :global(img) {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border: 2px solid var(--black);
+    border-radius: 6px;
+  }
+
+  .dz-note { margin: 0; font-size: 0.85rem; opacity: 0.65; }
+
+  .turnstile-group { min-height: 65px; }
+
+  .form-area :global(.form-submit) { font-size: 1rem; padding: 15px; }
+
   .form-error {
-    margin-top: 0.9rem;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-align: center;
-    color: #c0392b;
+    color: var(--error);
+    margin: 0;
   }
 
-  .form-error:empty { margin: 0; }
+  .form-error:empty { display: none; }
 
-  /* ── SUCCESS STATE ── */
+  /* ── SUCCESS ── */
   .form-success {
     display: none;
     text-align: center;
     padding: 2rem 1rem;
   }
 
-  .form-success .success-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
+  .form-success .success-icon { font-size: 2.5rem; margin-bottom: 1rem; color: var(--green); }
+  .form-success h3 { font-size: 2.2rem; color: var(--purple); margin-bottom: 0.5rem; }
+  .form-success p { font-weight: 600; }
 
-  .form-success h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.04em;
-    color: var(--charcoal);
-    margin-bottom: 0.5rem;
-  }
+  /* ── SIDE ── */
+  .side { display: grid; gap: 24px; }
 
-  .form-success p {
-    color: var(--gray);
-    font-size: 0.9rem;
-  }
-
-  /* ── JOIN-THE-TEAM BANNER ── */
-  /* Inverted palette (charcoal on the grid-paper section) plus a purple press
-     shadow and a slight tilt so it reads as its own poster object, not part
-     of the white form card above it */
-  .join-banner {
+  .banner {
     position: relative;
-    margin-top: clamp(2.5rem, 6vw, 3.5rem);
-    background: var(--charcoal);
-    border: 2.5px solid var(--charcoal);
-    border-radius: var(--radius-md);
-    box-shadow: 6px 6px 0 var(--purple-light);
-    padding: clamp(2rem, 5vw, 2.75rem) clamp(1.25rem, 4vw, 2.5rem) clamp(1.75rem, 4.5vw, 2.25rem);
-    text-align: center;
-    transform: rotate(-0.6deg);
+    background-color: var(--green);
+    color: var(--beige);
+    padding: 24px 18px;
+    display: grid;
+    gap: 12px;
   }
 
-  .join-banner-heading {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    letter-spacing: 0.05em;
-    color: var(--yellow);
-    margin-bottom: 0.5rem;
+  .banner .ill {
+    width: 120px;
+    height: 92px;
+    object-fit: cover;
+    object-position: center 55%;
   }
 
-  .join-banner-copy {
-    color: var(--cream);
-    font-size: 0.92rem;
-    line-height: 1.55;
-    max-width: 38ch;
-    margin: 0 auto 1.4rem;
+  .banner h2 { font-size: 2.4rem; }
+  .banner p { margin: 0; font-size: 1.08rem; line-height: 1.55; }
+  .banner .btn { justify-self: start; margin-top: 6px; width: 100%; }
+
+  .deco { display: none; justify-self: center; width: min(220px, 70%); }
+
+  @media (min-width: 761px) {
+    .ct-body {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: 32px;
+      padding-block: 52px 72px;
+    }
+
+    .ct-form { padding: 30px clamp(18px, 3vw, 36px); }
+    .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .tile { padding: 14px 14px 16px; }
+    .tile img { width: 64px; height: 56px; }
+    .tile b { font-size: 1.2rem; }
+    .form-area form { gap: 14px 12px; }
+    .form-area label { font-size: 1rem; }
+
+    .form-area input:not([type='checkbox']):not([type='file']),
+    .form-area select,
+    .form-area textarea { font-size: 1.05rem; padding: 9px 12px; }
+
+    .banner { padding: 30px 26px; }
+    .banner .ill { width: 150px; height: 120px; }
+    .banner .btn { width: auto; }
+    .deco { display: block; }
   }
 
-  .join-banner-link {
-    display: inline-block;
-    background: var(--yellow);
-    color: var(--charcoal);
-    border: 2px solid var(--charcoal);
-    border-radius: 8px;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    text-decoration: none;
-    padding: 0.7rem 1.4rem;
-    min-height: var(--tap);
-    /* Charcoal press shadows vanish on the charcoal banner, so the button
-       presses into the same purple as the banner's own shadow */
-    box-shadow: 3px 3px 0 var(--purple-light);
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
-  }
-
-  .join-banner-link:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 var(--purple-light);
+  @media (prefers-reduced-motion: reduce) {
+    .tile { transition: none; }
   }
 </style>
 
 <script>
   import { actions } from 'astro:actions';
-  import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
+  import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
+  import { attachFieldValidation } from '../lib/clientValidation';
+  import { rollingMonths } from '../lib/months';
 
-  const form = document.getElementById('contactForm') as HTMLFormElement | null;
-  const btn = document.getElementById('submitBtn') as HTMLButtonElement | null;
-  const successDiv = document.getElementById('formSuccess') as HTMLElement | null;
-  const orgGroup = document.getElementById('orgGroup') as HTMLElement | null;
-  const orgInput = document.getElementById('organization') as HTMLInputElement | null;
-  const inquiryTypeInput = document.getElementById('inquiryType') as HTMLInputElement | null;
-  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.contact-tab'));
-  const headingEl = document.getElementById('formHeading') as HTMLElement | null;
-  const introEl = document.getElementById('formIntro') as HTMLElement | null;
-  const startedAtInput = document.getElementById('contactStartedAt') as HTMLInputElement | null;
-  const errorEl = document.getElementById('contactFormError') as HTMLElement | null;
+  attachFieldValidation();
 
-  if (startedAtInput) startedAtInput.value = String(Date.now());
+  document.querySelectorAll<HTMLInputElement>('[data-started-at]').forEach((el) => {
+    el.value = String(Date.now());
+  });
 
-  type ContactType = 'general' | 'partnership' | 'sponsor';
-  let currentType: ContactType = 'general';
+  type TileType = 'lead' | 'partnership' | 'sponsor' | 'general';
+
+  const tiles = Array.from(document.querySelectorAll<HTMLButtonElement>('.tile'));
+  const formArea = document.getElementById('formArea') as HTMLElement;
+  const headingEl = document.getElementById('formHeading') as HTMLElement;
+  const introEl = document.getElementById('formIntro') as HTMLElement;
+  const msgForm = document.getElementById('contactForm') as HTMLFormElement;
+  const leadForm = document.getElementById('leadForm') as HTMLFormElement;
+  const orgGroup = document.getElementById('orgGroup') as HTMLElement;
+  const orgInput = document.getElementById('c-org') as HTMLInputElement;
+  const inquiryTypeInput = document.getElementById('inquiryType') as HTMLInputElement;
+  const successDiv = document.getElementById('formSuccess') as HTMLElement;
+  const contactErrorEl = document.getElementById('contactFormError') as HTMLElement;
+  const leadErrorEl = document.getElementById('leadFormError') as HTMLElement;
+
+  let currentType: TileType | null = null;
 
   // formHeading/formIntro intentionally carry no data-en/data-es attributes —
-  // their text depends on tab type as well as language, so this object is the
-  // sole owner of their content (matches the #waiverText pattern in index.astro).
-  const copy: Record<ContactType, Record<'en' | 'es', { heading: string; intro: string }>> = {
-    general: {
-      en: { heading: 'Message Trash Talk NYC', intro: "Questions, concerns, or report a bug on the site." },
-      es: { heading: 'Escríbenos', intro: 'Preguntas, comentarios o reporta un error en el sitio.' },
+  // their text depends on the picked tile as well as language, so this object
+  // is the sole owner of their content.
+  const copy: Record<TileType, Record<Lang, { heading: string; intro: string }>> = {
+    lead: {
+      en: { heading: 'Apply to lead a cleanup with Trash Talk NYC', intro: '' },
+      es: { heading: 'Postúlate para liderar una limpieza con Trash Talk NYC', intro: '' },
     },
     partnership: {
       en: { heading: 'Collaborate with Trash Talk NYC', intro: "Have an idea to create something together? Whether you're an organization, a creator, or a community partner, let's discuss!" },
@@ -398,105 +557,351 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       en: { heading: 'Sponsor Trash Talk NYC', intro: 'Companies and brands: put your name behind cleanup events, supplies, and a cleaner New York City.' },
       es: { heading: 'Patrocina a Trash Talk NYC', intro: 'Empresas y marcas: pongan su nombre detrás de eventos de limpieza, materiales y una Nueva York más limpia.' },
     },
+    general: {
+      en: { heading: 'Message Trash Talk NYC', intro: 'Questions, concerns, or report a bug on the site.' },
+      es: { heading: 'Escríbenos', intro: 'Preguntas, comentarios o reporta un error en el sitio.' },
+    },
   };
 
   function applyCopy() {
+    if (!currentType) return;
     const c = copy[currentType][getCurrentLang()];
-    if (headingEl) headingEl.textContent = c.heading;
-    if (introEl) introEl.textContent = c.intro;
+    headingEl.textContent = c.heading;
+    introEl.textContent = c.intro;
+    introEl.hidden = !c.intro;
+  }
+
+  /** Resets a form's single-use Turnstile widget (each form has its own). */
+  function resetTurnstile(form: HTMLFormElement) {
+    const widget = form.querySelector<HTMLElement>('.cf-turnstile');
+    if (widget) window.turnstile?.reset(widget);
   }
 
   /**
-   * A submission hides the form behind the success view; switching tabs
-   * afterwards must bring the form back or the new tab appears dead. The
-   * message is cleared (it belonged to the previous inquiry) but identity
-   * fields are kept so the sender doesn't retype them.
+   * A submission hides the forms behind the success view; picking a tile
+   * afterwards must bring the right form back or the new choice appears
+   * dead. Message content is cleared (it belonged to the previous
+   * inquiry) but identity fields are kept so the sender doesn't retype.
    */
-  function restoreFormAfterSuccess() {
-    if (!form || !successDiv || successDiv.style.display !== 'block') return;
-
+  function restoreAfterSuccess() {
+    if (successDiv.style.display !== 'block') return;
     successDiv.style.display = '';
-    form.style.display = '';
-    // Turnstile tokens are single-use — the successful submission consumed
-    // this one, so the re-shown form needs a fresh challenge
-    window.turnstile?.reset();
-    const messageInput = form.elements.namedItem('message') as HTMLTextAreaElement | null;
+    resetTurnstile(msgForm);
+    resetTurnstile(leadForm);
+    const messageInput = msgForm.elements.namedItem('message') as HTMLTextAreaElement | null;
     if (messageInput) messageInput.value = '';
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = btn.getAttribute(`data-${getCurrentLang()}`) ?? btn.textContent;
+  }
+
+  function setType(type: TileType) {
+    currentType = type;
+    tiles.forEach((tile) => tile.setAttribute('aria-pressed', String(tile.dataset.type === type)));
+    formArea.hidden = false;
+    restoreAfterSuccess();
+
+    const isLead = type === 'lead';
+    msgForm.hidden = isLead;
+    leadForm.hidden = !isLead;
+
+    if (!isLead) {
+      // Both org-backed inquiries (Collaborate and Sponsor) come from an
+      // organization, so the org field shows and is required for either
+      const needsOrg = type !== 'general';
+      orgGroup.hidden = !needsOrg;
+      orgInput.required = needsOrg;
+      inquiryTypeInput.value = type;
+    }
+
+    // Errors belong to the previous inquiry attempt
+    contactErrorEl.textContent = '';
+    leadErrorEl.textContent = '';
+    applyCopy();
+  }
+
+  tiles.forEach((tile) => {
+    tile.addEventListener('click', () => setType(tile.dataset.type as TileType));
+  });
+
+  onLanguageChange((lang) => {
+    applyCopy();
+    if (contactErrorEl.textContent) contactErrorEl.textContent = submitErrorText(lang);
+    if (leadErrorEl.textContent) leadErrorEl.textContent = submitErrorText(lang);
+  });
+
+  // ── CHIP RADIOS (behalf, route type) ──
+  function wireChips(selector: string, onPick: (value: string) => void) {
+    const chips = Array.from(document.querySelectorAll<HTMLButtonElement>(selector));
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        chips.forEach((c) => c.setAttribute('aria-checked', String(c === chip)));
+        onPick(chip.dataset.behalf ?? chip.dataset.route ?? '');
+      });
+    });
+  }
+
+  const behalfInput = document.getElementById('behalfInput') as HTMLInputElement;
+  wireChips('[data-behalf]', (v) => { behalfInput.value = v; });
+
+  const routeTypeInput = document.getElementById('routeTypeInput') as HTMLInputElement;
+  const endGroup = document.getElementById('endGroup') as HTMLElement;
+  const endInput = document.getElementById('l-end') as HTMLInputElement;
+  wireChips('[data-route]', (v) => {
+    routeTypeInput.value = v;
+    const oneway = v === 'oneway';
+    endGroup.hidden = !oneway;
+    endInput.required = oneway;
+    if (!oneway) {
+      endInput.value = '';
+      delete endInput.dataset.verified;
+      endInput.setCustomValidity('');
+    }
+  });
+
+  // ── NYC ADDRESS PICKER (GeoSearch autocomplete) ──
+  // People pick a real suggestion; free text never satisfies the field.
+  // The action re-verifies against GeoSearch server-side.
+  const ADDR_MSG = {
+    pick: { en: 'Pick an address from the list so we can find it on the map.', es: 'Elige una dirección de la lista para poder ubicarla en el mapa.' },
+    none: { en: 'No NYC match yet. Keep typing the street and cross street.', es: 'Aún no hay coincidencias en NYC. Sigue escribiendo la calle y la transversal.' },
+  };
+
+  document.querySelectorAll<HTMLElement>('#leadForm .addr').forEach((wrap) => {
+    const input = wrap.querySelector<HTMLInputElement>('input')!;
+    const list = wrap.querySelector<HTMLUListElement>('.addr-list')!;
+    const ok = wrap.querySelector<HTMLParagraphElement>('.addr-ok')!;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let seq = 0;
+
+    function close() {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+    }
+
+    async function search(query: string) {
+      const mySeq = ++seq;
+      try {
+        const res = await fetch(
+          `https://geosearch.planninglabs.nyc/v2/autocomplete?text=${encodeURIComponent(query)}&size=6`,
+        );
+        if (!res.ok || mySeq !== seq) return;
+        const data = (await res.json()) as {
+          features?: Array<{ properties?: { label?: string; name?: string; borough?: string; postalcode?: string } }>;
+        };
+        const lang = getCurrentLang();
+        const items = (data.features ?? [])
+          .map((f) => f.properties)
+          .filter((p): p is NonNullable<typeof p> => !!p?.label)
+          .slice(0, 6);
+        list.innerHTML = items.length
+          ? items
+              .map((p) => {
+                const label = (p.label ?? '').replace(/"/g, '&quot;');
+                const main = p.name ?? p.label ?? '';
+                const sub = [p.borough, p.postalcode].filter(Boolean).join(' ');
+                return `<li role="option" data-v="${label}">${main}${sub ? `<small>${sub}</small>` : ''}</li>`;
+              })
+              .join('')
+          : `<li aria-disabled="true">${ADDR_MSG.none[lang]}</li>`;
+        list.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+      } catch {
+        // GeoSearch unreachable: let the text stand; the server re-checks.
+        input.dataset.verified = '1';
+        input.setCustomValidity('');
+      }
+    }
+
+    input.addEventListener('input', () => {
+      delete input.dataset.verified;
+      ok.hidden = true;
+      const q = input.value.trim();
+      input.setCustomValidity(q ? ADDR_MSG.pick[getCurrentLang()] : '');
+      clearTimeout(timer);
+      if (q.length < 2) {
+        close();
+        list.innerHTML = '';
+        return;
+      }
+      timer = setTimeout(() => search(q), 250);
+    });
+
+    list.addEventListener('mousedown', (e) => {
+      const li = (e.target as HTMLElement).closest<HTMLLIElement>('li[data-v]');
+      if (!li) return;
+      e.preventDefault();
+      input.value = li.dataset.v ?? '';
+      input.dataset.verified = '1';
+      input.setCustomValidity('');
+      ok.hidden = false;
+      close();
+    });
+
+    input.addEventListener('blur', () => setTimeout(close, 120));
+  });
+
+  // ── ROLLING MONTHS ──
+  // Re-derive on load so a page built weeks ago never offers a month
+  // that has already passed.
+  const monthSelect = document.getElementById('l-month') as HTMLSelectElement;
+  {
+    const placeholder = monthSelect.options[0];
+    const fresh = rollingMonths();
+    monthSelect.innerHTML = '';
+    monthSelect.append(placeholder);
+    fresh.forEach((m) => {
+      const opt = document.createElement('option');
+      opt.value = m.value;
+      opt.textContent = getCurrentLang() === 'es' ? m.es : m.en;
+      opt.setAttribute('data-en', m.en);
+      opt.setAttribute('data-es', m.es);
+      monthSelect.append(opt);
+    });
+    placeholder.selected = true;
+  }
+
+  // ── PHOTOS ──
+  // Client-side: enforce the captain's limits (images only, max 5,
+  // 10 MB each) and re-encode to bounded JPEGs before upload — that is
+  // what lets iPhone HEIC photos through (iOS hands the input a JPEG)
+  // and keeps the upload under the platform's request-size budget. The
+  // server re-validates content and re-encodes again regardless.
+  const MAX_PHOTOS = 5;
+  const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+  const MAX_UPLOAD_TOTAL = 4.5 * 1024 * 1024;
+  const OK_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+
+  const photoInput = document.getElementById('l-photos') as HTMLInputElement;
+  const dropZone = photoInput.closest('.drop-zone') as HTMLElement;
+  const thumbs = document.getElementById('thumbs') as HTMLElement;
+  const dzErr = document.getElementById('dzErr') as HTMLParagraphElement;
+
+  let pickedPhotos: File[] = [];
+
+  const DZ_MSG = {
+    type: { en: 'Only JPG, PNG, WebP or HEIC photos up to 10 MB each can be added.', es: 'Solo se pueden agregar fotos JPG, PNG, WebP o HEIC de hasta 10 MB cada una.' },
+    count: { en: 'Up to 5 photos. Only the first 5 were kept.', es: 'Hasta 5 fotos. Solo se conservaron las primeras 5.' },
+    total: { en: 'Those photos are too large together. Please remove one or use smaller photos.', es: 'Esas fotos juntas son demasiado pesadas. Quita una o usa fotos más pequeñas.' },
+    decode: { en: "One photo couldn't be read. Please use JPG, PNG or WebP.", es: 'No se pudo leer una foto. Usa JPG, PNG o WebP.' },
+  };
+
+  function showDzError(key: keyof typeof DZ_MSG | null) {
+    dzErr.hidden = !key;
+    dzErr.textContent = key ? DZ_MSG[key][getCurrentLang()] : '';
+  }
+
+  /** Decode + re-encode one photo to a ≤2048px JPEG in the browser. */
+  async function toJpeg(file: File): Promise<File | null> {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const scale = Math.min(1, 2048 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+      if (!blob) return null;
+      const base = file.name.replace(/\.[^.]*$/, '') || 'route-photo';
+      return new File([blob], `${base}.jpg`, { type: 'image/jpeg' });
+    } catch {
+      return null;
     }
   }
 
-  function setType(type: ContactType) {
-    currentType = type;
-    tabs.forEach((tab) => {
-      const active = tab.dataset.type === type;
-      tab.classList.toggle('active', active);
-      tab.setAttribute('aria-selected', String(active));
-    });
+  async function takeFiles(files: FileList | File[]) {
+    showDzError(null);
+    const list = [...files];
+    const typeOk = list.filter((f) => OK_TYPES.includes(f.type) && f.size <= MAX_PHOTO_BYTES);
+    if (typeOk.length < list.length) showDzError('type');
 
-    // Both org-backed inquiries (Collaborate and Sponsor) come from an
-    // organization, so the org field shows and is required for either
-    const needsOrg = type !== 'general';
-    if (orgGroup) orgGroup.hidden = !needsOrg;
-    if (orgInput) orgInput.required = needsOrg;
-    if (inquiryTypeInput) inquiryTypeInput.value = type;
+    const capped = typeOk.slice(0, MAX_PHOTOS);
+    if (typeOk.length > MAX_PHOTOS) showDzError('count');
 
-    // The error belonged to the previous inquiry attempt
-    if (errorEl) errorEl.textContent = '';
+    const processed: File[] = [];
+    for (const file of capped) {
+      const jpeg = await toJpeg(file);
+      if (jpeg) {
+        processed.push(jpeg);
+      } else if (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp') {
+        // Couldn't re-encode but the original is already a safe type —
+        // send it as-is if it fits the upload budget.
+        processed.push(file);
+      } else {
+        showDzError('decode');
+      }
+    }
 
-    restoreFormAfterSuccess();
-    applyCopy();
-  }
-
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => setType(tab.dataset.type as ContactType));
-  });
-
-  // Keep heading/intro (and any visible submit error) in sync when the
-  // user switches language
-  onLanguageChange((lang) => {
-    applyCopy();
-    if (errorEl?.textContent) errorEl.textContent = submitErrorText(lang);
-  });
-
-  applyCopy();
-
-  form?.addEventListener('submit', async (e: Event) => {
-    e.preventDefault();
-    if (!form || !btn || !successDiv) return;
-
-    const originalText = btn.textContent ?? '';
-    btn.disabled = true;
-    btn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Sending…';
-    if (errorEl) errorEl.textContent = '';
-
-    const { error } = await actions.contact(new FormData(form));
-
-    if (!error) {
-      form.style.display = 'none';
-      successDiv.style.display = 'block';
+    if (processed.reduce((sum, f) => sum + f.size, 0) > MAX_UPLOAD_TOTAL) {
+      showDzError('total');
       return;
     }
 
-    // Turnstile tokens are single-use — the failed attempt consumed this
-    // one, so reset the widget or a retry would submit a spent token
-    window.turnstile?.reset();
+    pickedPhotos = processed;
+    thumbs.innerHTML = '';
+    pickedPhotos.forEach((f) => {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      img.alt = f.name;
+      img.addEventListener('load', () => URL.revokeObjectURL(img.src));
+      thumbs.append(img);
+    });
+  }
 
-    // Persistent aria-live message so the failure survives the transient
-    // button swap and is announced by screen readers
-    if (errorEl) errorEl.textContent = submitErrorText(getCurrentLang());
-    btn.textContent = submitErrorText(getCurrentLang());
-    btn.style.background = '#c0392b';
-    btn.style.borderColor = '#c0392b';
-    btn.style.color = '#fff';
-    btn.disabled = false;
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.background = '';
-      btn.style.borderColor = '';
-      btn.style.color = '';
-    }, 3500);
+  photoInput.addEventListener('change', () => {
+    if (photoInput.files) void takeFiles(photoInput.files);
   });
+
+  ['dragover', 'dragenter'].forEach((ev) =>
+    dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('over'); }),
+  );
+  ['dragleave', 'drop'].forEach((ev) =>
+    dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('over'); }),
+  );
+  dropZone.addEventListener('drop', (e) => {
+    const dt = (e as DragEvent).dataTransfer;
+    if (dt?.files) void takeFiles(dt.files);
+  });
+
+  // ── SUBMITS ──
+  function wireSubmit(form: HTMLFormElement, errorEl: HTMLElement, send: (data: FormData) => Promise<{ error: unknown }>) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector<HTMLButtonElement>('.form-submit')!;
+      const originalText = btn.textContent ?? '';
+      btn.disabled = true;
+      btn.textContent = getCurrentLang() === 'es' ? 'Enviando…' : 'Sending…';
+      errorEl.textContent = '';
+
+      const data = new FormData(form);
+      if (form === leadForm) {
+        // The input element's FileList may hold originals; the processed
+        // JPEGs are what actually upload.
+        data.delete('photos');
+        pickedPhotos.forEach((f) => data.append('photos', f));
+      }
+
+      const { error } = await send(data);
+
+      if (!error) {
+        // Picking a tile again restores the right form via setType
+        msgForm.hidden = true;
+        leadForm.hidden = true;
+        successDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = originalText;
+        return;
+      }
+
+      // Turnstile tokens are single-use — the failed attempt consumed
+      // this one, so reset the widget or a retry would submit a spent token
+      resetTurnstile(form);
+
+      errorEl.textContent = submitErrorText(getCurrentLang());
+      btn.textContent = submitErrorText(getCurrentLang());
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = originalText; }, 3500);
+    });
+  }
+
+  wireSubmit(msgForm, contactErrorEl, (data) => actions.contact(data));
+  wireSubmit(leadForm, leadErrorEl, (data) => actions.leadCleanup(data));
 </script>

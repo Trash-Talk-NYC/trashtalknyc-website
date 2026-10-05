@@ -1,9 +1,12 @@
 ---
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageHero from '../../components/PageHero.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
+import bricksTop from '../../assets/bricks-top-lav.svg';
+import bricksBottom from '../../assets/bricks-bottom-lav.svg';
+import illTrash from '../../assets/ill-trash-lav.svg';
+import illGlovePlant from '../../assets/ill-glove-plant-beige.svg';
 
 /**
  * From the Founder — /about/from-the-founder: David's first-person
@@ -107,17 +110,31 @@ const story: Block[] = [
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
-  <!-- The h1 is the captain's chosen page name (rename, 2026-08-13),
-       split into two leaves so the language toggle can restructure it:
-       EN "From the / Founder" becomes ES "Del / Fundador" leaf by
-       leaf. -->
-  <PageHero eyebrowEn="About · From the Founder" eyebrowEs="Nosotros · Del Fundador" word="88 DAYS">
-    <span data-en="From the" data-es="Del">From the</span><br />
-    <span class="accent" data-en="Founder" data-es="Fundador">Founder</span>
-  </PageHero>
+  <!-- Brick-framed title with just "About" above it, slightly larger
+       than the usual accent line (captain, 2026-10 redesign). The h1 is
+       the captain's chosen page name (rename, 2026-08-13), split into
+       two leaves so the language toggle can restructure it: EN
+       "From the / Founder" becomes ES "Del / Fundador" leaf by leaf. -->
+  <section class="fd-hero">
+    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
+    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+    <div class="fd-hero-inner">
+      <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
+      <h1 class="fd-title">
+        <span data-en="From the" data-es="Del">From the</span><br />
+        <span class="accent" data-en="Founder" data-es="Fundador">Founder</span>
+      </h1>
+    </div>
+  </section>
 
-  <section class="story-section grid-paper">
-    <article class="story">
+  <!-- David's letter, unchanged, as ONE wheatpasted sheet; the only
+       things beside it are the margin drawings, which are decoration,
+       not content. -->
+  <section class="fd-body">
+    <div class="fd-margin" aria-hidden="true">
+      <img src={illTrash.src} alt="" />
+    </div>
+    <article class="story paste">
       <!-- Byline card (captain, 2026-08-13): circular photo + name +
            title, replacing the text-only byline. david-founder.jpg is a
            committed square crop of IMG_0952_Original.jpeg (sharp
@@ -161,80 +178,156 @@ const story: Block[] = [
         <span>{founderName}</span>
       </p>
     </article>
+    <div class="fd-margin" aria-hidden="true">
+      <img src={illGlovePlant.src} alt="" />
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .story-section {
-    background-color: var(--off-white);
-    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
+  /* ── HERO ── */
+  .fd-hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: var(--ink);
+    min-height: calc(min(780px, 100vw) * 0.72);
+    display: grid;
+    align-items: center;
   }
 
-  /* One measured reading column: ~66ch of Nunito at body size. The
-     recruit note proved 1rem/600/1.7 comfortable for long text on this
-     paper; the story keeps that voice. */
+  .fd-hero .bricks {
+    width: min(780px, 100%);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .fd-hero-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 40px 30px;
+  }
+
+  /* "Just About above it, slightly larger" — the captain's call: the
+     accent line runs a step bigger than the usual mono voice. */
+  .fd-eyebrow {
+    color: var(--yellow);
+    font-size: 1.02rem;
+  }
+
+  .fd-title {
+    font-size: 2.9rem;
+    line-height: 0.92;
+    color: var(--beige);
+    text-align: center;
+  }
+
+  .fd-title .accent { color: var(--lavender); }
+
+  @media (min-width: 761px) {
+    .fd-title { font-size: clamp(3.2rem, 6vw, 5.4rem); }
+  }
+
+  /* ── BODY ── */
+  .fd-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding: 30px 12px 44px;
+    align-items: start;
+  }
+
+  .fd-margin {
+    display: none;
+    gap: 40px;
+    justify-items: center;
+    position: sticky;
+    top: calc(var(--nav-h) + 24px);
+  }
+
+  .fd-margin img { width: min(190px, 100%); }
+
+  /* David's letter as one wheatpasted sheet. One measured reading
+     column; the recruit note proved this size/weight comfortable for
+     long text on paper. */
   .story {
-    max-width: 42rem;
-    margin: 0 auto;
+    background-color: var(--paper);
+    color: var(--black);
+    padding: 28px 18px 32px;
+  }
+
+  @media (min-width: 761px) {
+    .fd-body {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr);
+      gap: 28px;
+      padding: 56px clamp(16px, 4vw, 48px) 72px;
+    }
+
+    .fd-margin { display: grid; }
+    .story { grid-column: 2; padding: 44px clamp(22px, 4vw, 56px) 48px; }
   }
 
   /* Byline card — the one element above the story that is not David's
-     own text. The photo replaced the old orange rule as the byline's
-     mark; the title keeps the mono/uppercase credit voice so it still
-     reads as a credit, not as an opening the captain did not write. */
+     own text. */
   .story-byline {
     display: flex;
     align-items: center;
     gap: 0.9rem;
-    margin-bottom: var(--space-md);
+    margin-bottom: 28px;
   }
 
-  /* Fixed-size circle: flat charcoal outline, deliberately NO press
-     shadow — the captain wants the black outline without the
-     dimensional offset look (2026-08-13). Explicit height overrides
-     the width/height attrs <Image> always emits; the source is square,
-     so no crop drift. */
+  /* Fixed-size circle: flat ink outline, deliberately NO press shadow —
+     the captain wants the black outline without the dimensional offset
+     look (2026-08-13). Explicit height overrides the width/height attrs
+     <Image> always emits; the source is square, so no crop drift. */
   .byline-photo {
     width: 64px;
     height: 64px;
     flex-shrink: 0;
     border-radius: 50%;
-    border: 2.5px solid var(--charcoal);
+    border: 2.5px solid var(--black);
     object-fit: cover;
   }
 
   .byline-name {
     display: block;
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: var(--charcoal);
-    line-height: 1.2;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--purple);
   }
 
   .byline-title {
     display: block;
     margin-top: 0.3rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.68rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--purple);
+    letter-spacing: 0.06em;
+    color: var(--green);
   }
 
   .story-p {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--charcoal);
-    line-height: 1.75;
-    margin-top: 1.2em;
+    font-size: 1.06rem;
+    line-height: 1.7;
+    margin: 0 0 1.15em;
+    max-width: 65ch;
   }
 
+  .story-p:last-child { margin-bottom: 0; }
+
   .story-lede {
-    margin-top: 0;
-    font-size: var(--step-1);
-    font-weight: 700;
-    line-height: 1.55;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    font-weight: 600;
+  }
+
+  @media (min-width: 761px) {
+    .story-p { font-size: 1.14rem; }
+    .story-lede { font-size: 1.42rem; }
   }
 
   /* Email-farewell sign-off: composes .story-p so it keeps body voice
@@ -242,6 +335,6 @@ const story: Block[] = [
      worth of air above it — nothing decorative, so it reads like the
      end of a letter rather than a new device. */
   .story-signoff {
-    margin-top: 2.4em;
+    margin: 1.6em 0 0;
   }
 </style>

@@ -120,13 +120,15 @@ export function escapeHtml(value: string): string {
 }
 
 export interface InquiryEmailInput {
-  inquiryType: 'general' | 'partnership' | 'sponsor';
+  inquiryType: 'general' | 'partnership' | 'sponsor' | 'lead';
   fname: string;
   lname: string;
   email: string;
   message: string;
   phone?: string;
   organization?: string;
+  /** Extra label/value rows (the lead application's route details). */
+  extraRows?: Array<[label: string, value: string | undefined]>;
 }
 
 /**
@@ -144,6 +146,7 @@ export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; 
     general: 'New contact message',
     partnership: 'New collaboration inquiry',
     sponsor: 'New sponsorship inquiry',
+    lead: 'New cleanup-lead application',
   };
   const label = labels[input.inquiryType];
   const name = `${input.fname} ${input.lname}`.trim();
@@ -155,6 +158,7 @@ export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; 
     ['Email', input.email],
     ['Phone', input.phone],
     ['Organization', input.organization],
+    ...(input.extraRows ?? []),
   ];
   const rowsHtml = rows
     .filter(([, value]) => value?.trim())

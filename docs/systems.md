@@ -54,8 +54,9 @@ Current behavior:
 
 ## Forms
 
-Both forms submit through Astro Actions (`src/actions/index.ts`) running as an on-demand Netlify function via `@astrojs/netlify`.
+The forms submit through Astro Actions (`src/actions/index.ts` — `signup`, `contact`, and since the 2026-10 redesign `leadCleanup`) running as an on-demand Netlify function via `@astrojs/netlify`.
 Each action validates with zod, runs spam heuristics (honeypot + timing + content patterns), rate limits per IP via Netlify Blobs, verifies a Cloudflare Turnstile token server-side (`src/lib/server/turnstile.ts`), and upserts the submitter as a Brevo contact with a raw `fetch()` call (no Brevo SDK).
+Phone numbers are validated with `libphonenumber-js` on both client and server (10-digit US, or international with a + country code).
 Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign.
 
 Turnstile (bot check, added 2026-07 after the security-scale audit flagged bot list-pollution):
@@ -64,16 +65,23 @@ Turnstile (bot check, added 2026-07 after the security-scale audit flagged bot l
 - Once the site key is set, a missing `TURNSTILE_SECRET_KEY` fails closed (`form_env_missing`), and any verification failure rejects with the same generic message as other validation failures (`form_turnstile_rejected` in logs).
 - Turnstile sits alongside the honeypot/timing heuristics, not instead of them; setting the keys in Netlify requires a redeploy because the site key bakes into the prerendered pages.
 
-Volunteer form:
+Volunteer form (newsletter):
 - Home page `#signup` → Brevo list `signups_list` (`BREVO_LIST_ID_SIGNUP`)
 - Fields land as Brevo contact attributes (BOROUGH, PHONE, MESSAGE, HEAR_ABOUT_US, WAIVER_ACCEPTED); HEAR_ABOUT_US values must match the Brevo enum exactly (the select's value attributes do). WAIVER_ACCEPTED reflects server-validated checkbox state — both the waiver and age checkboxes are required and zod-validated (`'on'` literal), not assumed just because the handler was reached. EXPERIENCE is dormant — historical only
+- The borough dropdown includes "Not in NYC" (2026-10): choosing it asks for Country (starts on the United States), City (picked from a list — Open-Meteo geocoding, free/keyless), and a US-only ZIP; the action then omits BOROUGH and sends COUNTRY, CITY, ZIP_CODE attributes instead
 
-Contact form:
-- Single page (`/contact`), tabbed: General / Collaborate → separate Brevo lists per tab (`CONTACT_GENERAL` / `CONTACT_COLLAB`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
-- Tab choice is sent as `inquiryType` (`general` | `partnership`); partnership requires `organization`
+Contact page (`/contact`, 2026-10 layout):
+- Four poster tiles in the captain's order — Lead a Cleanup / Collaborate / Sponsor / General — and no form shows until a tile is picked
+- Collaborate, Sponsor, and General share the message form → the `contact` action; tile choice is sent as `inquiryType` (`general` | `partnership` | `sponsor`); the org-backed tiles require `organization`; separate Brevo lists per tile (`CONTACT_GENERAL` / `CONTACT_COLLAB` / `CONTACT_SPONSOR`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
 - Fields land as Brevo contact attributes (FIRSTNAME, LASTNAME, EMAIL, PHONE (optional), INQUIRY_TYPE, ORGANIZATION, MESSAGE)
-- Message text is stored as a Brevo contact attribute (MESSAGE, latest value only) AND as a Brevo CRM note per submission (full history, header form=…|field=…|submitted=…); nothing emails the team directly anymore; a transactional-email notification is a known follow-up
-- "Host an Event" as a third inquiry type was considered and deferred — not built
+- Message text is stored as a Brevo contact attribute (MESSAGE, latest value only) AND as a Brevo CRM note per submission (full history, header form=…|field=…|submitted=…); the team is also notified by transactional email when the notify vars are set (see `.env.example`)
+
+Lead a Cleanup form (the fourth tile → the `leadCleanup` action, 2026-10):
+- Asks: applying on behalf of an individual or an organization; first/last name, mailing address, email, phone (all required); route type Loop or One-way with a starting address and (one-way only) an end address; preferred month (rolling, current month onward); up to 5 route photos
+- Route addresses are picked from NYC Planning Labs GeoSearch suggestions client-side and re-verified against GeoSearch server-side (`src/lib/server/geosearch.ts` — fails closed on no-match, open on service trouble)
+- Photos are validated by content (magic bytes — SVG and non-raster rejected), re-encoded with sharp to bounded JPEGs with all metadata including GPS stripped, and stored privately in Netlify Blobs under random keys (store `lead-route-photos`, `src/lib/server/photos.ts`); the CRM note records the keys
+- Routes to Brevo list `BREVO_LIST_ID_LEADS` with attributes LEAD_BEHALF, MAILING_ADDRESS, ROUTE_TYPE, ROUTE_START, ROUTE_END, PREFERRED_MONTH (+ FIRSTNAME/LASTNAME/PHONE, INQUIRY_TYPE=`lead`); the team notification email reuses the contact notification plumbing (CONTACT_NOTIFY_TO)
+- "Host an Event" as a separate inquiry type was considered and deferred — Lead a Cleanup (2026-10) is the shipped descendant of that idea
 
 ## Email
 

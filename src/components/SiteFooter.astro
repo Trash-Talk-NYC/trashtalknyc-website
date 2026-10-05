@@ -1,118 +1,135 @@
 ---
 /**
- * Single site-wide footer. Replaces the three per-page footer variants
- * that existed before the redesign (row layout on home, two slightly
- * different centered layouts on events/about) with one centered design.
+ * Single site-wide footer in the 2026-10 identity: logo stickers,
+ * links, the "Keep NYC clean." sign-off, and the full sticker icon
+ * row (Instagram, TikTok, LinkedIn, YouTube, Facebook). No bricks
+ * here — the captain removed the footer brick frame (2026-09-30).
  */
+import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
+import wordmarkSticker from '../assets/wordmark-sticker.png';
+import vestSticker from '../assets/vest-sticker.png';
 
 const year = new Date().getFullYear();
 ---
 
 <footer>
-  <div class="footer-logo">Trash Talk NYC</div>
-  <ul class="footer-links">
-    <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
-    <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-    <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
-    <li><a href="/about" data-en="About" data-es="Nosotros">About</a></li>
-    <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
-    <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
-    <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
-  </ul>
-  <div class="footer-socials">
-    <SocialLinks all />
+  <div class="wrap foot-grid">
+    <div class="foot-stickers">
+      <Image src={wordmarkSticker} alt="Trash Talk NYC" class="foot-logo" width={260} densities={[1, 2]} />
+      <Image src={vestSticker} alt="" class="slap slap-foot" width={148} densities={[1, 2]} />
+    </div>
+    <ul class="foot-links">
+      <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
+      <li><a href="/about" data-en="About" data-es="Nosotros">About</a></li>
+      <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
+      <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
+      <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
+      <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
+      <li class="foot-links-spacer" aria-hidden="true"></li>
+      <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
+    </ul>
+    <div class="foot-right">
+      <div class="foot-big"><span data-en="Keep NYC" data-es="Mantén NYC">Keep NYC</span><br /><span class="accent" data-en="clean." data-es="limpia.">clean.</span></div>
+      <SocialLinks ids={['instagram', 'tiktok', 'linkedin', 'youtube', 'facebook']} />
+    </div>
+    <div class="copy">© {year} Trash Talk NYC</div>
   </div>
-  <div class="footer-copy">© {year} Trash Talk NYC</div>
 </footer>
 
 <style>
-  /* One deliberate vertical rhythm: logo, links, socials, copyright at
-     an even --space-sm beat. Wrapped rows (links at phone widths,
-     socials now that there are four) get NO extra row gap — the items'
-     own min-height tap targets provide the breathing room, so wrapping
-     never doubles the spacing. */
   footer {
-    background: var(--charcoal);
-    padding:
-      var(--space-lg)
-      max(var(--gutter), var(--safe-right))
-      max(var(--space-lg), var(--safe-bottom))
-      max(var(--gutter), var(--safe-left));
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-sm);
-    border-top: 3px solid var(--purple-light);
-    text-align: center;
+    background: var(--black);
+    color: var(--beige);
+    border-top: 3px solid var(--beige);
+    padding-block: 40px 28px;
+    padding-bottom: max(28px, var(--safe-bottom));
   }
 
-  .footer-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    color: var(--yellow);
-    letter-spacing: 0.04em;
-    line-height: 1;
+  .foot-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
   }
 
-  .footer-links {
-    display: flex;
-    justify-content: center;
-    gap: 0 clamp(1rem, 3vw, 2rem);
+  .foot-stickers {
+    position: relative;
+    width: 170px;
+  }
+
+  footer :global(.foot-logo) {
+    width: 130px;
+    height: auto;
+    transform: rotate(-4deg);
+  }
+
+  footer :global(.slap-foot) {
+    position: absolute;
+    width: 74px;
+    height: auto;
+    right: 0;
+    bottom: -18px;
+    transform: rotate(14deg);
+  }
+
+  .foot-links {
     list-style: none;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 8px 48px;
+    font-weight: 600;
+    font-size: 1.05rem;
   }
 
-  .footer-links a {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--paper-a55);
+  .foot-links a {
     text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     display: inline-flex;
     align-items: center;
     min-height: 32px;
-    transition: color 0.15s;
   }
 
-  .footer-links a:hover { color: var(--yellow); }
+  .foot-links a:hover { color: var(--yellow); }
 
-  .footer-socials {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    justify-content: center;
-    gap: 0 clamp(1rem, 3vw, 1.5rem);
-    flex-wrap: wrap;
-    padding-top: var(--space-sm);
-    border-top: 1px solid var(--paper-a12);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--paper-a35);
+  .foot-right {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
   }
 
-  .footer-socials :global(.social-link) { min-height: 32px; }
-  .footer-socials :global(.social-link:hover) { color: var(--purple-light); }
+  .foot-big {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 2.8rem;
+    line-height: 0.92;
+    text-align: left;
+  }
 
-  .footer-copy {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: rgba(247, 244, 237, 0.22);
-    line-height: 1;
+  .foot-big .accent { color: var(--yellow); }
+
+  .copy {
+    border-top: 1px solid rgba(234, 233, 218, 0.2);
+    padding-top: 18px;
+    font-size: 0.9rem;
+    opacity: 0.65;
   }
 
   @media (pointer: coarse) {
-    .footer-links a,
-    .footer-socials :global(.social-link) { min-height: var(--tap); }
+    .foot-links a { min-height: var(--tap); }
   }
 
-  /* Four socials at phone widths wrap 3+1, stranding the last one;
-     capping the row width forces an even 2+2 instead */
-  @media (max-width: 480px) {
-    .footer-socials { max-width: 300px; }
+  @media (min-width: 761px) {
+    footer { padding-block: 56px 32px; }
+
+    .foot-grid {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 48px;
+    }
+
+    .foot-links-spacer { display: list-item; }
+    .foot-right { justify-items: end; }
+    .foot-big { text-align: right; }
+    .copy { grid-column: 1 / -1; }
   }
 </style>

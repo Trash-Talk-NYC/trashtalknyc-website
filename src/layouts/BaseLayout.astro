@@ -45,7 +45,7 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
        html and body charcoal (device-confirmed fix; exactly which surface
        iOS 26 samples is unverified — earlier "samples the body" claims
        came from iOS 18 simulator tests). Kept for the older-iOS audience. -->
-  <meta name="theme-color" content="#1c1c22" />
+  <meta name="theme-color" content="#1D1D23" />
   <title>{title}</title>
   <meta name="description" content={description} />
   {noindex && <meta name="robots" content="noindex" />}
@@ -79,8 +79,10 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Type per the TTNYC Style Guide: Londrina Solid Regular (display),
+       Barlow Semi Condensed (body), Space Mono Bold (accents). -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Londrina+Solid&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
     rel="stylesheet"
   />
 </head>

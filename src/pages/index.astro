@@ -1,31 +1,18 @@
 ---
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { fetchEventsAtBuildTime, formatDate, formatTime } from '../lib/events';
 import { actions } from 'astro:actions';
-import primaryLogo from '../assets/primary-logo.png';
+import { getSocials } from '../lib/socials';
+import { countries } from '../lib/countries';
+import vestSticker from '../assets/vest-sticker.png';
+import bricksTop from '../assets/bricks-top-lav.svg';
+import bricksBottom from '../assets/bricks-bottom-lav.svg';
+import illTreebed from '../assets/ill-treebed-beige.svg';
+import illGloveShovel from '../assets/ill-glove-shovel-beige.svg';
+import illGlovePlant from '../assets/ill-glove-plant-beige.svg';
+import illFamilyVests from '../assets/ill-family-vests-beige.svg';
 
-const { upcoming } = await fetchEventsAtBuildTime();
-
-const deepCleanEvents = upcoming.map((ev) => {
-  const startIso = ev.start.local || ev.start.utc;
-  const endIso = ev.end.local || ev.end.utc;
-  const location = ev.venue ? (ev.venue.name || '') + (ev.venue.city ? `, ${ev.venue.city}` : '') : '';
-  return {
-    id: ev.id,
-    name: ev.name,
-    url: ev.url,
-    startIso,
-    endIso,
-    dateStr: formatDate(startIso, 'en'),
-    timeStr: `${formatTime(startIso, 'en')} – ${formatTime(endIso, 'en')}`,
-    location,
-    lat: ev.venue?.lat ?? undefined,
-    lng: ev.venue?.lng ?? undefined,
-  };
-});
-const defaultEvent = deepCleanEvents[0] ?? null;
-const hasEventCoords = deepCleanEvents.some((ev) => ev.lat != null && ev.lng != null);
+const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'linkedin', 'facebook']);
 
 // Baked in at build time (pages are prerendered): when unset, no widget
 // renders and the signup action skips Turnstile verification. After setting
@@ -55,253 +42,140 @@ const orgSchema = {
 
 <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(orgSchema)} />
 
-<!-- Load Eventbrite widget JS early; skipped on localhost so local dev doesn't depend on it -->
-<script is:inline>
-  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-    var s = document.createElement('script');
-    s.src = 'https://www.eventbrite.com/static/widgets/eb_widgets.js';
-    document.head.appendChild(s);
-  }
-</script>
-
 <!-- Turnstile bot check on the signup form; implicit rendering picks up the
      .cf-turnstile div. Only loaded when a site key was set at build time. -->
 {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-<!-- HERO -->
-<section class="hero diag-texture" id="top">
-  <div class="hero-bg-word" aria-hidden="true">TRASH&nbsp;TALK</div>
-  <div class="hero-core">
-    <div class="sticker hero-chip" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</div>
+<!-- HERO: the brick drawing split into its two halves, stretched edge to
+     edge, with the vest sticker logo centered in the opening and one
+     button that says "Events" (captain). -->
+<section class="hero" id="top">
+  <img class="bricks bricks-top" src={bricksTop.src} alt="" />
+  <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <div class="hero-inner">
     <h1 class="sr-only">Trash Talk NYC</h1>
-    <!-- densities covers retina at the 500px CSS max width; eager because
-         the logo is the homepage LCP element -->
-    <Image src={primaryLogo} alt="Trash Talk NYC" class="hero-logo" width={500} height={500} densities={[1, 2]} loading="eager" fetchpriority="high" />
+    <!-- eager: the vest sticker is the homepage LCP element -->
+    <Image src={vestSticker} alt="Trash Talk NYC" class="hero-logo" width={440} densities={[1, 2]} loading="eager" fetchpriority="high" />
     <div class="hero-btns">
-      <a href="#signup" class="btn-primary" data-en="Join" data-es="Únete">Join</a>
-      <a href="#deep-clean" class="btn-secondary" data-en="Next Club Event →" data-es="Próximo Evento del Club →">Next Club Event →</a>
-    </div>
-  </div>
-
-  <div class="ticker" aria-hidden="true">
-    <div class="ticker-track">
-      <div class="ticker-group">
-        <span data-en="Keep NYC clean" data-es="Mantén NYC limpia">Keep NYC clean</span>
-        <span data-en="Join the club" data-es="Únete al club">Join the club</span>
-        <span data-en="Every block counts" data-es="Cada cuadra cuenta">Every block counts</span>
-        <span data-en="All five boroughs" data-es="Los cinco condados">All five boroughs</span>
-      </div>
-      <div class="ticker-group">
-        <span data-en="Keep NYC clean" data-es="Mantén NYC limpia">Keep NYC clean</span>
-        <span data-en="Join the club" data-es="Únete al club">Join the club</span>
-        <span data-en="Every block counts" data-es="Cada cuadra cuenta">Every block counts</span>
-        <span data-en="All five boroughs" data-es="Los cinco condados">All five boroughs</span>
-      </div>
+      <a href="/events" class="btn btn-primary" data-en="Events" data-es="Eventos">Events</a>
     </div>
   </div>
 </section>
 
-<!-- BENTO: DEEP CLEAN + DONATE -->
-<section class="bento grid-paper">
-  <div class="bento-inner">
-
-    <div class="bento-box deepclean-box" id="deep-clean">
-      {/* The card is the nearest-event RSVP when events exist, a socials list
-          when none do — the sticker has to name what's actually inside */}
-      {defaultEvent ? (
-        <div class="sticker bento-label" data-en="Deep Clean" data-es="Limpieza Profunda">Deep Clean</div>
-      ) : (
-        <div class="sticker bento-label" data-en="Connect on social media" data-es="Conéctate en redes sociales">Connect on social media</div>
-      )}
-      {defaultEvent ? (
-        <div class="dc-body" id="dcBody">
-          <div class="dc-eyebrow">
-            <span class="pulse-dot"></span>
-            <span data-en="Nearest cleanup" data-es="Limpieza más cercana">Nearest cleanup</span>
-          </div>
-          <h3 class="dc-event-name" id="dcEventName">{defaultEvent.name}</h3>
-          <div class="dc-meta">
-            <div class="dc-meta-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <span class="hero-date-text" id="dcDate" data-start-iso={defaultEvent.startIso}>{defaultEvent.dateStr}</span>
-            </div>
-            <div class="dc-meta-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span id="dcTime">{defaultEvent.timeStr}</span>
-            </div>
-            <div class="dc-meta-row" id="dcLocRow" style={defaultEvent.location ? '' : 'display:none'}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span id="dcLoc">{defaultEvent.location}</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="btn-eb-rsvp"
-            id="dcRsvpBtn"
-            data-event-id={defaultEvent.id}
-            data-url={defaultEvent.url}
-            data-name={defaultEvent.name}
-            data-date={defaultEvent.dateStr}
-            data-time={defaultEvent.timeStr}
-            data-loc={defaultEvent.location}
-            data-en="RSVP →" data-es="Regístrate →"
-          >
-            RSVP &rarr;
-          </button>
-        </div>
-      ) : (
-        <div class="dc-fallback">
-          <p class="dc-fallback-note" data-en="No upcoming events right now. Follow us for updates:" data-es="No hay eventos próximos. Síguenos para actualizaciones:">No upcoming events right now. Follow us for updates:</p>
-          <div class="dc-socials">
-            <a class="dc-social-row dc-social-primary" href="https://www.instagram.com/trashtalk_nyc/" target="_blank" rel="noopener" aria-label="Instagram — follow @trashtalk_nyc">
-              <span class="dc-social-icon dc-social-icon-ig" aria-hidden="true">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-              </span>
-              <span class="dc-social-text">
-                <span class="dc-social-net">Instagram</span>
-                <span class="dc-social-handle">@trashtalk_nyc</span>
-              </span>
-              <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
-            </a>
-            <a class="dc-social-row dc-social-tt" href="https://www.tiktok.com/@trashtalk_nyc" target="_blank" rel="noopener" aria-label="TikTok — follow @trashtalk_nyc">
-              <span class="dc-social-icon dc-social-icon-tt" aria-hidden="true">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>
-              </span>
-              <span class="dc-social-text">
-                <span class="dc-social-net">TikTok</span>
-                <span class="dc-social-handle">@trashtalk_nyc</span>
-              </span>
-              <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
-            </a>
-            <a class="dc-social-row dc-social-eb" href="https://trashtalknyc.eventbrite.com" target="_blank" rel="noopener" aria-label="Eventbrite — Trash Talk NYC events">
-              <span class="dc-social-icon dc-social-icon-eb" aria-hidden="true">e</span>
-              <span class="dc-social-text">
-                <span class="dc-social-net">Eventbrite</span>
-                <span class="dc-social-handle">Trash Talk NYC</span>
-              </span>
-              <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
-            </a>
-            <a class="dc-social-row dc-social-li" href="https://www.linkedin.com/company/trash-talk-nyc/" target="_blank" rel="noopener" aria-label="LinkedIn — Trash Talk NYC">
-              <span class="dc-social-icon dc-social-icon-li" aria-hidden="true">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg>
-              </span>
-              <span class="dc-social-text">
-                <span class="dc-social-net">LinkedIn</span>
-                <span class="dc-social-handle">Trash Talk NYC</span>
-              </span>
-              <span class="dc-social-arrow" aria-hidden="true">&rarr;</span>
-            </a>
-          </div>
-          <a href="#signup" class="dc-fallback-list-link" data-en="find out about neighborhood events ↓" data-es="entérate de los eventos en tu vecindario ↓">find out about neighborhood events ↓</a>
-        </div>
-      )}
-      {hasEventCoords && (
-        <div id="dcEventsData" hidden>
-          {deepCleanEvents.map((ev) => (
-            <div
-              class="dc-event-data"
-              data-event-id={ev.id}
-              data-url={ev.url}
-              data-name={ev.name}
-              data-date={ev.dateStr}
-              data-time={ev.timeStr}
-              data-loc={ev.location}
-              data-start-iso={ev.startIso}
-              data-lat={ev.lat}
-              data-lng={ev.lng}
-            ></div>
-          ))}
-        </div>
-      )}
-    </div>
-
-    <div class="bento-box donate-box" id="donate">
-      <div class="sticker bento-label bento-label-purple" data-en="Donate" data-es="Donar">Donate</div>
-      <h3 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h3>
-      <div class="gfm-widget-wrap">
+<!-- DONATE -->
+<section class="bento">
+  <div class="wrap bento-grid">
+    <article class="card donate paste" id="donate">
+      <img class="ill donate-art" src={illTreebed.src} alt="" />
+      <h2 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h2>
+      <div class="gfm">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
-      <!-- One flat paragraph under the widget — deliberately even, no
-           emphasis anywhere; the raised total above does the talking
-           (captain, rounds 28–30). -->
-      <p class="donate-note" data-en="Trash Talk started in late May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk empezó a fines de mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk started in late May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
-    </div>
-
+      <p class="donate-note" data-en="Trash Talk started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
+    </article>
   </div>
 </section>
 
-<!-- SIGNUP -->
+<!-- SOCIALS -->
+<section class="socials">
+  <div class="wrap">
+    <h2 data-en="Keep up with club socials" data-es="Síguenos en redes">Keep up with club socials</h2>
+    <div class="soc-grid">
+      {socialTiles.map((c) => (
+        <a class="soc-tile paste" href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
+          <span class="soc-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={c.path} /></svg></span>
+          <b>{c.label}</b>
+          <small>{c.handle}</small>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER SIGNUP -->
 <section class="signup" id="signup">
-  <div class="signup-inner">
-    <div class="signup-header">
-      <h2 class="sign-plate" data-en="Join Trash Talk" data-es="Únete a Trash Talk">Join Trash Talk</h2>
-      <p class="signup-subtitle" data-en="New York City's Cleanup Club" data-es="El Club de Limpieza de Nueva York">New York City's Cleanup Club</p>
-      <p
-        class="signup-blurb"
-        data-en="We'll email you when cleanups are happening."
-        data-es="Te avisaremos por correo cuando haya limpiezas."
-      >We'll email you when cleanups are happening.</p>
+  <div class="wrap signup-grid">
+    <div class="sign-head">
+      <div class="sign-text">
+        <h2 class="sign-plate"><span data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</span> <span class="accent" data-en="Newsletter" data-es="Boletín">Newsletter</span></h2>
+        <p class="sign-blurb" data-en="Get emailed about cleanups, tree guard builds, and other beautification efforts in your neighborhood." data-es="Recibe correos sobre limpiezas, construcción de protectores de árboles y otros esfuerzos de embellecimiento en tu vecindario.">Get emailed about cleanups, tree guard builds, and other beautification efforts in your neighborhood.</p>
+      </div>
+      <div class="sign-arts" aria-hidden="true">
+        <img class="ill sign-art-shovel" src={illGloveShovel.src} alt="" />
+        <img class="ill sign-art-plant" src={illGlovePlant.src} alt="" />
+      </div>
     </div>
 
     <div class="form-wrap">
-      <form id="volunteerForm" method="POST" action={actions.signup}>
-        <input type="hidden" name="botcheck" value="">
-        <input type="hidden" name="startedAt" id="signupStartedAt" value="">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="fname" data-en="First name *" data-es="Nombre *">First name *</label>
-            <input type="text" id="fname" name="fname" required placeholder="Jane" autocomplete="given-name">
-          </div>
-          <div class="form-group">
-            <label for="lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
-            <input type="text" id="lname" name="lname" required placeholder="Doe" autocomplete="family-name">
-          </div>
-        </div>
+      <form id="volunteerForm" class="paste" method="POST" action={actions.signup}>
+        <Image src={vestSticker} alt="" class="slap slap-form" width={110} densities={[1, 2]} />
+        <input type="hidden" name="botcheck" value="" />
+        <input type="hidden" name="startedAt" id="signupStartedAt" value="" />
 
-        <div class="form-group">
+        <div class="field">
+          <label for="fname" data-en="First name *" data-es="Nombre *">First name *</label>
+          <input type="text" id="fname" name="fname" required placeholder="Jane" autocomplete="given-name" />
+        </div>
+        <div class="field">
+          <label for="lname" data-en="Last name *" data-es="Apellido *">Last name *</label>
+          <input type="text" id="lname" name="lname" required placeholder="Doe" autocomplete="family-name" />
+        </div>
+        <div class="field">
           <label for="email" data-en="Email address *" data-es="Correo electrónico *">Email address *</label>
-          <input type="email" id="email" name="email" required placeholder="jane@example.com" autocomplete="email">
+          <input type="email" id="email" name="email" required placeholder="jane@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+          <input type="tel" id="phone" name="phone" autocomplete="tel" />
         </div>
 
-        <div class="form-group">
-          <label for="phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
-          <input type="tel" id="phone" name="phone" placeholder="(212) 555-0100" autocomplete="tel">
+        <div class="field full">
+          <label for="borough" data-en="Which borough do you live in? *" data-es="¿En qué condado vives? *">Which borough do you live in? *</label>
+          <select id="borough" name="borough" required>
+            <option value="" selected disabled data-en="Select your borough" data-es="Selecciona tu condado">Select your borough</option>
+            <option value="Manhattan">Manhattan</option>
+            <option value="Brooklyn">Brooklyn</option>
+            <option value="Queens">Queens</option>
+            <option value="The Bronx" data-en="The Bronx" data-es="El Bronx">The Bronx</option>
+            <option value="Staten Island">Staten Island</option>
+            <option value="Not in NYC" data-en="Not in NYC" data-es="Fuera de NYC">Not in NYC</option>
+          </select>
         </div>
 
-        <div class="form-group borough-picker" id="boroughPickerGroup">
-          <label class="borough-picker-label" data-en="Which borough do you live in? *" data-es="¿En qué condado vives? *">Which borough do you live in? *</label>
-          <div class="borough-pills">
-            <button type="button" class="borough-pill" data-borough="Manhattan">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="10" width="3" height="11"/><rect x="6" y="6" width="4" height="15"/><rect x="11" y="4" width="3" height="17"/><rect x="15" y="8" width="4" height="13"/><rect x="20" y="12" width="2" height="9"/><line x1="1" y1="21" x2="23" y2="21"/></svg></span>
-              <span data-en="Manhattan" data-es="Manhattan">Manhattan</span>
-            </button>
-            <button type="button" class="borough-pill" data-borough="Brooklyn">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><line x1="2" y1="18" x2="22" y2="18"/><line x1="4" y1="18" x2="4" y2="8"/><line x1="20" y1="18" x2="20" y2="8"/><path d="M4 8 Q12 2 20 8"/><line x1="10" y1="8" x2="10" y2="18"/><line x1="14" y1="8" x2="14" y2="18"/></svg></span>
-              <span data-en="Brooklyn" data-es="Brooklyn">Brooklyn</span>
-            </button>
-            <button type="button" class="borough-pill" data-borough="Queens">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><polygon points="12 3 14.5 9.5 21 12 14.5 14.5 12 21 9.5 14.5 3 12 9.5 9.5"/></svg></span>
-              <span data-en="Queens" data-es="Queens">Queens</span>
-            </button>
-            <button type="button" class="borough-pill" data-borough="The Bronx">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L8 10h3v10h2V10h3L12 2z"/><rect x="2" y="14" width="5" height="7"/><rect x="17" y="11" width="5" height="10"/><line x1="1" y1="21" x2="23" y2="21"/></svg></span>
-              <span data-en="The Bronx" data-es="El Bronx">The Bronx</span>
-            </button>
-            <button type="button" class="borough-pill" data-borough="Staten Island">
-              <span class="pill-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M2 20h20"/><path d="M5 17L3 9h18l-2 8H5z"/><rect x="9" y="5" width="6" height="5" rx="1"/><line x1="12" y1="5" x2="12" y2="2"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>
-              <span data-en="Staten Island" data-es="Staten Island">Staten Island</span>
-            </button>
+        <!-- Outside-NYC flow: country (starts on the US), city picked
+             from a list, ZIP for the US only (captain). -->
+        <div class="field full" id="whereGroup" hidden>
+          <span class="lbl" data-en="Where are you located? *" data-es="¿Dónde te encuentras? *">Where are you located? *</span>
+          <div class="loc-row">
+            <div class="field">
+              <label for="w-country" data-en="Country" data-es="País">Country</label>
+              <select id="w-country" name="country">
+                {countries.map((c) => (
+                  <option value={c.value} selected={c.code === 'US'} data-en={c.value} data-es={c.es}>{c.value}</option>
+                ))}
+              </select>
+            </div>
+            <div class="field">
+              <label for="w-city" data-en="City *" data-es="Ciudad *">City *</label>
+              <div class="addr">
+                <input id="w-city" name="city" autocomplete="off" placeholder="Start typing your city" data-placeholder-en="Start typing your city" data-placeholder-es="Empieza a escribir tu ciudad" role="combobox" aria-autocomplete="list" aria-expanded="false" />
+                <ul class="addr-list" id="cityList" role="listbox" hidden></ul>
+              </div>
+            </div>
+            <div class="field" id="zipGroup">
+              <label for="w-zip" data-en="ZIP code *" data-es="Código ZIP *">ZIP code *</label>
+              <input id="w-zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 07030" data-placeholder-en="e.g. 07030" data-placeholder-es="p.ej. 07030" />
+            </div>
           </div>
-          <input type="hidden" id="borough" name="borough" required>
         </div>
 
-        <div class="form-group">
-          <label for="experience"><span data-en="Anything we should know?" data-es="¿Algo que debamos saber?">Anything we should know?</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
-          <textarea id="experience" name="experience" data-placeholder-en="e.g. I've done this before, I have mobility limitations, I'm bringing a friend…" data-placeholder-es="p.ej. Ya he participado antes, tengo limitaciones de movilidad, voy con un amigo…" placeholder="e.g. I've done this before, I have mobility limitations, I'm bringing a friend…"></textarea>
+        <div class="field full">
+          <label for="experience"><span data-en="Anything we should know?" data-es="¿Algo que debamos saber?">Anything we should know?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+          <textarea id="experience" name="experience" placeholder="e.g. I've done this before, I have mobility limitations, I'm bringing a friend…" data-placeholder-en="e.g. I've done this before, I have mobility limitations, I'm bringing a friend…" data-placeholder-es="p.ej. Ya he participado antes, tengo limitaciones de movilidad, voy con un amigo…"></textarea>
         </div>
 
-        <div class="form-group">
-          <label for="hear"><span data-en="How'd you hear about us?" data-es="¿Cómo nos conociste?">How'd you hear about us?</span> <span class="form-optional" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+        <div class="field full">
+          <label for="hear"><span data-en="How'd you hear about us?" data-es="¿Cómo nos conociste?">How'd you hear about us?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
           <!-- value attributes must exactly match the HEAR_ABOUT_US enum
                options configured in Brevo; display text is friendlier -->
           <select id="hear" name="hear">
@@ -321,41 +195,39 @@ const orgSchema = {
         </div>
 
         <!-- WAIVER -->
-        <div class="form-group waiver-block">
-          <div class="waiver-header" data-en="Release &amp; Waiver of Liability" data-es="Liberación y Exención de Responsabilidad">Release &amp; Waiver of Liability</div>
-          <div class="waiver-text" id="waiverText">
-            By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>
-            To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>
-            I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br><br>
+        <div class="field full waiver">
+          <div class="waiver-head mono" data-en="Release &amp; Waiver of Liability" data-es="Liberación y Exención de Responsabilidad">Release &amp; Waiver of Liability</div>
+          <div class="waiver-body" id="waiverText">
+            By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br /><br />
+            To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br /><br />
+            I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br /><br />
             I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.
           </div>
-          <label class="waiver-check-row">
-            <input type="checkbox" id="waiverCheck" name="waiverCheck" required>
-            <span data-en="I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior. Entiendo que este es un documento legalmente vinculante y firmo voluntariamente. *">I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *</span>
-          </label>
-          <label class="waiver-check-row">
-            <input type="checkbox" id="ageCheck" name="ageCheck" required>
-            <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *</span>
-          </label>
         </div>
+        <label class="check full">
+          <input type="checkbox" id="waiverCheck" name="waiverCheck" required />
+          <span data-en="I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior. Entiendo que este es un documento legalmente vinculante y firmo voluntariamente. *">I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *</span>
+        </label>
+        <label class="check full">
+          <input type="checkbox" id="ageCheck" name="ageCheck" required />
+          <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *</span>
+        </label>
 
         {turnstileSiteKey && (
-          <div class="form-group turnstile-group">
+          <div class="field full turnstile-group">
             <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-action="signup" data-theme="light"></div>
           </div>
         )}
 
-        <button type="submit" class="form-submit" data-en="Submit my signup →" data-es="Enviar mi inscripción →">Submit my signup →</button>
+        <button type="submit" class="btn btn-primary full form-submit" data-en="Submit my signup →" data-es="Enviar mi inscripción →">Submit my signup →</button>
         <!-- No data-en/data-es here: setLang() would inject the error text on
              every toggle even when no error occurred; the submit handler and
              onLanguageChange own this element's content -->
-        <p class="form-error" id="signupFormError" aria-live="polite"></p>
+        <p class="form-error full" id="signupFormError" aria-live="polite"></p>
       </form>
 
-      <div class="form-success" id="formSuccess">
-        <div class="check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:3rem;height:3rem"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
-        </div>
+      <div class="form-success paste" id="formSuccess">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>
         <h3 data-en="Success" data-es="Éxito">Success</h3>
         <p data-en="We'll be in touch. See you out there." data-es="Estaremos en contacto. Nos vemos allá.">We'll be in touch. See you out there.</p>
       </div>
@@ -363,137 +235,24 @@ const orgSchema = {
   </div>
 </section>
 
-<!-- The site's signature seam marks the handoff from the mailing-list ask
-     to the crew ask — the captain found the bare transition abrupt -->
-<div class="tape-seam" aria-hidden="true"></div>
-
-<!-- CREW CALLOUT: the signup above is the mailing list and is for everyone;
-     this is the pitch for people who want to WORK on Trash Talk (roles live
-     at /recruit), so it deliberately reads as a different ask: dark band,
-     ghost button, no form -->
-<section class="crew-callout diag-texture">
-  <div class="crew-callout-inner">
-    <h2 class="crew-title" data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
-    <p class="crew-copy" data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
-    <a href="/recruit" class="btn-secondary" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
+<!-- BEHIND-THE-SCENES CREW CALLOUT: the signup above is the mailing list
+     and is for everyone; this is the pitch for people who want to WORK on
+     Trash Talk (roles live at /recruit). -->
+<section class="crew">
+  <div class="wrap crew-grid">
+    <img class="ill crew-art" src={illFamilyVests.src} alt="" />
+    <div>
+      <h2 data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
+      <p data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
+      <a href="/recruit" class="btn btn-ghost-light" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
+    </div>
   </div>
 </section>
-
-<!-- RSVP MODAL: fallback on localhost; Eventbrite widget used in production -->
-<div class="modal-overlay" id="rsvpModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-event-name" id="modalEventName"></div>
-      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-meta">
-      <div class="modal-meta-row">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span id="modalDate"></span>
-      </div>
-      <div class="modal-meta-row">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span id="modalTime"></span>
-      </div>
-      <div class="modal-meta-row">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span id="modalLoc"></span>
-      </div>
-    </div>
-    <div class="eb-sim">
-      <div class="eb-head">
-        <span class="eb-logo">eventbrite</span>
-        <span class="eb-secure">🔒 Secure checkout</span>
-      </div>
-      <div class="eb-ticket">
-        <div>
-          <div class="eb-ticket-name">General Admission</div>
-          <div class="eb-ticket-price">Free</div>
-        </div>
-        <div class="eb-qty">
-          <button class="eb-qty-btn" onclick="adjQty(-1)">−</button>
-          <span class="eb-qty-num" id="modalQty">1</span>
-          <button class="eb-qty-btn" onclick="adjQty(1)">+</button>
-        </div>
-      </div>
-      <div class="eb-cta-area">
-        <a class="eb-register" id="modalRegisterBtn" href="#" target="_blank" rel="noopener">Register Now</a>
-      </div>
-      <div class="eb-powered">Powered by Eventbrite</div>
-    </div>
-    <div class="modal-foot">Checkout handled securely by Eventbrite</div>
-  </div>
-</div>
 
 <script is:inline defer src="https://www.gofundme.com/static/js/embed.js"></script>
 </BaseLayout>
 
 <style>
-  /* ── HERO — centered street-poster composition ── */
-  .hero {
-    min-height: calc(100svh - var(--nav-h));
-    background: var(--charcoal);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    padding:
-      var(--space-lg)
-      max(var(--gutter), var(--safe-right))
-      calc(var(--space-lg) + 3.25rem)
-      max(var(--gutter), var(--safe-left));
-  }
-
-  .hero::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: min(90vw, 60rem);
-    height: 70%;
-    background: radial-gradient(ellipse at center, rgba(107, 63, 160, 0.22) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  /* Giant outlined wordmark behind the logo — poster texture, not content */
-  .hero-bg-word {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(7rem, 26vw, 24rem);
-    letter-spacing: 0.02em;
-    line-height: 1;
-    color: transparent;
-    -webkit-text-stroke: 2px rgba(155, 93, 229, 0.22);
-    white-space: nowrap;
-    user-select: none;
-    pointer-events: none;
-  }
-
-  .hero-core {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .hero-chip { margin-bottom: 0.5rem; }
-
-  .hero-logo {
-    width: clamp(270px, min(46vw, 52svh), 500px);
-    height: auto;
-    display: block;
-    margin-bottom: var(--space-sm);
-    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
-  }
-
   .sr-only {
     position: absolute;
     width: 1px;
@@ -506,1021 +265,441 @@ const orgSchema = {
     border: 0;
   }
 
+  /* ── HERO ── */
+  /* Hero min-height keeps the two brick halves from colliding at any
+     width; the inner padding tracks the bricks' own height. */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    min-height: calc(100vw * 1.12);
+    border-bottom: var(--ink);
+  }
+
+  .hero .bricks-top { top: 6px; }
+  .hero .bricks-bottom { bottom: 6px; }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+    padding: calc(100vw * 0.13) 16px calc(100vw * 0.14);
+  }
+
+  .hero :global(.hero-logo) {
+    width: 64%;
+    max-width: 440px;
+    height: auto;
+    transform: rotate(-3deg);
+    filter: drop-shadow(6px 6px 0 rgba(234, 233, 218, 0.25));
+  }
+
   .hero-btns {
     display: flex;
-    gap: 1.25rem;
-    flex-wrap: wrap;
     justify-content: center;
+    margin: 0;
   }
 
-  /* Sticker buttons: hard press shadow, tiny tilt, press-down on hover */
-  .btn-primary,
-  .btn-secondary {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.9rem 1.9rem;
-    border-radius: 6px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 48px;
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
+  .hero-btns .btn { padding: 12px 34px; font-size: 0.8rem; }
+
+  @media (min-width: 761px) {
+    .hero { min-height: calc(100vw * 0.7); }
+    .hero .bricks-top { top: 10px; }
+    .hero .bricks-bottom { bottom: 10px; }
+    .hero-inner { gap: 26px; padding: calc(100vw * 0.075) 16px calc(100vw * 0.08); }
+    .hero :global(.hero-logo) { width: min(440px, 52%); }
+    .hero-btns .btn { padding: 14px 22px; font-size: 0.85rem; }
   }
 
-  .btn-primary {
-    background: var(--yellow);
-    color: var(--charcoal);
-    border: 3px solid var(--charcoal);
-    box-shadow: 5px 5px 0 var(--purple-light);
-    transform: rotate(-1deg);
-  }
+  /* ── DONATE ── */
+  .bento { padding-block: 44px 30px; }
 
-  .btn-primary:hover {
-    transform: rotate(0deg) translate(3px, 3px);
-    box-shadow: 2px 2px 0 var(--purple-light);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--off-white);
-    border: 3px solid var(--off-white);
-    box-shadow: 5px 5px 0 rgba(155, 93, 229, 0.55);
-    transform: rotate(1deg);
-  }
-
-  .btn-secondary:hover {
-    transform: rotate(0deg) translate(3px, 3px);
-    box-shadow: 2px 2px 0 rgba(155, 93, 229, 0.55);
-    color: var(--yellow);
-  }
-
-  /* ── TICKER — caution-tape marquee pinned to the hero's bottom edge ── */
-  .ticker {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--yellow);
-    border-top: 3px solid var(--charcoal);
-    overflow: hidden;
-    padding-block: 0.5rem;
-    z-index: 2;
-  }
-
-  .ticker-track {
-    display: flex;
-    width: max-content;
-    animation: tickerScroll 26s linear infinite;
-  }
-
-  .ticker-group {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .ticker-group span {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.15rem;
-    letter-spacing: 0.12em;
-    color: var(--charcoal);
-    white-space: nowrap;
-    padding-inline: 1.5rem;
-  }
-
-  /* diamond separators between phrases */
-  .ticker-group span::after {
-    content: '';
-    display: inline-block;
-    width: 0.5em;
-    height: 0.5em;
-    background: var(--charcoal);
-    transform: rotate(45deg) translateY(-0.1em);
-    margin-left: 3rem;
-  }
-
-  @keyframes tickerScroll {
-    to { transform: translateX(-50%); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ticker-track { animation: none; }
-  }
-
-  /* ── BENTO: DEEP CLEAN + DONATE ── */
-  .bento {
-    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
-    background: var(--off-white);
-  }
-
-  .bento-inner {
-    max-width: var(--container);
-    margin: 0 auto;
+  .bento-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-    gap: clamp(1.25rem, 2.5vw, 1.75rem);
-    /* When the boxes stack, the Donate sticker tab overhangs its box top by
-       1rem (.bento-label top: -1rem) and the card above casts a 6px press
-       shadow into the seam — so the stacked row gets the section token PLUS
-       the tab's overhang, keeping clear air around the tab itself. Row-gap is
-       invisible in the side-by-side layout, so desktop is unaffected. */
-    row-gap: calc(var(--space-lg) + 1rem);
-    align-items: stretch;
-  }
-
-  /* Club cards: hard charcoal border + press shadow, sticker label
-     pinned over the top edge */
-  .bento-box {
-    border-radius: var(--radius-md);
-    border: 2.5px solid var(--charcoal);
-    box-shadow: var(--press);
-    padding: clamp(1.75rem, 3.5vw, 2.5rem) clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 3.5vw, 2.25rem);
-    display: flex;
-    flex-direction: column;
-    min-height: 380px;
-    position: relative;
-  }
-
-  .bento-label {
-    position: absolute;
-    top: -1rem;
-    left: 1.25rem;
-    z-index: 2;
-  }
-
-  .bento-label-purple {
-    background: var(--purple);
-    color: #fff;
-    --tilt: 1.5deg;
-  }
-
-  /* Deep Clean box */
-  .deepclean-box {
-    background: var(--charcoal);
-    color: var(--off-white);
-    overflow: visible;
-  }
-
-  .deepclean-box::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 60%;
-    height: 80%;
-    border-radius: inherit;
-    background: radial-gradient(ellipse at top right, rgba(107, 63, 160, 0.3) 0%, transparent 65%);
-    pointer-events: none;
-  }
-
-  .dc-body {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-
-  .dc-eyebrow {
-    font-size: 0.62rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--yellow);
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .pulse-dot {
-    width: 8px; height: 8px;
-    background: var(--yellow);
-    border-radius: 50%;
-    display: inline-block;
-    animation: pulseDot 1.6s ease-in-out infinite;
-  }
-
-  @keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.35; transform: scale(0.65); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .pulse-dot { animation: none; }
-  }
-
-  .dc-event-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    font-weight: 400;
-    line-height: 1.05;
-    margin-bottom: 1rem;
-    letter-spacing: 0.02em;
-  }
-
-  .dc-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .dc-meta-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: rgba(247, 244, 237, 0.65);
-  }
-
-  .dc-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
-
-  /* Empty state: margin auto centers it both ways inside the flex-column
-     bento box so the card doesn't read as a blank slab at any width */
-  .dc-fallback {
-    color: var(--paper-a55);
-    font-size: 0.9rem;
-    font-weight: 600;
-    line-height: 1.7;
-    margin: auto;
-    width: 100%;
-    max-width: 22rem;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.1rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* With no event to RSVP to, the socials are the conversion path: the
-     reference-card row anatomy (icon circle / label + handle / arrow)
-     rendered with the site's hard borders and press shadows */
-  .dc-socials {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .dc-social-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    min-height: var(--tap);
-    padding: 0.45rem 1rem 0.45rem 0.5rem;
-    border: 2px solid var(--paper-a12);
-    border-radius: 999px;
-    background: var(--paper-a08);
-    color: var(--off-white);
-    text-align: left;
-    text-decoration: none;
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out),
-      background 0.15s, border-color 0.15s;
-  }
-
-  .dc-social-row:hover {
-    background: var(--paper-a12);
-    border-color: var(--paper-a35);
-  }
-
-  .dc-social-row:hover .dc-social-arrow { transform: translateX(3px); }
-
-  /* Top row inverted for emphasis; the press shadow is near-black instead
-     of the usual charcoal so the offset stays visible on the dark card */
-  .dc-social-primary {
-    background: var(--off-white);
-    border-color: var(--charcoal);
-    color: var(--charcoal);
-    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
-  }
-
-  .dc-social-primary:hover {
-    background: #fff;
-    border-color: var(--charcoal);
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
-  }
-
-  .dc-social-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
+    grid-template-columns: minmax(0, 680px);
     justify-content: center;
-    flex-shrink: 0;
   }
 
-  .dc-social-icon svg { width: 19px; height: 19px; fill: #fff; }
-
-  .dc-social-icon-ig {
-    background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+  .card {
+    position: relative;
+    padding: 34px 20px 24px;
   }
 
-  .dc-social-icon-tt { background: var(--off-white); }
-  .dc-social-icon-tt svg { fill: var(--charcoal); }
-
-  /* Text-glyph "e", matching the site's text-wordmark treatment of the
-     Eventbrite brand (.eb-logo) */
-  .dc-social-icon-li { background: #0a66c2; }
-
-  .dc-social-icon-eb {
-    background: #f8623a;
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 1.35rem;
-    font-weight: 800;
-    line-height: 1;
-    padding-bottom: 0.2em;
+  .donate {
+    background-color: var(--green);
+    color: var(--beige);
   }
 
-  .dc-social-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    min-width: 0;
-  }
-
-  .dc-social-net {
-    font-size: 0.6rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    line-height: 1;
-    color: var(--paper-a70);
-  }
-
-  .dc-social-primary .dc-social-net { color: var(--purple); }
-  .dc-social-tt .dc-social-net { color: var(--yellow); }
-  .dc-social-eb .dc-social-net { color: #f8623a; }
-  /* Brand #0a66c2 fails contrast for tiny caps on the charcoal card; this is
-     LinkedIn's own dark-mode blue */
-  .dc-social-li .dc-social-net { color: #70b5f9; }
-
-  .dc-social-handle {
-    font-size: 0.92rem;
-    font-weight: 800;
-    line-height: 1.2;
-  }
-
-  .dc-social-arrow {
-    margin-left: auto;
-    flex-shrink: 0;
-    font-size: 1.05rem;
-    font-weight: 800;
-    line-height: 1;
-    opacity: 0.85;
-    transition: transform 0.15s var(--ease-out);
-  }
-
-  .dc-fallback-list-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-    color: var(--paper-a55);
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    transition: color 0.15s;
-  }
-
-  .dc-fallback-list-link:hover { color: var(--paper-a70); }
-
-  .btn-eb-rsvp {
-    margin-top: auto;
-    align-self: flex-start;
-    background: var(--yellow);
-    color: var(--charcoal);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 0.7rem 1.5rem;
-    min-height: 44px;
-    border: 2.5px solid var(--off-white);
-    border-radius: 6px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
-    white-space: nowrap;
-    cursor: pointer;
-    box-shadow: 4px 4px 0 var(--purple-light);
-  }
-
-  .btn-eb-rsvp:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--purple-light);
-  }
-
-  .btn-eb-rsvp:disabled {
-    opacity: 0.6;
-    cursor: default;
-    box-shadow: none;
-    transform: none;
-  }
-
-  /* Donate box */
-  .donate-box {
-    background: #fff;
+  .donate-art {
+    position: absolute;
+    width: 110px;
+    right: 4px;
+    top: 4px;
+    opacity: 0.9;
   }
 
   .donate-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    font-weight: 400;
-    color: var(--charcoal);
-    line-height: 1.05;
-    margin-bottom: 1.25rem;
-    letter-spacing: 0.02em;
+    font-size: 2.6rem;
+    margin-bottom: 22px;
+    padding-right: 100px;
   }
 
-  .donate-box .gfm-widget-wrap {
-    flex: 1;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    margin-bottom: 1rem;
+  .gfm {
+    background: var(--paper);
+    color: var(--black);
+    border: var(--ink);
+    border-radius: 10px;
+    padding: 12px;
   }
 
-  /* One flat supporting paragraph under the GoFundMe embed — a single
-     weight and size throughout (captain, round 30), quiet enough never
-     to compete with the widget's call to action */
-  .donate-note {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #4a4850;
-    line-height: 1.55;
+  /* The live GoFundMe widget, boxed in poster paper so it reads as part
+     of the card; its internals are an iframe and stay GoFundMe's. */
+  .gfm :global(.gfm-embed) { min-height: 180px; }
+
+  .donate-note { margin: 30px 0 0; font-size: 1.12rem; }
+
+  @media (min-width: 761px) {
+    .bento { padding-block: 84px 64px; }
+    .card { padding: 40px 34px 34px; }
+    .donate-art { width: 170px; right: 10px; top: 6px; }
+    .donate-title { font-size: clamp(2.6rem, 4.8vw, 3.8rem); padding-right: 160px; }
+    .gfm { padding: 18px; }
   }
 
-  /* ── CREW CALLOUT ── */
-  .crew-callout {
-    background: var(--charcoal);
-    color: var(--off-white);
-    padding: var(--space-lg) max(var(--gutter), var(--safe-right)) var(--space-lg) max(var(--gutter), var(--safe-left));
-    text-align: center;
+  /* ── SOCIALS ── */
+  .socials { padding-block: 44px 48px; }
+
+  .socials h2 {
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    color: var(--beige);
+    margin-bottom: 24px;
   }
 
-  .crew-callout-inner {
-    max-width: 560px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-sm);
-    position: relative;
-    z-index: 1;
-  }
-
-  .crew-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-3);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: 0.02em;
-  }
-
-  .crew-copy {
-    font-size: 0.9rem;
-    font-weight: 600;
-    line-height: 1.7;
-    color: var(--paper-a70);
-    max-width: 44ch;
-  }
-
-  /* ── RSVP MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 500;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
-    opacity: 0; pointer-events: none;
-    transition: opacity 150ms var(--ease-out);
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: auto; }
-  .modal-box {
-    background: var(--charcoal); border: 1px solid rgba(155,93,229,0.4);
-    border-radius: var(--radius-lg); padding: clamp(1.25rem, 4vw, 2rem);
-    width: 100%; max-width: 420px;
-    max-height: 100dvh; overflow-y: auto;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
-  }
-  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
-  .modal-event-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.03em; color: var(--off-white); line-height: 1.1; }
-  .modal-close {
-    background: var(--paper-a08); border: none; color: var(--paper-a55);
-    font-size: 1rem; width: 40px; height: 40px; border-radius: 50%;
-    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s, color 0.15s;
-  }
-  .modal-close:hover { background: var(--paper-a12); color: var(--off-white); }
-  .modal-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .modal-meta-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: var(--paper-a55); }
-  .modal-meta-row svg { width: 13px; height: 13px; color: var(--purple-light); flex-shrink: 0; }
-  .eb-sim { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
-  .eb-head { background: #f8623a; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; }
-  .eb-logo { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.85rem; color: #fff; letter-spacing: -0.02em; }
-  .eb-secure { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.85); }
-  .eb-ticket { padding: 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0ece4; }
-  .eb-ticket-name { font-size: 0.82rem; font-weight: 700; color: #333; }
-  .eb-ticket-price { font-size: 0.75rem; color: #666; }
-  .eb-qty { display: flex; align-items: center; gap: 0.5rem; }
-  .eb-qty-btn { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #ccc; background: transparent; font-size: 1rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
-  .eb-qty-btn:hover { border-color: #f8623a; color: #f8623a; }
-  .eb-qty-num { font-size: 0.85rem; font-weight: 700; color: #333; min-width: 16px; text-align: center; }
-  .eb-cta-area { padding: 0.85rem 1rem; }
-  .eb-register {
-    display: flex; align-items: center; justify-content: center; width: 100%;
-    background: #f8623a; color: #fff; min-height: 44px;
-    font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.1em; padding: 0.7rem;
-    border: none; border-radius: 8px; cursor: pointer;
-    text-decoration: none; text-align: center; transition: background 0.15s;
-  }
-  .eb-register:hover { background: #e54e28; }
-  .eb-powered { text-align: center; font-size: 0.6rem; color: #999; padding: 0 1rem 0.75rem; }
-  .modal-foot { font-size: 0.65rem; color: rgba(247,244,237,0.3); text-align: center; }
-
-  /* ── SIGNUP ── */
-  .signup {
-    padding: var(--space-xl) max(var(--gutter), var(--safe-right)) var(--space-xl) max(var(--gutter), var(--safe-left));
-    background: var(--green);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .signup::before {
-    content: '';
-    position: absolute;
-    right: -5%;
-    top: -20%;
-    width: 45vw;
-    height: 80%;
-    background: radial-gradient(ellipse at center, var(--purple-a20) 0%, transparent 65%);
-    pointer-events: none;
-  }
-
-  .signup-inner {
-    max-width: 680px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-md);
-    position: relative;
-    z-index: 1;
-  }
-
-  .signup-header { width: 100%; }
-
-  .signup-subtitle {
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    color: rgba(247, 244, 237, 0.75);
-    margin-top: 1.1rem;
-    letter-spacing: 0.02em;
-  }
-
-  /* Supporting copy under the section header: answers "what am I signing
-     up to?" so it stays quieter than the subtitle above it */
-  .signup-blurb {
-    font-size: 0.9rem;
-    font-weight: 600;
-    line-height: 1.6;
-    color: var(--paper-a70);
-    max-width: 46ch;
-    margin: 0.75rem auto 0;
-  }
-
-  /* ── FORM — club-card treatment ── */
-  .form-wrap {
-    width: 100%;
-    text-align: left;
-    background: var(--off-white);
-    padding: clamp(1.25rem, 4vw, 2.5rem);
-    border: 2.5px solid var(--charcoal);
-    border-radius: var(--radius-md);
-    box-shadow: var(--press);
-  }
-
-  .form-group { margin-bottom: 1.2rem; }
-
-  .form-group label {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #4a4a5a;
-    margin-bottom: 0.4rem;
-  }
-
-  /* 16px input text so iOS Safari doesn't zoom the page on focus */
-  .form-group input:not([type="checkbox"]),
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #d0ccc4;
-    border-radius: var(--radius-sm);
-    background: white;
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--charcoal);
-    appearance: none;
-    -webkit-appearance: none;
-    outline: none;
-    min-height: var(--tap);
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-
-  .form-group input:not([type="checkbox"]):focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--purple-light);
-    box-shadow: 0 0 0 3px rgba(155, 93, 229, 0.15);
-  }
-
-  .form-group select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231c1c22' stroke-width='2' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    padding-right: 2.5rem;
-    cursor: pointer;
-  }
-
-  .form-group textarea { resize: vertical; min-height: 90px; }
-
-  .form-row {
+  .soc-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-    gap: 0 1rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
-  .form-optional { font-size: 0.7rem; color: var(--gray); margin-left: 0.2rem; font-weight: 400; }
-
-  /* ── BOROUGH PICKER ── */
-  .borough-picker-label {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #4a4a5a;
-    margin-bottom: 0.6rem;
+  .soc-tile {
+    display: grid;
+    justify-items: start;
+    gap: 6px;
+    padding: 16px 14px;
+    background-color: var(--paper);
+    color: var(--black);
+    text-decoration: none;
+    transition: transform 0.15s;
   }
 
-  .borough-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  .soc-tile:hover { transform: translate(-2px, -3px) rotate(-0.6deg); }
+  .soc-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+  .soc-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--yellow);
+    border: 3px solid var(--black);
+    box-shadow: 0 0 0 4px var(--beige), 2px 4px 0 4px rgba(0, 0, 0, 0.3);
+    display: grid;
+    place-items: center;
+    margin-bottom: 6px;
+    transform: rotate(-6deg);
   }
 
-  .borough-pill {
-    background: white;
-    border: 2px solid #d0ccc4;
-    border-radius: 30px;
-    padding: 0.5rem 1rem;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
+  .soc-badge svg { width: 24px; height: 24px; fill: var(--black); }
+
+  .soc-tile b { font-family: var(--body); font-weight: 700; font-size: 1.25rem; }
+
+  .soc-tile small {
+    font-family: var(--mono);
     font-weight: 700;
-    color: #4a4a5a;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-height: var(--tap);
-  }
-
-  .borough-pill:hover {
-    border-color: var(--purple-light);
-    color: var(--purple);
-  }
-
-  .borough-pill.selected {
-    background: var(--purple);
-    border-color: var(--purple);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(107, 63, 160, 0.3);
-  }
-
-  .borough-pill .pill-emoji {
-    display: inline-flex;
-    width: 16px;
-    height: 16px;
-  }
-
-  /* ── WAIVER ── */
-  .waiver-block {
-    background: #f0edf8;
-    border: 2px solid rgba(107, 63, 160, 0.3);
-    border-radius: 8px;
-    padding: 1.25rem;
-    margin-top: 0.5rem;
-  }
-
-  .waiver-header {
-    font-size: 0.68rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--purple);
-    margin-bottom: 0.75rem;
-  }
-
-  .waiver-text {
     font-size: 0.78rem;
-    line-height: 1.65;
-    color: #444;
-    max-height: 180px;
-    overflow-y: scroll;
-    border: 1px solid #d8d0eb;
-    padding: 0.75rem;
-    background: white;
-    border-radius: 5px;
-    margin-bottom: 1rem;
+    color: var(--purple);
   }
 
-  .waiver-check-row {
+  @media (min-width: 761px) {
+    .socials { padding-block: 64px 70px; }
+    .soc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+    .soc-tile { padding: 20px 18px; }
+    .soc-tile:last-child:nth-child(odd) { grid-column: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .soc-tile { transition: none; }
+  }
+
+  /* ── NEWSLETTER ── */
+  .signup {
+    padding-block: 36px 52px;
+    border-block: 3px solid var(--beige);
+  }
+
+  .signup-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+    align-items: start;
+  }
+
+  /* Heading row: text column + the two glove drawings beside it */
+  .sign-head {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--charcoal);
-    cursor: pointer;
-    line-height: 1.5;
-    margin-bottom: 0.5rem;
-    text-transform: none;
-    letter-spacing: normal;
+    gap: 8px;
   }
 
-  .waiver-check-row input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    padding: 0;
-    flex-shrink: 0;
+  .sign-text { display: grid; gap: 12px; min-width: 0; flex: 1; }
+
+  .sign-plate {
+    font-size: clamp(3.2rem, 8vw, 5rem);
+    color: var(--beige);
+    overflow-wrap: anywhere;
+  }
+
+  .sign-plate .accent { color: var(--yellow); }
+
+  .sign-blurb { font-size: 1.2rem; max-width: 32ch; margin: 0; }
+
+  .sign-arts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: none;
+  }
+
+  /* The glove drawings carry empty space at the top of their artboard;
+     crop so they sit near the section top. */
+  .sign-arts .ill { width: 80px; height: 74px; object-fit: contain; }
+  .sign-arts .sign-art-plant { object-fit: cover; object-position: center 42%; height: 56px; }
+
+  @media (min-width: 761px) {
+    .signup { padding-block: 56px 88px; }
+    .sign-head { gap: 16px; }
+    .sign-text { gap: 16px; }
+    .sign-arts .ill { width: 120px; height: 110px; }
+    .sign-arts .sign-art-plant { height: 84px; }
+  }
+
+  @media (min-width: 1101px) {
+    .signup-grid { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 56px; }
+    /* Capped so "Newsletter" fits the heading column as a whole word
+       (the mockup's larger size broke it "Newslet/ter" mid-word) —
+       overflow-wrap: anywhere above is a backstop, not the plan. */
+    .sign-plate { font-size: clamp(3.2rem, 4.5vw, 4.4rem); }
+  }
+
+  /* ── FORM ── */
+  #volunteerForm {
+    background-color: var(--paper);
+    color: var(--black);
+    border-radius: 6px;
+    padding: 22px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 10px;
+    transform: rotate(-0.3deg);
+  }
+
+  #volunteerForm :global(.slap-form) {
+    bottom: -34px;
+    right: -10px;
+    top: auto;
+    width: 74px;
+    height: auto;
+    transform: rotate(-9deg);
+  }
+
+  #volunteerForm label,
+  #volunteerForm .lbl { font-size: 0.88rem; }
+
+  #volunteerForm input:not([type='checkbox']),
+  #volunteerForm select,
+  #volunteerForm textarea { font-size: 0.95rem; padding: 8px 10px; }
+
+  .loc-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .loc-row .field:first-child { grid-column: 1 / -1; }
+  .loc-row .field[hidden] { display: none; }
+
+  .waiver {
+    border: 2.5px dashed var(--black);
+    border-radius: 8px;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  .waiver-head {
+    background: var(--black);
+    color: var(--beige);
+    padding: 10px 14px;
+  }
+
+  .waiver-body {
+    max-height: 92px;
+    overflow: auto;
+    padding: 12px 14px;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  .check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    line-height: 1.35;
     cursor: pointer;
-    accent-color: var(--purple);
+  }
+
+  .check input {
+    appearance: none;
+    flex: none;
+    width: 24px;
+    height: 24px;
+    min-height: 0;
+    padding: 0;
+    border: var(--ink);
+    border-radius: 5px;
+    background: var(--paper-bright);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .check input:checked { background: var(--yellow); }
+
+  .check input:checked::after {
+    content: '';
+    width: 6px;
+    height: 12px;
+    border: solid var(--black);
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
   }
 
   /* Reserve the widget's rendered height (normal size is 65px) so the
      submit button doesn't jump when the Turnstile iframe loads in */
-  .turnstile-group {
-    min-height: 65px;
-  }
+  .turnstile-group { min-height: 65px; }
 
-  .form-submit {
-    width: 100%;
-    background: var(--purple);
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 1rem;
-    min-height: 52px;
-    border: 3px solid var(--charcoal);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    margin-top: 0.75rem;
-    box-shadow: 4px 4px 0 var(--charcoal);
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.18s, color 0.18s;
-  }
-
-  .form-submit:hover {
-    background: var(--yellow);
-    color: var(--charcoal);
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--charcoal);
-  }
+  .form-submit { font-size: 1rem; padding: 17px; }
 
   /* Stays rendered (never display:none) so screen readers announce text
      inserted into the aria-live region; :empty just collapses the gap */
   .form-error {
-    margin-top: 0.9rem;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-align: center;
-    color: #c0392b;
+    color: var(--error);
+    margin: 0;
   }
 
-  .form-error:empty { margin: 0; }
+  .form-error:empty { display: none; }
 
-  /* ── SUCCESS STATE ── */
   .form-success {
     display: none;
-    text-align: center;
+    background-color: var(--paper);
+    color: var(--black);
+    border-radius: 6px;
     padding: 3rem 2rem;
+    text-align: center;
   }
 
-  .form-success .check { margin-bottom: 1rem; }
+  .form-success svg { width: 3rem; height: 3rem; color: var(--purple); margin-bottom: 1rem; }
+  .form-success h3 { font-size: 2.4rem; color: var(--purple); margin-bottom: 0.5rem; }
+  .form-success p { font-weight: 600; }
 
-  .form-success h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-    color: var(--purple);
+  @media (min-width: 761px) {
+    #volunteerForm {
+      padding: 34px;
+      gap: 14px;
+      box-shadow: 8px 8px 0 var(--purple);
+    }
+
+    #volunteerForm :global(.slap-form) {
+      top: -52px;
+      right: -26px;
+      bottom: auto;
+      width: 110px;
+    }
+
+    #volunteerForm label,
+    #volunteerForm .lbl { font-size: 1rem; }
+
+    #volunteerForm input:not([type='checkbox']),
+    #volunteerForm select,
+    #volunteerForm textarea { font-size: 1.05rem; padding: 9px 12px; }
+
+    .loc-row { grid-template-columns: 1.2fr 1fr 0.8fr; }
+    .loc-row .field:first-child { grid-column: auto; }
   }
 
-  .form-success p { font-size: 0.9rem; color: #555; line-height: 1.6; font-weight: 600; }
-
-  /* ── ENTRANCE ANIMATION ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* ── CREW CALLOUT ── */
+  .crew {
+    background-color: var(--green);
+    color: var(--beige);
+    padding-block: 26px 52px;
   }
 
-  .hero-eyebrow { animation: fadeUp 0.5s ease both; }
-  .hero-logo    { animation: fadeUp 0.5s 0.1s ease both; }
-  .hero-btns    { animation: fadeUp 0.5s 0.3s ease both; }
+  .crew-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+  }
 
-  @media (prefers-reduced-motion: reduce) {
-    .hero-eyebrow, .hero-logo, .hero-btns { animation: none; }
+  .crew-art {
+    width: 150px;
+    height: 110px;
+    object-fit: cover;
+    object-position: center 55%;
+  }
+
+  .crew h2 { font-size: 2.8rem; margin-bottom: 16px; }
+
+  .crew p {
+    font-size: 1.18rem;
+    line-height: 1.62;
+    max-width: 52ch;
+    margin: 0 0 40px;
+  }
+
+  .crew .btn { width: 100%; }
+
+  @media (min-width: 761px) {
+    .crew { padding-block: 44px 80px; }
+    .crew-grid { grid-template-columns: auto minmax(0, 1fr); gap: 56px; }
+    .crew-art { width: 260px; height: 170px; }
+    .crew h2 { font-size: clamp(2.8rem, 5vw, 4.4rem); margin-bottom: 18px; }
+    .crew p { margin: 0 0 56px; }
+    .crew .btn { width: auto; }
   }
 </style>
-
-<!-- is:inline required: openModal/closeModal/adjQty are called from onclick attributes on the RSVP modal -->
-<script is:inline>
-  var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-
-  function openModal(btn) {
-    document.getElementById('modalEventName').textContent = btn.getAttribute('data-name') || '';
-    document.getElementById('modalDate').textContent      = btn.getAttribute('data-date') || '';
-    document.getElementById('modalTime').textContent      = btn.getAttribute('data-time') || '';
-    document.getElementById('modalLoc').textContent       = btn.getAttribute('data-loc')  || '';
-    document.getElementById('modalQty').textContent       = '1';
-    var reg = document.getElementById('modalRegisterBtn');
-    if (reg) reg.href = btn.getAttribute('data-url') || '#';
-    document.getElementById('rsvpModal').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal() {
-    document.getElementById('rsvpModal').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  function adjQty(delta) {
-    var el = document.getElementById('modalQty');
-    el.textContent = Math.max(1, parseInt(el.textContent, 10) + delta);
-  }
-
-  function initWidgets(skipEl) {
-    document.querySelectorAll('[data-event-id]').forEach(function(btn) {
-      if (skipEl && btn === skipEl) return;
-      var id = btn.getAttribute('data-event-id');
-      if (!id || !btn.id || btn.dataset.widgetInit) return;
-      btn.dataset.widgetInit = '1';
-      if (btn._ebFallbackHandler) {
-        btn.removeEventListener('click', btn._ebFallbackHandler);
-        btn._ebFallbackHandler = null;
-      }
-      if (!isLocalhost && window.EBWidgets) {
-        window.EBWidgets.createWidget({ widgetType: 'checkout', eventId: id, modal: true, modalTriggerElementId: btn.id });
-      } else {
-        btn._ebFallbackHandler = function() { openModal(btn); };
-        btn.addEventListener('click', btn._ebFallbackHandler);
-      }
-    });
-  }
-
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
-
-  // ── DEEP CLEAN: nearest-event lookup via geolocation, falls back to the next upcoming event ──
-  function haversineKm(lat1, lng1, lat2, lng2) {
-    var R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
-    var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-
-  function findNearestEvent(lat, lng) {
-    var container = document.getElementById('dcEventsData');
-    if (!container) return null;
-    var candidates = Array.from(container.querySelectorAll('.dc-event-data[data-lat][data-lng]'));
-    if (!candidates.length) return null;
-
-    var nearest = null, nearestDist = Infinity;
-    candidates.forEach(function(el) {
-      var d = haversineKm(lat, lng, parseFloat(el.dataset.lat), parseFloat(el.dataset.lng));
-      if (d < nearestDist) {
-        nearestDist = d;
-        nearest = el;
-      }
-    });
-    if (!nearest) return null;
-    return {
-      eventId: nearest.dataset.eventId,
-      url: nearest.dataset.url,
-      name: nearest.dataset.name,
-      date: nearest.dataset.date,
-      time: nearest.dataset.time,
-      loc: nearest.dataset.loc,
-      startIso: nearest.dataset.startIso,
-    };
-  }
-
-  function renderDcEvent(data) {
-    var btn = document.getElementById('dcRsvpBtn');
-    if (!btn || !data || btn.getAttribute('data-event-id') === data.eventId) return;
-
-    document.getElementById('dcEventName').textContent = data.name;
-    var dateEl = document.getElementById('dcDate');
-    dateEl.textContent = data.date;
-    if (data.startIso) dateEl.setAttribute('data-start-iso', data.startIso);
-    document.getElementById('dcTime').textContent = data.time;
-
-    var locRow = document.getElementById('dcLocRow');
-    var locSpan = document.getElementById('dcLoc');
-    if (data.loc) {
-      if (locSpan) locSpan.textContent = data.loc;
-      if (locRow) locRow.style.display = '';
-    } else if (locRow) {
-      locRow.style.display = 'none';
-    }
-
-    btn.setAttribute('data-event-id', data.eventId);
-    btn.setAttribute('data-url', data.url);
-    btn.setAttribute('data-name', data.name);
-    btn.setAttribute('data-date', data.date);
-    btn.setAttribute('data-time', data.time);
-    btn.setAttribute('data-loc', data.loc);
-    delete btn.dataset.widgetInit;
-    initWidgets();
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    var dcBtn = document.getElementById('dcRsvpBtn');
-    var hasCoords = document.querySelector('#dcEventsData .dc-event-data[data-lat]');
-    var deferDc = !!(dcBtn && hasCoords && navigator.geolocation);
-
-    initWidgets(deferDc ? dcBtn : null);
-    if (!deferDc) return;
-
-    var origEn = dcBtn.getAttribute('data-en');
-    var origEs = dcBtn.getAttribute('data-es');
-    var isEs = typeof window.getCurrentLang === 'function' && window.getCurrentLang() === 'es';
-    dcBtn.disabled = true;
-    dcBtn.setAttribute('data-en', 'Loading…');
-    dcBtn.setAttribute('data-es', 'Cargando…');
-    dcBtn.textContent = isEs ? 'Cargando…' : 'Loading…';
-
-    function settleDc(nearest) {
-      if (nearest) renderDcEvent(nearest);
-      dcBtn.setAttribute('data-en', origEn);
-      dcBtn.setAttribute('data-es', origEs);
-      dcBtn.textContent = (typeof window.getCurrentLang === 'function' && window.getCurrentLang() === 'es') ? origEs : origEn;
-      dcBtn.disabled = false;
-      initWidgets();
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        settleDc(findNearestEvent(pos.coords.latitude, pos.coords.longitude));
-      },
-      function() { settleDc(null); /* denied/unavailable — keep the next-upcoming-event fallback already rendered */ },
-      { timeout: 6000 },
-    );
-  });
-</script>
 
 <script>
   import { actions } from 'astro:actions';
   import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
-  import { formatDate } from '../lib/events';
+  import { attachFieldValidation } from '../lib/clientValidation';
+  import { countries, US_COUNTRY, OTHER_COUNTRY } from '../lib/countries';
+
+  attachFieldValidation();
 
   // ── WAIVER TEXT (bilingual) ──
   const waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br><br>I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.';
 
   const waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.<br><br>Doy permiso a Trash Talk NYC para fotografiarme o filmarme durante el evento para su uso en redes sociales, incluido Instagram (@trashtalk_nyc), con fines promocionales y comunitarios. Notifique al organizador el día del evento si no da su consentimiento.';
 
-  // ── SUBMIT ERROR MESSAGE (aria-live region, bilingual) ──
   const signupErrorEl = document.getElementById('signupFormError');
 
-  // ── LANGUAGE CHANGE HANDLER ──
   onLanguageChange((lang) => {
     const wt = document.getElementById('waiverText');
     if (wt) wt.innerHTML = lang === 'es' ? waiverES : waiverEN;
-
-    const dateEl = document.querySelector<HTMLElement>('.hero-date-text[data-start-iso]');
-    if (dateEl) dateEl.textContent = formatDate(dateEl.dataset.startIso!, lang);
-
     if (signupErrorEl?.textContent) signupErrorEl.textContent = submitErrorText(lang);
   });
 
@@ -1534,30 +713,132 @@ const orgSchema = {
   const startedAtInput = document.getElementById('signupStartedAt') as HTMLInputElement | null;
   if (startedAtInput) startedAtInput.value = String(Date.now());
 
-  // ── BOROUGH PICKER ──
-  const boroughInput = document.getElementById('borough') as HTMLInputElement | null;
-  document.querySelectorAll<HTMLButtonElement>('.borough-pill').forEach((pill) => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('.borough-pill').forEach((p) => p.classList.remove('selected'));
-      pill.classList.add('selected');
-      if (boroughInput) boroughInput.value = pill.dataset.borough ?? '';
-    });
+  // ── OUTSIDE-NYC FLOW ──
+  const boroughSelect = document.getElementById('borough') as HTMLSelectElement | null;
+  const whereGroup = document.getElementById('whereGroup') as HTMLElement | null;
+  const countrySelect = document.getElementById('w-country') as HTMLSelectElement | null;
+  const cityInput = document.getElementById('w-city') as HTMLInputElement | null;
+  const zipGroup = document.getElementById('zipGroup') as HTMLElement | null;
+  const zipInput = document.getElementById('w-zip') as HTMLInputElement | null;
+
+  function syncLocation() {
+    if (!boroughSelect || !whereGroup || !countrySelect || !cityInput || !zipGroup || !zipInput) return;
+    const outside = boroughSelect.value === 'Not in NYC';
+    const us = countrySelect.value === US_COUNTRY;
+    whereGroup.hidden = !outside;
+    cityInput.required = outside;
+    // A non-US country hides ZIP so it is just City (captain)
+    zipGroup.hidden = !us;
+    zipInput.required = outside && us;
+    const zipBad = outside && us && !!zipInput.value && !/^\d{5}(-\d{4})?$/.test(zipInput.value);
+    zipInput.setCustomValidity(zipBad ? (getCurrentLang() === 'es' ? 'Escribe un código ZIP de 5 dígitos.' : 'Enter a 5-digit ZIP code.') : '');
+    // Fields hidden from the user must never submit stale values
+    if (!outside) {
+      cityInput.value = '';
+      zipInput.value = '';
+      delete cityInput.dataset.ok;
+      cityInput.setCustomValidity('');
+      zipInput.setCustomValidity('');
+    }
+  }
+
+  boroughSelect?.addEventListener('change', () => {
+    syncLocation();
+    if (boroughSelect.value === 'Not in NYC') countrySelect?.focus();
+  });
+  countrySelect?.addEventListener('change', syncLocation);
+  zipInput?.addEventListener('input', syncLocation);
+  syncLocation();
+
+  // ── CITY PICKER ──
+  // People choose a real city from a list instead of free typing. The
+  // list comes from the Open-Meteo geocoding API (free, keyless),
+  // scoped to the selected country's ISO code.
+  const cityList = document.getElementById('cityList') as HTMLUListElement | null;
+  const countryCodes = new Map(countries.map((c) => [c.value, c.code]));
+  let cityTimer: ReturnType<typeof setTimeout> | undefined;
+  let citySeq = 0;
+
+  function cityNeedsPick() {
+    if (!cityInput) return;
+    const bad = !!cityInput.value && !cityInput.dataset.ok;
+    cityInput.setCustomValidity(bad ? (getCurrentLang() === 'es' ? 'Elige tu ciudad de la lista.' : 'Pick your city from the list.') : '');
+  }
+
+  function hideCityList() {
+    if (!cityList || !cityInput) return;
+    cityList.hidden = true;
+    cityInput.setAttribute('aria-expanded', 'false');
+  }
+
+  async function searchCities(query: string) {
+    const seq = ++citySeq;
+    const lang = getCurrentLang();
+    try {
+      const res = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=${lang}&format=json`,
+      );
+      if (!res.ok || seq !== citySeq || !cityList || !cityInput || !countrySelect) return;
+      const data = (await res.json()) as {
+        results?: Array<{ name: string; country_code?: string; country?: string; admin1?: string }>;
+      };
+      const code = countryCodes.get(countrySelect.value) ?? null;
+      const other = countrySelect.value === OTHER_COUNTRY;
+      const hits = (data.results ?? [])
+        .filter((r) => (other ? true : r.country_code === code))
+        .slice(0, 6)
+        .map((r) => {
+          const region = r.country_code === 'US' ? r.admin1 : other ? r.country : r.admin1;
+          return region && region !== r.name ? `${r.name}, ${region}` : r.name;
+        });
+      const unique = [...new Set(hits)];
+      cityList.innerHTML = unique.length
+        ? unique.map((c) => `<li role="option" data-v="${c.replace(/"/g, '&quot;')}">${c}</li>`).join('')
+        : `<li aria-disabled="true">${lang === 'es' ? 'Sin coincidencias todavía. Sigue escribiendo.' : 'No match yet. Keep typing.'}</li>`;
+      cityList.hidden = false;
+      cityInput.setAttribute('aria-expanded', 'true');
+    } catch {
+      // Network trouble: leave the list closed; the server accepts any
+      // non-empty city, so typing a city by hand still submits.
+      if (cityInput) cityInput.dataset.ok = '1';
+    }
+  }
+
+  cityInput?.addEventListener('input', () => {
+    delete cityInput.dataset.ok;
+    cityNeedsPick();
+    const q = cityInput.value.trim();
+    clearTimeout(cityTimer);
+    if (q.length < 2) {
+      hideCityList();
+      if (cityList) cityList.innerHTML = '';
+      return;
+    }
+    cityTimer = setTimeout(() => searchCities(q), 250);
   });
 
-  // ── VOLUNTEER FORM SUBMIT ──
+  cityList?.addEventListener('mousedown', (e) => {
+    const li = (e.target as HTMLElement).closest<HTMLLIElement>('li[data-v]');
+    if (!li || !cityInput) return;
+    e.preventDefault();
+    cityInput.value = li.dataset.v ?? '';
+    cityInput.dataset.ok = '1';
+    cityNeedsPick();
+    hideCityList();
+  });
+
+  cityInput?.addEventListener('blur', () => setTimeout(hideCityList, 120));
+  countrySelect?.addEventListener('change', () => {
+    if (!cityInput) return;
+    cityInput.value = '';
+    delete cityInput.dataset.ok;
+    cityNeedsPick();
+  });
+
+  // ── SUBMIT ──
   document.getElementById('volunteerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
-
-    if (!boroughInput?.value) {
-      const group = document.getElementById('boroughPickerGroup')!;
-      group.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      group.querySelectorAll<HTMLElement>('.borough-pill').forEach((p) => {
-        p.style.borderColor = '#c0392b';
-        setTimeout(() => { p.style.borderColor = ''; }, 1800);
-      });
-      return;
-    }
 
     const submitBtn = form.querySelector<HTMLButtonElement>('.form-submit')!;
     const originalText = submitBtn.textContent ?? '';
@@ -1582,15 +863,9 @@ const orgSchema = {
     // button swap and is announced by screen readers
     if (signupErrorEl) signupErrorEl.textContent = submitErrorText(getCurrentLang());
     submitBtn.textContent = submitErrorText(getCurrentLang());
-    submitBtn.style.background = '#c0392b';
-    submitBtn.style.borderColor = '#c0392b';
-    submitBtn.style.color = '#fff';
     submitBtn.disabled = false;
     setTimeout(() => {
       submitBtn.textContent = originalText;
-      submitBtn.style.background = '';
-      submitBtn.style.borderColor = '';
-      submitBtn.style.color = '';
       submitBtn.style.opacity = '';
     }, 3500);
   });
