@@ -76,15 +76,15 @@ export type StoreResult = { ok: true; keys: string[] } | { ok: false; detail: st
 
 /**
  * Stores re-encoded photos in the private Blobs store under random
- * keys. All-or-nothing from the caller's perspective: a storage
- * failure reports { ok: false } so the action can fail loudly rather
+ * keys. All-or-nothing: a storage failure removes any photos already
+ * written and reports { ok: false } so the action can fail loudly rather
  * than silently losing attachments the applicant believes were sent.
  */
 export async function storeLeadPhotos(jpegs: Buffer[]): Promise<StoreResult> {
+  const keys: string[] = [];
   try {
     const { getStore } = await import('@netlify/blobs');
     const store = getStore({ name: LEAD_PHOTO_STORE, consistency: 'strong' });
-    const keys: string[] = [];
     for (const jpeg of jpegs) {
       const key = `${randomUUID()}.jpg`;
       await store.set(key, new Blob([new Uint8Array(jpeg)]), { metadata: { contentType: 'image/jpeg' } });
@@ -92,7 +92,9 @@ export async function storeLeadPhotos(jpegs: Buffer[]): Promise<StoreResult> {
     }
     return { ok: true, keys };
   } catch (err) {
-    return { ok: false, detail: err instanceof Error ? err.message : 'unknown' };
+    const detail = err instanceof Error ? err.message : 'unknown';
+    const { failed } = await deleteLeadPhotos(keys);
+    return { ok: false, detail: failed > 0 ? `${detail} (${failed} partial upload(s) not cleaned up)` : detail };
   }
 }
 

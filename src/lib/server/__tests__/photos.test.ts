@@ -1,5 +1,20 @@
-import { describe, expect, it } from 'vitest';
-import { MAX_PHOTO_BYTES, processPhoto, sniffImageType } from '../photos';
+import { describe, expect, it, vi } from 'vitest';
+
+const blobs = vi.hoisted(() => ({ store: new Map<string, unknown>(), setCalls: 0, failOnSet: Infinity }));
+vi.mock('@netlify/blobs', () => ({
+  getStore: () => ({
+    set: async (key: string, value: unknown) => {
+      blobs.setCalls += 1;
+      if (blobs.setCalls >= blobs.failOnSet) throw new Error('blobs unavailable');
+      blobs.store.set(key, value);
+    },
+    delete: async (key: string) => {
+      blobs.store.delete(key);
+    },
+  }),
+}));
+
+import { MAX_PHOTO_BYTES, processPhoto, sniffImageType, storeLeadPhotos } from '../photos';
 
 function bytes(...values: number[]): Uint8Array {
   const buf = new Uint8Array(Math.max(16, values.length));
@@ -73,5 +88,27 @@ describe('processPhoto', () => {
     expect(meta.format).toBe('jpeg');
     expect(meta.width).toBeLessThanOrEqual(2048); // bounded
     expect(meta.exif).toBeUndefined(); // metadata (incl. GPS) gone
+  });
+});
+
+describe('storeLeadPhotos', () => {
+  it('removes photos already written when a later write fails', async () => {
+    blobs.store.clear();
+    blobs.setCalls = 0;
+    blobs.failOnSet = 3;
+    const jpeg = Buffer.from([0xff, 0xd8, 0xff]);
+    const result = await storeLeadPhotos([jpeg, jpeg, jpeg, jpeg]);
+    expect(result.ok).toBe(false);
+    expect(blobs.store.size).toBe(0);
+  });
+
+  it('returns every key when all writes succeed', async () => {
+    blobs.store.clear();
+    blobs.setCalls = 0;
+    blobs.failOnSet = Infinity;
+    const jpeg = Buffer.from([0xff, 0xd8, 0xff]);
+    const result = await storeLeadPhotos([jpeg, jpeg]);
+    expect(result).toEqual({ ok: true, keys: [...blobs.store.keys()] });
+    expect(blobs.store.size).toBe(2);
   });
 });

@@ -137,37 +137,40 @@ async function upsertOrThrow(
  * Records the free-text field as a Brevo CRM note so the full submission
  * history survives (the MESSAGE attribute only keeps the latest value).
  * Best-effort: a note failure is logged but never fails the submission —
- * the contact upsert already succeeded.
+ * the contact upsert already succeeded. Resolves true only when the note
+ * was created.
  */
-async function tryCreateNote(noteForm: string, email: string, content: string | undefined): Promise<void> {
+async function tryCreateNote(noteForm: string, email: string, content: string | undefined): Promise<boolean> {
   // Outer guard: the contact upsert already succeeded, so nothing in the
   // note flow — including bugs — may fail the user's submission.
   try {
     const trimmed = content?.trim();
-    if (!trimmed) return;
+    if (!trimmed) return false;
 
     const apiKey = getEnv('BREVO_API_KEY');
-    if (!apiKey) return; // upsert would have thrown already; belt and braces
+    if (!apiKey) return false; // upsert would have thrown already; belt and braces
 
     const contact = await getBrevoContactId(apiKey, email);
     if (!contact.ok) {
       log('warn', 'brevo_note_failed', { form: noteForm, stage: 'contact_lookup', status: contact.status ?? 0, detail: contact.detail });
-      return;
+      return false;
     }
 
     const note = await createBrevoNote(apiKey, contact.id, buildNoteText(noteForm, 'message', trimmed));
     if (!note.ok) {
       log('warn', 'brevo_note_failed', { form: noteForm, stage: 'create_note', status: note.status ?? 0, detail: note.detail });
-      return;
+      return false;
     }
 
     log('info', 'brevo_note_created', { form: noteForm });
+    return true;
   } catch (err) {
     log('warn', 'brevo_note_failed', {
       form: noteForm,
       stage: 'unexpected',
       detail: err instanceof Error ? err.message : 'unknown',
     });
+    return false;
   }
 }
 
@@ -433,7 +436,10 @@ export const server = {
           ? `Photos (${photoKeys.length}, private Blobs store lead-route-photos): ${photoKeys.join(', ')}`
           : 'Photos: none attached',
       ];
-      await tryCreateNote('contact-lead', input.email, noteLines.join('\n'));
+      const noted = await tryCreateNote('contact-lead', input.email, noteLines.join('\n'));
+      if (!noted && photoKeys.length > 0) {
+        log('warn', 'lead_photo_keys_unrecorded', { form: 'lead', keys: photoKeys.join(', ') });
+      }
 
       await tryNotifyInquiry({
         inquiryType: 'lead',
