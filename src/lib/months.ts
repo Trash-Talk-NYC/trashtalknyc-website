@@ -33,8 +33,12 @@ export function rollingMonths(count: number = LEAD_MONTH_COUNT, from: Date = new
 /**
  * Server-side check for the submitted month. The page offers
  * LEAD_MONTH_COUNT options, but the window is validated a little wider
- * (12 months) so a form rendered just before a month rolled over still
- * submits cleanly; anything in the past or unparseable is rejected.
+ * on both ends: the options are built from the browser's clock while
+ * this runs on the server's (UTC on Netlify), so around a month
+ * boundary the applicant's "current month" can be the server's previous
+ * one — that single month back is accepted, and the future end runs to
+ * 12 months so a form rendered just before a rollover still submits.
+ * Anything older or unparseable is rejected.
  */
 export function isValidPreferredMonth(value: string, now: Date = new Date()): boolean {
   const match = /^([A-Z][a-z]+) (20\d{2})$/.exec(value.trim());
@@ -42,5 +46,5 @@ export function isValidPreferredMonth(value: string, now: Date = new Date()): bo
   const monthIndex = MONTHS_EN.indexOf(match[1] as (typeof MONTHS_EN)[number]);
   if (monthIndex === -1) return false;
   const offset = (Number(match[2]) - now.getFullYear()) * 12 + (monthIndex - now.getMonth());
-  return offset >= 0 && offset < 12;
+  return offset >= -1 && offset < 12;
 }

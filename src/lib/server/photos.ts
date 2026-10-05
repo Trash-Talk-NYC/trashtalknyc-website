@@ -95,3 +95,21 @@ export async function storeLeadPhotos(jpegs: Buffer[]): Promise<StoreResult> {
     return { ok: false, detail: err instanceof Error ? err.message : 'unknown' };
   }
 }
+
+/**
+ * Removes stored photos whose application never reached Brevo — their
+ * keys live only in the CRM note, so without this they would sit in the
+ * private store with nothing pointing at them. Best-effort: reports how
+ * many deletions failed so the caller can log leftovers.
+ */
+export async function deleteLeadPhotos(keys: string[]): Promise<{ failed: number }> {
+  if (keys.length === 0) return { failed: 0 };
+  try {
+    const { getStore } = await import('@netlify/blobs');
+    const store = getStore({ name: LEAD_PHOTO_STORE, consistency: 'strong' });
+    const results = await Promise.allSettled(keys.map((key) => store.delete(key)));
+    return { failed: results.filter((r) => r.status === 'rejected').length };
+  } catch {
+    return { failed: keys.length };
+  }
+}

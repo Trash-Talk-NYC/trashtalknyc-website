@@ -30,8 +30,17 @@ describe('isValidPreferredMonth', () => {
     }
   });
 
-  it('rejects months in the past', () => {
-    expect(isValidPreferredMonth('September 2026', OCT_2026)).toBe(false);
+  it("accepts the previous month so a browser still in it isn't rejected by a server already past the rollover", () => {
+    // 8pm EDT on Sept 30 is already Oct 1 on a UTC server.
+    const serverNow = new Date(2026, 9, 1);
+    const nycOptions = rollingMonths(LEAD_MONTH_COUNT, new Date(2026, 8, 30));
+    for (const m of nycOptions) {
+      expect(isValidPreferredMonth(m.value, serverNow)).toBe(true);
+    }
+  });
+
+  it('rejects months further in the past', () => {
+    expect(isValidPreferredMonth('August 2026', OCT_2026)).toBe(false);
     expect(isValidPreferredMonth('October 2025', OCT_2026)).toBe(false);
   });
 

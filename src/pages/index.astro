@@ -792,9 +792,22 @@ const orgSchema = {
           return region && region !== r.name ? `${r.name}, ${region}` : r.name;
         });
       const unique = [...new Set(hits)];
-      cityList.innerHTML = unique.length
-        ? unique.map((c) => `<li role="option" data-v="${c.replace(/"/g, '&quot;')}">${c}</li>`).join('')
-        : `<li aria-disabled="true">${lang === 'es' ? 'Sin coincidencias todavía. Sigue escribiendo.' : 'No match yet. Keep typing.'}</li>`;
+      const options = unique.map((c) => {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'option');
+        li.dataset.v = c;
+        li.textContent = c;
+        return li;
+      });
+      if (options.length === 0) {
+        const none = document.createElement('li');
+        none.setAttribute('aria-disabled', 'true');
+        none.dataset.en = 'No match yet. Keep typing.';
+        none.dataset.es = 'Sin coincidencias todavía. Sigue escribiendo.';
+        none.textContent = lang === 'es' ? none.dataset.es : none.dataset.en;
+        options.push(none);
+      }
+      cityList.replaceChildren(...options);
       cityList.hidden = false;
       cityInput.setAttribute('aria-expanded', 'true');
     } catch {
@@ -811,7 +824,7 @@ const orgSchema = {
     clearTimeout(cityTimer);
     if (q.length < 2) {
       hideCityList();
-      if (cityList) cityList.innerHTML = '';
+      cityList?.replaceChildren();
       return;
     }
     cityTimer = setTimeout(() => searchCities(q), 250);

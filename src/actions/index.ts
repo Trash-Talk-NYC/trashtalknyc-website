@@ -3,8 +3,8 @@ import { signupSchema, contactSchema, leadSchema, NOT_IN_NYC, type ContactInput 
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
-import { verifyNycAddress } from '../lib/server/geosearch';
-import { MAX_PHOTOS, processPhoto, storeLeadPhotos } from '../lib/server/photos';
+import { verifyNycAddress, type GeoVerifyResult } from '../lib/server/geosearch';
+import { MAX_PHOTOS, deleteLeadPhotos, processPhoto, storeLeadPhotos } from '../lib/server/photos';
 import {
   buildAttributes,
   buildInquiryEmail,
@@ -98,19 +98,32 @@ async function requireTurnstile(form: FormName, ctx: ActionAPIContext, token: st
   }
 }
 
-async function upsertOrThrow(
-  form: FormName,
-  email: string,
-  attributes: Record<string, string>,
-  listIdVar: string,
-): Promise<void> {
+interface BrevoTarget {
+  apiKey: string;
+  listId: number;
+}
+
+/**
+ * Resolves the Brevo key and list for a form, failing closed when either
+ * is missing or invalid. Separate from the upsert so a form with side
+ * effects before the upsert (lead photos) can check its env first.
+ */
+function requireBrevoTarget(form: FormName, listIdVar: string): BrevoTarget {
   const apiKey = requireEnv('BREVO_API_KEY', form);
   const listId = Number(requireEnv(listIdVar, form));
   if (!Number.isFinite(listId) || listId <= 0) {
     log('error', 'form_env_invalid', { form, var: listIdVar });
     throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: GENERIC_FAILURE });
   }
+  return { apiKey, listId };
+}
 
+async function upsertOrThrow(
+  form: FormName,
+  email: string,
+  attributes: Record<string, string>,
+  { apiKey, listId }: BrevoTarget,
+): Promise<void> {
   const result = await upsertBrevoContact(apiKey, { email, attributes, listId });
   if (!result.ok) {
     log('error', 'brevo_upsert_failed', { form, status: result.status ?? 0, detail: result.detail });
@@ -172,12 +185,13 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
  * notification failure.
  */
 async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
+  const form: FormName = input.inquiryType === 'lead' ? 'lead' : 'contact';
   try {
     const apiKey = getEnv('BREVO_API_KEY');
     const to = getEnv(input.inquiryType === 'sponsor' ? 'SPONSOR_NOTIFY_TO' : 'CONTACT_NOTIFY_TO');
     const from = getEnv('CONTACT_NOTIFY_FROM');
     if (!apiKey || !to || !from) {
-      log('info', 'inquiry_notify_skipped', { form: 'contact', inquiry: input.inquiryType });
+      log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
       return;
     }
 
@@ -189,7 +203,7 @@ async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
       .filter(Boolean)
       .map((email) => ({ email }));
     if (recipients.length === 0) {
-      log('info', 'inquiry_notify_skipped', { form: 'contact', inquiry: input.inquiryType });
+      log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
       return;
     }
 
@@ -205,7 +219,7 @@ async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
 
     if (!result.ok) {
       log('warn', 'inquiry_notify_failed', {
-        form: 'contact',
+        form,
         inquiry: input.inquiryType,
         status: result.status ?? 0,
         detail: result.detail,
@@ -213,14 +227,19 @@ async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
       return;
     }
 
-    log('info', 'inquiry_notify_sent', { form: 'contact', inquiry: input.inquiryType });
+    log('info', 'inquiry_notify_sent', { form, inquiry: input.inquiryType });
   } catch (err) {
     log('warn', 'inquiry_notify_failed', {
-      form: 'contact',
+      form,
       stage: 'unexpected',
       detail: err instanceof Error ? err.message : 'unknown',
     });
   }
+}
+
+/** Marks addresses GeoSearch could not check (service outage) so the team knows to verify them by hand. */
+function noteAddress(result: Extract<GeoVerifyResult, { ok: true }>): string {
+  return 'unverified' in result ? `${result.label} (unverified: map lookup was unavailable)` : result.label;
 }
 
 export const server = {
@@ -258,7 +277,7 @@ export const server = {
           HEAR_ABOUT_US: input.hear,
           WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
         }),
-        'BREVO_LIST_ID_SIGNUP',
+        requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
       );
 
       await tryCreateNote('signup', input.email, input.experience);
@@ -301,7 +320,7 @@ export const server = {
           ORGANIZATION: input.organization,
           MESSAGE: input.message,
         }),
-        listIdVar,
+        requireBrevoTarget('contact', listIdVar),
       );
 
       const noteForms: Record<ContactInput['inquiryType'], string> = {
@@ -329,6 +348,8 @@ export const server = {
 
       await requireTurnstile('lead', ctx, input['cf-turnstile-response']);
 
+      const brevo = requireBrevoTarget('lead', 'BREVO_LIST_ID_LEADS');
+
       // Re-verify the route addresses against NYC GeoSearch — the page's
       // picker already forces choosing a real suggestion, so a no-match
       // here is a bypassed client, not a typo. The verified label (when
@@ -338,14 +359,14 @@ export const server = {
         log('warn', 'form_address_rejected', { form: 'lead', field: 'startAddress' });
         throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
       }
-      let endLabel: string | undefined;
+      let end: Extract<GeoVerifyResult, { ok: true }> | undefined;
       if (input.routeType === 'oneway') {
-        const end = await verifyNycAddress(input.endAddress ?? '');
-        if (!end.ok) {
+        const verified = await verifyNycAddress(input.endAddress ?? '');
+        if (!verified.ok) {
           log('warn', 'form_address_rejected', { form: 'lead', field: 'endAddress' });
           throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
         }
-        endLabel = end.label;
+        end = verified;
       }
 
       // Route photos: content-validated, re-encoded (metadata including
@@ -377,30 +398,36 @@ export const server = {
         photoKeys = stored.keys;
       }
 
-      await upsertOrThrow(
-        'lead',
-        input.email,
-        buildAttributes({
-          FIRSTNAME: input.fname,
-          LASTNAME: input.lname,
-          PHONE: input.phone,
-          INQUIRY_TYPE: 'lead',
-          LEAD_BEHALF: input.behalf,
-          MAILING_ADDRESS: input.mailingAddress,
-          ROUTE_TYPE: input.routeType,
-          ROUTE_START: start.label,
-          ROUTE_END: endLabel,
-          PREFERRED_MONTH: input.preferredMonth,
-        }),
-        'BREVO_LIST_ID_LEADS',
-      );
+      try {
+        await upsertOrThrow(
+          'lead',
+          input.email,
+          buildAttributes({
+            FIRSTNAME: input.fname,
+            LASTNAME: input.lname,
+            PHONE: input.phone,
+            INQUIRY_TYPE: 'lead',
+            LEAD_BEHALF: input.behalf,
+            MAILING_ADDRESS: input.mailingAddress,
+            ROUTE_TYPE: input.routeType,
+            ROUTE_START: start.label,
+            ROUTE_END: end?.label,
+            PREFERRED_MONTH: input.preferredMonth,
+          }),
+          brevo,
+        );
+      } catch (err) {
+        const { failed } = await deleteLeadPhotos(photoKeys);
+        if (failed > 0) log('error', 'lead_photo_cleanup_failed', { form: 'lead', count: failed });
+        throw err;
+      }
 
       // The CRM note preserves the full application (attributes are
       // last-write-wins), including where the private photos live.
       const noteLines = [
         `Applying on behalf of: ${input.behalf}`,
         `Mailing address: ${input.mailingAddress}`,
-        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${start.label}${endLabel ? ` — end: ${endLabel}` : ''}`,
+        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${noteAddress(start)}${end ? ` — end: ${noteAddress(end)}` : ''}`,
         `Preferred month: ${input.preferredMonth}`,
         photoKeys.length > 0
           ? `Photos (${photoKeys.length}, private Blobs store lead-route-photos): ${photoKeys.join(', ')}`

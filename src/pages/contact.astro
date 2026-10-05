@@ -515,7 +515,7 @@ const monthOptions = rollingMonths();
 <script>
   import { actions } from 'astro:actions';
   import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
-  import { attachFieldValidation } from '../lib/clientValidation';
+  import { attachFieldValidation, setFieldError } from '../lib/clientValidation';
   import { rollingMonths } from '../lib/months';
 
   attachFieldValidation();
@@ -628,23 +628,28 @@ const monthOptions = rollingMonths();
   });
 
   // ── CHIP RADIOS (behalf, route type) ──
-  function wireChips(selector: string, onPick: (value: string) => void) {
+  /** Wires a chip group; returns a picker so the group can be set programmatically. */
+  function wireChips(selector: string, onPick: (value: string) => void): (value: string) => void {
     const chips = Array.from(document.querySelectorAll<HTMLButtonElement>(selector));
-    chips.forEach((chip) => {
-      chip.addEventListener('click', () => {
-        chips.forEach((c) => c.setAttribute('aria-checked', String(c === chip)));
-        onPick(chip.dataset.behalf ?? chip.dataset.route ?? '');
-      });
-    });
+    const valueOf = (chip: HTMLButtonElement) => chip.dataset.behalf ?? chip.dataset.route ?? '';
+    function pick(chip: HTMLButtonElement) {
+      chips.forEach((c) => c.setAttribute('aria-checked', String(c === chip)));
+      onPick(valueOf(chip));
+    }
+    chips.forEach((chip) => chip.addEventListener('click', () => pick(chip)));
+    return (value) => {
+      const chip = chips.find((c) => valueOf(c) === value);
+      if (chip) pick(chip);
+    };
   }
 
   const behalfInput = document.getElementById('behalfInput') as HTMLInputElement;
-  wireChips('[data-behalf]', (v) => { behalfInput.value = v; });
+  const pickBehalf = wireChips('[data-behalf]', (v) => { behalfInput.value = v; });
 
   const routeTypeInput = document.getElementById('routeTypeInput') as HTMLInputElement;
   const endGroup = document.getElementById('endGroup') as HTMLElement;
   const endInput = document.getElementById('l-end') as HTMLInputElement;
-  wireChips('[data-route]', (v) => {
+  const pickRoute = wireChips('[data-route]', (v) => {
     routeTypeInput.value = v;
     const oneway = v === 'oneway';
     endGroup.hidden = !oneway;
@@ -663,6 +668,8 @@ const monthOptions = rollingMonths();
     pick: { en: 'Pick an address from the list so we can find it on the map.', es: 'Elige una dirección de la lista para poder ubicarla en el mapa.' },
     none: { en: 'No NYC match yet. Keep typing the street and cross street.', es: 'Aún no hay coincidencias en NYC. Sigue escribiendo la calle y la transversal.' },
   };
+
+  const addressResets: Array<() => void> = [];
 
   document.querySelectorAll<HTMLElement>('#leadForm .addr').forEach((wrap) => {
     const input = wrap.querySelector<HTMLInputElement>('input')!;
@@ -691,16 +698,28 @@ const monthOptions = rollingMonths();
           .map((f) => f.properties)
           .filter((p): p is NonNullable<typeof p> => !!p?.label)
           .slice(0, 6);
-        list.innerHTML = items.length
-          ? items
-              .map((p) => {
-                const label = (p.label ?? '').replace(/"/g, '&quot;');
-                const main = p.name ?? p.label ?? '';
-                const sub = [p.borough, p.postalcode].filter(Boolean).join(' ');
-                return `<li role="option" data-v="${label}">${main}${sub ? `<small>${sub}</small>` : ''}</li>`;
-              })
-              .join('')
-          : `<li aria-disabled="true">${ADDR_MSG.none[lang]}</li>`;
+        const options = items.map((p) => {
+          const li = document.createElement('li');
+          li.setAttribute('role', 'option');
+          li.dataset.v = p.label ?? '';
+          li.textContent = p.name ?? p.label ?? '';
+          const sub = [p.borough, p.postalcode].filter(Boolean).join(' ');
+          if (sub) {
+            const small = document.createElement('small');
+            small.textContent = sub;
+            li.append(small);
+          }
+          return li;
+        });
+        if (options.length === 0) {
+          const none = document.createElement('li');
+          none.setAttribute('aria-disabled', 'true');
+          none.dataset.en = ADDR_MSG.none.en;
+          none.dataset.es = ADDR_MSG.none.es;
+          none.textContent = ADDR_MSG.none[lang];
+          options.push(none);
+        }
+        list.replaceChildren(...options);
         list.hidden = false;
         input.setAttribute('aria-expanded', 'true');
       } catch {
@@ -718,7 +737,7 @@ const monthOptions = rollingMonths();
       clearTimeout(timer);
       if (q.length < 2) {
         close();
-        list.innerHTML = '';
+        list.replaceChildren();
         return;
       }
       timer = setTimeout(() => search(q), 250);
@@ -736,6 +755,17 @@ const monthOptions = rollingMonths();
     });
 
     input.addEventListener('blur', () => setTimeout(close, 120));
+
+    addressResets.push(() => {
+      clearTimeout(timer);
+      seq++;
+      input.value = '';
+      delete input.dataset.verified;
+      input.setCustomValidity('');
+      ok.hidden = true;
+      close();
+      list.replaceChildren();
+    });
   });
 
   // ── ROLLING MONTHS ──
@@ -836,7 +866,7 @@ const monthOptions = rollingMonths();
     }
 
     pickedPhotos = processed;
-    thumbs.innerHTML = '';
+    thumbs.replaceChildren();
     pickedPhotos.forEach((f) => {
       const img = document.createElement('img');
       img.src = URL.createObjectURL(f);
@@ -860,6 +890,25 @@ const monthOptions = rollingMonths();
     const dt = (e as DragEvent).dataTransfer;
     if (dt?.files) void takeFiles(dt.files);
   });
+
+  /**
+   * After a successful application the lead form goes back to a blank
+   * slate, so picking the tile again can't resend the previous
+   * applicant's details or photos.
+   */
+  function resetLeadForm() {
+    leadForm.reset();
+    pickBehalf('individual');
+    pickRoute('loop');
+    addressResets.forEach((reset) => reset());
+    monthSelect.selectedIndex = 0;
+    pickedPhotos = [];
+    thumbs.replaceChildren();
+    photoInput.value = '';
+    showDzError(null);
+    leadForm.querySelectorAll<HTMLInputElement>('input[aria-invalid]').forEach((input) => setFieldError(input, ''));
+    leadErrorEl.textContent = '';
+  }
 
   // ── SUBMITS ──
   function wireSubmit(form: HTMLFormElement, errorEl: HTMLElement, send: (data: FormData) => Promise<{ error: unknown }>) {
@@ -885,6 +934,7 @@ const monthOptions = rollingMonths();
         // Picking a tile again restores the right form via setType
         msgForm.hidden = true;
         leadForm.hidden = true;
+        if (form === leadForm) resetLeadForm();
         successDiv.style.display = 'block';
         btn.disabled = false;
         btn.textContent = originalText;
