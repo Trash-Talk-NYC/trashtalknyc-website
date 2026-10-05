@@ -240,11 +240,6 @@ async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
   }
 }
 
-/** Marks addresses GeoSearch could not check (service outage) so the team knows to verify them by hand. */
-function noteAddress(result: Extract<GeoVerifyResult, { ok: true }>): string {
-  return 'unverified' in result ? `${result.label} (unverified: map lookup was unavailable)` : result.label;
-}
-
 export const server = {
   signup: defineAction({
     accept: 'form',
@@ -353,20 +348,20 @@ export const server = {
 
       const brevo = requireBrevoTarget('lead', 'BREVO_LIST_ID_LEADS');
 
-      // Re-verify the route addresses against NYC GeoSearch — the page's
-      // picker already forces choosing a real suggestion, so a no-match
-      // here is a bypassed client, not a typo. The verified label (when
-      // available) is what gets stored.
-      const start = await verifyNycAddress(input.startAddress);
+      // Re-verify the exact GeoSearch features the picker submitted. Any
+      // address that cannot be verified (bypassed picker, mismatched
+      // label, outside NYC, or GeoSearch unreachable) rejects the
+      // application rather than storing an unchecked or substituted one.
+      const start = await verifyNycAddress(input.startAddress, input.startAddressId);
       if (!start.ok) {
-        log('warn', 'form_address_rejected', { form: 'lead', field: 'startAddress' });
+        log('warn', 'form_address_rejected', { form: 'lead', field: 'startAddress', reason: start.reason });
         throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
       }
       let end: Extract<GeoVerifyResult, { ok: true }> | undefined;
       if (input.routeType === 'oneway') {
-        const verified = await verifyNycAddress(input.endAddress ?? '');
+        const verified = await verifyNycAddress(input.endAddress ?? '', input.endAddressId ?? '');
         if (!verified.ok) {
-          log('warn', 'form_address_rejected', { form: 'lead', field: 'endAddress' });
+          log('warn', 'form_address_rejected', { form: 'lead', field: 'endAddress', reason: verified.reason });
           throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
         }
         end = verified;
@@ -430,7 +425,7 @@ export const server = {
       const noteLines = [
         `Applying on behalf of: ${input.behalf}`,
         `Mailing address: ${input.mailingAddress}`,
-        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${noteAddress(start)}${end ? ` — end: ${noteAddress(end)}` : ''}`,
+        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${start.label}${end ? ` — end: ${end.label}` : ''}`,
         `Preferred month: ${input.preferredMonth}`,
         photoKeys.length > 0
           ? `Photos (${photoKeys.length}, private Blobs store lead-route-photos): ${photoKeys.join(', ')}`

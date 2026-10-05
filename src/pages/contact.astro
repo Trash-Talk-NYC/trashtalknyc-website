@@ -175,7 +175,8 @@ const monthOptions = rollingMonths();
             <label for="l-start" data-en="Starting address *" data-es="Dirección de inicio *">Starting address *</label>
             <div class="addr">
               <input id="l-start" name="startAddress" class="addr-in" autocomplete="off" required placeholder="Start typing an NYC address" data-placeholder-en="Start typing an NYC address" data-placeholder-es="Empieza a escribir una dirección de NYC" role="combobox" aria-autocomplete="list" aria-expanded="false" />
-              <ul class="addr-list" role="listbox" hidden></ul>
+              <input type="hidden" name="startAddressId" class="addr-id" />
+              <ul class="addr-list" id="l-start-list" role="listbox" hidden></ul>
               <p class="addr-ok" hidden data-en="✓ Found on the map" data-es="✓ Encontrada en el mapa">✓ Found on the map</p>
             </div>
           </div>
@@ -183,7 +184,8 @@ const monthOptions = rollingMonths();
             <label for="l-end" data-en="End address *" data-es="Dirección final *">End address *</label>
             <div class="addr">
               <input id="l-end" name="endAddress" class="addr-in" autocomplete="off" placeholder="Start typing an NYC address" data-placeholder-en="Start typing an NYC address" data-placeholder-es="Empieza a escribir una dirección de NYC" role="combobox" aria-autocomplete="list" aria-expanded="false" />
-              <ul class="addr-list" role="listbox" hidden></ul>
+              <input type="hidden" name="endAddressId" class="addr-id" />
+              <ul class="addr-list" id="l-end-list" role="listbox" hidden></ul>
               <p class="addr-ok" hidden data-en="✓ Found on the map" data-es="✓ Encontrada en el mapa">✓ Found on the map</p>
             </div>
           </div>
@@ -517,6 +519,7 @@ const monthOptions = rollingMonths();
   import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
   import { attachFieldValidation, setFieldError } from '../lib/clientValidation';
   import { rollingMonths } from '../lib/months';
+  import { attachCombobox, fetchJson, type ComboOption, type Combobox } from '../lib/combobox';
 
   attachFieldValidation();
 
@@ -654,118 +657,60 @@ const monthOptions = rollingMonths();
     const oneway = v === 'oneway';
     endGroup.hidden = !oneway;
     endInput.required = oneway;
-    if (!oneway) {
-      endInput.value = '';
-      delete endInput.dataset.verified;
-      endInput.setCustomValidity('');
-    }
+    if (!oneway) addressPickers.get(endInput)?.reset();
   });
 
   // ── NYC ADDRESS PICKER (GeoSearch autocomplete) ──
   // People pick a real suggestion; free text never satisfies the field.
-  // The action re-verifies against GeoSearch server-side.
+  // The chosen feature's id travels with its label so the action can
+  // verify that exact feature server-side. GeoSearch being unreachable
+  // blocks the pick (the server rejects unverifiable addresses anyway),
+  // so the applicant is told to retry instead of hitting a generic error.
   const ADDR_MSG = {
     pick: { en: 'Pick an address from the list so we can find it on the map.', es: 'Elige una dirección de la lista para poder ubicarla en el mapa.' },
     none: { en: 'No NYC match yet. Keep typing the street and cross street.', es: 'Aún no hay coincidencias en NYC. Sigue escribiendo la calle y la transversal.' },
+    unavailable: { en: "We couldn't reach the map just now. Please try again in a moment.", es: 'No pudimos conectar con el mapa. Inténtalo de nuevo en un momento.' },
   };
 
-  const addressResets: Array<() => void> = [];
+  type GeoSearchAutocomplete = {
+    features?: Array<{ properties?: { gid?: string; label?: string; name?: string; borough?: string; postalcode?: string } }>;
+  };
+
+  async function searchNycAddresses(query: string): Promise<ComboOption[]> {
+    const data = await fetchJson<GeoSearchAutocomplete>(
+      `https://geosearch.planninglabs.nyc/v2/autocomplete?text=${encodeURIComponent(query)}&size=6`,
+    );
+    return (data.features ?? [])
+      .map((f) => f.properties)
+      .filter((p): p is NonNullable<typeof p> => !!p?.label && !!p.gid)
+      .slice(0, 6)
+      .map((p) => ({
+        value: p.label ?? '',
+        text: p.name ?? p.label ?? '',
+        detail: [p.borough, p.postalcode].filter(Boolean).join(' ') || undefined,
+        id: p.gid,
+      }));
+  }
+
+  const addressPickers = new Map<HTMLInputElement, Combobox>();
 
   document.querySelectorAll<HTMLElement>('#leadForm .addr').forEach((wrap) => {
-    const input = wrap.querySelector<HTMLInputElement>('input')!;
-    const list = wrap.querySelector<HTMLUListElement>('.addr-list')!;
+    const input = wrap.querySelector<HTMLInputElement>('.addr-in')!;
+    const idInput = wrap.querySelector<HTMLInputElement>('.addr-id')!;
     const ok = wrap.querySelector<HTMLParagraphElement>('.addr-ok')!;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let seq = 0;
-
-    function close() {
-      list.hidden = true;
-      input.setAttribute('aria-expanded', 'false');
-    }
-
-    async function search(query: string) {
-      const mySeq = ++seq;
-      try {
-        const res = await fetch(
-          `https://geosearch.planninglabs.nyc/v2/autocomplete?text=${encodeURIComponent(query)}&size=6`,
-        );
-        if (!res.ok || mySeq !== seq) return;
-        const data = (await res.json()) as {
-          features?: Array<{ properties?: { label?: string; name?: string; borough?: string; postalcode?: string } }>;
-        };
-        const lang = getCurrentLang();
-        const items = (data.features ?? [])
-          .map((f) => f.properties)
-          .filter((p): p is NonNullable<typeof p> => !!p?.label)
-          .slice(0, 6);
-        const options = items.map((p) => {
-          const li = document.createElement('li');
-          li.setAttribute('role', 'option');
-          li.dataset.v = p.label ?? '';
-          li.textContent = p.name ?? p.label ?? '';
-          const sub = [p.borough, p.postalcode].filter(Boolean).join(' ');
-          if (sub) {
-            const small = document.createElement('small');
-            small.textContent = sub;
-            li.append(small);
-          }
-          return li;
-        });
-        if (options.length === 0) {
-          const none = document.createElement('li');
-          none.setAttribute('aria-disabled', 'true');
-          none.dataset.en = ADDR_MSG.none.en;
-          none.dataset.es = ADDR_MSG.none.es;
-          none.textContent = ADDR_MSG.none[lang];
-          options.push(none);
-        }
-        list.replaceChildren(...options);
-        list.hidden = false;
-        input.setAttribute('aria-expanded', 'true');
-      } catch {
-        // GeoSearch unreachable: let the text stand; the server re-checks.
-        input.dataset.verified = '1';
-        input.setCustomValidity('');
-      }
-    }
-
-    input.addEventListener('input', () => {
-      delete input.dataset.verified;
-      ok.hidden = true;
-      const q = input.value.trim();
-      input.setCustomValidity(q ? ADDR_MSG.pick[getCurrentLang()] : '');
-      clearTimeout(timer);
-      if (q.length < 2) {
-        close();
-        list.replaceChildren();
-        return;
-      }
-      timer = setTimeout(() => search(q), 250);
+    const combo = attachCombobox({
+      input,
+      list: wrap.querySelector<HTMLUListElement>('.addr-list')!,
+      search: searchNycAddresses,
+      pickMessage: ADDR_MSG.pick,
+      emptyMessage: ADDR_MSG.none,
+      onChange: (option) => {
+        idInput.value = option?.id ?? '';
+        ok.hidden = !option;
+      },
+      onUnavailable: (picker) => picker.setInvalid(ADDR_MSG.unavailable),
     });
-
-    list.addEventListener('mousedown', (e) => {
-      const li = (e.target as HTMLElement).closest<HTMLLIElement>('li[data-v]');
-      if (!li) return;
-      e.preventDefault();
-      input.value = li.dataset.v ?? '';
-      input.dataset.verified = '1';
-      input.setCustomValidity('');
-      ok.hidden = false;
-      close();
-    });
-
-    input.addEventListener('blur', () => setTimeout(close, 120));
-
-    addressResets.push(() => {
-      clearTimeout(timer);
-      seq++;
-      input.value = '';
-      delete input.dataset.verified;
-      input.setCustomValidity('');
-      ok.hidden = true;
-      close();
-      list.replaceChildren();
-    });
+    addressPickers.set(input, combo);
   });
 
   // ── ROLLING MONTHS ──
@@ -900,7 +845,7 @@ const monthOptions = rollingMonths();
     leadForm.reset();
     pickBehalf('individual');
     pickRoute('loop');
-    addressResets.forEach((reset) => reset());
+    addressPickers.forEach((picker) => picker.reset());
     monthSelect.selectedIndex = 0;
     pickedPhotos = [];
     thumbs.replaceChildren();

@@ -684,9 +684,10 @@ const orgSchema = {
 
 <script>
   import { actions } from 'astro:actions';
-  import { getCurrentLang, onLanguageChange, submitErrorText } from '../lib/language';
+  import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
   import { attachFieldValidation } from '../lib/clientValidation';
   import { countries, US_COUNTRY, OTHER_COUNTRY } from '../lib/countries';
+  import { attachCombobox, fetchJson, type ComboOption } from '../lib/combobox';
 
   attachFieldValidation();
 
@@ -718,8 +719,50 @@ const orgSchema = {
   const whereGroup = document.getElementById('whereGroup') as HTMLElement | null;
   const countrySelect = document.getElementById('w-country') as HTMLSelectElement | null;
   const cityInput = document.getElementById('w-city') as HTMLInputElement | null;
+  const cityList = document.getElementById('cityList') as HTMLUListElement | null;
   const zipGroup = document.getElementById('zipGroup') as HTMLElement | null;
   const zipInput = document.getElementById('w-zip') as HTMLInputElement | null;
+
+  // ── CITY PICKER ──
+  // People choose a real city from a list instead of free typing. The
+  // list comes from the Open-Meteo geocoding API (free, keyless),
+  // scoped to the selected country's ISO code. An Open-Meteo outage
+  // (network error or non-ok response) lets the typed city stand: the
+  // server accepts any non-empty city, so signups never block on it.
+  const countryCodes = new Map(countries.map((c) => [c.value, c.code]));
+
+  type OpenMeteoSearch = {
+    results?: Array<{ name: string; country_code?: string; country?: string; admin1?: string }>;
+  };
+
+  async function searchCities(query: string, lang: Lang): Promise<ComboOption[]> {
+    const data = await fetchJson<OpenMeteoSearch>(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=${lang}&format=json`,
+    );
+    const country = countrySelect?.value ?? '';
+    const code = countryCodes.get(country) ?? null;
+    const other = country === OTHER_COUNTRY;
+    const hits = (data.results ?? [])
+      .filter((r) => (other ? true : r.country_code === code))
+      .slice(0, 6)
+      .map((r) => {
+        const region = r.country_code === 'US' ? r.admin1 : other ? r.country : r.admin1;
+        return region && region !== r.name ? `${r.name}, ${region}` : r.name;
+      });
+    return [...new Set(hits)].map((c) => ({ value: c, text: c }));
+  }
+
+  const cityPicker =
+    cityInput && cityList
+      ? attachCombobox({
+          input: cityInput,
+          list: cityList,
+          search: searchCities,
+          pickMessage: { en: 'Pick your city from the list.', es: 'Elige tu ciudad de la lista.' },
+          emptyMessage: { en: 'No match yet. Keep typing.', es: 'Sin coincidencias todavía. Sigue escribiendo.' },
+          onUnavailable: (picker) => picker.setInvalid(null),
+        })
+      : null;
 
   function syncLocation() {
     if (!boroughSelect || !whereGroup || !countrySelect || !cityInput || !zipGroup || !zipInput) return;
@@ -734,10 +777,8 @@ const orgSchema = {
     zipInput.setCustomValidity(zipBad ? (getCurrentLang() === 'es' ? 'Escribe un código ZIP de 5 dígitos.' : 'Enter a 5-digit ZIP code.') : '');
     // Fields hidden from the user must never submit stale values
     if (!outside) {
-      cityInput.value = '';
+      cityPicker?.reset();
       zipInput.value = '';
-      delete cityInput.dataset.ok;
-      cityInput.setCustomValidity('');
       zipInput.setCustomValidity('');
     }
   }
@@ -746,107 +787,12 @@ const orgSchema = {
     syncLocation();
     if (boroughSelect.value === 'Not in NYC') countrySelect?.focus();
   });
-  countrySelect?.addEventListener('change', syncLocation);
+  countrySelect?.addEventListener('change', () => {
+    cityPicker?.reset();
+    syncLocation();
+  });
   zipInput?.addEventListener('input', syncLocation);
   syncLocation();
-
-  // ── CITY PICKER ──
-  // People choose a real city from a list instead of free typing. The
-  // list comes from the Open-Meteo geocoding API (free, keyless),
-  // scoped to the selected country's ISO code.
-  const cityList = document.getElementById('cityList') as HTMLUListElement | null;
-  const countryCodes = new Map(countries.map((c) => [c.value, c.code]));
-  let cityTimer: ReturnType<typeof setTimeout> | undefined;
-  let citySeq = 0;
-
-  function cityNeedsPick() {
-    if (!cityInput) return;
-    const bad = !!cityInput.value && !cityInput.dataset.ok;
-    cityInput.setCustomValidity(bad ? (getCurrentLang() === 'es' ? 'Elige tu ciudad de la lista.' : 'Pick your city from the list.') : '');
-  }
-
-  function hideCityList() {
-    if (!cityList || !cityInput) return;
-    cityList.hidden = true;
-    cityInput.setAttribute('aria-expanded', 'false');
-  }
-
-  async function searchCities(query: string) {
-    const seq = ++citySeq;
-    const lang = getCurrentLang();
-    try {
-      const res = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=${lang}&format=json`,
-      );
-      if (!res.ok || seq !== citySeq || !cityList || !cityInput || !countrySelect) return;
-      const data = (await res.json()) as {
-        results?: Array<{ name: string; country_code?: string; country?: string; admin1?: string }>;
-      };
-      const code = countryCodes.get(countrySelect.value) ?? null;
-      const other = countrySelect.value === OTHER_COUNTRY;
-      const hits = (data.results ?? [])
-        .filter((r) => (other ? true : r.country_code === code))
-        .slice(0, 6)
-        .map((r) => {
-          const region = r.country_code === 'US' ? r.admin1 : other ? r.country : r.admin1;
-          return region && region !== r.name ? `${r.name}, ${region}` : r.name;
-        });
-      const unique = [...new Set(hits)];
-      const options = unique.map((c) => {
-        const li = document.createElement('li');
-        li.setAttribute('role', 'option');
-        li.dataset.v = c;
-        li.textContent = c;
-        return li;
-      });
-      if (options.length === 0) {
-        const none = document.createElement('li');
-        none.setAttribute('aria-disabled', 'true');
-        none.dataset.en = 'No match yet. Keep typing.';
-        none.dataset.es = 'Sin coincidencias todavía. Sigue escribiendo.';
-        none.textContent = lang === 'es' ? none.dataset.es : none.dataset.en;
-        options.push(none);
-      }
-      cityList.replaceChildren(...options);
-      cityList.hidden = false;
-      cityInput.setAttribute('aria-expanded', 'true');
-    } catch {
-      // Network trouble: leave the list closed; the server accepts any
-      // non-empty city, so typing a city by hand still submits.
-      if (cityInput) cityInput.dataset.ok = '1';
-    }
-  }
-
-  cityInput?.addEventListener('input', () => {
-    delete cityInput.dataset.ok;
-    cityNeedsPick();
-    const q = cityInput.value.trim();
-    clearTimeout(cityTimer);
-    if (q.length < 2) {
-      hideCityList();
-      cityList?.replaceChildren();
-      return;
-    }
-    cityTimer = setTimeout(() => searchCities(q), 250);
-  });
-
-  cityList?.addEventListener('mousedown', (e) => {
-    const li = (e.target as HTMLElement).closest<HTMLLIElement>('li[data-v]');
-    if (!li || !cityInput) return;
-    e.preventDefault();
-    cityInput.value = li.dataset.v ?? '';
-    cityInput.dataset.ok = '1';
-    cityNeedsPick();
-    hideCityList();
-  });
-
-  cityInput?.addEventListener('blur', () => setTimeout(hideCityList, 120));
-  countrySelect?.addEventListener('change', () => {
-    if (!cityInput) return;
-    cityInput.value = '';
-    delete cityInput.dataset.ok;
-    cityNeedsPick();
-  });
 
   // ── SUBMIT ──
   document.getElementById('volunteerForm')?.addEventListener('submit', async (e) => {

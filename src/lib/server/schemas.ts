@@ -117,14 +117,16 @@ export const leadSchema = z
     phone: requiredPhone,
     routeType: z.enum(['loop', 'oneway']),
     startAddress: z.string().trim().min(1, 'Starting address is required').max(300),
+    startAddressId: z.string().trim().min(1, 'Pick a starting address from the list').max(120),
     endAddress: z.string().trim().max(300).optional(),
+    endAddressId: z.string().trim().max(120).optional(),
     preferredMonth: z
       .string()
       .trim()
       .refine((v) => isValidPreferredMonth(v), 'Please choose an upcoming month'),
     photos: z.array(z.instanceof(File)).optional(),
   })
-  .refine((data) => data.routeType === 'loop' || !!data.endAddress?.trim(), {
+  .refine((data) => data.routeType === 'loop' || (!!data.endAddress?.trim() && !!data.endAddressId?.trim()), {
     message: 'An end address is required for a one-way route',
     path: ['endAddress'],
   });
