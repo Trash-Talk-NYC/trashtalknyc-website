@@ -81,6 +81,7 @@ describe('signupSchema outside-NYC flow', () => {
     fname: 'Jane',
     lname: 'Doe',
     email: 'jane@example.com',
+    hear: 'Word of Mouth',
     waiverCheck: 'on',
     ageCheck: 'on',
   };

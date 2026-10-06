@@ -46,10 +46,17 @@ const requiredPhone = z
 
 export const BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'] as const;
 
+export type Borough = (typeof BOROUGHS)[number];
+
 /** The newsletter's sixth borough choice, which opens the where-are-you flow. */
 export const NOT_IN_NYC = 'Not in NYC';
 
 export const BOROUGH_OPTIONS = [...BOROUGHS, NOT_IN_NYC] as const;
+
+/** Narrows the follow-up borough sent when the city picker detected NYC. */
+export function asBorough(value: string | undefined): Borough | undefined {
+  return (BOROUGHS as readonly string[]).includes(value ?? '') ? (value as Borough) : undefined;
+}
 
 const ZIP_PATTERN = /^\d{5}(-\d{4})?$/;
 
@@ -62,6 +69,11 @@ export const signupSchema = z
   .object({
     ...baseFields,
     borough: z.enum(BOROUGH_OPTIONS, { errorMap: () => ({ message: 'Please select a borough' }) }),
+    // Follow-up borough for a "Not in NYC" signup whose picked city
+    // turned out to be New York City. Validated via asBorough (a plain
+    // string here so an empty hidden field still parses); when valid it
+    // supersedes the location fields below (superRefine + the action).
+    nycBorough: z.string().trim().max(40).optional(),
     // Outside-NYC location — required only when borough is "Not in NYC"
     // (superRefine below); the ZIP is US-only, since other countries
     // just ask for the city.
@@ -70,12 +82,17 @@ export const signupSchema = z
     zip: z.string().trim().max(20).optional(),
     phone: optionalPhone,
     experience: z.string().trim().max(2000).optional(),
-    hear: z.string().trim().max(200).optional(),
+    hear: z.string().trim().min(1, 'Please tell us how you heard about us').max(200),
+    // Free-text "where was that?" companion to the "Somewhere else" choice
+    hearOther: z.string().trim().max(200).optional(),
     waiverCheck: waiverAccepted,
     ageCheck: waiverAccepted,
   })
   .superRefine((data, ctx) => {
     if (data.borough !== NOT_IN_NYC) return;
+    // The picked city was New York City after all: the follow-up borough
+    // is the location, so the outside-NYC fields are no longer required.
+    if (asBorough(data.nycBorough)) return;
     if (!data.country || !COUNTRY_VALUES.includes(data.country)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['country'], message: 'Please select a country' });
     }

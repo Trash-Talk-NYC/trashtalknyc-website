@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import HeroEventCard from '../components/HeroEventCard.astro';
@@ -6,6 +7,7 @@ import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
 import bricksTop from '../assets/bricks-top-lav.svg';
 import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import illFamilyVests from '../assets/ill-family-vests-beige.svg';
+import vestSticker from '../assets/vest-sticker.png';
 
 const { upcoming: upcomingRaw } = await fetchEventsAtBuildTime();
 const upcoming = upcomingRaw.map(ev => ({
@@ -69,8 +71,10 @@ const nextEvent = upcoming[0]?.props ?? null;
       </div>
     )}
 
-    <!-- Closing newsletter nudge (captain's wording) -->
+    <!-- Closing newsletter nudge (captain's wording), pinned by the
+         vest sticker like the other pasted cards -->
     <div class="nudge paste">
+      <Image src={vestSticker} alt="" class="slap nudge-slap" width={104} densities={[1, 2]} />
       <img class="ill" src={illFamilyVests.src} alt="" />
       <div>
         <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
@@ -328,6 +332,7 @@ const nextEvent = upcoming[0]?.props ?? null;
   }
 
   .nudge {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
@@ -336,6 +341,14 @@ const nextEvent = upcoming[0]?.props ?? null;
     color: var(--beige);
     padding: 24px 18px;
     margin-block: 20px 44px;
+  }
+
+  .nudge :global(.nudge-slap) {
+    top: -28px;
+    right: -6px;
+    width: 72px;
+    height: auto;
+    transform: rotate(9deg);
   }
 
   .nudge .ill {
@@ -360,6 +373,7 @@ const nextEvent = upcoming[0]?.props ?? null;
       margin-block: 30px 70px;
     }
 
+    .nudge :global(.nudge-slap) { top: -38px; right: -20px; width: 104px; }
     .nudge .ill { width: 150px; height: 120px; }
     .nudge .btn { width: auto; }
   }

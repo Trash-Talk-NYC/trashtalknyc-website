@@ -186,19 +186,13 @@ const story: Block[] = [
 
 <style>
   /* ── HERO ── */
+  /* One brick-frame behavior site-wide (captain): edge-to-edge halves
+     scaling with the viewport, content kept inside the opening by the
+     vw-proportional padding — same pattern as the homepage hero. */
   .fd-hero {
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);
-    min-height: calc(min(780px, 100vw) * 0.72);
-    display: grid;
-    align-items: center;
-  }
-
-  .fd-hero .bricks {
-    width: min(780px, 100%);
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .fd-hero-inner {
@@ -207,7 +201,7 @@ const story: Block[] = [
     display: grid;
     justify-items: center;
     gap: 10px;
-    padding: 40px 30px;
+    padding: calc(100vw * 0.17) 22px calc(100vw * 0.17);
   }
 
   /* "Just About above it, slightly larger" — the captain's call: the
@@ -227,6 +221,7 @@ const story: Block[] = [
   .fd-title .accent { color: var(--lavender); }
 
   @media (min-width: 761px) {
+    .fd-hero-inner { padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
     .fd-title { font-size: clamp(3.2rem, 6vw, 5.4rem); }
   }
 

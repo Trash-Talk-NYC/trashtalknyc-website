@@ -7,12 +7,14 @@ import { countries } from '../lib/countries';
 import vestSticker from '../assets/vest-sticker.png';
 import bricksTop from '../assets/bricks-top-lav.svg';
 import bricksBottom from '../assets/bricks-bottom-lav.svg';
-import illTreebed from '../assets/ill-treebed-beige.svg';
+// Colored variant: the donate flyer is poster paper now, where the
+// beige line drawing would disappear.
+import illTreebed from '../assets/ill-treebed.svg';
 import illGloveShovel from '../assets/ill-glove-shovel-beige.svg';
 import illGlovePlant from '../assets/ill-glove-plant-beige.svg';
 import illFamilyVests from '../assets/ill-family-vests-beige.svg';
 
-const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'linkedin', 'facebook']);
+const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
 
 // Baked in at build time (pages are prerendered): when unset, no widget
 // renders and the signup action skips Turnstile verification. After setting
@@ -62,16 +64,20 @@ const orgSchema = {
   </div>
 </section>
 
-<!-- DONATE -->
+<!-- DONATE: the "Because of you:" card styled as a wheatpasted flyer
+     (captain) — poster paper, a tilt, the vest sticker pinning the
+     corner, and the GoFundMe widget boxed inside. -->
 <section class="bento">
   <div class="wrap bento-grid">
     <article class="card donate paste" id="donate">
+      <Image src={vestSticker} alt="" class="slap slap-donate" width={110} densities={[1, 2]} />
       <img class="ill donate-art" src={illTreebed.src} alt="" />
+      <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
       <h2 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h2>
       <div class="gfm">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
-      <p class="donate-note" data-en="Trash Talk started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
+      <p class="donate-note" data-en="Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk NYC empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
     </article>
   </div>
 </section>
@@ -79,7 +85,7 @@ const orgSchema = {
 <!-- SOCIALS -->
 <section class="socials">
   <div class="wrap">
-    <h2 data-en="Keep up with club socials" data-es="Síguenos en redes">Keep up with club socials</h2>
+    <h2 data-en="Socials" data-es="Redes">Socials</h2>
     <div class="soc-grid">
       {socialTiles.map((c) => (
         <a class="soc-tile paste" href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
@@ -98,7 +104,7 @@ const orgSchema = {
     <div class="sign-head">
       <div class="sign-text">
         <h2 class="sign-plate"><span data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</span> <span class="accent" data-en="Newsletter" data-es="Boletín">Newsletter</span></h2>
-        <p class="sign-blurb" data-en="Get emailed about cleanups, tree guard builds, and other beautification efforts in your neighborhood." data-es="Recibe correos sobre limpiezas, construcción de protectores de árboles y otros esfuerzos de embellecimiento en tu vecindario.">Get emailed about cleanups, tree guard builds, and other beautification efforts in your neighborhood.</p>
+        <p class="sign-blurb" data-en="News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club." data-es="Noticias de la basura, más historias de Trash Talk NYC: no solo eventos, sino también información interna y artículos del club.">News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club.</p>
       </div>
       <div class="sign-arts" aria-hidden="true">
         <img class="ill sign-art-shovel" src={illGloveShovel.src} alt="" />
@@ -167,6 +173,20 @@ const orgSchema = {
               <input id="w-zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 07030" data-placeholder-en="e.g. 07030" data-placeholder-es="p.ej. 07030" />
             </div>
           </div>
+          <!-- Typing a city that IS New York City brings the borough
+               choice back (captain), so the person lands under their
+               borough instead of being recorded as outside NYC. -->
+          <div class="field" id="nycGroup" hidden>
+            <label for="w-nycBorough" data-en="That's New York City! Which borough do you live in? *" data-es="¡Eso es Nueva York! ¿En qué condado vives? *">That's New York City! Which borough do you live in? *</label>
+            <select id="w-nycBorough" name="nycBorough">
+              <option value="" selected disabled data-en="Select your borough" data-es="Selecciona tu condado">Select your borough</option>
+              <option value="Manhattan">Manhattan</option>
+              <option value="Brooklyn">Brooklyn</option>
+              <option value="Queens">Queens</option>
+              <option value="The Bronx" data-en="The Bronx" data-es="El Bronx">The Bronx</option>
+              <option value="Staten Island">Staten Island</option>
+            </select>
+          </div>
         </div>
 
         <div class="field full">
@@ -175,15 +195,19 @@ const orgSchema = {
         </div>
 
         <div class="field full">
-          <label for="hear"><span data-en="How'd you hear about us?" data-es="¿Cómo nos conociste?">How'd you hear about us?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
-          <!-- value attributes must exactly match the HEAR_ABOUT_US enum
-               options configured in Brevo; display text is friendlier -->
-          <select id="hear" name="hear">
-            <option value="" selected data-en="Select one" data-es="Selecciona una opción">Select one</option>
+          <label for="hear" data-en="How'd you hear about us? *" data-es="¿Cómo nos conociste? *">How'd you hear about us? *</label>
+          <!-- Required (captain). Value attributes must exactly match the
+               HEAR_ABOUT_US enum options configured in Brevo; display text
+               is friendlier. "Article" and "Somewhere else" are new values
+               the signup action tolerates Brevo rejecting (see the fallback
+               in src/actions/index.ts) until they exist in the dashboard. -->
+          <select id="hear" name="hear" required>
+            <option value="" selected disabled data-en="Select one" data-es="Selecciona una opción">Select one</option>
             <option value="Saw Tree Guard" data-en="Saw a Tree Guard" data-es="Vi un Tree Guard">Saw a Tree Guard</option>
             <option value="Saw the Purple Vests" data-en="Saw the Purple Vests" data-es="Vi los chalecos morados">Saw the Purple Vests</option>
             <option value="My Block Entered the Clean Zone" data-en="My block entered the Clean Zone" data-es="Mi cuadra entró a la Zona Limpia">My block entered the Clean Zone</option>
             <option value="Word of Mouth" data-en="Word of mouth" data-es="De boca en boca">Word of mouth</option>
+            <option value="Article" data-en="An article" data-es="Un artículo">An article</option>
             <option value="Instagram" data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
             <option value="TikTok" data-en="TikTok" data-es="TikTok">TikTok</option>
             <option value="LinkedIn" data-en="LinkedIn" data-es="LinkedIn">LinkedIn</option>
@@ -191,7 +215,14 @@ const orgSchema = {
             <option value="YouTube" data-en="YouTube" data-es="YouTube">YouTube</option>
             <option value="Flyer / QR Code" data-en="Flyer / QR code" data-es="Volante / código QR">Flyer / QR code</option>
             <option value="Local Community Board" data-en="Local community board" data-es="Junta comunitaria local">Local community board</option>
+            <option value="Somewhere else" data-en="Somewhere else" data-es="En otro lugar">Somewhere else</option>
           </select>
+        </div>
+
+        <!-- Shown only for "Somewhere else" so the captain learns where -->
+        <div class="field full" id="hearOtherGroup" hidden>
+          <label for="hearOther"><span data-en="Where was that?" data-es="¿Dónde fue?">Where was that?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+          <input type="text" id="hearOther" name="hearOther" maxlength="200" placeholder="e.g. a podcast, a newsletter, my block's group chat" data-placeholder-en="e.g. a podcast, a newsletter, my block's group chat" data-placeholder-es="p.ej. un pódcast, un boletín, el chat de mi cuadra" />
         </div>
 
         <!-- WAIVER -->
@@ -237,12 +268,12 @@ const orgSchema = {
 
 <!-- BEHIND-THE-SCENES CREW CALLOUT: the signup above is the mailing list
      and is for everyone; this is the pitch for people who want to WORK on
-     Trash Talk (roles live at /recruit). -->
+     Trash Talk NYC (roles live at /recruit). -->
 <section class="crew">
   <div class="wrap crew-grid">
     <img class="ill crew-art" src={illFamilyVests.src} alt="" />
     <div>
-      <h2 data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
+      <h2 data-en="Help Trash Talk NYC behind the scenes" data-es="Ayuda a Trash Talk NYC detrás de cámaras">Help Trash Talk NYC behind the scenes</h2>
       <p data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
       <a href="/recruit" class="btn btn-ghost-light" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
     </div>
@@ -309,7 +340,9 @@ const orgSchema = {
     .hero .bricks-bottom { bottom: 10px; }
     .hero-inner { gap: 26px; padding: calc(100vw * 0.075) 16px calc(100vw * 0.08); }
     .hero :global(.hero-logo) { width: min(440px, 52%); }
-    .hero-btns .btn { padding: 14px 22px; font-size: 0.85rem; }
+    /* A real destination button at desktop scale — the mobile-sized one
+       read "unbelievably small" against the full-width hero (captain) */
+    .hero-btns .btn { padding: 18px 64px; font-size: 1.05rem; }
   }
 
   /* ── DONATE ── */
@@ -326,9 +359,21 @@ const orgSchema = {
     padding: 34px 20px 24px;
   }
 
+  /* The donate card as a wheatpasted FLYER (captain): poster paper
+     with ink type, a slight tilt, and the vest sticker pinning the
+     corner — same device as the signup form sheet. */
   .donate {
-    background-color: var(--green);
-    color: var(--beige);
+    background-color: var(--paper);
+    color: var(--black);
+    transform: rotate(-0.5deg);
+  }
+
+  .donate :global(.slap-donate) {
+    top: -30px;
+    left: -10px;
+    width: 76px;
+    height: auto;
+    transform: rotate(-9deg);
   }
 
   .donate-art {
@@ -339,14 +384,22 @@ const orgSchema = {
     opacity: 0.9;
   }
 
+  .donate-eyebrow {
+    color: var(--green);
+    /* Clears the vest sticker pinning the flyer's top-left corner */
+    margin-left: 54px;
+    margin-bottom: 8px;
+  }
+
   .donate-title {
     font-size: 2.6rem;
+    color: var(--purple);
     margin-bottom: 22px;
     padding-right: 100px;
   }
 
   .gfm {
-    background: var(--paper);
+    background: var(--paper-bright);
     color: var(--black);
     border: var(--ink);
     border-radius: 10px;
@@ -362,6 +415,8 @@ const orgSchema = {
   @media (min-width: 761px) {
     .bento { padding-block: 84px 64px; }
     .card { padding: 40px 34px 34px; }
+    .donate :global(.slap-donate) { top: -42px; left: -26px; width: 110px; }
+    .donate-eyebrow { margin-left: 64px; }
     .donate-art { width: 170px; right: 10px; top: 6px; }
     .donate-title { font-size: clamp(2.6rem, 4.8vw, 3.8rem); padding-right: 160px; }
     .gfm { padding: 18px; }
@@ -714,6 +769,19 @@ const orgSchema = {
   const startedAtInput = document.getElementById('signupStartedAt') as HTMLInputElement | null;
   if (startedAtInput) startedAtInput.value = String(Date.now());
 
+  // ── "SOMEWHERE ELSE" FOLLOW-UP ──
+  const hearSelect = document.getElementById('hear') as HTMLSelectElement | null;
+  const hearOtherGroup = document.getElementById('hearOtherGroup') as HTMLElement | null;
+  const hearOtherInput = document.getElementById('hearOther') as HTMLInputElement | null;
+
+  hearSelect?.addEventListener('change', () => {
+    if (!hearOtherGroup || !hearOtherInput) return;
+    const somewhereElse = hearSelect.value === 'Somewhere else';
+    hearOtherGroup.hidden = !somewhereElse;
+    // A hidden field must never submit a stale value
+    if (!somewhereElse) hearOtherInput.value = '';
+  });
+
   // ── OUTSIDE-NYC FLOW ──
   const boroughSelect = document.getElementById('borough') as HTMLSelectElement | null;
   const whereGroup = document.getElementById('whereGroup') as HTMLElement | null;
@@ -722,6 +790,8 @@ const orgSchema = {
   const cityList = document.getElementById('cityList') as HTMLUListElement | null;
   const zipGroup = document.getElementById('zipGroup') as HTMLElement | null;
   const zipInput = document.getElementById('w-zip') as HTMLInputElement | null;
+  const nycGroup = document.getElementById('nycGroup') as HTMLElement | null;
+  const nycBoroughSelect = document.getElementById('w-nycBorough') as HTMLSelectElement | null;
 
   // ── CITY PICKER ──
   // People choose a real city from a list instead of free typing. The
@@ -730,6 +800,30 @@ const orgSchema = {
   // (network error or non-ok response) lets the typed city stand: the
   // server accepts any non-empty city, so signups never block on it.
   const countryCodes = new Map(countries.map((c) => [c.value, c.code]));
+
+  // ── NYC DETECTION ──
+  // "If you type in a city, and it's nyc, then borough comes up"
+  // (captain): a picked city that IS New York City reveals the borough
+  // select above, so the signup lands under a borough rather than as
+  // an outside-NYC contact. Keyed by the lowercased Open-Meteo result
+  // name (both languages — the API localizes "New York" to "Nueva
+  // York" for ES searches); the value is the borough to preselect,
+  // or '' when the pick doesn't say which borough.
+  const NYC_RESULT_NAMES = new Map<string, string>([
+    ['new york', ''],
+    ['new york city', ''],
+    ['nueva york', ''],
+    ['manhattan', 'Manhattan'],
+    ['brooklyn', 'Brooklyn'],
+    ['queens', 'Queens'],
+    ['bronx', 'The Bronx'],
+    ['the bronx', 'The Bronx'],
+    ['el bronx', 'The Bronx'],
+    ['staten island', 'Staten Island'],
+  ]);
+
+  /** Display value of each NYC suggestion in the current list → borough ('' = ask). */
+  const nycCityValues = new Map<string, string>();
 
   type OpenMeteoSearch = {
     results?: Array<{ name: string; country_code?: string; country?: string; admin1?: string }>;
@@ -742,14 +836,34 @@ const orgSchema = {
     const country = countrySelect?.value ?? '';
     const code = countryCodes.get(country) ?? null;
     const other = country === OTHER_COUNTRY;
+    nycCityValues.clear();
     const hits = (data.results ?? [])
       .filter((r) => (other ? true : r.country_code === code))
       .slice(0, 6)
       .map((r) => {
         const region = r.country_code === 'US' ? r.admin1 : other ? r.country : r.admin1;
-        return region && region !== r.name ? `${r.name}, ${region}` : r.name;
+        const label = region && region !== r.name ? `${r.name}, ${region}` : r.name;
+        // The state check keeps "New York, Missouri"-style namesakes out
+        const nyState = ['new york', 'nueva york'].includes((r.admin1 ?? '').toLowerCase());
+        const nycBorough = NYC_RESULT_NAMES.get(r.name.toLowerCase());
+        if (r.country_code === 'US' && nyState && nycBorough !== undefined) nycCityValues.set(label, nycBorough);
+        return label;
       });
     return [...new Set(hits)].map((c) => ({ value: c, text: c }));
+  }
+
+  /** Borough implied by the current city pick, '' for NYC-unspecified, undefined for non-NYC. */
+  let nycPick: string | undefined;
+
+  function applyNycPick(borough: string | undefined) {
+    // No-change guard: syncLocation resets the city picker when the
+    // borough select leaves "Not in NYC", and the picker's reset fires
+    // onChange(null) — without this, the two would recurse forever.
+    if (borough === nycPick) return;
+    nycPick = borough;
+    if (nycBoroughSelect && borough === undefined) nycBoroughSelect.value = '';
+    else if (nycBoroughSelect && borough) nycBoroughSelect.value = borough;
+    syncLocation();
   }
 
   const cityPicker =
@@ -760,6 +874,7 @@ const orgSchema = {
           search: searchCities,
           pickMessage: { en: 'Pick your city from the list.', es: 'Elige tu ciudad de la lista.' },
           emptyMessage: { en: 'No match yet. Keep typing.', es: 'Sin coincidencias todavía. Sigue escribiendo.' },
+          onChange: (option) => applyNycPick(option ? nycCityValues.get(option.value) : undefined),
           onUnavailable: (picker) => picker.setInvalid(null),
         })
       : null;
@@ -768,14 +883,23 @@ const orgSchema = {
     if (!boroughSelect || !whereGroup || !countrySelect || !cityInput || !zipGroup || !zipInput) return;
     const outside = boroughSelect.value === 'Not in NYC';
     const us = countrySelect.value === US_COUNTRY;
+    const nyc = outside && nycPick !== undefined;
     whereGroup.hidden = !outside;
     cityInput.required = outside;
+    // An NYC pick supersedes the location fields: the borough select
+    // takes over as the required field and ZIP drops away (the server
+    // stores BOROUGH, not COUNTRY/CITY/ZIP, for an NYC signup).
+    if (nycGroup) nycGroup.hidden = !nyc;
+    if (nycBoroughSelect) nycBoroughSelect.required = nyc;
     // A non-US country hides ZIP so it is just City (captain)
-    zipGroup.hidden = !us;
-    zipInput.required = outside && us;
-    const zipBad = outside && us && !!zipInput.value && !/^\d{5}(-\d{4})?$/.test(zipInput.value);
+    zipGroup.hidden = !us || nyc;
+    zipInput.required = outside && us && !nyc;
+    const zipBad = zipInput.required && !!zipInput.value && !/^\d{5}(-\d{4})?$/.test(zipInput.value);
     zipInput.setCustomValidity(zipBad ? (getCurrentLang() === 'es' ? 'Escribe un código ZIP de 5 dígitos.' : 'Enter a 5-digit ZIP code.') : '');
     // Fields hidden from the user must never submit stale values
+    if (nyc) {
+      zipInput.value = '';
+    }
     if (!outside) {
       cityPicker?.reset();
       zipInput.value = '';

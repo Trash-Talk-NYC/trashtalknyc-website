@@ -1,9 +1,11 @@
 ---
 /**
- * Single site-wide footer in the 2026-10 identity: logo stickers,
- * links, the "Keep NYC clean." sign-off, and the full sticker icon
- * row (Instagram, TikTok, LinkedIn, YouTube, Facebook). No bricks
- * here — the captain removed the footer brick frame (2026-09-30).
+ * Single site-wide footer in the 2026-10 identity: the wordmark
+ * sticker, links, the "Keep NYC clean." sign-off with a large vest
+ * sticker beside it, and the full sticker icon row (all five
+ * channels). No bricks here — the captain removed the footer brick
+ * frame (2026-09-30). The vest moved off the wordmark to a larger
+ * right-aligned sticker of its own (captain, 2026-10).
  */
 import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
@@ -18,7 +20,6 @@ const year = new Date().getFullYear();
   <div class="wrap foot-grid">
     <div class="foot-stickers">
       <Image src={wordmarkSticker} alt="Trash Talk NYC" class="foot-logo" width={260} densities={[1, 2]} />
-      <Image src={vestSticker} alt="" class="slap slap-foot" width={148} densities={[1, 2]} />
     </div>
     <ul class="foot-links">
       <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
@@ -31,8 +32,9 @@ const year = new Date().getFullYear();
       <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
     </ul>
     <div class="foot-right">
+      <Image src={vestSticker} alt="" class="foot-vest" width={220} densities={[1, 2]} />
       <div class="foot-big"><span data-en="Keep NYC" data-es="Mantén NYC">Keep NYC</span><br /><span class="accent" data-en="clean." data-es="limpia.">clean.</span></div>
-      <SocialLinks ids={['instagram', 'tiktok', 'linkedin', 'youtube', 'facebook']} />
+      <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
     </div>
     <div class="copy">© {year} Trash Talk NYC</div>
   </div>
@@ -65,13 +67,15 @@ const year = new Date().getFullYear();
     transform: rotate(-4deg);
   }
 
-  footer :global(.slap-foot) {
-    position: absolute;
-    width: 74px;
+  /* The vest as its own large sticker beside the sign-off, right-
+     aligned with the rest of the column on desktop (captain: larger
+     and right-aligned, not slapped over the wordmark). */
+  footer :global(.foot-vest) {
+    width: 150px;
     height: auto;
-    right: 0;
-    bottom: -18px;
-    transform: rotate(14deg);
+    transform: rotate(8deg);
+    filter: drop-shadow(3px 4px 0 rgba(234, 233, 218, 0.22));
+    justify-self: end;
   }
 
   .foot-links {
@@ -130,6 +134,7 @@ const year = new Date().getFullYear();
     .foot-links-spacer { display: list-item; }
     .foot-right { justify-items: end; }
     .foot-big { text-align: right; }
+    footer :global(.foot-vest) { width: 200px; }
     .copy { grid-column: 1 / -1; }
   }
 </style>

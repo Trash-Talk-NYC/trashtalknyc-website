@@ -1,14 +1,16 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import bricksTop from '../assets/bricks-top-lav.svg';
 import bricksBottom from '../assets/bricks-bottom-lav.svg';
+import vestSticker from '../assets/vest-sticker.png';
 
 /**
  * Open Roles — the recruitment page, top-level at /recruit (captain,
  * round 20; moved from /contact/join, where it was "Join the Team").
  * 2026-10 redesign: no hero and no page-title box — "A note before
  * you apply" sits directly on the brick wall as one wheatpasted
- * letter (and is the page's h1), then the three role posters and the
+ * letter (and is the page's h1), then the two role posters and the
  * email button. Applications stay email-only.
  *
  * The "[your name]" placeholder in the mailto subject is deliberate —
@@ -28,6 +30,9 @@ const baseSubject = {
   es: 'Soy [tu nombre] y quiero unirme a Trash Talk NYC',
 };
 
+// Two roles since 2026-10 (captain: "remove all roles other than
+// social media manager and long form videography") — the Content
+// Videographer / Editor poster lives in git history if it returns.
 const roles = [
   {
     tone: 'r-purple',
@@ -40,15 +45,6 @@ const roles = [
       es: 'Maneja las cuentas. Las redes sociales son un órgano vital de Trash Talk.',
     },
     pace: null,
-  },
-  {
-    tone: 'r-green',
-    title: { en: 'Content Videographer / Editor', es: 'Videógrafo/a / Editor/a de Contenido' },
-    desc: {
-      en: 'Film on the ground with us: cleanups, builds, and future projects.',
-      es: 'Filma en el terreno con nosotros: limpiezas, construcciones y proyectos futuros.',
-    },
-    pace: { en: 'On the ground', es: 'En el terreno' },
   },
   {
     tone: 'r-black',
@@ -72,7 +68,7 @@ const roles = [
 
 <BaseLayout
   title="Open Roles — Trash Talk NYC"
-  description="Trash Talk NYC needs helping hands. Open roles in social media and video, on the ground across the boroughs. Apply by email to team@trashtalknyc.org."
+  description="Trash Talk NYC needs helping hands. Open roles in social media and long-form video. Apply by email to team@trashtalknyc.org."
 >
   <!-- The note is the first substantial content on the page and is
        CAPTAIN'S COPY VERBATIM throughout (rounds 22–24): the
@@ -93,6 +89,7 @@ const roles = [
     <img class="bricks bricks-top" src={bricksTop.src} alt="" />
     <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
     <article class="note paste">
+      <Image src={vestSticker} alt="" class="slap note-slap" width={104} densities={[1, 2]} />
       <h1 class="note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h1>
       <p data-en="The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech." data-es="La mejor manera de saber si algo funciona es probarlo, y creemos que eso aplica a eventos, contenido, colaboraciones y tecnología.">The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech.</p>
       <p data-en="Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:" data-es="Dado el crecimiento de Trash Talk, nos movemos rápido, y con esfuerzo. Algunas preferencias para ilustrar:">Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:</p>
@@ -115,8 +112,14 @@ const roles = [
         </a>
       ))}
     </div>
+    <!-- The address alone read as plain text on phones; a leading verb
+         and the arrow make it an action (captain: "like an action
+         word"). The address stays visible so it can be remembered or
+         long-pressed. -->
     <div class="email">
-      <a class="btn btn-primary" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>✉ {TEAM_EMAIL}</a>
+      <a class="btn btn-primary" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>
+        <span data-en="✉ Email" data-es="✉ Escribe a">✉ Email</span> <span class="email-addr">{TEAM_EMAIL}</span> <span aria-hidden="true">→</span>
+      </a>
     </div>
   </section>
 </BaseLayout>
@@ -157,11 +160,24 @@ const roles = [
 
   .note p:last-child { margin-bottom: 0; }
 
+  /* Vest sticker pinning the wheatpasted letter to the wall — the same
+     device as the signup form and the About photo (captain likes it) */
+  .note :global(.note-slap) {
+    top: -30px;
+    right: -8px;
+    width: 72px;
+    height: auto;
+    transform: rotate(10deg);
+  }
+
+  .email-addr { text-decoration: underline; text-underline-offset: 3px; }
+
   @media (min-width: 761px) {
     .rc-wall { padding: calc(100vw * 0.13) clamp(16px, 5vw, 60px) calc(100vw * 0.12); }
     .note { padding: 34px clamp(20px, 4vw, 48px); }
     .note-title { font-size: clamp(2.2rem, 4vw, 3rem); }
     .note p { font-size: 1.1rem; }
+    .note :global(.note-slap) { top: -40px; right: -24px; width: 104px; }
   }
 
   /* ── ROLES ── */
@@ -236,7 +252,9 @@ const roles = [
 
   @media (min-width: 761px) {
     .rc-body { gap: 34px; padding-block: 40px 72px; }
-    .roles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+    /* Two posters since 2026-10; capped and centered so a pair doesn't
+       stretch into billboard-wide sheets inside the 1240px wrap */
+    .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 920px; margin-inline: auto; width: 100%; }
     .role { padding: 26px 24px 22px; }
     .role-t { font-size: 2.2rem; }
     .email .btn { width: auto; font-size: 1rem; }

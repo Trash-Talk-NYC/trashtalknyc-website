@@ -1,7 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
+import vestSticker from '../assets/vest-sticker.png';
 import bricksTop from '../assets/bricks-top-lav.svg';
 import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import illGloveShovel from '../assets/ill-glove-shovel.svg';
@@ -235,6 +237,7 @@ const monthOptions = rollingMonths();
 
     <div class="side">
       <aside class="banner paste" aria-labelledby="joinBannerHeading">
+        <Image src={vestSticker} alt="" class="slap banner-slap" width={96} densities={[1, 2]} />
         <img class="ill" src={illFamilyVestsBeige.src} alt="" />
         <h2 id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
         <p data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo o alguien que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
@@ -247,19 +250,14 @@ const monthOptions = rollingMonths();
 
 <style>
   /* ── HERO ── */
+  /* One brick-frame behavior site-wide (captain): the two halves run
+     edge to edge and scale with the viewport, and the vw-proportional
+     padding keeps the content inside the opening between them — same
+     pattern as the homepage and Club Events heroes. */
   .ct-hero {
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);
-    min-height: calc(min(780px, 100vw) * 0.72);
-    display: grid;
-    align-items: center;
-  }
-
-  .ct-hero .bricks {
-    width: min(780px, 100%);
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .ct-hero-inner {
@@ -268,7 +266,7 @@ const monthOptions = rollingMonths();
     display: grid;
     justify-items: center;
     gap: 10px;
-    padding: 40px 30px;
+    padding: calc(100vw * 0.17) 22px calc(100vw * 0.17);
   }
 
   .ct-eyebrow { color: var(--yellow); }
@@ -283,6 +281,7 @@ const monthOptions = rollingMonths();
   .ct-title .accent { color: var(--lavender); }
 
   @media (min-width: 761px) {
+    .ct-hero-inner { padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
     .ct-title { font-size: clamp(4.6rem, 9.5vw, 8rem); }
   }
 
@@ -475,6 +474,14 @@ const monthOptions = rollingMonths();
     gap: 12px;
   }
 
+  .banner :global(.banner-slap) {
+    top: -26px;
+    right: -6px;
+    width: 68px;
+    height: auto;
+    transform: rotate(9deg);
+  }
+
   .banner .ill {
     width: 120px;
     height: 92px;
@@ -508,6 +515,7 @@ const monthOptions = rollingMonths();
     .form-area textarea { font-size: 1.05rem; padding: 9px 12px; }
 
     .banner { padding: 30px 26px; }
+    .banner :global(.banner-slap) { top: -34px; right: -18px; width: 96px; }
     .banner .ill { width: 150px; height: 120px; }
     .banner .btn { width: auto; }
     .deco { display: block; }

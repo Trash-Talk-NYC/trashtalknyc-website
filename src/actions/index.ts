@@ -1,5 +1,5 @@
 import { defineAction, ActionError, ActionInputError, type ActionAPIContext } from 'astro:actions';
-import { signupSchema, contactSchema, leadSchema, NOT_IN_NYC, type ContactInput } from '../lib/server/schemas';
+import { signupSchema, contactSchema, leadSchema, NOT_IN_NYC, asBorough, type ContactInput } from '../lib/server/schemas';
 import { ADDRESS_UNAVAILABLE, ADDRESS_UNVERIFIED } from '../lib/addressErrors';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
@@ -16,6 +16,18 @@ import {
   upsertBrevoContact,
   type InquiryEmailInput,
 } from '../lib/server/brevo';
+
+/**
+ * HEAR_ABOUT_US choices that may not exist in Brevo yet (the attribute
+ * is multiple-choice, and these options plus the HEAR_ABOUT_US_OTHER
+ * text attribute must be added in the Brevo dashboard). Until then,
+ * payloads carrying them are rejected wholesale — the signup fallback
+ * below strips them and preserves the answer as a CRM note instead.
+ */
+const PENDING_HEAR_VALUES = ['Article', 'Somewhere else'];
+
+/** The HEAR_ABOUT_US choice that carries the free-text companion. */
+const HEAR_SOMEWHERE_ELSE = 'Somewhere else';
 
 /**
  * Server actions for the site forms. Flow per submission:
@@ -157,13 +169,59 @@ async function upsertOrThrow(
 }
 
 /**
+ * Signup upsert that tolerates Brevo not knowing the new HEAR_ABOUT_US
+ * material yet (see PENDING_HEAR_VALUES): a rejected payload carrying
+ * any of it is retried once without those fields, so the signup is
+ * never lost to dashboard lag. Returns true when the stripped retry
+ * landed — the caller must then preserve the answer as a CRM note.
+ */
+async function upsertSignupWithHearFallback(
+  email: string,
+  attributes: Record<string, string>,
+  target: BrevoTarget,
+): Promise<boolean> {
+  const pendingKeys = [
+    ...(PENDING_HEAR_VALUES.includes(attributes.HEAR_ABOUT_US ?? '') ? ['HEAR_ABOUT_US'] : []),
+    ...('HEAR_ABOUT_US_OTHER' in attributes ? ['HEAR_ABOUT_US_OTHER'] : []),
+  ];
+
+  const result = await upsertBrevoContact(target.apiKey, { email, attributes, listId: target.listId });
+  if (result.ok) {
+    log('info', 'form_submitted', { form: 'signup' });
+    return false;
+  }
+  if (pendingKeys.length === 0) {
+    log('error', 'brevo_upsert_failed', { form: 'signup', status: result.status ?? 0, detail: result.detail });
+    throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: GENERIC_FAILURE });
+  }
+
+  log('warn', 'brevo_hear_attrs_rejected', {
+    form: 'signup',
+    status: result.status ?? 0,
+    detail: result.detail,
+    stripped: pendingKeys.join(','),
+  });
+  const stripped = { ...attributes };
+  for (const key of pendingKeys) delete stripped[key];
+
+  const retried = await upsertBrevoContact(target.apiKey, { email, attributes: stripped, listId: target.listId });
+  if (!retried.ok) {
+    log('error', 'brevo_upsert_failed', { form: 'signup', status: retried.status ?? 0, detail: retried.detail });
+    throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: GENERIC_FAILURE });
+  }
+
+  log('info', 'form_submitted', { form: 'signup' });
+  return true;
+}
+
+/**
  * Records the free-text field as a Brevo CRM note so the full submission
  * history survives (the MESSAGE attribute only keeps the latest value).
  * Best-effort: a note failure is logged but never fails the submission —
  * the contact upsert already succeeded. Resolves true only when the note
  * was created.
  */
-async function tryCreateNote(noteForm: string, email: string, content: string | undefined): Promise<boolean> {
+async function tryCreateNote(noteForm: string, email: string, content: string | undefined, field = 'message'): Promise<boolean> {
   // Outer guard: the contact upsert already succeeded, so nothing in the
   // note flow — including bugs — may fail the user's submission.
   try {
@@ -179,7 +237,7 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
       return false;
     }
 
-    const note = await createBrevoNote(apiKey, contact.id, buildNoteText(noteForm, 'message', trimmed));
+    const note = await createBrevoNote(apiKey, contact.id, buildNoteText(noteForm, field, trimmed));
     if (!note.ok) {
       log('warn', 'brevo_note_failed', { form: noteForm, stage: 'create_note', status: note.status ?? 0, detail: note.detail });
       return false;
@@ -277,31 +335,46 @@ export const server = {
 
       await requireTurnstile('signup', ctx, input['cf-turnstile-response']);
 
-      // Outside-NYC signups: BOROUGH is omitted (its live option set may
-      // not include "Not in NYC") and the location lands in the COUNTRY /
-      // CITY / ZIP_CODE attributes instead — COUNTRY present exactly when
-      // BOROUGH is absent, so the two states stay distinguishable.
-      const outsideNyc = input.borough === NOT_IN_NYC;
+      // The borough this signup lands under: the picked borough, or —
+      // when the "Not in NYC" city picker detected a New York City pick
+      // (captain: "if you type in a city, and it's nyc, then borough
+      // comes up") — the follow-up borough select's value.
+      const borough = input.borough === NOT_IN_NYC ? asBorough(input.nycBorough) : input.borough;
 
-      await upsertOrThrow(
-        'signup',
+      // True outside-NYC signups: BOROUGH is omitted (its live option set
+      // may not include "Not in NYC") and the location lands in the
+      // COUNTRY / CITY / ZIP_CODE attributes instead — COUNTRY present
+      // exactly when BOROUGH is absent, so the two states stay
+      // distinguishable.
+      const outsideNyc = borough === undefined;
+
+      // The free-text companion belongs to "Somewhere else" only; a
+      // stale hidden field must never attach it to another choice.
+      const hearOther = input.hear === HEAR_SOMEWHERE_ELSE ? input.hearOther : undefined;
+
+      const hearNoteNeeded = await upsertSignupWithHearFallback(
         input.email,
         buildAttributes({
           FIRSTNAME: input.fname,
           LASTNAME: input.lname,
-          BOROUGH: outsideNyc ? undefined : input.borough,
+          BOROUGH: borough,
           COUNTRY: outsideNyc ? input.country : undefined,
           CITY: outsideNyc ? input.city : undefined,
           ZIP_CODE: outsideNyc ? input.zip : undefined,
           PHONE: input.phone,
           MESSAGE: input.experience,
           HEAR_ABOUT_US: input.hear,
+          HEAR_ABOUT_US_OTHER: hearOther,
           WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
         }),
         requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
       );
 
       await tryCreateNote('signup', input.email, input.experience);
+      if (hearNoteNeeded) {
+        const hearAnswer = hearOther ? `${input.hear} — ${hearOther}` : input.hear;
+        await tryCreateNote('signup', input.email, hearAnswer, 'hear');
+      }
 
       return { ok: true };
     },
