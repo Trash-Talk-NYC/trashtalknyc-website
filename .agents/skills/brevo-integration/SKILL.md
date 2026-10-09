@@ -54,6 +54,7 @@ Empty-string fields are dropped before upsert (`buildAttributes`) so updates nev
 | `HEAR_ABOUT_US` | ✓ required (values must match the Brevo enum exactly; "Article" and "Somewhere else" are pending dashboard options — the action retries the upsert without the hear attributes when Brevo rejects them and notes the answer instead, `brevo_hear_attrs_rejected`) | — | — |
 | `HEAR_ABOUT_US_OTHER` | ✓ free text behind "Somewhere else" (pending dashboard creation, same fallback) | — | — |
 | `WAIVER_ACCEPTED` | ✓ (`'true'` only when both waiver and age checkboxes validated) | — | — |
+| `PHOTO_CONSENT` (boolean) | ✓ JSON `true`/`false` from the optional photo-consent checkbox | — | — |
 | `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership` \| `sponsor`; plain text attribute — verified via the attributes API 2026-08, so new values need no dashboard work) | ✓ (`lead`) |
 | `ORGANIZATION` | — | ✓ (partnership + sponsor tabs, required there) | — |
 | `LEAD_BEHALF`, `MAILING_ADDRESS`, `ROUTE_TYPE`, `ROUTE_START`, `ROUTE_END`, `PREFERRED_MONTH` | — | — | ✓ (`ROUTE_END` one-way only; route labels are the GeoSearch-verified ones) |

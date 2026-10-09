@@ -15,6 +15,7 @@ import {
   getBrevoContactId,
   sendBrevoEmail,
   upsertBrevoContact,
+  type BrevoAttributes,
   type InquiryEmailInput,
 } from '../lib/server/brevo';
 
@@ -28,12 +29,11 @@ import {
 const PENDING_HEAR_VALUES = ['Article', 'Somewhere else'];
 
 /**
- * Brevo attribute for the signup's optional photo/video consent checkbox.
- * null until the attribute exists in Brevo (pending captain approval):
- * the consent is validated and computed below but not sent. Set this to
- * the attribute's name (e.g. 'PHOTO_CONSENT') to start recording it.
+ * Brevo boolean attribute for the signup's optional photo/video consent
+ * checkbox (created and approved by the captain, 2026-10-09). Sent as a
+ * JSON boolean on every signup: true when checked, false otherwise.
  */
-const PHOTO_CONSENT_ATTRIBUTE: string | null = null;
+const PHOTO_CONSENT_ATTRIBUTE = 'PHOTO_CONSENT';
 
 /** The HEAR_ABOUT_US choice that carries the free-text companion. */
 const HEAR_SOMEWHERE_ELSE = 'Somewhere else';
@@ -186,11 +186,11 @@ async function upsertOrThrow(
  */
 async function upsertSignupWithHearFallback(
   email: string,
-  attributes: Record<string, string>,
+  attributes: BrevoAttributes,
   target: BrevoTarget,
 ): Promise<boolean> {
   const pendingKeys = [
-    ...(PENDING_HEAR_VALUES.includes(attributes.HEAR_ABOUT_US ?? '') ? ['HEAR_ABOUT_US'] : []),
+    ...(PENDING_HEAR_VALUES.includes(String(attributes.HEAR_ABOUT_US ?? '')) ? ['HEAR_ABOUT_US'] : []),
     ...('HEAR_ABOUT_US_OTHER' in attributes ? ['HEAR_ABOUT_US_OTHER'] : []),
   ];
 
@@ -362,21 +362,23 @@ export const server = {
 
       const hearNoteNeeded = await upsertSignupWithHearFallback(
         input.email,
-        buildAttributes({
-          FIRSTNAME: input.fname,
-          LASTNAME: input.lname,
-          COUNTRY: location.COUNTRY,
-          STATE_REGION: location.STATE_REGION,
-          CITY: location.CITY,
-          ZIP_CODE: location.ZIP_CODE,
-          BOROUGH: location.BOROUGH,
-          PHONE: input.phone,
-          MESSAGE: input.experience,
-          HEAR_ABOUT_US: input.hear,
-          HEAR_ABOUT_US_OTHER: hearOther,
-          WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
-          ...(PHOTO_CONSENT_ATTRIBUTE ? { [PHOTO_CONSENT_ATTRIBUTE]: input.photoConsent === 'on' ? 'true' : 'false' } : {}),
-        }),
+        {
+          ...buildAttributes({
+            FIRSTNAME: input.fname,
+            LASTNAME: input.lname,
+            COUNTRY: location.COUNTRY,
+            STATE_REGION: location.STATE_REGION,
+            CITY: location.CITY,
+            ZIP_CODE: location.ZIP_CODE,
+            BOROUGH: location.BOROUGH,
+            PHONE: input.phone,
+            MESSAGE: input.experience,
+            HEAR_ABOUT_US: input.hear,
+            HEAR_ABOUT_US_OTHER: hearOther,
+            WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
+          }),
+          [PHOTO_CONSENT_ATTRIBUTE]: input.photoConsent === 'on',
+        },
         requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
       );
 

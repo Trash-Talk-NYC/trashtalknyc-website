@@ -49,9 +49,12 @@ function retryDelayMs(res: Response): number {
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
+/** Text attributes are strings; Brevo boolean attributes take a real JSON boolean. */
+export type BrevoAttributes = Record<string, string | boolean>;
+
 export interface BrevoUpsert {
   email: string;
-  attributes: Record<string, string>;
+  attributes: BrevoAttributes;
   listId: number;
 }
 
