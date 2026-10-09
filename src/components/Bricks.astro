@@ -42,6 +42,7 @@ const src = (half: 'top' | 'bottom', n: number) => {
 {continuous && (
   <script
     type="application/json"
+    is:inline
     class="bricks-variants"
     set:html={JSON.stringify({
       top: BRICK_ROW_RATIOS.top.map((_, i) => src('top', i + 1)),
@@ -83,7 +84,8 @@ const src = (half: 'top' | 'bottom', n: number) => {
     );
 
     // Fewest rows (top gets the extra one when odd) whose wall covers it
-    let top = MAX, bottom = MAX;
+    let top: number = MAX;
+    let bottom: number = MAX;
     for (let total = 2; total <= 2 * MAX; total++) {
       const t = Math.ceil(total / 2), b = Math.floor(total / 2);
       if (height(t, b) >= content) { top = t; bottom = b; break; }
