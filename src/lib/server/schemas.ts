@@ -3,6 +3,7 @@
 import { z } from 'astro/zod';
 import { isValidPhone } from '../phone';
 import { COUNTRY_VALUES, US_COUNTRY } from '../countries';
+import { US_ZIP_PATTERN } from '../zip';
 import { isValidPreferredMonth } from '../months';
 
 /**
@@ -44,22 +45,6 @@ const requiredPhone = z
   .max(50)
   .refine((v) => isValidPhone(v), 'Please enter a valid phone number');
 
-export const BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'] as const;
-
-export type Borough = (typeof BOROUGHS)[number];
-
-/** The newsletter's sixth borough choice, which opens the where-are-you flow. */
-export const NOT_IN_NYC = 'Not in NYC';
-
-export const BOROUGH_OPTIONS = [...BOROUGHS, NOT_IN_NYC] as const;
-
-/** Narrows the follow-up borough sent when the city picker detected NYC. */
-export function asBorough(value: string | undefined): Borough | undefined {
-  return (BOROUGHS as readonly string[]).includes(value ?? '') ? (value as Borough) : undefined;
-}
-
-const ZIP_PATTERN = /^\d{5}(-\d{4})?$/;
-
 // Checkboxes submit the string 'on' when checked and are omitted entirely
 // from form data when unchecked, so a literal match both requires the box
 // to be present and rejects any other value.
@@ -68,18 +53,15 @@ const waiverAccepted = z.literal('on', { errorMap: () => ({ message: 'You must a
 export const signupSchema = z
   .object({
     ...baseFields,
-    borough: z.enum(BOROUGH_OPTIONS, { errorMap: () => ({ message: 'Please select a borough' }) }),
-    // Follow-up borough for a "Not in NYC" signup whose picked city
-    // turned out to be New York City. Validated via asBorough (a plain
-    // string here so an empty hidden field still parses); when valid it
-    // supersedes the location fields below (superRefine + the action).
-    nycBorough: z.string().trim().max(40).optional(),
-    // Outside-NYC location — required only when borough is "Not in NYC"
-    // (superRefine below); the ZIP is US-only, since other countries
-    // just ask for the city.
-    country: z.string().trim().max(100).optional(),
+    // Location, country first (captain, 2026-10-09). US: just the ZIP —
+    // city, state, and (for NYC ZIPs) the borough are derived from it in
+    // the action. Elsewhere: a picked city plus optional region and a
+    // postal code in whatever format that country uses.
+    country: z.string().trim().max(100),
+    zip: z.string().trim().max(10).optional(),
     city: z.string().trim().max(160).optional(),
-    zip: z.string().trim().max(20).optional(),
+    region: z.string().trim().max(120).optional(),
+    postal: z.string().trim().max(20).optional(),
     phone: optionalPhone,
     experience: z.string().trim().max(2000).optional(),
     hear: z.string().trim().min(1, 'Please tell us how you heard about us').max(200),
@@ -89,18 +71,16 @@ export const signupSchema = z
     ageCheck: waiverAccepted,
   })
   .superRefine((data, ctx) => {
-    if (data.borough !== NOT_IN_NYC) return;
-    // The picked city was New York City after all: the follow-up borough
-    // is the location, so the outside-NYC fields are no longer required.
-    if (asBorough(data.nycBorough)) return;
-    if (!data.country || !COUNTRY_VALUES.includes(data.country)) {
+    if (!COUNTRY_VALUES.includes(data.country)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['country'], message: 'Please select a country' });
+      return;
     }
-    if (!data.city) {
+    if (data.country === US_COUNTRY) {
+      if (!US_ZIP_PATTERN.test(data.zip ?? '')) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['zip'], message: 'Enter a 5-digit ZIP code' });
+      }
+    } else if (!data.city) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['city'], message: 'Please pick your city' });
-    }
-    if (data.country === US_COUNTRY && !ZIP_PATTERN.test(data.zip ?? '')) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['zip'], message: 'Enter a 5-digit ZIP code' });
     }
   });
 

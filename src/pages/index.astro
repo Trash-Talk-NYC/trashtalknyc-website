@@ -181,25 +181,14 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
           <input type="tel" id="phone" name="phone" autocomplete="tel" />
         </div>
 
-        <div class="field full">
-          <label for="borough" data-en="Which borough do you live in? *" data-es="¿En qué condado vives? *">Which borough do you live in? *</label>
-          <select id="borough" name="borough" required>
-            <option value="" selected disabled data-en="Select your borough" data-es="Selecciona tu condado">Select your borough</option>
-            <option value="Manhattan">Manhattan</option>
-            <option value="Brooklyn">Brooklyn</option>
-            <option value="Queens">Queens</option>
-            <option value="The Bronx" data-en="The Bronx" data-es="El Bronx">The Bronx</option>
-            <option value="Staten Island">Staten Island</option>
-            <option value="Not in NYC" data-en="Not in NYC" data-es="Fuera de NYC">Not in NYC</option>
-          </select>
-        </div>
-
-        <!-- Outside-NYC flow: country (starts on the US), city picked
-             from a list, ZIP for the US only (captain). -->
-        <div class="field full" id="whereGroup" hidden>
-          <span class="lbl" data-en="Where are you located? *" data-es="¿Dónde te encuentras? *">Where are you located? *</span>
+        <!-- Location, country first (captain, 2026-10-09). US: a ZIP fills
+             in city and state, and an NYC ZIP sets the borough without
+             asking. Elsewhere: the city from a list, plus an optional
+             region and a postal code in any format. -->
+        <div class="field full" id="whereGroup" role="group" aria-labelledby="whereLabel">
+          <span class="lbl" id="whereLabel" data-en="Where are you located? *" data-es="¿Dónde te encuentras? *">Where are you located? *</span>
           <div class="loc-row">
-            <div class="field">
+            <div class="field loc-wide">
               <label for="w-country" data-en="Country" data-es="País">Country</label>
               <select id="w-country" name="country">
                 {countries.map((c) => (
@@ -207,31 +196,26 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
                 ))}
               </select>
             </div>
-            <div class="field">
+            <div class="field loc-wide" id="zipGroup">
+              <label for="w-zip" data-en="ZIP code *" data-es="Código ZIP *">ZIP code *</label>
+              <input id="w-zip" name="zip" required inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder="e.g. 11211" data-placeholder-en="e.g. 11211" data-placeholder-es="p.ej. 11211" aria-describedby="zipStatus" />
+              <p class="zip-status" id="zipStatus" aria-live="polite"></p>
+            </div>
+            <div class="field loc-wide" id="cityGroup" hidden>
               <label for="w-city" data-en="City *" data-es="Ciudad *">City *</label>
               <div class="addr">
                 <input id="w-city" name="city" autocomplete="off" placeholder="Start typing your city" data-placeholder-en="Start typing your city" data-placeholder-es="Empieza a escribir tu ciudad" role="combobox" aria-autocomplete="list" aria-expanded="false" />
                 <ul class="addr-list" id="cityList" role="listbox" hidden></ul>
               </div>
             </div>
-            <div class="field" id="zipGroup">
-              <label for="w-zip" data-en="ZIP code *" data-es="Código ZIP *">ZIP code *</label>
-              <input id="w-zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 07030" data-placeholder-en="e.g. 07030" data-placeholder-es="p.ej. 07030" />
+            <div class="field" id="regionGroup" hidden>
+              <label for="w-region"><span data-en="State / province / region" data-es="Estado / provincia / región">State / province / region</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+              <input id="w-region" name="region" autocomplete="address-level1" />
             </div>
-          </div>
-          <!-- Typing a city that IS New York City brings the borough
-               choice back (captain), so the person lands under their
-               borough instead of being recorded as outside NYC. -->
-          <div class="field" id="nycGroup" hidden>
-            <label for="w-nycBorough" data-en="That's New York City! Which borough do you live in? *" data-es="¡Eso es Nueva York! ¿En qué condado vives? *">That's New York City! Which borough do you live in? *</label>
-            <select id="w-nycBorough" name="nycBorough">
-              <option value="" selected disabled data-en="Select your borough" data-es="Selecciona tu condado">Select your borough</option>
-              <option value="Manhattan">Manhattan</option>
-              <option value="Brooklyn">Brooklyn</option>
-              <option value="Queens">Queens</option>
-              <option value="The Bronx" data-en="The Bronx" data-es="El Bronx">The Bronx</option>
-              <option value="Staten Island">Staten Island</option>
-            </select>
+            <div class="field" id="postalGroup" hidden>
+              <label for="w-postal"><span data-en="Postal code" data-es="Código postal">Postal code</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+              <input id="w-postal" name="postal" autocomplete="postal-code" />
+            </div>
           </div>
         </div>
 
@@ -655,14 +639,29 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
   #volunteerForm select,
   #volunteerForm textarea { font-size: 0.95rem; padding: 8px 10px; }
 
+  /* align-items: start keeps the country select level with the ZIP
+     input when the ZIP's status line makes its column taller */
   .loc-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 10px;
+    align-items: start;
   }
 
-  .loc-row .field:first-child { grid-column: 1 / -1; }
+  /* Country, ZIP, and city take a full row on phones; region and
+     postal code share one */
+  .loc-row .loc-wide { grid-column: 1 / -1; }
   .loc-row .field[hidden] { display: none; }
+
+  .zip-status {
+    min-height: 1.3em;
+    margin: 2px 0 0;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--green);
+  }
+
+  .zip-status:empty { display: none; }
 
   .waiver {
     border: 2.5px dashed var(--black);
@@ -765,8 +764,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     #volunteerForm select,
     #volunteerForm textarea { font-size: 1.05rem; padding: 9px 12px; }
 
-    .loc-row { grid-template-columns: 1.2fr 1fr 0.8fr; }
-    .loc-row .field:first-child { grid-column: auto; }
+    .loc-row .loc-wide { grid-column: auto; }
   }
 
   /* ── CREW CALLOUT ── */
@@ -813,7 +811,8 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 <script>
   import { actions } from 'astro:actions';
   import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
-  import { attachFieldValidation } from '../lib/clientValidation';
+  import { attachFieldValidation, setFieldError } from '../lib/clientValidation';
+  import { boroughForZip, parseZipPlace, zipLookupUrl, type Borough, type ZipPlace } from '../lib/zip';
   import { countries, US_COUNTRY, OTHER_COUNTRY } from '../lib/countries';
   import { attachCombobox, fetchJson, type ComboOption } from '../lib/combobox';
 
@@ -855,48 +854,113 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     if (!somewhereElse) hearOtherInput.value = '';
   });
 
-  // ── OUTSIDE-NYC FLOW ──
-  const boroughSelect = document.getElementById('borough') as HTMLSelectElement | null;
-  const whereGroup = document.getElementById('whereGroup') as HTMLElement | null;
+  // ── LOCATION (country first) ──
+  // US: the ZIP fills in city and state (zippopotam.us, free and
+  // keyless) and an NYC ZIP names the borough from our own table, so
+  // there is no borough question. Elsewhere: city from a list plus an
+  // optional region and postal code. The server re-checks all of it,
+  // so this is only a preview and an early typo catch.
   const countrySelect = document.getElementById('w-country') as HTMLSelectElement | null;
-  const cityInput = document.getElementById('w-city') as HTMLInputElement | null;
-  const cityList = document.getElementById('cityList') as HTMLUListElement | null;
   const zipGroup = document.getElementById('zipGroup') as HTMLElement | null;
   const zipInput = document.getElementById('w-zip') as HTMLInputElement | null;
-  const nycGroup = document.getElementById('nycGroup') as HTMLElement | null;
-  const nycBoroughSelect = document.getElementById('w-nycBorough') as HTMLSelectElement | null;
+  const zipStatus = document.getElementById('zipStatus') as HTMLElement | null;
+  const cityGroup = document.getElementById('cityGroup') as HTMLElement | null;
+  const cityInput = document.getElementById('w-city') as HTMLInputElement | null;
+  const cityList = document.getElementById('cityList') as HTMLUListElement | null;
+  const regionGroup = document.getElementById('regionGroup') as HTMLElement | null;
+  const regionInput = document.getElementById('w-region') as HTMLInputElement | null;
+  const postalGroup = document.getElementById('postalGroup') as HTMLElement | null;
+  const postalInput = document.getElementById('w-postal') as HTMLInputElement | null;
 
-  // ── CITY PICKER ──
-  // People choose a real city from a list instead of free typing. The
-  // list comes from the Open-Meteo geocoding API (free, keyless),
-  // scoped to the selected country's ISO code. An Open-Meteo outage
-  // (network error or non-ok response) lets the typed city stand: the
-  // server accepts any non-empty city, so signups never block on it.
+  const ZIP_MSG = {
+    short: { en: 'Enter a 5-digit ZIP code.', es: 'Escribe un código ZIP de 5 dígitos.' },
+    unknown: { en: "We couldn't find that ZIP code.", es: 'No encontramos ese código ZIP.' },
+    looking: { en: 'Looking up your ZIP…', es: 'Buscando tu código ZIP…' },
+  };
+
+  const BOROUGH_ES: Record<Borough, string> = {
+    Manhattan: 'Manhattan',
+    Brooklyn: 'Brooklyn',
+    Queens: 'Queens',
+    'The Bronx': 'El Bronx',
+    'Staten Island': 'Staten Island',
+  };
+
+  type ZipState =
+    | { kind: 'empty' }
+    | { kind: 'short' }
+    | { kind: 'looking' }
+    | { kind: 'found'; place: ZipPlace; borough: Borough | undefined }
+    | { kind: 'unknown' }
+    // Lookup service down: the server still takes the ZIP, so no error
+    | { kind: 'unavailable'; borough: Borough | undefined };
+
+  let zipState: ZipState = { kind: 'empty' };
+  let zipLookupSeq = 0;
+
+  /** Renders the ZIP's status line and validity from zipState, in the current language. */
+  function renderZip() {
+    if (!zipInput || !zipStatus) return;
+    const lang = getCurrentLang();
+    const boroughText = (b: Borough | undefined) =>
+      b ? (lang === 'es' ? ` · Condado: ${BOROUGH_ES[b]}` : ` · Borough: ${b}`) : '';
+    let status = '';
+    let error = '';
+    switch (zipState.kind) {
+      case 'looking':
+        status = ZIP_MSG.looking[lang];
+        break;
+      case 'found':
+        status = `${zipState.place.city}, ${zipState.place.stateCode}${boroughText(zipState.borough)}`;
+        break;
+      case 'unavailable':
+        status = boroughText(zipState.borough).replace(/^ · /, '');
+        break;
+      case 'unknown':
+        error = ZIP_MSG.unknown[lang];
+        break;
+      case 'short':
+        error = ZIP_MSG.short[lang];
+        break;
+    }
+    zipStatus.textContent = status;
+    setFieldError(zipInput, error);
+  }
+
+  async function checkZip(final: boolean) {
+    if (!zipInput) return;
+    // Digits only, five max: paste-friendly ("11211-1234" → "11211")
+    const digits = zipInput.value.replace(/\D/g, '').slice(0, 5);
+    if (zipInput.value !== digits) zipInput.value = digits;
+    const seq = ++zipLookupSeq;
+
+    if (!digits) zipState = { kind: 'empty' };
+    else if (digits.length < 5) zipState = final ? { kind: 'short' } : { kind: 'empty' };
+    else {
+      zipState = { kind: 'looking' };
+      renderZip();
+      const borough = boroughForZip(digits);
+      try {
+        const res = await fetch(zipLookupUrl(digits), { signal: AbortSignal.timeout(5000) });
+        const place = res.ok ? parseZipPlace(await res.json()) : null;
+        if (seq !== zipLookupSeq) return; // a newer keystroke owns the field
+        if (res.status === 404) zipState = { kind: 'unknown' };
+        else zipState = place ? { kind: 'found', place, borough } : { kind: 'unavailable', borough };
+      } catch {
+        if (seq !== zipLookupSeq) return;
+        zipState = { kind: 'unavailable', borough };
+      }
+    }
+    renderZip();
+  }
+
+  zipInput?.addEventListener('input', () => void checkZip(false));
+  zipInput?.addEventListener('blur', () => void checkZip(true));
+
+  // ── CITY PICKER (outside the US) ──
+  // A real city from the Open-Meteo geocoding list (free, keyless),
+  // scoped to the chosen country. An outage lets the typed city stand.
   const countryCodes = new Map(countries.map((c) => [c.value, c.code]));
-
-  // ── NYC DETECTION ──
-  // "If you type in a city, and it's nyc, then borough comes up"
-  // (captain): a picked city that IS New York City reveals the borough
-  // select above, so the signup lands under a borough rather than as
-  // an outside-NYC contact. Keyed by the lowercased Open-Meteo result
-  // name (both languages — the API localizes "New York" to "Nueva
-  // York" for ES searches); the value is the borough to preselect,
-  // or '' when the pick doesn't say which borough.
-  const NYC_RESULT_NAMES = new Map<string, string>([
-    ['new york', ''],
-    ['new york city', ''],
-    ['nueva york', ''],
-    ['manhattan', 'Manhattan'],
-    ['brooklyn', 'Brooklyn'],
-    ['queens', 'Queens'],
-    ['bronx', 'The Bronx'],
-    ['the bronx', 'The Bronx'],
-    ['el bronx', 'The Bronx'],
-    ['staten island', 'Staten Island'],
-  ]);
-
-  /** Display value of each NYC suggestion in the current list → borough ('' = ask). */
-  const nycCityValues = new Map<string, string>();
 
   type OpenMeteoSearch = {
     results?: Array<{ name: string; country_code?: string; country?: string; admin1?: string }>;
@@ -909,34 +973,14 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     const country = countrySelect?.value ?? '';
     const code = countryCodes.get(country) ?? null;
     const other = country === OTHER_COUNTRY;
-    nycCityValues.clear();
     const hits = (data.results ?? [])
       .filter((r) => (other ? true : r.country_code === code))
       .slice(0, 6)
       .map((r) => {
-        const region = r.country_code === 'US' ? r.admin1 : other ? r.country : r.admin1;
-        const label = region && region !== r.name ? `${r.name}, ${region}` : r.name;
-        // The state check keeps "New York, Missouri"-style namesakes out
-        const nyState = ['new york', 'nueva york'].includes((r.admin1 ?? '').toLowerCase());
-        const nycBorough = NYC_RESULT_NAMES.get(r.name.toLowerCase());
-        if (r.country_code === 'US' && nyState && nycBorough !== undefined) nycCityValues.set(label, nycBorough);
-        return label;
+        const region = other ? r.country : r.admin1;
+        return region && region !== r.name ? `${r.name}, ${region}` : r.name;
       });
     return [...new Set(hits)].map((c) => ({ value: c, text: c }));
-  }
-
-  /** Borough implied by the current city pick, '' for NYC-unspecified, undefined for non-NYC. */
-  let nycPick: string | undefined;
-
-  function applyNycPick(borough: string | undefined) {
-    // No-change guard: syncLocation resets the city picker when the
-    // borough select leaves "Not in NYC", and the picker's reset fires
-    // onChange(null) — without this, the two would recurse forever.
-    if (borough === nycPick) return;
-    nycPick = borough;
-    if (nycBoroughSelect && borough === undefined) nycBoroughSelect.value = '';
-    else if (nycBoroughSelect && borough) nycBoroughSelect.value = borough;
-    syncLocation();
   }
 
   const cityPicker =
@@ -947,49 +991,38 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
           search: searchCities,
           pickMessage: { en: 'Pick your city from the list.', es: 'Elige tu ciudad de la lista.' },
           emptyMessage: { en: 'No match yet. Keep typing.', es: 'Sin coincidencias todavía. Sigue escribiendo.' },
-          onChange: (option) => applyNycPick(option ? nycCityValues.get(option.value) : undefined),
           onUnavailable: (picker) => picker.setInvalid(null),
         })
       : null;
 
-  function syncLocation() {
-    if (!boroughSelect || !whereGroup || !countrySelect || !cityInput || !zipGroup || !zipInput) return;
-    const outside = boroughSelect.value === 'Not in NYC';
+  /** Shows the US or the outside-US fields for the chosen country. */
+  function syncCountry() {
+    if (!countrySelect || !zipGroup || !zipInput || !cityGroup || !cityInput) return;
     const us = countrySelect.value === US_COUNTRY;
-    const nyc = outside && nycPick !== undefined;
-    whereGroup.hidden = !outside;
-    cityInput.required = outside;
-    // An NYC pick supersedes the location fields: the borough select
-    // takes over as the required field and ZIP drops away (the server
-    // stores BOROUGH, not COUNTRY/CITY/ZIP, for an NYC signup).
-    if (nycGroup) nycGroup.hidden = !nyc;
-    if (nycBoroughSelect) nycBoroughSelect.required = nyc;
-    // A non-US country hides ZIP so it is just City (captain)
-    zipGroup.hidden = !us || nyc;
-    zipInput.required = outside && us && !nyc;
-    const zipBad = zipInput.required && !!zipInput.value && !/^\d{5}(-\d{4})?$/.test(zipInput.value);
-    zipInput.setCustomValidity(zipBad ? (getCurrentLang() === 'es' ? 'Escribe un código ZIP de 5 dígitos.' : 'Enter a 5-digit ZIP code.') : '');
-    // Fields hidden from the user must never submit stale values
-    if (nyc) {
-      zipInput.value = '';
-    }
-    if (!outside) {
+    zipGroup.hidden = !us;
+    zipInput.required = us;
+    cityGroup.hidden = us;
+    cityInput.required = !us;
+    if (regionGroup) regionGroup.hidden = us;
+    if (postalGroup) postalGroup.hidden = us;
+    // Fields hidden from the person must never submit stale values
+    if (us) {
       cityPicker?.reset();
+      if (regionInput) regionInput.value = '';
+      if (postalInput) postalInput.value = '';
+    } else {
       zipInput.value = '';
-      zipInput.setCustomValidity('');
+      zipState = { kind: 'empty' };
+      renderZip();
     }
   }
 
-  boroughSelect?.addEventListener('change', () => {
-    syncLocation();
-    if (boroughSelect.value === 'Not in NYC') countrySelect?.focus();
-  });
   countrySelect?.addEventListener('change', () => {
     cityPicker?.reset();
-    syncLocation();
+    syncCountry();
   });
-  zipInput?.addEventListener('input', syncLocation);
-  syncLocation();
+  onLanguageChange(renderZip);
+  syncCountry();
 
   // ── SUBMIT ──
   document.getElementById('volunteerForm')?.addEventListener('submit', async (e) => {

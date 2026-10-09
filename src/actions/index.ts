@@ -1,5 +1,6 @@
 import { defineAction, ActionError, ActionInputError, type ActionAPIContext } from 'astro:actions';
-import { signupSchema, contactSchema, leadSchema, NOT_IN_NYC, asBorough, type ContactInput } from '../lib/server/schemas';
+import { signupSchema, contactSchema, leadSchema, type ContactInput } from '../lib/server/schemas';
+import { resolveSignupLocation } from '../lib/server/location';
 import { ADDRESS_UNAVAILABLE, ADDRESS_UNVERIFIED } from '../lib/addressErrors';
 import { checkSpam, type SpamCheckInput } from '../lib/server/spam';
 import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
@@ -335,18 +336,17 @@ export const server = {
 
       await requireTurnstile('signup', ctx, input['cf-turnstile-response']);
 
-      // The borough this signup lands under: the picked borough, or —
-      // when the "Not in NYC" city picker detected a New York City pick
-      // (captain: "if you type in a city, and it's nyc, then borough
-      // comes up") — the follow-up borough select's value.
-      const borough = input.borough === NOT_IN_NYC ? asBorough(input.nycBorough) : input.borough;
-
-      // True outside-NYC signups: BOROUGH is omitted (its live option set
-      // may not include "Not in NYC") and the location lands in the
-      // COUNTRY / CITY / ZIP_CODE attributes instead — COUNTRY present
-      // exactly when BOROUGH is absent, so the two states stay
-      // distinguishable.
-      const outsideNyc = borough === undefined;
+      // Country-first location (captain, 2026-10-09). A US ZIP is re-looked-
+      // up here (the page's preview is never trusted) and an NYC ZIP sets
+      // BOROUGH from our own table; a ZIP that doesn't exist is refused,
+      // but a lookup outage still lets the signup land with the ZIP alone.
+      const resolved = await resolveSignupLocation(input);
+      if (!resolved.ok) {
+        log('warn', 'form_zip_rejected', { form: 'signup' });
+        throw new ActionInputError([{ code: 'custom', path: ['zip'], message: "We couldn't find that ZIP code" }]);
+      }
+      if (resolved.zipLookup === 'unavailable') log('warn', 'signup_zip_lookup_unavailable', { form: 'signup' });
+      const { location } = resolved;
 
       // The free-text companion belongs to "Somewhere else" only; a
       // stale hidden field must never attach it to another choice.
@@ -357,10 +357,11 @@ export const server = {
         buildAttributes({
           FIRSTNAME: input.fname,
           LASTNAME: input.lname,
-          BOROUGH: borough,
-          COUNTRY: outsideNyc ? input.country : undefined,
-          CITY: outsideNyc ? input.city : undefined,
-          ZIP_CODE: outsideNyc ? input.zip : undefined,
+          COUNTRY: location.COUNTRY,
+          STATE_REGION: location.STATE_REGION,
+          CITY: location.CITY,
+          ZIP_CODE: location.ZIP_CODE,
+          BOROUGH: location.BOROUGH,
           PHONE: input.phone,
           MESSAGE: input.experience,
           HEAR_ABOUT_US: input.hear,

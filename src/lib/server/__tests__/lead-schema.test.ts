@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { leadSchema, signupSchema, NOT_IN_NYC } from '../schemas';
+import { leadSchema } from '../schemas';
 import { rollingMonths } from '../../months';
 
 const currentMonth = rollingMonths(1)[0].value;
@@ -73,60 +73,5 @@ describe('leadSchema', () => {
   it('rejects an unknown behalf or route type', () => {
     expect(leadSchema.safeParse({ ...validLead, behalf: 'robot' }).success).toBe(false);
     expect(leadSchema.safeParse({ ...validLead, routeType: 'spiral' }).success).toBe(false);
-  });
-});
-
-describe('signupSchema outside-NYC flow', () => {
-  const base = {
-    fname: 'Jane',
-    lname: 'Doe',
-    email: 'jane@example.com',
-    hear: 'Word of Mouth',
-    waiverCheck: 'on',
-    ageCheck: 'on',
-  };
-
-  it('accepts Not in NYC with US country, city, and ZIP', () => {
-    const result = signupSchema.safeParse({
-      ...base,
-      borough: NOT_IN_NYC,
-      country: 'United States',
-      city: 'Jersey City, New Jersey',
-      zip: '07030',
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('requires country and city when Not in NYC', () => {
-    expect(signupSchema.safeParse({ ...base, borough: NOT_IN_NYC }).success).toBe(false);
-    expect(
-      signupSchema.safeParse({ ...base, borough: NOT_IN_NYC, country: 'United States', zip: '07030' }).success,
-    ).toBe(false);
-  });
-
-  it('requires a 5-digit ZIP only for the United States', () => {
-    expect(
-      signupSchema.safeParse({ ...base, borough: NOT_IN_NYC, country: 'United States', city: 'Hoboken, New Jersey' })
-        .success,
-    ).toBe(false);
-    expect(
-      signupSchema.safeParse({ ...base, borough: NOT_IN_NYC, country: 'United Kingdom', city: 'London' }).success,
-    ).toBe(true);
-  });
-
-  it('rejects a country outside the offered list', () => {
-    expect(
-      signupSchema.safeParse({ ...base, borough: NOT_IN_NYC, country: 'Atlantis', city: 'Somewhere' }).success,
-    ).toBe(false);
-  });
-
-  it('never demands location fields for NYC boroughs', () => {
-    expect(signupSchema.safeParse({ ...base, borough: 'Queens' }).success).toBe(true);
-  });
-
-  it('enforces phone validity when a phone is given', () => {
-    expect(signupSchema.safeParse({ ...base, borough: 'Queens', phone: 'abc' }).success).toBe(false);
-    expect(signupSchema.safeParse({ ...base, borough: 'Queens', phone: '(212) 555-0123' }).success).toBe(true);
-    expect(signupSchema.safeParse({ ...base, borough: 'Queens', phone: '' }).success).toBe(true);
   });
 });

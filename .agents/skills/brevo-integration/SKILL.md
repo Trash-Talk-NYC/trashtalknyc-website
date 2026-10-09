@@ -47,8 +47,9 @@ Empty-string fields are dropped before upsert (`buildAttributes`) so updates nev
 |---|---|---|---|
 | `FIRSTNAME` / `LASTNAME` | ✓ | ✓ | ✓ |
 | `PHONE` | ✓ | ✓ (optional) | ✓ (required) |
-| `BOROUGH` | ✓ (omitted when the choice is "Not in NYC") | — | — |
-| `COUNTRY` / `CITY` / `ZIP_CODE` | ✓ only for "Not in NYC" (`ZIP_CODE` US-only) — `COUNTRY` present ⇔ `BOROUGH` absent | — | — |
+| `COUNTRY` | ✓ always (country-first location, 2026-10-09) | — | — |
+| `CITY` / `STATE_REGION` / `ZIP_CODE` | ✓ US: ZIP typed, city + full state name from the server's ZIP re-lookup; elsewhere: picked city, optional region, optional free-format postal code | — | — |
+| `BOROUGH` | ✓ only for NYC ZIPs (from the ZIP-range table in `src/lib/zip.ts`, never the lookup service) | — | — |
 | `MESSAGE` | ✓ (experience text) | ✓ (message text) | — |
 | `HEAR_ABOUT_US` | ✓ required (values must match the Brevo enum exactly; "Article" and "Somewhere else" are pending dashboard options — the action retries the upsert without the hear attributes when Brevo rejects them and notes the answer instead, `brevo_hear_attrs_rejected`) | — | — |
 | `HEAR_ABOUT_US_OTHER` | ✓ free text behind "Somewhere else" (pending dashboard creation, same fallback) | — | — |

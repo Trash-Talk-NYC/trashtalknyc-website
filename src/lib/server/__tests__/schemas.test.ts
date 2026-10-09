@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { signupSchema, contactSchema, asBorough, BOROUGHS, NOT_IN_NYC } from '../schemas';
+import { signupSchema, contactSchema } from '../schemas';
 
 const validSignup = {
   fname: 'Jane',
   lname: 'Doe',
   email: 'jane@example.com',
-  borough: 'Brooklyn',
+  country: 'United States',
+  zip: '11211',
   hear: 'Word of Mouth',
   waiverCheck: 'on',
   ageCheck: 'on',
 };
 
-const validOutsideNyc = {
+const validAbroad = {
   ...validSignup,
-  borough: NOT_IN_NYC,
-  country: 'United States',
-  city: 'Hoboken, New Jersey',
-  zip: '07030',
+  country: 'United Kingdom',
+  zip: '',
+  city: 'London, England',
 };
 
 const validContact = {
@@ -33,7 +33,7 @@ describe('signupSchema', () => {
   });
 
   it('accepts optional fields as empty strings (how empty inputs submit)', () => {
-    const result = signupSchema.safeParse({ ...validSignup, phone: '', experience: '', hearOther: '', nycBorough: '', botcheck: '' });
+    const result = signupSchema.safeParse({ ...validSignup, phone: '', experience: '', hearOther: '', region: '', postal: '', city: '', botcheck: '' });
     expect(result.success).toBe(true);
   });
 
@@ -55,14 +55,6 @@ describe('signupSchema', () => {
 
   it('rejects an invalid email', () => {
     expect(signupSchema.safeParse({ ...validSignup, email: 'not-an-email' }).success).toBe(false);
-  });
-
-  it.each(BOROUGHS)('accepts borough %s', (borough) => {
-    expect(signupSchema.safeParse({ ...validSignup, borough }).success).toBe(true);
-  });
-
-  it('rejects an unknown borough', () => {
-    expect(signupSchema.safeParse({ ...validSignup, borough: 'Hoboken' }).success).toBe(false);
   });
 
   it('trims whitespace-only names down to invalid', () => {
@@ -92,46 +84,34 @@ describe('signupSchema', () => {
     expect(signupSchema.safeParse({ ...validSignup, 'cf-turnstile-response': 'x'.repeat(2049) }).success).toBe(false);
   });
 
-  describe('outside-NYC flow', () => {
-    it('accepts a complete outside-NYC signup', () => {
-      expect(signupSchema.safeParse(validOutsideNyc).success).toBe(true);
+  describe('location (country first)', () => {
+    it('a US signup needs only a 5-digit ZIP', () => {
+      expect(signupSchema.safeParse(validSignup).success).toBe(true);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '1121' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: 'abcde' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '11211-1234' }).success).toBe(false);
     });
 
-    it.each(['country', 'city'])('requires %s when the borough is Not in NYC', (field) => {
-      expect(signupSchema.safeParse({ ...validOutsideNyc, [field]: '' }).success).toBe(false);
+    it('outside the US requires a city, with region and postal code optional', () => {
+      expect(signupSchema.safeParse(validAbroad).success).toBe(true);
+      expect(signupSchema.safeParse({ ...validAbroad, city: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validAbroad, region: 'Greater London', postal: 'SW1A 1AA' }).success).toBe(true);
     });
 
-    it('requires a valid US ZIP for a United States signup', () => {
-      expect(signupSchema.safeParse({ ...validOutsideNyc, zip: '' }).success).toBe(false);
-      expect(signupSchema.safeParse({ ...validOutsideNyc, zip: 'abcde' }).success).toBe(false);
+    it('takes postal codes in any format outside the US', () => {
+      expect(signupSchema.safeParse({ ...validAbroad, country: 'Canada', city: 'Toronto, Ontario', postal: 'M5V 2T6' }).success).toBe(true);
     });
 
-    it('skips ZIP for a non-US country', () => {
-      expect(signupSchema.safeParse({ ...validOutsideNyc, country: 'France', city: 'Paris', zip: '' }).success).toBe(true);
+    it('rejects a missing country or one outside the offered list', () => {
+      expect(signupSchema.safeParse({ ...validSignup, country: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validAbroad, country: 'Atlantis' }).success).toBe(false);
     });
 
-    it('a valid NYC follow-up borough supersedes the location fields', () => {
-      const nycAfterAll = { ...validSignup, borough: NOT_IN_NYC, nycBorough: 'Queens' };
-      expect(signupSchema.safeParse(nycAfterAll).success).toBe(true);
+    it('enforces phone validity when a phone is given', () => {
+      expect(signupSchema.safeParse({ ...validSignup, phone: 'abc' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, phone: '(212) 555-0123' }).success).toBe(true);
     });
-
-    it('an invalid follow-up borough still requires the location fields', () => {
-      expect(signupSchema.safeParse({ ...validSignup, borough: NOT_IN_NYC, nycBorough: 'Hoboken' }).success).toBe(false);
-      expect(signupSchema.safeParse({ ...validSignup, borough: NOT_IN_NYC, nycBorough: NOT_IN_NYC }).success).toBe(false);
-    });
-  });
-});
-
-describe('asBorough', () => {
-  it.each(BOROUGHS)('narrows %s to itself', (borough) => {
-    expect(asBorough(borough)).toBe(borough);
-  });
-
-  it('returns undefined for anything else', () => {
-    expect(asBorough(undefined)).toBeUndefined();
-    expect(asBorough('')).toBeUndefined();
-    expect(asBorough('Hoboken')).toBeUndefined();
-    expect(asBorough(NOT_IN_NYC)).toBeUndefined();
   });
 });
 
