@@ -9,7 +9,15 @@ export const BRICK_ROW_RATIOS = {
     0.2335,
     0.276,
     0.3131,
-    0.3553
+    0.3553,
+    0.4039,
+    0.4505,
+    0.5015,
+    0.5494,
+    0.5927,
+    0.6355,
+    0.6841,
+    0.7307
   ],
   bottom: [
     0.0526,
@@ -19,6 +27,17 @@ export const BRICK_ROW_RATIOS = {
     0.2243,
     0.2648,
     0.3004,
-    0.3409
+    0.3409,
+    0.3875,
+    0.4327,
+    0.4824,
+    0.5292,
+    0.5708,
+    0.6121,
+    0.6586,
+    0.7039
   ]
 } as const;
+// Drawing units: the width every ratio is relative to, the blank margin
+// each variant keeps past its innermost row, and the mortar gap between rows.
+export const BRICK_GEOMETRY = { viewWidth: 2337.3, pad: 12, gap: 4 } as const;

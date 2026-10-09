@@ -6,7 +6,7 @@ import { brickHeroStyle, brickMinHeight } from '../bricks';
 
 describe('brick frame rows', () => {
   it('has a generated top and bottom variant for every row count', () => {
-    for (let n = 1; n <= 8; n++) {
+    for (let n = 1; n <= 16; n++) {
       for (const half of ['top', 'bottom']) {
         expect(existsSync(join(process.cwd(), `src/assets/bricks/${half}-${n}.svg`))).toBe(true);
       }
@@ -16,7 +16,7 @@ describe('brick frame rows', () => {
   it('grows taller with every added row', () => {
     for (const half of ['top', 'bottom'] as const) {
       const r = BRICK_ROW_RATIOS[half];
-      expect(r).toHaveLength(8);
+      expect(r).toHaveLength(16);
       for (let i = 1; i < r.length; i++) expect(r[i]).toBeGreaterThan(r[i - 1]);
     }
   });

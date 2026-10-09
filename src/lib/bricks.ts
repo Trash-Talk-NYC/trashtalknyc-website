@@ -2,7 +2,8 @@ import { BRICK_ROW_RATIOS } from './brick-rows.generated';
 
 /**
  * How many whole brick rows a hero's frame shows, per side of the
- * 760/761px breakpoint (1–8; 8 is the full drawing). Each half shows
+ * 760/761px breakpoint (1–8; 8 is the full drawing — 9–16 exist only to
+ * extend the side columns of a continuous wall, see Bricks.astro). Each half shows
  * that many rows from its outer edge, so bricks are never sliced
  * (captain, 2026-10-09).
  */

@@ -37,7 +37,9 @@ const bioFlyer: Record<string, string> = {
 };
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 8, desktop: 8 };
+// Phones: a short wall above and below the full-width photo. Desktop:
+// the continuous wall (Bricks `continuous`); 8 is its no-JS fallback.
+const bricks: BrickRows = { phone: 3, desktop: 8 };
 ---
 
 <BaseLayout
@@ -46,7 +48,7 @@ const bricks: BrickRows = { phone: 8, desktop: 8 };
 >
   <!-- HERO: group photo in the brick frame -->
   <section class="tm-hero brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} />
+    <Bricks rows={bricks} continuous />
     <div class="tm-hero-inner">
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->
@@ -180,7 +182,7 @@ const bricks: BrickRows = { phone: 8, desktop: 8 };
     /* The hero always shows the full brick drawing on desktop, whose height
        scales with the viewport, so the photo scales with it too and the
        side columns stay one connected wall (captain, 2026-10-09) */
-    .tm-hero-inner { max-width: none; }
+    .tm-hero-inner { max-width: none; width: 100%; }
     .tm-photo { width: min(46vw, 100%); padding: 14px 14px 18px; }
     .tm-photo figcaption { font-size: 0.72rem; }
 
