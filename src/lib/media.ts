@@ -22,6 +22,8 @@ export interface MediaSection {
   /** Brand name — identical in EN and ES on purpose. */
   label: string;
   blurb: Copy;
+  /** One-word call to action on the overview poster (captain, 2026-10-09). */
+  action: Copy;
   /** Off-site channel home; null while the captain hasn't supplied it. */
   channelHref: string | null;
   /** True when the channel has nothing to show on the site yet. */
@@ -39,6 +41,7 @@ export const mediaSections: MediaSection[] = [
       en: 'Longer videos from the cleanups, the crew, and everything around them.',
       es: 'Videos más largos de las limpiezas, el equipo y todo lo que pasa alrededor.',
     },
+    action: { en: 'Watch', es: 'Ver' },
     channelHref: hrefOrNull(socials.youtube),
     comingSoon: false,
   },
@@ -50,6 +53,7 @@ export const mediaSections: MediaSection[] = [
       en: 'Conversations about trash, our city, and the people trying to fix it.',
       es: 'Conversaciones sobre la basura, nuestra ciudad y la gente que intenta arreglarla.',
     },
+    action: { en: 'Listen', es: 'Escuchar' },
     channelHref: hrefOrNull(mediaLinks.podcast),
     comingSoon: true,
   },
@@ -61,6 +65,7 @@ export const mediaSections: MediaSection[] = [
       en: 'Written stories, inside information, and articles from Trash Talk NYC.',
       es: 'Historias escritas, información de adentro y artículos de Trash Talk NYC.',
     },
+    action: { en: 'Read', es: 'Leer' },
     channelHref: hrefOrNull(mediaLinks.substack),
     comingSoon: true,
   },
@@ -71,6 +76,16 @@ export function getMediaSection(id: MediaSectionId): MediaSection {
   if (!section) throw new Error(`Unknown More Media section "${id}"`);
   return section;
 }
+
+/**
+ * Photo Albums (captain, 2026-10-09) — a More Media subpage that is not a
+ * channel, so it sits outside mediaSections (the overview keeps its
+ * three-channel layout) but joins the nav and the subpage switcher.
+ */
+export const PHOTO_ALBUMS = {
+  path: `${MORE_MEDIA_PATH}/photo-albums`,
+  label: { en: 'Photo Albums', es: 'Álbumes de Fotos' },
+} as const;
 
 /** The captain's line for the More Media hero (2026-10-09). */
 export const moreMediaTagline: Copy = {

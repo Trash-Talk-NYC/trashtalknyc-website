@@ -34,6 +34,7 @@ const PAIRS: ReadonlyArray<readonly [en: string, es: string]> = [
   ['data-placeholder-en', 'data-placeholder-es'],
   ['data-subject-en', 'data-subject-es'],
   ['data-title-en', 'data-title-es'],
+  ['data-alt-en', 'data-alt-es'],
 ];
 
 interface Gap {

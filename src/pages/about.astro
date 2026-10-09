@@ -47,7 +47,10 @@ const bioFlyer: Record<string, string> = {
     <img class="bricks bricks-top" src={bricksTop.src} alt="" />
     <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
     <div class="tm-hero-inner">
-      <h1 class="tm-title" data-en="About" data-es="Nosotros">About</h1>
+      <!-- "About" is an eyebrow over the page name, the same pattern as
+           From the Founder (captain, 2026-10-09) -->
+      <div class="mono tm-eyebrow" data-en="About" data-es="Nosotros">About</div>
+      <h1 class="tm-title" data-en="The Team" data-es="El Equipo">The Team</h1>
       <figure class="tm-photo paste f-sticker">
         <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
         <Image
@@ -65,7 +68,6 @@ const bioFlyer: Record<string, string> = {
   </section>
 
   <section class="wrap team-section">
-    <p class="intro" data-en="This is us!" data-es="¡Estos somos nosotros!">This is us!</p>
     <div class="bios">
       {team.map((p) => (
         <article class:list={['bio', 'paste', `b-${p.id}`, bioFlyer[p.id]]}>
@@ -105,6 +107,11 @@ const bioFlyer: Record<string, string> = {
         <h2 data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
         <p data-en="We need your help!" data-es="¡Necesitamos tu ayuda!">We need your help!</p>
         <a class="btn btn-primary" href="/recruit" data-en="See the open roles →" data-es="Ver los puestos abiertos →">See the open roles →</a>
+        <!-- The team inbox, big and unmistakably a link (captain, 2026-10-09) -->
+        <p class="lend-mail">
+          <span data-en="Or write to us at" data-es="O escríbenos a">Or write to us at</span>
+          <a href="mailto:team@trashtalknyc.org">team@trashtalknyc.org</a>
+        </p>
       </div>
     </div>
   </section>
@@ -129,7 +136,10 @@ const bioFlyer: Record<string, string> = {
     padding: calc(100vw * 0.15) 22px calc(100vw * 0.15);
   }
 
-  .tm-title { font-size: 4rem; color: var(--lavender); }
+  /* Same eyebrow voice as the founder page's */
+  .tm-eyebrow { color: var(--yellow); font-size: 1.02rem; margin-bottom: -6px; }
+
+  .tm-title { font-size: 3.4rem; line-height: 0.92; color: var(--lavender); }
 
   .tm-photo {
     position: relative;
@@ -169,7 +179,7 @@ const bioFlyer: Record<string, string> = {
 
   @media (min-width: 761px) {
     .tm-hero-inner { gap: 22px; padding: calc(100vw * 0.08) 16px calc(100vw * 0.08); }
-    .tm-title { font-size: clamp(4.4rem, 8vw, 7rem); }
+    .tm-title { font-size: clamp(3.4rem, 6.4vw, 5.8rem); }
     .tm-photo { padding: 14px 14px 18px; }
     .tm-photo figcaption { font-size: 0.72rem; }
 
@@ -181,14 +191,8 @@ const bioFlyer: Record<string, string> = {
   }
 
   /* ── BIOS ── */
-  .intro {
-    font-family: var(--display);
-    font-weight: 400;
-    font-size: 2.3rem;
-    color: var(--beige);
-    margin: 0;
-    padding-block: 36px 16px;
-  }
+  /* Breathing room under the hero now that the bios lead the section */
+  .team-section { padding-top: 48px; }
 
   .bios {
     display: grid;
@@ -234,7 +238,6 @@ const bioFlyer: Record<string, string> = {
   .b-fabiola { order: 3; }
 
   @media (min-width: 761px) {
-    .intro { font-size: clamp(2.4rem, 4vw, 3.2rem); padding-block: 52px 22px; }
     .bios { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; padding-bottom: 64px; }
     .bio { padding: 26px 24px 24px; }
     .bio h2 { font-size: 2.8rem; }
@@ -256,21 +259,40 @@ const bioFlyer: Record<string, string> = {
     align-items: center;
   }
 
+  /* Whole drawing, never cropped (same call as the homepage crew art) */
   .lend .ill {
-    width: 140px;
-    height: 110px;
-    object-fit: cover;
-    object-position: center 55%;
+    width: 120px;
+    height: auto;
   }
 
   .lend h2 { font-size: 2.8rem; }
   .lend p { margin: 12px 0 26px; font-size: 1.2rem; font-weight: 500; }
   .lend .btn { width: 100%; }
 
+  .lend .lend-mail {
+    display: grid;
+    gap: 2px;
+    margin: 22px 0 0;
+  }
+
+  /* Big, yellow, underlined: it has to read as tappable on phones */
+  .lend-mail a {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: clamp(1.15rem, 4.6vw, 1.7rem);
+    color: var(--yellow);
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+    overflow-wrap: anywhere;
+  }
+
+  .lend-mail a:hover { color: var(--beige); }
+
   @media (min-width: 761px) {
     .lend { padding-block: 56px; }
     .lend-grid { grid-template-columns: auto minmax(0, 1fr); gap: 40px; }
-    .lend .ill { width: 200px; height: 170px; }
+    .lend .ill { width: 190px; }
     .lend h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); }
     .lend .btn { width: auto; }
   }

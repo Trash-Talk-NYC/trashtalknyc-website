@@ -16,7 +16,7 @@
 import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
-import { MORE_MEDIA_PATH, mediaSections } from '../lib/media';
+import { MORE_MEDIA_PATH, PHOTO_ALBUMS, mediaSections } from '../lib/media';
 import wordmarkSticker from '../assets/wordmark-sticker.png';
 
 const pathname = Astro.url.pathname;
@@ -97,6 +97,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           {mediaSections.map((m) => (
             <li><a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a></li>
           ))}
+          <li><a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a></li>
         </ul>
       </li>
       <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
@@ -140,6 +141,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           {mediaSections.map((m) => (
             <a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a>
           ))}
+          <a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a>
         </div>
       </div>
       <a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a>

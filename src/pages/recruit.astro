@@ -173,7 +173,7 @@ const roles = [
     transform: rotate(10deg);
   }
 
-  .email-addr { text-decoration: underline; text-underline-offset: 3px; }
+  .email-addr { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 
   @media (min-width: 761px) {
     .rc-wall { padding: calc(100vw * 0.13) clamp(16px, 5vw, 60px) calc(100vw * 0.12); }
@@ -246,11 +246,16 @@ const roles = [
     text-align: center;
   }
 
+  /* The team inbox is the page's one action, so it is the biggest
+     button on the site (captain, 2026-10-09: "bigger and more
+     pronounced") */
   .email .btn {
     width: 100%;
-    font-size: 0.9rem;
-    padding: 16px 26px;
+    font-size: 1rem;
+    padding: 18px 22px;
     letter-spacing: 0.02em;
+    overflow-wrap: anywhere;
+    box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.4);
   }
 
   @media (min-width: 761px) {
@@ -260,7 +265,7 @@ const roles = [
     .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 57.5rem; margin-inline: auto; width: 100%; }
     .role { padding: 26px 24px 22px; }
     .role-t { font-size: 2.2rem; }
-    .email .btn { width: auto; font-size: 1rem; }
+    .email .btn { width: auto; font-size: clamp(1.15rem, 1.6vw, 1.4rem); padding: 22px 36px; }
   }
 
   @media (prefers-reduced-motion: reduce) {

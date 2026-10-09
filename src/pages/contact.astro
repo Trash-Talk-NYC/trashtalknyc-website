@@ -1,9 +1,7 @@
 ---
-import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
-import vestSticker from '../assets/vest-sticker.png';
 import bricksTop from '../assets/bricks-top-lav.svg';
 import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import illGloveShovel from '../assets/ill-glove-shovel.svg';
@@ -11,10 +9,9 @@ import illFamilyVestsPurple from '../assets/ill-family-vests-purple.svg';
 import illTreebed from '../assets/ill-treebed.svg';
 import illTrashPurple from '../assets/ill-trash-purple.svg';
 import illFamilyVestsBeige from '../assets/ill-family-vests-beige.svg';
-import illTrashLav from '../assets/ill-trash-lav.svg';
 
 /**
- * Contact — TALK TRASH. The choices are poster tiles in the captain's
+ * Contact — Talk Trash (sentence case, captain 2026-10-09). The choices are poster tiles in the captain's
  * order (Lead a Cleanup / Collaborate / Sponsor / General) and no form
  * shows until a tile is picked. General, Collaborate and Sponsor share
  * one message form (the existing contact action); Lead a Cleanup is
@@ -48,10 +45,13 @@ const monthOptions = rollingMonths();
     <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
     <div class="ct-hero-inner">
       <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
-      <h1 class="ct-title"><span data-en="TALK" data-es="HABLA">TALK</span><br /><span class="accent" data-en="TRASH" data-es="BASURA">TRASH</span></h1>
+      <h1 class="ct-title"><span data-en="Talk" data-es="Habla">Talk</span><br /><span class="accent" data-en="Trash" data-es="Basura">Trash</span></h1>
     </div>
   </section>
 
+  <!-- The form is its own section and "Help out behind the scenes" is
+       the next one (captain, 2026-10-09) — no side column, no loose
+       decoration beside them. -->
   <section class="wrap ct-body">
     <div class="ct-form paste f-tape">
       <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
@@ -235,15 +235,16 @@ const monthOptions = rollingMonths();
       </div>
     </div>
 
-    <div class="side">
-      <aside class="banner paste f-sticker f-torn" aria-labelledby="joinBannerHeading">
-        <Image src={vestSticker} alt="" class="slap banner-slap" width={96} densities={[1, 2]} />
-        <img class="ill" src={illFamilyVestsBeige.src} alt="" />
+  </section>
+
+  <section class="ct-join" aria-labelledby="joinBannerHeading">
+    <div class="wrap ct-join-grid">
+      <img class="ill" src={illFamilyVestsBeige.src} alt="" />
+      <div>
         <h2 id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
         <p data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo o alguien que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
         <a class="btn btn-primary" href="/recruit" data-en="See more →" data-es="Ver más →">See more →</a>
-      </aside>
-      <img class="deco" src={illTrashLav.src} alt="" />
+      </div>
     </div>
   </section>
 </BaseLayout>
@@ -288,9 +289,8 @@ const monthOptions = rollingMonths();
   /* ── BODY ── */
   .ct-body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
+    grid-template-columns: minmax(0, 62rem);
+    justify-content: center;
     padding-block: 30px 44px;
   }
 
@@ -461,45 +461,30 @@ const monthOptions = rollingMonths();
   .form-success h3 { font-size: 2.2rem; color: var(--purple); margin-bottom: 0.5rem; }
   .form-success p { font-weight: 500; }
 
-  /* ── SIDE ── */
-  .side { display: grid; gap: 24px; }
-
-  .banner {
-    position: relative;
-    --flyer-bg: var(--green);
+  /* ── BEHIND THE SCENES ── */
+  /* A full-width Post No Bills band, the same shape as the homepage's
+     behind-the-scenes section */
+  .ct-join {
+    background-color: var(--green);
     color: var(--beige);
-    padding: 24px 18px;
+    border-top: 3px solid var(--beige);
+    padding-block: 36px 48px;
+  }
+
+  .ct-join-grid {
     display: grid;
-    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
   }
 
-  .banner :global(.banner-slap) {
-    top: -26px;
-    right: -6px;
-    width: 68px;
-    height: auto;
-    transform: rotate(9deg);
-  }
-
-  .banner .ill {
-    width: 120px;
-    height: 92px;
-    object-fit: cover;
-    object-position: center 55%;
-  }
-
-  .banner h2 { font-size: 2.4rem; }
-  .banner p { margin: 0; font-size: 1.08rem; line-height: 1.55; }
-  .banner .btn { justify-self: start; margin-top: 6px; width: 100%; }
-
-  .deco { display: none; justify-self: center; width: min(220px, 70%); }
+  .ct-join .ill { width: 120px; height: auto; }
+  .ct-join h2 { font-size: 2.6rem; margin-bottom: 12px; }
+  .ct-join p { margin: 0 0 24px; max-width: 52ch; font-size: 1.12rem; line-height: 1.55; }
+  .ct-join .btn { width: 100%; }
 
   @media (min-width: 761px) {
-    .ct-body {
-      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-      gap: 32px;
-      padding-block: 52px 72px;
-    }
+    .ct-body { padding-block: 56px 80px; }
 
     .ct-form { padding: 30px clamp(18px, 3vw, 36px); }
     .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
@@ -513,11 +498,11 @@ const monthOptions = rollingMonths();
     .form-area select,
     .form-area textarea { font-size: 1.05rem; padding: 9px 12px; }
 
-    .banner { padding: 30px 26px; }
-    .banner :global(.banner-slap) { top: -34px; right: -18px; width: 96px; }
-    .banner .ill { width: 150px; height: 120px; }
-    .banner .btn { width: auto; }
-    .deco { display: block; }
+    .ct-join { padding-block: 56px 72px; }
+    .ct-join-grid { grid-template-columns: auto minmax(0, 1fr); gap: 48px; }
+    .ct-join .ill { width: 190px; }
+    .ct-join h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); }
+    .ct-join .btn { width: auto; }
   }
 
   @media (prefers-reduced-motion: reduce) {

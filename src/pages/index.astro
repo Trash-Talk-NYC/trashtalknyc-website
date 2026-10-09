@@ -18,7 +18,6 @@ import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
 import wallColorGraffiti from '../assets/walls/wall-color-graffiti.jpg';
 import wallPurpleShutter from '../assets/walls/wall-purple-shutter.jpg';
 import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
-import wallTaggedBarrier from '../assets/walls/wall-tagged-barrier.jpg';
 
 const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
 
@@ -318,11 +317,8 @@ const FEATURED_TIKTOK = {
 <!-- BEHIND-THE-SCENES CREW CALLOUT: the signup above is the mailing list
      and is for everyone; this is the pitch for people who want to WORK on
      Trash Talk NYC (roles live at /recruit). -->
-<!-- The barrier carries a road-safety company's sign with a phone
-     number and URL, so this wall is softly blurred as well as dimmed:
-     texture yes, someone else's ad copy no. -->
-<section class="crew wall">
-  <WallPhoto src={wallTaggedBarrier} dim={0.74} filter="blur(4px)" />
+<!-- Post No Bills green, not a wall (captain, 2026-10-09) -->
+<section class="crew">
   <div class="wrap crew-grid">
     <img class="ill crew-art" src={illFamilyVests.src} alt="" />
     <div>
@@ -444,16 +440,11 @@ const FEATURED_TIKTOK = {
     padding-right: 100px;
   }
 
-  .gfm {
-    background: var(--paper-bright);
-    color: var(--black);
-    border: var(--ink);
-    border-radius: 10px;
-    padding: 12px;
-  }
+  /* No outline around the widget (captain, 2026-10-09) */
+  .gfm { color: var(--black); }
 
-  /* The live GoFundMe widget, boxed in poster paper so it reads as part
-     of the card; its internals are an iframe and stay GoFundMe's. */
+  /* The live GoFundMe widget sits straight on the card; its internals
+     are an iframe and stay GoFundMe's. */
   .gfm :global(.gfm-embed) { min-height: 180px; }
 
   .donate-note { margin: 30px 0 0; font-size: 1.12rem; }
@@ -466,7 +457,6 @@ const FEATURED_TIKTOK = {
     .donate-art { width: 170px; right: 10px; top: 6px; }
     .donate-eyebrow { font-size: clamp(2.4rem, 4vw, 3.2rem); }
     .donate-title { margin-left: 64px; font-size: clamp(1.7rem, 2.6vw, 2.2rem); padding-right: 160px; }
-    .gfm { padding: 18px; }
   }
 
   /* ── SOCIALS ── */
@@ -587,7 +577,16 @@ const FEATURED_TIKTOK = {
 
   @media (min-width: 761px) {
     .socials { padding-block: 64px 70px; }
-    .feeds { grid-template-columns: repeat(2, minmax(0, 26.25rem)); gap: clamp(32px, 4vw, 64px); margin-top: 60px; }
+    /* Similar lengths side by side (captain, 2026-10-09): Instagram's
+       player grows taller with its width while TikTok's stays ~745px,
+       so Instagram gets the wider column (px, because both players size
+       in px) and the paper frames stretch to the taller one */
+    .feeds {
+      grid-template-columns: minmax(0, 560px) minmax(0, 360px);
+      align-items: stretch;
+      gap: clamp(32px, 4vw, 64px);
+      margin-top: 60px;
+    }
     .feed { padding: 18px 16px 16px; }
     .feed :global(.feed-slap) { top: -40px; right: -30px; width: 90px; }
     .soc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
@@ -810,6 +809,7 @@ const FEATURED_TIKTOK = {
 
   /* ── CREW CALLOUT ── */
   .crew {
+    background-color: var(--green);
     color: var(--beige);
     padding-block: 26px 52px;
   }

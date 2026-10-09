@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
-import { mediaSections, moreMediaTagline, type MediaSectionId } from '../../lib/media';
+import { PHOTO_ALBUMS, mediaSections, moreMediaTagline, type MediaSectionId } from '../../lib/media';
 import vestSticker from '../../assets/vest-sticker.png';
 import illGloveShovel from '../../assets/ill-glove-shovel-beige.svg';
 import illFamilyVests from '../../assets/ill-family-vests-beige.svg';
@@ -47,16 +47,25 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
           <>
             <p class="mono mm-soon" data-en="Coming soon" data-es="Muy pronto">Coming soon</p>
             <a class:list={['btn', look[s.id].soonBtn, 'mm-btn']} href={s.path}>
-              <span data-en={`About our ${s.label} →`} data-es={`Sobre nuestro ${s.label} →`}>About our {s.label} →</span>
+              <span data-en={`${s.action.en} →`} data-es={`${s.action.es} →`}>{s.action.en} →</span>
             </a>
           </>
         ) : (
           <a class="btn btn-primary mm-btn" href={s.path}>
-            <span data-en="Watch the video →" data-es="Ver el video →">Watch the video →</span>
+            <span data-en={`${s.action.en} →`} data-es={`${s.action.es} →`}>{s.action.en} →</span>
           </a>
         )}
       </article>
     ))}
+  </section>
+
+  <!-- Photo Albums is a More Media page but not a channel, so it gets
+       its own strip below the three-channel layout -->
+  <section class="wrap mm-albums">
+    <a class="mm-albums-card paste f-staple" href={PHOTO_ALBUMS.path}>
+      <span class="mm-albums-name" data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</span>
+      <span class="btn btn-purple" data-en="Look →" data-es="Ver →">Look →</span>
+    </a>
   </section>
 </BaseLayout>
 
@@ -65,7 +74,7 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 52px;
-    padding-block: 64px 72px;
+    padding-block: 64px 0;
   }
 
   .mm-card {
@@ -101,6 +110,8 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
     line-height: 0.95;
   }
 
+  /* Yellow on the dark stocks — the Podcast heading included (captain,
+     2026-10-09) */
   .mm-purple .mm-name,
   .mm-green .mm-name { color: var(--yellow); }
   .mm-paper .mm-name { color: var(--purple); }
@@ -124,11 +135,34 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
      line up their buttons on desktop */
   .mm-btn { margin-top: auto; align-self: stretch; }
 
+  .mm-albums { padding-block: 52px 72px; }
+
+  .mm-albums-card {
+    --flyer-bg: var(--paper);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 24px;
+    padding: 24px 22px;
+    color: var(--black);
+    text-decoration: none;
+  }
+
+  .mm-albums-name {
+    font-family: var(--display);
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--purple);
+  }
+
+  .mm-albums-card:hover .btn { background: var(--yellow); color: var(--black); }
+
   @media (min-width: 761px) {
     .mm-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: clamp(24px, 3vw, 40px);
-      padding-block: 88px 96px;
+      padding-block: 88px 0;
     }
 
     .mm-card {
@@ -138,5 +172,8 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
     .mm-card :global(.mm-slap) { top: -40px; width: 92px; }
     .mm-name { font-size: clamp(2.8rem, 3.6vw, 3.6rem); }
     .mm-btn { align-self: flex-start; }
+    .mm-albums { padding-block: 64px 104px; }
+    .mm-albums-card { padding: 30px clamp(24px, 3vw, 40px); }
+    .mm-albums-name { font-size: clamp(2.8rem, 4vw, 3.6rem); }
   }
 </style>

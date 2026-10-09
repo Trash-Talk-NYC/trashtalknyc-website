@@ -1,26 +1,30 @@
 ---
 /**
- * Channel switcher under each More Media subpage hero, so readers can
- * hop between YouTube, Podcast, and Substack without going back up to
- * the overview. Labels are brand names, identical in EN and ES.
+ * Subpage switcher under each More Media subpage hero, so readers can
+ * hop between YouTube, Podcast, Substack, and Photo Albums without going
+ * back up to the overview. Channel labels are brand names, identical in
+ * EN and ES; Photo Albums translates.
  */
-import { mediaSections, type MediaSectionId } from '../lib/media';
+import { PHOTO_ALBUMS, mediaSections, type MediaSectionId } from '../lib/media';
 
 interface Props {
-  current: MediaSectionId;
+  current: MediaSectionId | 'photo-albums';
 }
 
 const { current } = Astro.props;
 ---
 
 <nav class="wrap ms-nav" aria-labelledby="msNavLabel">
-  <span class="sr-only" id="msNavLabel" data-en="More Media channels" data-es="Canales de Más Medios">More Media channels</span>
+  <span class="sr-only" id="msNavLabel" data-en="More Media pages" data-es="Páginas de Más Medios">More Media pages</span>
   <ul>
     {mediaSections.map((s) => (
       <li>
         <a href={s.path} aria-current={s.id === current ? 'page' : undefined}>{s.label}</a>
       </li>
     ))}
+    <li>
+      <a href={PHOTO_ALBUMS.path} aria-current={current === 'photo-albums' ? 'page' : undefined} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a>
+    </li>
   </ul>
 </nav>
 
