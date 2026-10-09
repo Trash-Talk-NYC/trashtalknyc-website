@@ -74,6 +74,13 @@ describe('signupSchema', () => {
     expect(signupSchema.safeParse(validSignup).success).toBe(true);
   });
 
+  it('photo consent is optional and only accepts a checked box', () => {
+    expect(signupSchema.safeParse(validSignup).success).toBe(true);
+    const checked = signupSchema.safeParse({ ...validSignup, photoConsent: 'on' });
+    expect(checked.success && checked.data.photoConsent).toBe('on');
+    expect(signupSchema.safeParse({ ...validSignup, photoConsent: 'yes' }).success).toBe(false);
+  });
+
   it('passes the Turnstile token through and tolerates its absence', () => {
     const withToken = signupSchema.safeParse({ ...validSignup, 'cf-turnstile-response': 'tok' });
     expect(withToken.success && withToken.data['cf-turnstile-response']).toBe('tok');

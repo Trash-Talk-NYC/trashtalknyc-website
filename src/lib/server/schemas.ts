@@ -69,6 +69,8 @@ export const signupSchema = z
     hearOther: z.string().trim().max(200).optional(),
     waiverCheck: waiverAccepted,
     ageCheck: waiverAccepted,
+    // Optional photo/video consent: 'on' when checked, absent otherwise
+    photoConsent: z.literal('on').optional(),
   })
   .superRefine((data, ctx) => {
     if (!COUNTRY_VALUES.includes(data.country)) {

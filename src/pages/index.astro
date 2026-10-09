@@ -279,6 +279,11 @@ const FEATURED_TIKTOK = {
           <input type="checkbox" id="ageCheck" name="ageCheck" required />
           <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *</span>
         </label>
+        <!-- Optional photo consent (captain, 2026-10-09): not required to sign up -->
+        <label class="check full">
+          <input type="checkbox" id="photoConsent" name="photoConsent" />
+          <span><span data-en="Trash Talk NYC may use photos and videos of me taken at events." data-es="Trash Talk NYC puede usar fotos y videos míos tomados en los eventos.">Trash Talk NYC may use photos and videos of me taken at events.</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></span>
+        </label>
 
         {turnstileSiteKey && (
           <div class="field full turnstile-group">

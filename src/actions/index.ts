@@ -27,6 +27,14 @@ import {
  */
 const PENDING_HEAR_VALUES = ['Article', 'Somewhere else'];
 
+/**
+ * Brevo attribute for the signup's optional photo/video consent checkbox.
+ * null until the attribute exists in Brevo (pending captain approval):
+ * the consent is validated and computed below but not sent. Set this to
+ * the attribute's name (e.g. 'PHOTO_CONSENT') to start recording it.
+ */
+const PHOTO_CONSENT_ATTRIBUTE: string | null = null;
+
 /** The HEAR_ABOUT_US choice that carries the free-text companion. */
 const HEAR_SOMEWHERE_ELSE = 'Somewhere else';
 
@@ -367,6 +375,7 @@ export const server = {
           HEAR_ABOUT_US: input.hear,
           HEAR_ABOUT_US_OTHER: hearOther,
           WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
+          ...(PHOTO_CONSENT_ATTRIBUTE ? { [PHOTO_CONSENT_ATTRIBUTE]: input.photoConsent === 'on' ? 'true' : 'false' } : {}),
         }),
         requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
       );
