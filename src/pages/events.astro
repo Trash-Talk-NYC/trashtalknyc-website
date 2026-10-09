@@ -46,7 +46,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
 
   <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4) -->
   <section class="ev-section wall">
-    <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.5} duotone={0.4} seed={4} />
+    <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.5} duotone={0.18} seed={4} />
     <div class="wrap">
     <div class="list-head">
       <h2 data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</h2>
@@ -86,8 +86,10 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
         </div>
         <div class="ne-actions">
           <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
-          <p class="ne-or" data-en="or follow along" data-es="o síguenos">or follow along</p>
-          <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
+          <div class="ne-follow">
+            <p class="ne-or" data-en="or follow along" data-es="o síguenos">or follow along</p>
+            <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
+          </div>
         </div>
       </div>
     )}
@@ -327,11 +329,12 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     padding-bottom: 40px;
   }
 
+  /* One left-aligned unit (captain, 2026-10-09): the message, then the
+     newsletter button with "or follow along" and the icons on its row */
   .no-events {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
-    align-items: start;
+    gap: 22px;
+    justify-items: start;
     color: var(--beige);
     padding: 8px 0 56px;
   }
@@ -345,8 +348,9 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
 
   .ne-sub { margin: 0; font-size: 1.2rem; font-weight: 500; }
 
-  .ne-actions { display: grid; justify-items: start; gap: 12px; }
-  .ne-or { margin: 6px 0 0; font-size: 1rem; font-weight: 500; opacity: 0.85; }
+  .ne-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+  .ne-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .ne-or { margin: 0; font-size: 1rem; font-weight: 500; opacity: 0.85; }
 
   .nudge {
     color: var(--beige);
@@ -362,7 +366,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     .list-head h2 { font-size: clamp(3rem, 6vw, 4.8rem); }
 
     .nudge { margin-block: 36px 84px; }
-    .no-events { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; padding-bottom: 88px; }
+    .no-events { padding-bottom: 88px; }
     .nudge p { font-size: 1.3rem; }
     .nudge .btn { width: auto; }
   }
