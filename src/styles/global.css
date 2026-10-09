@@ -130,6 +130,11 @@ h1, h2, h3 {
 a { color: inherit; }
 button { font: inherit; }
 
+/* The UA's "bolder" climbs past the loaded faces (a <b> inside a Medium
+   label resolved to a faux 900), so emphasis is pinned to Barlow Bold —
+   one of the three body weights the style guide uses (400/500/700). */
+b, strong { font-weight: 700; }
+
 :focus-visible {
   outline: 3px solid var(--yellow);
   outline-offset: 3px;
@@ -358,7 +363,7 @@ input[aria-invalid='true'] { border-color: var(--error); }
   border-radius: 999px;
   padding: 4px 11px;
   min-height: var(--tap);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
   background: transparent;
   color: var(--black);

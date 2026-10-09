@@ -35,6 +35,9 @@ const orgSchema = {
     'https://trashtalknyc.eventbrite.com',
   ],
 };
+
+// The reel the captain asked to feature by the Socials section (2026-10-09)
+const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 ---
 
 <BaseLayout
@@ -95,8 +98,38 @@ const orgSchema = {
         </a>
       ))}
     </div>
+
+    <!-- Featured reel (captain, 2026-10-09): Instagram's official embed,
+         pasted up and pinned like the other cards. The blockquote IS the
+         fallback: until embed.js swaps it for the player (or if it never
+         loads) it's a plain link to the reel. embed.js is only fetched
+         when the section nears the viewport (script below), so Instagram
+         isn't contacted by visitors who never scroll this far. -->
+    <figure class="reel paste">
+      <Image src={vestSticker} alt="" class="slap reel-slap" width={96} densities={[1, 2]} />
+      <figcaption class="mono reel-cap" data-en="From our Instagram" data-es="De nuestro Instagram">From our Instagram</figcaption>
+      <blockquote class="instagram-media reel-embed" data-instgrm-permalink={`${FEATURED_REEL}?utm_source=ig_embed`} data-instgrm-version="14">
+        <a href={FEATURED_REEL} target="_blank" rel="noopener" data-en="Watch this reel on Instagram →" data-es="Mira este reel en Instagram →">Watch this reel on Instagram →</a>
+      </blockquote>
+    </figure>
   </div>
 </section>
+
+<script>
+  // Load Instagram's embed script only when the reel is about to be seen
+  const reel = document.querySelector('.reel-embed');
+  if (reel && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      const s = document.createElement('script');
+      s.src = 'https://www.instagram.com/embed.js';
+      s.async = true;
+      document.body.appendChild(s);
+    }, { rootMargin: '600px 0px' });
+    io.observe(reel);
+  }
+</script>
 
 <!-- NEWSLETTER SIGNUP -->
 <section class="signup" id="signup">
@@ -463,8 +496,59 @@ const orgSchema = {
     color: var(--purple);
   }
 
+  /* Instagram's player is 326–540px wide; the paper frame hugs it */
+  .reel {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    margin: 40px auto 0;
+    padding: 14px 12px 12px;
+    background-color: var(--paper);
+    color: var(--black);
+  }
+
+  .reel :global(.reel-slap) {
+    top: -30px;
+    right: -10px;
+    width: 64px;
+    height: auto;
+    transform: rotate(9deg);
+  }
+
+  .reel-cap {
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+
+  /* Overrides for Instagram's own inline styles, so the player and its
+     link fallback fill the frame instead of floating with margins */
+  .reel :global(.instagram-media),
+  .reel :global(iframe.instagram-media) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .reel-embed {
+    margin: 0;
+    padding: 28px 16px;
+    background: var(--paper-bright);
+    border: 2px dashed rgba(29, 29, 35, 0.3);
+    text-align: center;
+  }
+
+  .reel-embed a {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--purple);
+  }
+
   @media (min-width: 761px) {
     .socials { padding-block: 64px 70px; }
+    .reel { margin-top: 56px; padding: 18px 16px 16px; }
+    .reel :global(.reel-slap) { top: -40px; right: -30px; width: 90px; }
     .soc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
     .soc-tile { padding: 20px 18px; }
     .soc-tile:last-child:nth-child(odd) { grid-column: auto; }
@@ -656,7 +740,7 @@ const orgSchema = {
 
   .form-success svg { width: 3rem; height: 3rem; color: var(--purple); margin-bottom: 1rem; }
   .form-success h3 { font-size: 2.4rem; color: var(--purple); margin-bottom: 0.5rem; }
-  .form-success p { font-weight: 600; }
+  .form-success p { font-weight: 500; }
 
   @media (min-width: 761px) {
     #volunteerForm {
@@ -697,11 +781,11 @@ const orgSchema = {
     align-items: center;
   }
 
+  /* The whole drawing, never cropped (captain, 2026-10-09): it's near-
+     square, so width alone sizes it */
   .crew-art {
-    width: 150px;
-    height: 110px;
-    object-fit: cover;
-    object-position: center 55%;
+    width: 140px;
+    height: auto;
   }
 
   .crew h2 { font-size: 2.8rem; margin-bottom: 16px; }
@@ -718,7 +802,7 @@ const orgSchema = {
   @media (min-width: 761px) {
     .crew { padding-block: 44px 80px; }
     .crew-grid { grid-template-columns: auto minmax(0, 1fr); gap: 56px; }
-    .crew-art { width: 260px; height: 170px; }
+    .crew-art { width: 230px; }
     .crew h2 { font-size: clamp(2.8rem, 5vw, 4.4rem); margin-bottom: 18px; }
     .crew p { margin: 0 0 56px; }
     .crew .btn { width: auto; }

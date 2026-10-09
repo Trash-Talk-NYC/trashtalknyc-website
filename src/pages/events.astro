@@ -279,7 +279,7 @@ const nextEvent = upcoming[0]?.props ?? null;
     color: var(--black);
     padding: 24px 18px;
     text-align: center;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   @media (min-width: 761px) {
@@ -328,7 +328,7 @@ const nextEvent = upcoming[0]?.props ?? null;
   .no-events {
     padding: 24px 0 40px;
     color: var(--beige);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .nudge {
@@ -351,11 +351,10 @@ const nextEvent = upcoming[0]?.props ?? null;
     transform: rotate(9deg);
   }
 
+  /* Whole drawing, never cropped — same call as the homepage crew art */
   .nudge .ill {
-    width: 120px;
-    height: 92px;
-    object-fit: cover;
-    object-position: center 55%;
+    width: 96px;
+    height: auto;
   }
 
   .nudge p { margin: 0 0 16px; font-size: 1.15rem; }
@@ -374,7 +373,7 @@ const nextEvent = upcoming[0]?.props ?? null;
     }
 
     .nudge :global(.nudge-slap) { top: -38px; right: -20px; width: 104px; }
-    .nudge .ill { width: 150px; height: 120px; }
+    .nudge .ill { width: 130px; }
     .nudge .btn { width: auto; }
   }
 

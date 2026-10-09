@@ -70,11 +70,11 @@ const year = new Date().getFullYear();
 
   /* The vest as its own large sticker beside the sign-off, right-
      aligned with the rest of the column on desktop (captain: larger
-     and right-aligned, not slapped over the wordmark). */
+     and right-aligned, not slapped over the wordmark) and set straight,
+     not tilted (captain, 2026-10-09). */
   footer :global(.foot-vest) {
     width: 150px;
     height: auto;
-    transform: rotate(8deg);
     filter: drop-shadow(3px 4px 0 rgba(234, 233, 218, 0.22));
     justify-self: end;
   }
@@ -84,7 +84,7 @@ const year = new Date().getFullYear();
     display: grid;
     grid-template-columns: repeat(2, max-content);
     gap: 8px 48px;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.05rem;
   }
 
