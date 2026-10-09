@@ -66,3 +66,25 @@ export const socials: Record<SocialId, SocialChannel> = {
 export function getSocials(ids: SocialId[]): SocialChannel[] {
   return ids.map((id) => socials[id]);
 }
+
+/**
+ * Long-form channels that have no sticker icon yet but still need a
+ * home URL — the More Media pages link out from here.
+ *
+ * TODO(captain): real Podcast and Substack URLs. Until then these stay
+ * `placeholder: true` and the More Media pages render an honest
+ * "coming soon" state instead of a link (no invented shows or posts).
+ */
+export type MediaLinkId = 'podcast' | 'substack';
+
+export interface MediaLink {
+  id: MediaLinkId;
+  label: string;
+  href: string;
+  placeholder?: boolean;
+}
+
+export const mediaLinks: Record<MediaLinkId, MediaLink> = {
+  podcast: { id: 'podcast', label: 'Podcast', href: '#', placeholder: true },
+  substack: { id: 'substack', label: 'Substack', href: '#', placeholder: true },
+};

@@ -76,6 +76,9 @@ Since the 2026-10 redesign it has **no hero and no page title box** (the round-2
 The email CTA reads "✉ Email team@trashtalknyc.org →" with the address underlined (captain: it must read as an action, "like an action word", on phones).
 The How-we-work copy (the "best way to know if something works" intro plus the four preferences, round 22) and the Why-email line are the **captain's own voice, approved verbatim** — "we move fast, and with effort" keeps its comma, the third preference keeps its quotation marks and has no full stop; do not smooth, formalize, or add connective tissue, in English or Spanish.
 Site-wide copy rule (captain, round 22): keep em dashes rare — roughly one per page, for a real aside — and avoid staccato fragment rhythm; prefer commas, colons, and full sentences. The waiver's legal dashes and "Page — Trash Talk NYC" title separators are deliberate exceptions.
+Naming rule (captain, 2026-10): site copy always says "Trash Talk NYC", never bare "Trash Talk" (only the Contact title "TALK TRASH" and the "talk trash" pun stay).
+On 2026-10-09 the captain explicitly approved applying it inside verbatim copy too: the Open Roles note, both role descriptions, and Fabiola's bio now say "Trash Talk NYC" (EN and ES); that is a sanctioned edit, not drift to revert.
+David's From the Founder letter and David's/Nandi's bios already say "Trash Talk NYC" wherever they name it.
 The round-15 verbatim opening statement ("This isn't cute. …") and the three pillars were removed in the round-20 restructure — they live in git history if the captain wants them back.
 The mailto subject is the captain's line with a deliberate fill-in placeholder: `I'm [your name] and I want to join Trash Talk NYC` (role boxes append `— <Role>`); a mailto can't know the sender, so the subject asks them to say so.
 English subjects are baked into the static hrefs and the language toggle swaps them client-side from `data-subject-*` attributes, because `setLang` never translates attributes.
@@ -83,6 +86,15 @@ Links to the page: the nav's About dropdown ("Open Roles"), the footer ("Open Ro
 The About closing section still carries the legacy `#join-the-team` anchor id so old links keep landing somewhere sensible.
 That move kept a permanent `/contact/join` → `/recruit` 301, declared in `astro.config.mjs` (`redirects`, the single source of truth the Netlify adapter emits `_redirects` from — never hand-write that file); the From the Founder renames below deliberately got no such rule because those URLs were never public.
 The former `joinTeam` Astro Action, its schema, and the Netlify Blobs holding pen (`join-team-applications` store) were **deleted, not disabled** — if a form comes back, the validated intake pattern lives in git history (`git show 1f55978`); the Blobs store may still hold applications submitted while the form was live.
+
+## More Media — /more-media and its three channel subpages
+
+Added 2026-10-09 (captain): `/more-media` is a title + description hero ("Hear us talk trash across several platforms.") over three posters, one per channel, linking to `/more-media/youtube`, `/more-media/podcast`, and `/more-media/substack`.
+Routes, channel copy, the embedded video, and the tagline live in `src/lib/media.ts`, consumed by the pages, the nav's More Media dropdown (desktop and phone, same disclosure pattern as About), and the footer.
+Channel URLs do **not** live there: YouTube/Facebook/Podcast/Substack placeholders are all in `src/lib/socials.ts` (`placeholder: true`, `href: '#'`), so filling one in is a one-line change.
+The YouTube subpage embeds the captain's video through `youtube-nocookie.com`; the iframe's accessible title is translated via `data-title-en`/`data-title-es` (covered by the bilingual gate).
+Podcast and Substack have no channels yet, so their pages are an honest "coming soon" (`MediaComingSoon.astro`) — never invent shows, episodes, or posts; when a URL arrives, flip that section's `comingSoon` in `media.ts` and give it real content.
+Out of scope until the captain decides: a Gallery page and an "Our Story" page under About.
 
 ## Projects page — decoupled to `fm/projects-tree-guard`
 
@@ -154,7 +166,7 @@ So an `aria-label` stays English after a toggle; give controls a bilingual acces
 Always pass `width={<largest srcset width>}` alongside `widths` to cap the fallback.
 * Team identity (names, roles, bios, social-link slots, portrait crops, meta descriptions) lives in `src/lib/team.ts`, consumed by the About page and — through `getTeamMember('david')` in `src/lib/founder.ts` — by the From the Founder sign-off, byline title, and meta description.
 The per-person `/about/{id}` pages were pulled from this release to the `fm/about-individual-pages` branch (captain, round 23) — continue that work there; `socials`/`portrait`/`metaDescription` in `team.ts` are dormant data kept for their return, and the About bios' names are plain `<mark>` text (no links) until then.
-All three bios reach us through the captain and their English is kept **verbatim** (David's own words, superseding round 28's text; Nandi's own words, round 16; Fabiola's from the captain, rounds 18/27 with a single flagged firstmate edit): do not reword, tighten, or re-punctuate them, and keep the Spanish tracking whatever the English says rather than smoothing it.
+All three bios reach us through the captain and their English is kept **verbatim** (David's own words, superseding round 28's text; Nandi's own words, round 16; Fabiola's from the captain, rounds 18/27 with a single flagged firstmate edit, plus the captain-approved "Trash Talk NYC" rename of 2026-10-09): do not reword, tighten, or re-punctuate them, and keep the Spanish tracking whatever the English says rather than smoothing it.
 Only the paragraph breaks are ours, and the per-bio comments in `team.ts` record which round each came from and which quirks (David's "Hello!" opener, Fabiola's four-dot ellipses) are deliberate.
 A role rename has to land in two places for Nandi and Fabiola, whose `metaDescription` embeds the English role verbatim ("Meet Nandi, `<role>` at Trash Talk NYC, …"); David's paraphrases the title instead ("organizer of Trash Talk NYC"), so it survives a rename.
 The From the Founder page names David's role in its byline title and meta description but reads both from `team.ts` at build time, so it is not a touchpoint (see "From the Founder" above).

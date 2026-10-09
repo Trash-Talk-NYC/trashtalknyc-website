@@ -1,0 +1,138 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediaHero from '../../components/MediaHero.astro';
+import MediaSubnav from '../../components/MediaSubnav.astro';
+import { MORE_MEDIA_PATH, featuredVideo, getMediaSection, youtubeEmbedUrl } from '../../lib/media';
+import vestSticker from '../../assets/vest-sticker.png';
+
+/**
+ * More Media → YouTube (captain, 2026-10-09): embeds the video the
+ * captain sent, pasted up on the wall and pinned by the vest sticker
+ * like the team photo. youtube-nocookie keeps YouTube's tracking
+ * cookies off the page until someone actually presses play.
+ *
+ * The iframe's accessible title is an attribute, which setLang never
+ * translates, so it carries data-title-en/es and the script below
+ * swaps it on language change (the bilingual gate checks that pair).
+ */
+const section = getMediaSection('youtube');
+const videoTitle = {
+  en: `YouTube video: ${featuredVideo.caption.en}`,
+  es: `Video de YouTube: ${featuredVideo.caption.es}`,
+};
+---
+
+<BaseLayout
+  title="YouTube — Trash Talk NYC"
+  description="Watch Trash Talk NYC on YouTube: longer videos from the cleanups, the crew, and everything around them."
+>
+  <MediaHero
+    eyebrow={{ en: 'More Media', es: 'Más Medios' }}
+    eyebrowHref={MORE_MEDIA_PATH}
+    title={[{ en: section.label, es: section.label }]}
+    description={section.blurb}
+  />
+
+  <MediaSubnav current="youtube" />
+
+  <section class="wrap yt-body">
+    <figure class="yt-frame paste">
+      <Image src={vestSticker} alt="" class="slap yt-slap" width={110} densities={[1, 2]} />
+      <div class="yt-ratio">
+        <iframe
+          src={youtubeEmbedUrl(featuredVideo.id)}
+          title={videoTitle.en}
+          data-title-en={videoTitle.en}
+          data-title-es={videoTitle.es}
+          loading="lazy"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <figcaption class="yt-caption" data-en={featuredVideo.caption.en} data-es={featuredVideo.caption.es}>{featuredVideo.caption.en}</figcaption>
+    </figure>
+
+    {section.channelHref && (
+      <a class="btn btn-primary yt-channel" href={section.channelHref} target="_blank" rel="noopener">
+        <span data-en="More on our YouTube channel →" data-es="Más en nuestro canal de YouTube →">More on our YouTube channel →</span>
+      </a>
+    )}
+  </section>
+</BaseLayout>
+
+<script>
+  import { getCurrentLang, onLanguageChange, type Lang } from '../../lib/language';
+
+  const frames = Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe[data-title-en]'));
+
+  function applyTitles(lang: Lang) {
+    frames.forEach((f) => {
+      const title = f.getAttribute(`data-title-${lang}`);
+      if (title) f.title = title;
+    });
+  }
+
+  applyTitles(getCurrentLang());
+  onLanguageChange(applyTitles);
+</script>
+
+<style>
+  .yt-body {
+    display: grid;
+    justify-items: center;
+    gap: 32px;
+    padding-block: 64px 80px;
+  }
+
+  /* The video pasted up as a poster: paper border around the frame,
+     the vest sticker pinning its corner */
+  .yt-frame {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    margin: 0;
+    padding: 12px 12px 14px;
+    background-color: var(--paper);
+    color: var(--black);
+  }
+
+  /* Pinned mostly outside the frame so it never hides YouTube's own
+     corner controls */
+  .yt-frame :global(.yt-slap) {
+    top: -40px;
+    right: -14px;
+    width: 64px;
+    height: auto;
+    transform: rotate(9deg);
+  }
+
+  .yt-ratio {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--black);
+  }
+
+  .yt-ratio iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .yt-caption {
+    padding-top: 12px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  @media (min-width: 761px) {
+    .yt-body { padding-block: 72px 104px; }
+    .yt-frame { padding: 18px 18px 20px; }
+    .yt-frame :global(.yt-slap) { top: -62px; right: -66px; width: 110px; }
+    .yt-caption { font-size: 0.95rem; padding-top: 16px; }
+  }
+</style>

@@ -10,6 +10,7 @@
 import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
+import { MORE_MEDIA_PATH } from '../lib/media';
 import wordmarkSticker from '../assets/wordmark-sticker.png';
 import vestSticker from '../assets/vest-sticker.png';
 
@@ -28,7 +29,7 @@ const year = new Date().getFullYear();
       <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
       <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
       <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
-      <li class="foot-links-spacer" aria-hidden="true"></li>
+      <li><a href={MORE_MEDIA_PATH} data-en="More Media" data-es="Más Medios">More Media</a></li>
       <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
     </ul>
     <div class="foot-right">
@@ -131,7 +132,6 @@ const year = new Date().getFullYear();
       gap: 48px;
     }
 
-    .foot-links-spacer { display: list-item; }
     .foot-right { justify-items: end; }
     .foot-big { text-align: right; }
     footer :global(.foot-vest) { width: 200px; }

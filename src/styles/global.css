@@ -172,6 +172,20 @@ body::after {
   text-transform: none;
 }
 
+/* Visually hidden but announced — e.g. a bilingual accessible name,
+   since setLang never translates aria-label attributes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── BUTTONS ── */
 .btn {
   display: inline-flex;

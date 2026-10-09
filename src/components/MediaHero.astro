@@ -1,0 +1,111 @@
+---
+/**
+ * Brick-framed hero shared by the More Media overview and its three
+ * subpages: an optional accent line, a title, and a description — the
+ * captain wanted this hero to be "less so of a title but more of a
+ * title + description" (2026-10-09). Same brick behavior as every
+ * other page: edge-to-edge halves scaling with the viewport, content
+ * kept inside the opening by vw-proportional padding.
+ *
+ * Titles are passed as leaves (one per line) so the language toggle can
+ * restructure them leaf by leaf — setLang swaps leaves, never reorders.
+ */
+import bricksTop from '../assets/bricks-top-lav.svg';
+import bricksBottom from '../assets/bricks-bottom-lav.svg';
+
+type Copy = { en: string; es: string };
+
+interface Props {
+  /** Accent line above the title; rendered as a link when `eyebrowHref` is set. */
+  eyebrow?: Copy;
+  eyebrowHref?: string;
+  /** One entry per line; the last line takes the accent color. */
+  title: Copy[];
+  description: Copy;
+}
+
+const { eyebrow, eyebrowHref, title, description } = Astro.props;
+---
+
+<section class="mh-hero">
+  <img class="bricks bricks-top" src={bricksTop.src} alt="" />
+  <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <div class="mh-inner">
+    {eyebrow && (
+      eyebrowHref ? (
+        <a class="mono mh-eyebrow" href={eyebrowHref}>
+          <span aria-hidden="true">←</span><span data-en={eyebrow.en} data-es={eyebrow.es}>{eyebrow.en}</span>
+        </a>
+      ) : (
+        <div class="mono mh-eyebrow" data-en={eyebrow.en} data-es={eyebrow.es}>{eyebrow.en}</div>
+      )
+    )}
+    <h1 class="mh-title">
+      {title.map((line, i) => (
+        <>
+          {i > 0 && <br />}
+          <span class:list={{ accent: i === title.length - 1 && title.length > 1 }} data-en={line.en} data-es={line.es}>{line.en}</span>
+        </>
+      ))}
+    </h1>
+    <p class="mh-desc" data-en={description.en} data-es={description.es}>{description.en}</p>
+  </div>
+</section>
+
+<style>
+  .mh-hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: var(--ink);
+  }
+
+  .mh-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: calc(100vw * 0.17) 22px;
+    text-align: center;
+  }
+
+  .mh-eyebrow {
+    color: var(--yellow);
+    font-size: 1.02rem;
+    text-decoration: none;
+  }
+
+  a.mh-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: var(--tap);
+  }
+
+  a.mh-eyebrow:hover span:last-child { text-decoration: underline; text-underline-offset: 4px; }
+
+  .mh-title {
+    font-size: 3.1rem;
+    line-height: 0.92;
+    color: var(--beige);
+  }
+
+  .mh-title .accent { color: var(--lavender); }
+
+  /* On phones the opening between the brick halves is roughly half the
+     viewport, so the description wraps to stay inside it */
+  .mh-desc {
+    max-width: 50vw;
+    margin: 4px 0 0;
+    color: var(--beige);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  @media (min-width: 761px) {
+    .mh-inner { gap: 14px; padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
+    .mh-title { font-size: clamp(3.4rem, 6.4vw, 5.8rem); }
+    .mh-desc { max-width: 34ch; font-size: clamp(1.25rem, 1.8vw, 1.55rem); }
+  }
+</style>

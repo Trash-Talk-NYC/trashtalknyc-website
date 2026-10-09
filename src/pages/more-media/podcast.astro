@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediaComingSoon from '../../components/MediaComingSoon.astro';
+import illFamilyVests from '../../assets/ill-family-vests-purple.svg';
+
+/**
+ * More Media → Podcast (captain, 2026-10-09). No show exists yet, so the
+ * page is an honest "coming soon" — see MediaComingSoon.
+ */
+---
+
+<BaseLayout
+  title="Podcast — Trash Talk NYC"
+  description="The Trash Talk NYC podcast is coming soon: conversations about trash, our city, and the people trying to fix it."
+>
+  <MediaComingSoon
+    id="podcast"
+    ill={illFamilyVests}
+    note={{
+      en: 'Our podcast isn’t out yet. Join the newsletter and you’ll hear the moment it launches.',
+      es: 'Nuestro podcast todavía no ha salido. Únete al boletín y te enterarás en cuanto se lance.',
+    }}
+  />
+</BaseLayout>
