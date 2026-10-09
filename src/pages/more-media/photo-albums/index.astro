@@ -1,0 +1,132 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import MediaHero from '../../../components/MediaHero.astro';
+import MediaSubnav from '../../../components/MediaSubnav.astro';
+import SectionWall from '../../../components/SectionWall.astro';
+import { MORE_MEDIA_PATH } from '../../../lib/media';
+import { albumCountLabel, albumPath, albums } from '../../../lib/albums';
+
+/**
+ * More Media → Photo Albums (captain, 2026-10-09). The list is the
+ * captain's E3 pick: one row per album — its name, photo count (or "coming
+ * soon") and a film-strip peek of its photos — so it stays easy to scan as
+ * albums are added (data in src/lib/albums.ts). A row with photos opens
+ * that album as a photo book.
+ */
+
+// Blank film frames for an album with no photos yet
+const EMPTY_FRAMES = 4;
+---
+
+<BaseLayout
+  title="Photo Albums — Trash Talk NYC"
+  description="Photo albums from Trash Talk NYC: the lab, the block party, and more."
+>
+  <MediaHero
+    eyebrow={{ en: 'More Media', es: 'Más Medios' }}
+    eyebrowHref={MORE_MEDIA_PATH}
+    title={[{ en: 'Photo', es: 'Álbumes' }, { en: 'Albums', es: 'de Fotos' }]}
+    description={{ en: 'Photos from Trash Talk NYC, album by album.', es: 'Fotos de Trash Talk NYC, álbum por álbum.' }}
+  />
+
+  <MediaSubnav current="photo-albums" />
+
+  <!-- A planting section (the lab, seedlings): green chalk -->
+  <section class="pa-sec wall">
+    <SectionWall kind="planting" dim={0.55} seed={5} />
+    <div class="wrap pa-body">
+      <ul class="pa-list">
+        {albums.map((album) => {
+          const count = albumCountLabel(album);
+          const open = album.photos.length > 0;
+          const Row = open ? 'a' : 'div';
+          return (
+            <li>
+              <Row class:list={['pa-row', { 'pa-open': open }]} {...(open ? { href: albumPath(album) } : {})}>
+                <div class="pa-meta">
+                  <span class="mono pa-num" data-en={album.number.en} data-es={album.number.es}>{album.number.en}</span>
+                  <h2 class="pa-name" data-en={album.name.en} data-es={album.name.es}>{album.name.en}</h2>
+                  <span class="mono pa-count" data-en={count.en} data-es={count.es}>{count.en}</span>
+                </div>
+                <div class="pa-strip" aria-hidden="true">
+                  {open
+                    ? album.photos.map((p) => (
+                        <Image src={p.src} alt="" class="pa-frame" width={240} widths={[120, 240]} sizes="120px" />
+                      ))
+                    : Array.from({ length: EMPTY_FRAMES }, () => <span class="pa-frame pa-frame-empty"></span>)}
+                </div>
+                {open && (
+                  <span class="mono pa-go" aria-hidden="true" data-en="Open →" data-es="Abrir →">Open →</span>
+                )}
+              </Row>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pa-body { padding-block: 48px 72px; }
+
+  .pa-list { list-style: none; display: grid; }
+
+  .pa-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    padding: 24px 0;
+    border-bottom: 2px dashed rgba(234, 233, 218, 0.3);
+    color: var(--beige);
+    text-decoration: none;
+  }
+
+  .pa-list li:first-child .pa-row { border-top: 2px dashed rgba(234, 233, 218, 0.3); }
+
+  .pa-meta { display: grid; gap: 4px; justify-items: start; }
+  .pa-num { color: var(--yellow); }
+  .pa-name { font-size: clamp(2.2rem, 5vw, 3.2rem); line-height: 1; }
+  .pa-count { opacity: 0.8; }
+
+  .pa-open:hover .pa-name,
+  .pa-open:focus-visible .pa-name { color: var(--yellow); }
+
+  /* Film strip: white-bordered frames in a row, clipped at the edge */
+  .pa-strip {
+    display: flex;
+    gap: 6px;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .pa-strip :global(.pa-frame) {
+    flex: none;
+    width: 92px;
+    height: 120px;
+    object-fit: cover;
+    border: 5px solid #fff;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.45);
+    display: block;
+  }
+
+  .pa-frame-empty { background: #cfcdbd; }
+
+  .pa-go {
+    justify-self: start;
+    padding: 10px 16px;
+    background: var(--yellow);
+    color: var(--black);
+    border: var(--ink);
+    font-size: 0.85rem;
+  }
+
+  @media (min-width: 761px) {
+    .pa-body { padding-block: 72px 104px; }
+    .pa-row { grid-template-columns: minmax(14rem, 0.8fr) minmax(0, 2fr) auto; gap: 32px; padding: 30px 0; }
+    .pa-strip :global(.pa-frame) { width: 112px; height: 146px; }
+    .pa-go { justify-self: end; }
+  }
+</style>

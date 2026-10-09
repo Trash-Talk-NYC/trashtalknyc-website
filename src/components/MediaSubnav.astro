@@ -45,7 +45,8 @@ const { current } = Astro.props;
     min-height: var(--tap);
     padding: 8px 18px;
     border: 2.5px solid var(--beige);
-    border-radius: 999px;
+    /* Rectangular, not pills (captain, 2026-10-09) */
+    border-radius: 0;
     font-family: var(--mono);
     font-weight: 700;
     font-size: 0.85rem;

@@ -37,7 +37,7 @@ const bioFlyer: Record<string, string> = {
 };
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 8, desktop: 5 };
+const bricks: BrickRows = { phone: 8, desktop: 8 };
 ---
 
 <BaseLayout
@@ -78,8 +78,10 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
               style={`background-image:url(${faceImage.src});background-size:${faceCrops[p.id]?.size};background-position:${faceCrops[p.id]?.position}`}
               aria-hidden="true"
             ></span>
-            <h2>{p.name}</h2>
-            <span class="role mono" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</span>
+            <div class="who-text">
+              <h2>{p.name}</h2>
+              <span class="role mono" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</span>
+            </div>
           </div>
           {p.bio.map((b) =>
             b.parts ? (
@@ -101,18 +103,13 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
 
   <!-- Closing hand-off to the recruitment page. Old emails linked
        /about#join-the-team; keep the anchor landing here. -->
+  <!-- Just the heading, the roles button, and the team inbox — nothing
+       else (captain, 2026-10-09: "unbelievably messy" before) -->
   <section class="lend" id="join-the-team">
-    <div class="wrap lend-grid">
-      <div>
-        <h2 data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
-        <p data-en="We need your help!" data-es="¡Necesitamos tu ayuda!">We need your help!</p>
-        <a class="btn btn-primary" href="/recruit" data-en="See the open roles →" data-es="Ver los puestos abiertos →">See the open roles →</a>
-        <!-- The team inbox, big and unmistakably a link (captain, 2026-10-09) -->
-        <p class="lend-mail">
-          <span data-en="Or write to us at" data-es="O escríbenos a">Or write to us at</span>
-          <a href="mailto:team@trashtalknyc.org">team@trashtalknyc.org</a>
-        </p>
-      </div>
+    <div class="wrap lend-inner">
+      <h2 data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
+      <a class="btn btn-primary" href="/recruit" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
+      <a class="lend-mail" href="mailto:team@trashtalknyc.org">team@trashtalknyc.org</a>
     </div>
   </section>
 </BaseLayout>
@@ -180,7 +177,11 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
   @media (min-width: 761px) {
     .tm-hero-inner { gap: 22px; padding: calc(100vw * 0.08) 16px calc(100vw * 0.08); }
     .tm-title { font-size: clamp(3.4rem, 6.4vw, 5.8rem); }
-    .tm-photo { padding: 14px 14px 18px; }
+    /* The hero always shows the full brick drawing on desktop, whose height
+       scales with the viewport, so the photo scales with it too and the
+       side columns stay one connected wall (captain, 2026-10-09) */
+    .tm-hero-inner { max-width: none; }
+    .tm-photo { width: min(46vw, 100%); padding: 14px 14px 18px; }
     .tm-photo figcaption { font-size: 0.72rem; }
 
     .tm-photo :global(.tm-slap) {
@@ -210,14 +211,16 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
     gap: 12px;
   }
 
+  /* Photo beside the name, with the role title left-aligned under the
+     name (captain, 2026-10-09) rather than pushed to the right edge */
   .bio .who {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 14px;
   }
 
-  .bio .who .role { margin-left: auto; color: var(--green); }
+  .who-text { display: grid; gap: 4px; justify-items: start; min-width: 0; }
+  .bio .who .role { color: var(--green); }
 
   .face {
     width: 68px;
@@ -252,18 +255,17 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
     padding-block: 40px;
   }
 
-  .lend h2 { font-size: 2.8rem; }
-  .lend p { margin: 12px 0 26px; font-size: 1.2rem; font-weight: 500; }
-  .lend .btn { width: 100%; }
-
-  .lend .lend-mail {
+  .lend-inner {
     display: grid;
-    gap: 2px;
-    margin: 22px 0 0;
+    justify-items: start;
+    gap: 18px;
   }
 
+  .lend h2 { font-size: 2.8rem; }
+  .lend .btn { width: 100%; justify-self: stretch; }
+
   /* Big, yellow, underlined: it has to read as tappable on phones */
-  .lend-mail a {
+  .lend-mail {
     font-family: var(--mono);
     font-weight: 700;
     font-size: clamp(1.15rem, 4.6vw, 1.7rem);
@@ -274,11 +276,11 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
     overflow-wrap: anywhere;
   }
 
-  .lend-mail a:hover { color: var(--beige); }
+  .lend-mail:hover { color: var(--beige); }
 
   @media (min-width: 761px) {
     .lend { padding-block: 56px; }
     .lend h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); }
-    .lend .btn { width: auto; }
+    .lend .btn { width: auto; justify-self: start; }
   }
 </style>

@@ -100,10 +100,10 @@ const look: Record<MediaSectionId, { tone: string; soonBtn: string; flyer: strin
     line-height: 0.95;
   }
 
-  /* Yellow on the dark stocks — the Podcast heading included (captain,
+  /* Yellow on purple, white on the green Podcast poster (captain,
      2026-10-09) */
-  .mm-purple .mm-name,
-  .mm-green .mm-name { color: var(--yellow); }
+  .mm-purple .mm-name { color: var(--yellow); }
+  .mm-green .mm-name { color: var(--beige); }
   .mm-paper .mm-name { color: var(--purple); }
 
   .mm-blurb {
@@ -147,6 +147,10 @@ const look: Record<MediaSectionId, { tone: string; soonBtn: string; flyer: strin
   }
 
   .mm-albums-card:hover .btn { background: var(--yellow); color: var(--black); }
+
+  /* Square-cornered buttons across More Media (captain, 2026-10-09) */
+  .mm-btn,
+  .mm-albums-card .btn { border-radius: 0; }
 
   @media (min-width: 761px) {
     .mm-grid {

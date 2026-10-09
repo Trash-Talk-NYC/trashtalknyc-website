@@ -84,6 +84,8 @@ const section = getMediaSection(id);
   }
 
   .cs-row { display: flex; flex-wrap: wrap; gap: 14px; }
+  /* Square-cornered buttons across More Media (captain, 2026-10-09) */
+  .cs-row .btn { border-radius: 0; }
   .cs-row .btn { width: 100%; }
 
   @media (min-width: 761px) {

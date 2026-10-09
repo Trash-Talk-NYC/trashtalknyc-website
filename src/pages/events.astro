@@ -16,7 +16,8 @@ const upcoming = upcomingRaw.map(ev => ({
 const nextEvent = upcoming[0]?.props ?? null;
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 7, desktop: 4 };
+// The hero is shorter with no event card in it, so it gets fewer rows
+const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, desktop: 3 };
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -36,15 +37,9 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
     <Bricks rows={bricks} />
     <div class="ev-hero-inner">
       <h1 class="ev-title"><span data-en="Club" data-es="Eventos">Club</span> <span class="accent" data-en="Events" data-es="del Club">Events</span></h1>
-      {nextEvent ? (
-        <HeroEventCard {...nextEvent} />
-      ) : (
-        <div class="next-empty paste f-tape">
-          <p data-en="No upcoming events right now. Check back soon!" data-es="No hay eventos próximos. ¡Vuelve pronto!">
-            No upcoming events right now. Check back soon!
-          </p>
-        </div>
-      )}
+      <!-- With no upcoming event the hero is just the title; the "no
+           events" line lives under All Club Events (captain, 2026-10-09) -->
+      {nextEvent && <HeroEventCard {...nextEvent} />}
     </div>
   </section>
 
@@ -274,15 +269,6 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
      over "del Club"): one-line Spanish outgrows the brick opening. */
   .ev-title span { display: block; }
 
-  .next-empty {
-    width: min(35rem, 100%);
-    --flyer-bg: var(--paper);
-    color: var(--black);
-    padding: 24px 18px;
-    text-align: center;
-    font-weight: 500;
-  }
-
   @media (min-width: 761px) {
     .ev-hero-inner { gap: 30px; padding: calc(100vw * 0.085) 16px calc(100vw * 0.085); }
     .ev-title { font-size: clamp(4.4rem, 8vw, 7rem); }
@@ -330,8 +316,9 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
   }
 
   .no-events {
-    padding: 24px 0 40px;
+    padding: 8px 0 32px;
     color: var(--beige);
+    font-size: 1.2rem;
     font-weight: 500;
   }
 
