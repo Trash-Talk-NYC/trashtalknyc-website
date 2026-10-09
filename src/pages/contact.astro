@@ -4,7 +4,6 @@ import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
-import illTreebed from '../assets/ill-treebed-beige.svg';
 
 /**
  * Contact — Talk Trash (sentence case, captain 2026-10-09). The choices are poster tiles in the captain's
@@ -26,7 +25,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 const monthOptions = rollingMonths();
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 5 };
+const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout
@@ -42,7 +41,6 @@ const bricks: BrickRows = { phone: 6, desktop: 5 };
   <section class="ct-hero brick-hero" style={brickHeroStyle(bricks)}>
     <Bricks rows={bricks} />
     <div class="ct-hero-inner">
-      <img class="hero-ill" src={illTreebed.src} alt="" />
       <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
       <h1 class="ct-title"><span data-en="Talk" data-es="Habla">Talk</span><br /><span class="accent" data-en="Trash" data-es="Basura">Trash</span></h1>
     </div>

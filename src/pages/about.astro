@@ -6,7 +6,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import vestSticker from '../assets/vest-sticker.png';
-import illFamilyVests from '../assets/ill-family-vests-beige.svg';
 
 /**
  * The Team — the group photo pasted up like a poster inside the brick
@@ -38,7 +37,7 @@ const bioFlyer: Record<string, string> = {
 };
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 8, desktop: 7 };
+const bricks: BrickRows = { phone: 8, desktop: 5 };
 ---
 
 <BaseLayout
@@ -51,7 +50,6 @@ const bricks: BrickRows = { phone: 8, desktop: 7 };
     <div class="tm-hero-inner">
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->
-      <img class="hero-ill" src={illFamilyVests.src} alt="" />
       <div class="mono tm-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="tm-title" data-en="The Team" data-es="El Equipo">The Team</h1>
       <figure class="tm-photo paste f-sticker">

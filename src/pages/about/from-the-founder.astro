@@ -5,7 +5,6 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
-import illGlovePlant from '../../assets/ill-glove-plant-beige.svg';
 
 /**
  * From the Founder — /about/from-the-founder: David's first-person
@@ -108,7 +107,7 @@ const story: Block[] = [
 ];
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 4 };
+const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
@@ -120,7 +119,6 @@ const bricks: BrickRows = { phone: 6, desktop: 4 };
   <section class="fd-hero brick-hero" style={brickHeroStyle(bricks)}>
     <Bricks rows={bricks} />
     <div class="fd-hero-inner">
-      <img class="hero-ill" src={illGlovePlant.src} alt="" />
       <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="fd-title">
         <span data-en="From the" data-es="Del">From the</span><br />

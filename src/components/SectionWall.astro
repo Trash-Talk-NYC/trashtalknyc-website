@@ -26,6 +26,11 @@ interface Props {
   tear?: 'top' | 'bottom' | 'both';
   /** Extra Roadtop Black shade over the photo for text contrast, 0–1. */
   dim?: number;
+  /**
+   * Cleanup only: how strongly the purple duotone covers the photo, 0–1.
+   * Below 1 the wall's own colors show through (Club Events, captain).
+   */
+  duotone?: number;
   /** Varies the tear so neighboring sections don't rip identically. */
   seed?: number;
   /**
@@ -36,7 +41,7 @@ interface Props {
   keepClear?: string;
 }
 
-const { kind, src, tear = 'both', dim = 0.35, seed = 1, keepClear } = Astro.props;
+const { kind, src, tear = 'both', dim = 0.35, duotone = 1, seed = 1, keepClear } = Astro.props;
 if (kind === 'cleanup' && !src) throw new Error('SectionWall: a cleanup wall needs a photo (src)');
 
 // 2400 is the chalk original's full width, so zoomed framings stay sharp
@@ -64,7 +69,10 @@ const bg = `background-image:url(${photo.src})`;
 
 <div class:list={['sw-layer', `sw-${kind}`]} aria-hidden="true" style={`clip-path:${clip};--sw-dim:${dim}`} data-keep-clear={kind === 'planting' ? keepClear : undefined}>
   {kind === 'cleanup' ? (
-    <div class="sw-photo sw-duo" style={bg}></div>
+    <>
+      {duotone < 1 && <div class="sw-photo" style={bg}></div>}
+      <div class="sw-photo sw-duo" style={`${bg};opacity:${duotone}`}></div>
+    </>
   ) : (
     <>
       <div class="sw-photo" style={bg}></div>
@@ -72,12 +80,8 @@ const bg = `background-image:url(${photo.src})`;
     </>
   )}
   <div class="sw-shade"></div>
-  {kind === 'planting' && (
-    <>
-      <div class="sw-photo sw-pop" style={`${bg};--sw-mask:url(${chalkMask.src})`}></div>
-      <div class="sw-legible"></div>
-    </>
-  )}
+  {kind === 'planting' && <div class="sw-photo sw-pop" style={`${bg};--sw-mask:url(${chalkMask.src})`}></div>}
+  {(kind === 'planting' || duotone < 1) && <div class="sw-legible"></div>}
 </div>
 
 <script>
@@ -152,8 +156,8 @@ const bg = `background-image:url(${photo.src})`;
 
   .sw-shade { background: rgba(29, 29, 35, var(--sw-dim)); }
 
-  /* Sections set their copy left (the donate block), so the bright
-     chalk is softened on that side only and stays vivid on the right */
+  /* Sections set their copy left, so a busy wall (bright chalk, or
+     graffiti showing its own colors) is softened on that side only */
   .sw-legible {
     position: absolute;
     inset: 0;
