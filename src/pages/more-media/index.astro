@@ -1,6 +1,9 @@
 ---
 import SectionWall from '../../components/SectionWall.astro';
-import wallRedBrick from '../../assets/walls/wall-red-brick.jpg';
+// The brick photo joined to its mirror image: twice as wide, so cover-
+// filling the section shows the bricks at about half the size (captain:
+// the bricks looked huge at 1440)
+import wallRedBrickWide from '../../assets/walls/wall-red-brick-wide.jpg';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
@@ -38,7 +41,7 @@ const look: Record<MediaSectionId, { tone: string; soonBtn: string; flyer: strin
   <!-- One torn-edge wall behind the channels and the albums strip
        (captain, 2026-10-09), purple kept light so the posters read -->
   <section class="mm-wall wall">
-  <SectionWall kind="cleanup" src={wallRedBrick} dim={0.5} duotone={0.18} seed={8} />
+  <SectionWall kind="cleanup" src={wallRedBrickWide} dim={0.5} duotone={0.18} seed={8} />
   <div class="wrap mm-grid" role="group" aria-label="Channels">
     {mediaSections.map((s) => (
       <article class:list={['mm-card', 'paste', look[s.id].tone, look[s.id].flyer]}>

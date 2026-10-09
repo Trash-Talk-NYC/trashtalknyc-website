@@ -13,7 +13,8 @@ import MediaSubnav from './MediaSubnav.astro';
 import { MORE_MEDIA_PATH, getMediaSection, type MediaSectionId } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
 import SectionWall from './SectionWall.astro';
-import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
+import wallCanSculpture from '../assets/walls/wall-can-sculpture.jpg';
+import wallStickerForklift from '../assets/walls/wall-sticker-forklift.jpg';
 
 interface Props {
   id: MediaSectionId;
@@ -34,9 +35,17 @@ const section = getMediaSection(id);
 
 <MediaSubnav current={id} />
 
-<!-- Torn-edge wall like the other More Media pages (captain, 2026-10-09) -->
+<!-- Torn-edge wall like the other More Media pages, a different photo on
+     each (captain, 2026-10-09): Podcast the crushed-can sculpture,
+     Substack the sticker-covered forklift -->
 <section class="cs-wall wall">
-<SectionWall kind="cleanup" src={wallRedBrick} dim={0.5} duotone={0.18} seed={id === 'podcast' ? 10 : 11} />
+<SectionWall
+  kind="cleanup"
+  src={id === 'podcast' ? wallCanSculpture : wallStickerForklift}
+  dim={0.55}
+  duotone={0.18}
+  seed={id === 'podcast' ? 10 : 11}
+/>
 <div class="wrap cs-body">
   <div class="cs-card paste f-sticker">
     <Image src={vestSticker} alt="" class="slap cs-slap" width={104} densities={[1, 2]} />
