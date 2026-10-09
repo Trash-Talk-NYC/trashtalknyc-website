@@ -38,7 +38,7 @@ const nextEvent = upcoming[0]?.props ?? null;
       {nextEvent ? (
         <HeroEventCard {...nextEvent} />
       ) : (
-        <div class="next-empty paste">
+        <div class="next-empty paste f-tape">
           <p data-en="No upcoming events right now. Check back soon!" data-es="No hay eventos próximos. ¡Vuelve pronto!">
             No upcoming events right now. Check back soon!
           </p>
@@ -73,7 +73,7 @@ const nextEvent = upcoming[0]?.props ?? null;
 
     <!-- Closing newsletter nudge (captain's wording), pinned by the
          vest sticker like the other pasted cards -->
-    <div class="nudge paste">
+    <div class="nudge paste f-sticker">
       <Image src={vestSticker} alt="" class="slap nudge-slap" width={104} densities={[1, 2]} />
       <img class="ill" src={illFamilyVests.src} alt="" />
       <div>
@@ -251,7 +251,7 @@ const nextEvent = upcoming[0]?.props ?? null;
   .ev-hero-inner {
     position: relative;
     z-index: 1;
-    max-width: 760px;
+    max-width: 47.5rem;
     margin-inline: auto;
     display: grid;
     gap: 22px;
@@ -274,8 +274,8 @@ const nextEvent = upcoming[0]?.props ?? null;
   .ev-title span { display: block; }
 
   .next-empty {
-    width: min(560px, 100%);
-    background-color: var(--paper);
+    width: min(35rem, 100%);
+    --flyer-bg: var(--paper);
     color: var(--black);
     padding: 24px 18px;
     text-align: center;
@@ -337,7 +337,7 @@ const nextEvent = upcoming[0]?.props ?? null;
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
     align-items: center;
-    background-color: var(--green);
+    --flyer-bg: var(--green);
     color: var(--beige);
     padding: 24px 18px;
     margin-block: 20px 44px;

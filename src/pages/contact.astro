@@ -53,7 +53,7 @@ const monthOptions = rollingMonths();
   </section>
 
   <section class="wrap ct-body">
-    <div class="ct-form paste">
+    <div class="ct-form paste f-tape">
       <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
       <div class="tiles" role="group" aria-labelledby="pickLabel">
         <button type="button" class="tile" aria-pressed="false" data-type="lead">
@@ -236,7 +236,7 @@ const monthOptions = rollingMonths();
     </div>
 
     <div class="side">
-      <aside class="banner paste" aria-labelledby="joinBannerHeading">
+      <aside class="banner paste f-sticker f-torn" aria-labelledby="joinBannerHeading">
         <Image src={vestSticker} alt="" class="slap banner-slap" width={96} densities={[1, 2]} />
         <img class="ill" src={illFamilyVestsBeige.src} alt="" />
         <h2 id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
@@ -295,7 +295,7 @@ const monthOptions = rollingMonths();
   }
 
   .ct-form {
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     padding: 22px 14px;
   }
@@ -466,7 +466,7 @@ const monthOptions = rollingMonths();
 
   .banner {
     position: relative;
-    background-color: var(--green);
+    --flyer-bg: var(--green);
     color: var(--beige);
     padding: 24px 18px;
     display: grid;

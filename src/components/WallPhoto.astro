@@ -1,0 +1,71 @@
+---
+/**
+ * A real NYC wall photo behind a section, darkened so the section's
+ * text and flyers stay readable (captain, 2026-10-09: "every section a
+ * different wall" on the homepage). Drop it as the FIRST child of a
+ * section that has the global `.wall` class; it sits under everything
+ * else in the section's own stacking context.
+ *
+ * Rendered through astro:assets so each wall ships as responsive webp
+ * (capped at 1600px, the sources' width) rather than the raw JPEG.
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  /** Opacity of the Roadtop Black shade over the photo, 0–1. */
+  dim: number;
+  /** CSS filter for the photo itself (e.g. to quiet a busy wall). */
+  filter?: string;
+  /** object-position, to keep the interesting part of the wall in frame. */
+  position?: string;
+  /** Above-the-fold walls (the hero) load eagerly. */
+  eager?: boolean;
+}
+
+const { src, dim, filter = 'none', position = 'center', eager = false } = Astro.props;
+---
+
+<div class="wall-layer" aria-hidden="true" style={`--wall-dim:${dim};--wall-filter:${filter};--wall-pos:${position}`}>
+  <Image
+    src={src}
+    alt=""
+    class="wall-photo"
+    width={1600}
+    widths={[640, 1024, 1600]}
+    sizes="100vw"
+    loading={eager ? 'eager' : 'lazy'}
+    decoding="async"
+  />
+</div>
+
+<style>
+  .wall-layer {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--black);
+  }
+
+  /* Explicit height beats the width/height attributes <Image> emits */
+  .wall-layer :global(.wall-photo) {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: var(--wall-pos);
+    filter: var(--wall-filter);
+    /* A hair of overscan so a blur filter never shows soft edges */
+    transform: scale(1.04);
+  }
+
+  .wall-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(29, 29, 35, var(--wall-dim));
+  }
+</style>

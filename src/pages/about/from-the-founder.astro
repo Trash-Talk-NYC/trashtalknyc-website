@@ -134,7 +134,7 @@ const story: Block[] = [
     <div class="fd-margin" aria-hidden="true">
       <img src={illTrash.src} alt="" />
     </div>
-    <article class="story paste">
+    <article class="story paste f-staple">
       <!-- Byline card (captain, 2026-08-13): circular photo + name +
            title, replacing the text-only byline. david-founder.jpg is a
            committed square crop of IMG_0952_Original.jpeg (sharp
@@ -248,14 +248,14 @@ const story: Block[] = [
      column; the recruit note proved this size/weight comfortable for
      long text on paper. */
   .story {
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     padding: 28px 18px 32px;
   }
 
   @media (min-width: 761px) {
     .fd-body {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 45rem) minmax(0, 1fr);
       gap: 28px;
       padding: 56px clamp(16px, 4vw, 48px) 72px;
     }

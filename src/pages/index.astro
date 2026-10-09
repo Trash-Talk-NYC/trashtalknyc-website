@@ -13,6 +13,12 @@ import illTreebed from '../assets/ill-treebed.svg';
 import illGloveShovel from '../assets/ill-glove-shovel-beige.svg';
 import illGlovePlant from '../assets/ill-glove-plant-beige.svg';
 import illFamilyVests from '../assets/ill-family-vests-beige.svg';
+import WallPhoto from '../components/WallPhoto.astro';
+import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
+import wallColorGraffiti from '../assets/walls/wall-color-graffiti.jpg';
+import wallPurpleShutter from '../assets/walls/wall-purple-shutter.jpg';
+import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
+import wallTaggedBarrier from '../assets/walls/wall-tagged-barrier.jpg';
 
 const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
 
@@ -54,7 +60,12 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 <!-- HERO: the brick drawing split into its two halves, stretched edge to
      edge, with the vest sticker logo centered in the opening and one
      button that says "Events" (captain). -->
-<section class="hero" id="top">
+<!-- Every homepage section is a different real wall (captain,
+     2026-10-09), darkened so its text and flyers read. The hero's red
+     brick is also flattened (low contrast) so the lavender brick
+     drawing on top stays the star. -->
+<section class="hero wall" id="top">
+  <WallPhoto src={wallRedBrick} dim={0.8} filter="contrast(0.5) saturate(0.6)" eager />
   <img class="bricks bricks-top" src={bricksTop.src} alt="" />
   <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
   <div class="hero-inner">
@@ -70,9 +81,10 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 <!-- DONATE: the "Because of you:" card styled as a wheatpasted flyer
      (captain) — poster paper, a tilt, the vest sticker pinning the
      corner, and the GoFundMe widget boxed inside. -->
-<section class="bento">
+<section class="bento wall">
+  <WallPhoto src={wallColorGraffiti} dim={0.6} />
   <div class="wrap bento-grid">
-    <article class="card donate paste" id="donate">
+    <article class="card donate paste f-sticker f-torn" id="donate">
       <Image src={vestSticker} alt="" class="slap slap-donate" width={110} densities={[1, 2]} />
       <img class="ill donate-art" src={illTreebed.src} alt="" />
       <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
@@ -86,12 +98,13 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 </section>
 
 <!-- SOCIALS -->
-<section class="socials">
+<section class="socials wall">
+  <WallPhoto src={wallPurpleShutter} dim={0.62} />
   <div class="wrap">
     <h2 data-en="Socials" data-es="Redes">Socials</h2>
     <div class="soc-grid">
-      {socialTiles.map((c) => (
-        <a class="soc-tile paste" href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
+      {socialTiles.map((c, i) => (
+        <a class:list={['soc-tile', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
           <span class="soc-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={c.path} /></svg></span>
           <b>{c.label}</b>
           <small>{c.handle}</small>
@@ -105,7 +118,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
          loads) it's a plain link to the reel. embed.js is only fetched
          when the section nears the viewport (script below), so Instagram
          isn't contacted by visitors who never scroll this far. -->
-    <figure class="reel paste">
+    <figure class="reel paste f-sticker">
       <Image src={vestSticker} alt="" class="slap reel-slap" width={96} densities={[1, 2]} />
       <figcaption class="mono reel-cap" data-en="From our Instagram" data-es="De nuestro Instagram">From our Instagram</figcaption>
       <blockquote class="instagram-media reel-embed" data-instgrm-permalink={`${FEATURED_REEL}?utm_source=ig_embed`} data-instgrm-version="14">
@@ -132,7 +145,8 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 </script>
 
 <!-- NEWSLETTER SIGNUP -->
-<section class="signup" id="signup">
+<section class="signup wall" id="signup">
+  <WallPhoto src={wallMetalShutter} dim={0.55} />
   <div class="wrap signup-grid">
     <div class="sign-head">
       <div class="sign-text">
@@ -146,8 +160,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     </div>
 
     <div class="form-wrap">
-      <form id="volunteerForm" class="paste" method="POST" action={actions.signup}>
-        <Image src={vestSticker} alt="" class="slap slap-form" width={110} densities={[1, 2]} />
+      <form id="volunteerForm" class="paste f-tape" method="POST" action={actions.signup}>
         <input type="hidden" name="botcheck" value="" />
         <input type="hidden" name="startedAt" id="signupStartedAt" value="" />
 
@@ -290,7 +303,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
         <p class="form-error full" id="signupFormError" aria-live="polite"></p>
       </form>
 
-      <div class="form-success paste" id="formSuccess">
+      <div class="form-success paste f-tape" id="formSuccess">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>
         <h3 data-en="Success" data-es="Éxito">Success</h3>
         <p data-en="We'll be in touch. See you out there." data-es="Estaremos en contacto. Nos vemos allá.">We'll be in touch. See you out there.</p>
@@ -302,7 +315,11 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 <!-- BEHIND-THE-SCENES CREW CALLOUT: the signup above is the mailing list
      and is for everyone; this is the pitch for people who want to WORK on
      Trash Talk NYC (roles live at /recruit). -->
-<section class="crew">
+<!-- The barrier carries a road-safety company's sign with a phone
+     number and URL, so this wall is softly blurred as well as dimmed:
+     texture yes, someone else's ad copy no. -->
+<section class="crew wall">
+  <WallPhoto src={wallTaggedBarrier} dim={0.74} filter="blur(4px)" />
   <div class="wrap crew-grid">
     <img class="ill crew-art" src={illFamilyVests.src} alt="" />
     <div>
@@ -341,7 +358,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 
   .hero :global(.hero-logo) {
     width: 64%;
-    max-width: 440px;
+    max-width: 27.5rem;
     height: auto;
     transform: rotate(-3deg);
     filter: drop-shadow(6px 6px 0 rgba(234, 233, 218, 0.25));
@@ -360,7 +377,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     .hero .bricks-top { top: 10px; }
     .hero .bricks-bottom { bottom: 10px; }
     .hero-inner { gap: 26px; padding: calc(100vw * 0.075) 16px calc(100vw * 0.08); }
-    .hero :global(.hero-logo) { width: min(440px, 52%); }
+    .hero :global(.hero-logo) { width: min(27.5rem, 52%); }
     /* A real destination button at desktop scale — the mobile-sized one
        read "unbelievably small" against the full-width hero (captain) */
     .hero-btns .btn { padding: 18px 64px; font-size: 1.05rem; }
@@ -371,7 +388,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 
   .bento-grid {
     display: grid;
-    grid-template-columns: minmax(0, 680px);
+    grid-template-columns: minmax(0, 42.5rem);
     justify-content: center;
   }
 
@@ -384,9 +401,8 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
      with ink type, a slight tilt, and the vest sticker pinning the
      corner — same device as the signup form sheet. */
   .donate {
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
-    transform: rotate(-0.5deg);
   }
 
   .donate :global(.slap-donate) {
@@ -463,7 +479,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     justify-items: start;
     gap: 6px;
     padding: 16px 14px;
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     text-decoration: none;
     transition: transform 0.15s;
@@ -500,10 +516,10 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
   .reel {
     position: relative;
     width: 100%;
-    max-width: 420px;
+    max-width: 26.25rem;
     margin: 40px auto 0;
     padding: 14px 12px 12px;
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
   }
 
@@ -620,24 +636,17 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 
   /* ── FORM ── */
   #volunteerForm {
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     border-radius: 6px;
     padding: 22px 14px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 12px 10px;
-    transform: rotate(-0.3deg);
+    /* Taped up, but a long form only takes a hair of tilt */
+    transform: rotate(-0.4deg);
   }
 
-  #volunteerForm :global(.slap-form) {
-    bottom: -34px;
-    right: -10px;
-    top: auto;
-    width: 74px;
-    height: auto;
-    transform: rotate(-9deg);
-  }
 
   #volunteerForm label,
   #volunteerForm .lbl { font-size: 0.88rem; }
@@ -731,7 +740,7 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 
   .form-success {
     display: none;
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     border-radius: 6px;
     padding: 3rem 2rem;
@@ -746,15 +755,8 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     #volunteerForm {
       padding: 34px;
       gap: 14px;
-      box-shadow: 8px 8px 0 var(--purple);
     }
 
-    #volunteerForm :global(.slap-form) {
-      top: -52px;
-      right: -26px;
-      bottom: auto;
-      width: 110px;
-    }
 
     #volunteerForm label,
     #volunteerForm .lbl { font-size: 1rem; }
@@ -769,7 +771,6 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 
   /* ── CREW CALLOUT ── */
   .crew {
-    background-color: var(--green);
     color: var(--beige);
     padding-block: 26px 52px;
   }

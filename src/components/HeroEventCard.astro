@@ -22,7 +22,7 @@ const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
 const btnId = `eb-hero-${id}`;
 ---
 
-<article class="next paste">
+<article class="next paste f-sticker">
   <Image src={vestSticker} alt="" class="slap next-slap" width={96} densities={[1, 2]} />
   <div class="mono" data-en="Next club event" data-es="Próximo evento del club">Next club event</div>
   <h2>{name}</h2>
@@ -61,8 +61,8 @@ const btnId = `eb-hero-${id}`;
 <style>
   .next {
     position: relative;
-    width: min(560px, 100%);
-    background-color: var(--paper);
+    width: min(35rem, 100%);
+    --flyer-bg: var(--paper);
     color: var(--purple);
     padding: 24px 18px 20px;
   }

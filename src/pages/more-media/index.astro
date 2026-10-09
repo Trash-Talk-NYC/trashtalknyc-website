@@ -11,18 +11,19 @@ import illTrash from '../../assets/ill-trash-purple.svg';
 /**
  * More Media — /more-media (captain, 2026-10-09): a title + description
  * hero ("Hear us talk trash across several platforms.") over a three-
- * section layout, one wheatpasted poster per channel, each pinned up by
- * the vest sticker (David's favorite device). Podcast and Substack have
+ * section layout, one paper poster per channel, stuck up a different
+ * way each (sticker, staple, tape). Podcast and Substack have
  * no links yet, so their posters say "coming soon" honestly instead of
  * inventing shows or posts.
  */
 
 // Per-channel poster stock and drawing (copy and routes come from media.ts),
-// and the button that reads on that stock.
-const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn: string }> = {
-  youtube: { tone: 'mm-purple', ill: illGloveShovel, soonBtn: 'btn-ghost-light' },
-  podcast: { tone: 'mm-green', ill: illFamilyVests, soonBtn: 'btn-ghost-light' },
-  substack: { tone: 'mm-paper', ill: illTrash, soonBtn: 'btn-purple' },
+// the button that reads on that stock, and how the poster is stuck up
+// (a mix of sticker, staple, and tape).
+const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn: string; flyer: string; sticker: boolean }> = {
+  youtube: { tone: 'mm-purple', ill: illGloveShovel, soonBtn: 'btn-ghost-light', flyer: 'f-sticker', sticker: true },
+  podcast: { tone: 'mm-green', ill: illFamilyVests, soonBtn: 'btn-ghost-light', flyer: 'f-staple', sticker: false },
+  substack: { tone: 'mm-paper', ill: illTrash, soonBtn: 'btn-purple', flyer: 'f-tape f-torn', sticker: false },
 };
 ---
 
@@ -36,9 +37,9 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
   />
 
   <section class="wrap mm-grid" aria-label="Channels">
-    {mediaSections.map((s, i) => (
-      <article class:list={['mm-card', 'paste', look[s.id].tone]}>
-        <Image src={vestSticker} alt="" class:list={['slap', 'mm-slap', i % 2 ? 'mm-slap-left' : 'mm-slap-right']} width={96} densities={[1, 2]} />
+    {mediaSections.map((s) => (
+      <article class:list={['mm-card', 'paste', look[s.id].tone, look[s.id].flyer]}>
+        {look[s.id].sticker && <Image src={vestSticker} alt="" class="slap mm-slap" width={96} densities={[1, 2]} />}
         <img class="ill mm-ill" src={look[s.id].ill.src} alt="" />
         <h2 class="mm-name">{s.label}</h2>
         <p class="mm-blurb" data-en={s.blurb.en} data-es={s.blurb.es}>{s.blurb.en}</p>
@@ -76,9 +77,9 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
     padding: 30px 22px 26px;
   }
 
-  .mm-purple { background-color: var(--purple); color: var(--beige); }
-  .mm-green { background-color: var(--green); color: var(--beige); }
-  .mm-paper { background-color: var(--paper); color: var(--black); }
+  .mm-purple { --flyer-bg: var(--purple); color: var(--beige); }
+  .mm-green { --flyer-bg: var(--green); color: var(--beige); }
+  .mm-paper { --flyer-bg: var(--paper); color: var(--black); }
 
   .mm-card :global(.mm-slap) {
     top: -34px;
@@ -86,8 +87,7 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
     height: auto;
   }
 
-  .mm-card :global(.mm-slap-right) { right: -8px; transform: rotate(9deg); }
-  .mm-card :global(.mm-slap-left) { left: -8px; transform: rotate(-8deg); }
+  .mm-card :global(.mm-slap) { right: -8px; transform: rotate(9deg); }
 
   .mm-ill {
     width: 128px;
