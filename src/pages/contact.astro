@@ -1,9 +1,9 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import illGloveShovel from '../assets/ill-glove-shovel.svg';
 import illFamilyVestsPurple from '../assets/ill-family-vests-purple.svg';
 import illTreebed from '../assets/ill-treebed.svg';
@@ -28,6 +28,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 // Build-time rendering of the rolling months; the page script re-derives
 // them on load so a stale build can never offer a month already past.
 const monthOptions = rollingMonths();
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout
@@ -40,9 +43,8 @@ const monthOptions = rollingMonths();
   {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
   <!-- HERO -->
-  <section class="ct-hero">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="ct-hero brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="ct-hero-inner">
       <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
       <h1 class="ct-title"><span data-en="Talk" data-es="Habla">Talk</span><br /><span class="accent" data-en="Trash" data-es="Basura">Trash</span></h1>

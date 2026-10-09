@@ -1,11 +1,11 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import HeroEventCard from '../components/HeroEventCard.astro';
 import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import illFamilyVests from '../assets/ill-family-vests-beige.svg';
 import vestSticker from '../assets/vest-sticker.png';
 
@@ -15,6 +15,9 @@ const upcoming = upcomingRaw.map(ev => ({
   latLng: ev.venue?.lat != null ? { lat: ev.venue.lat, lng: ev.venue.lng! } : null,
 }));
 const nextEvent = upcoming[0]?.props ?? null;
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 7, desktop: 4 };
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -30,9 +33,8 @@ const nextEvent = upcoming[0]?.props ?? null;
 
   <!-- HERO: centered title in the brick frame with the next event as a
        wheatpasted poster card (captain: no trash can drawing here). -->
-  <section class="ev-hero">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="ev-hero brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="ev-hero-inner">
       <h1 class="ev-title"><span data-en="Club" data-es="Eventos">Club</span> <span class="accent" data-en="Events" data-es="del Club">Events</span></h1>
       {nextEvent ? (

@@ -1,10 +1,10 @@
 ---
+import Bricks from '../../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../../lib/bricks';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
-import bricksTop from '../../assets/bricks-top-lav.svg';
-import bricksBottom from '../../assets/bricks-bottom-lav.svg';
 import illTrash from '../../assets/ill-trash-lav.svg';
 import illGlovePlant from '../../assets/ill-glove-plant-beige.svg';
 
@@ -107,6 +107,9 @@ const story: Block[] = [
     es: 'Quiero usar la expresión artística, el paisajismo inteligente, la sociología y el diseño urbano para reducir los índices de basura en las calles. La visibilidad, la eficiencia y la descentralización son componentes clave de esta misión. La ciudad de Nueva York tiene una población lista y esperando para ayudar. Si hacemos los procesos claros y eficientes, podemos activar una red de voluntarios para lograr cambios visibles y significativos en nuestra ciudad.',
   },
 ];
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
@@ -115,9 +118,8 @@ const story: Block[] = [
        the captain's chosen page name (rename, 2026-08-13), split into
        two leaves so the language toggle can restructure it: EN
        "From the / Founder" becomes ES "Del / Fundador" leaf by leaf. -->
-  <section class="fd-hero">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="fd-hero brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="fd-hero-inner">
       <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="fd-title">

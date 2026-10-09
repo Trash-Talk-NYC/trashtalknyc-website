@@ -370,25 +370,32 @@ form .btn-primary {
   position: absolute;
   left: 0;
   width: 100%;
+  height: auto;
   pointer-events: none;
-  object-fit: cover;
 }
 
-/* Each half is ~35% of its width tall (viewBoxes 2337×830 and
-   2337×797), so a hero shorter than ~70vw used to make the side
-   columns of the two halves cross. Capping each half at half the
-   section crops it at the midline instead: the columns meet, never
-   overlap, at any hero height. Tall heroes show both halves whole. */
-.bricks-top {
-  top: 10px;
-  height: min(calc(50% - 10px), 35.6vw);
-  object-position: top center;
+.bricks-top { top: 10px; }
+.bricks-bottom { bottom: 10px; }
+
+/* A hero framed by <Bricks>: tall enough for its whole-row halves at
+   every width (brickHeroStyle in src/lib/bricks.ts sets the values), so
+   the halves never overlap and no brick is ever sliced */
+.brick-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: var(--brick-min-phone);
+  /* When the min-height wins, keep the content centered in the opening */
+  display: grid;
+  align-content: center;
 }
 
-.bricks-bottom {
-  bottom: 10px;
-  height: min(calc(50% - 10px), 34.1vw);
-  object-position: bottom center;
+/* <Bricks> renders a phone and a desktop pair; only one pair shows */
+.bricks-desktop { display: none; }
+
+@media (min-width: 761px) {
+  .brick-hero { min-height: var(--brick-min-desktop); }
+  .bricks-phone { display: none; }
+  .bricks-desktop { display: block; }
 }
 
 /* Official line drawings ship pre-colored per section as plain <img>

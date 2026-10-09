@@ -1,4 +1,6 @@
 ---
+import Bricks from './Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 /**
  * Brick-framed hero shared by the More Media overview and its three
  * subpages: an optional accent line, a title, and a description — the
@@ -10,8 +12,6 @@
  * Titles are passed as leaves (one per line) so the language toggle can
  * restructure them leaf by leaf — setLang swaps leaves, never reorders.
  */
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
 
 type Copy = { en: string; es: string };
 
@@ -25,11 +25,13 @@ interface Props {
 }
 
 const { eyebrow, eyebrowHref, title, description } = Astro.props;
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
-<section class="mh-hero">
-  <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-  <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+<section class="mh-hero brick-hero" style={brickHeroStyle(bricks)}>
+  <Bricks rows={bricks} />
   <div class="mh-inner">
     {eyebrow && (
       eyebrowHref ? (

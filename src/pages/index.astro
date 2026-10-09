@@ -372,7 +372,9 @@ const FEATURED_TIKTOK = {
   .hero-btns .btn { padding: 12px 34px; font-size: 0.8rem; }
 
   @media (min-width: 761px) {
-    .hero { min-height: calc(100vw * 0.7); }
+    /* Both full brick halves (69.62vw, see brick-rows.generated.ts) plus
+       their 10px insets and a 12px gap — 0.7vw alone let them touch */
+    .hero { min-height: calc(69.62vw + 32px); }
     .hero .bricks-top { top: 10px; }
     .hero .bricks-bottom { bottom: 10px; }
     .hero-inner { gap: 26px; padding: calc(100vw * 0.075) 16px calc(100vw * 0.08); }

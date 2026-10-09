@@ -1,11 +1,11 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import vestSticker from '../assets/vest-sticker.png';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import illFamilyVests from '../assets/ill-family-vests-beige.svg';
 
 /**
@@ -36,6 +36,9 @@ const bioFlyer: Record<string, string> = {
   david: 'f-staple',
   fabiola: 'f-tape f-torn',
 };
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 8, desktop: 5 };
 ---
 
 <BaseLayout
@@ -43,9 +46,8 @@ const bioFlyer: Record<string, string> = {
   description="Meet Trash Talk NYC, a grassroots initiative cleaning New York City through fun volunteer cleanup events, community engagement, and educational entertainment."
 >
   <!-- HERO: group photo in the brick frame -->
-  <section class="tm-hero">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="tm-hero brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="tm-hero-inner">
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->

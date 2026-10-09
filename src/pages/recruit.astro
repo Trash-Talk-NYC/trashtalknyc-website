@@ -1,8 +1,8 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import vestSticker from '../assets/vest-sticker.png';
 
 /**
@@ -67,6 +67,9 @@ const roles = [
     es: `${baseSubject.es} — ${r.title.es}`,
   },
 }));
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 8, desktop: 6 };
 ---
 
 <BaseLayout
@@ -88,9 +91,8 @@ const roles = [
        and the email-only line last ("anyways" and the double "!!"
        are theirs — never correct either). Do not smooth, join, or
        formalize any of it, in either language. -->
-  <section class="rc-wall">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="rc-wall brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <article class="note paste f-sticker">
       <Image src={vestSticker} alt="" class="slap note-slap" width={104} densities={[1, 2]} />
       <h1 class="note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h1>

@@ -1,12 +1,15 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
 import illTrash from '../assets/ill-trash-lav.svg';
 
 // Prerendered so URL misses (mostly bot scans) get a static, CDN-cacheable
 // body instead of a fresh SSR function render per request.
 export const prerender = true;
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 8, desktop: 5 };
 ---
 
 <BaseLayout title="Page Not Found — Trash Talk NYC" description="This page doesn't exist." noindex>
@@ -14,9 +17,8 @@ export const prerender = true;
   <!-- 404: a dead-end block. Brick wall edge to edge, the trash can
        that took the page, a street-sign-yellow Dead End diamond, and
        the way back. -->
-  <section class="nf">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="nf brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="nf-inner">
       <div class="nf-row" aria-hidden="true">
         <div class="sign"><span data-en="DEAD END" data-es="SIN SALIDA">DEAD END</span></div>
