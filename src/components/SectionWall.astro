@@ -1,0 +1,128 @@
+---
+/**
+ * A section background in the captain's A4 treatment (2026-10-09):
+ * a real wall photo with a rough torn edge, toned by what the section is
+ * about —
+ *   cleanup:  the given wall photo in a Deep Purple duotone
+ *   planting: the chalked-sidewalk photo tinted Post No Bills green, with
+ *             the chalk pieces themselves masked back to full color
+ * Drop it as the FIRST child of a section with the global `.wall` class;
+ * it paints under everything else in that section.
+ *
+ * The chalk mask (src/assets/walls/chalk-mask.svg) is hand-placed on the
+ * chalk photo, so planting always uses that photo, and both share
+ * center/cover sizing so the mask stays registered at any aspect ratio.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import chalkPhoto from '../assets/walls/wall-chalk-sidewalk.jpg';
+import chalkMask from '../assets/walls/chalk-mask.svg';
+
+interface Props {
+  kind: 'cleanup' | 'planting';
+  /** The wall photo for a cleanup section (planting always uses the chalk). */
+  src?: ImageMetadata;
+  /** Which edges are torn. */
+  tear?: 'top' | 'bottom' | 'both';
+  /** Extra Roadtop Black shade over the photo for text contrast, 0–1. */
+  dim?: number;
+  /** Varies the tear so neighboring sections don't rip identically. */
+  seed?: number;
+}
+
+const { kind, src, tear = 'both', dim = 0.35, seed = 1 } = Astro.props;
+if (kind === 'cleanup' && !src) throw new Error('SectionWall: a cleanup wall needs a photo (src)');
+
+const photo = await getImage({ src: kind === 'planting' ? chalkPhoto : src!, width: 1600, format: 'webp' });
+
+/** A ragged edge: deterministic jitter so builds are stable. */
+function edge(fromTop: boolean): string[] {
+  let s = seed * 9301 + (fromTop ? 49297 : 233280);
+  const rand = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+  const pts: string[] = [];
+  for (let i = 0; i <= 40; i++) {
+    const x = i * 2.5;
+    const depth = (4 + rand() * 18).toFixed(1);
+    pts.push(fromTop ? `${x}% ${depth}px` : `${x}% calc(100% - ${depth}px)`);
+  }
+  return fromTop ? pts : pts.reverse();
+}
+
+const top = tear === 'top' || tear === 'both' ? edge(true) : ['0 0', '100% 0'];
+const bottom = tear === 'bottom' || tear === 'both' ? edge(false) : ['100% 100%', '0 100%'];
+const clip = `polygon(${[...top, ...bottom].join(',')})`;
+
+const bg = `background-image:url(${photo.src})`;
+---
+
+<div class:list={['sw-layer', `sw-${kind}`]} aria-hidden="true" style={`clip-path:${clip};--sw-dim:${dim}`}>
+  {kind === 'cleanup' ? (
+    <div class="sw-photo sw-duo" style={bg}></div>
+  ) : (
+    <>
+      <div class="sw-photo" style={bg}></div>
+      <div class="sw-tint"></div>
+    </>
+  )}
+  <div class="sw-shade"></div>
+  {kind === 'planting' && (
+    <>
+      <div class="sw-photo sw-pop" style={`${bg};--sw-mask:url(${chalkMask.src})`}></div>
+      <div class="sw-legible"></div>
+    </>
+  )}
+</div>
+
+<style>
+  .sw-layer {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    /* Blends below stay inside this layer */
+    isolation: isolate;
+  }
+
+  .sw-photo,
+  .sw-tint,
+  .sw-shade {
+    position: absolute;
+    inset: 0;
+  }
+
+  .sw-photo {
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Purple duotone: the photo's luminance over Deep Purple */
+  .sw-duo {
+    background-color: var(--purple);
+    background-blend-mode: luminosity;
+    filter: brightness(0.85) contrast(1.1);
+  }
+
+  .sw-tint {
+    background: var(--green);
+    mix-blend-mode: color;
+    opacity: 0.55;
+  }
+
+  .sw-shade { background: rgba(29, 29, 35, var(--sw-dim)); }
+
+  /* Sections set their copy left (the donate block), so the bright
+     chalk is softened on that side only and stays vivid on the right */
+  .sw-legible {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(29, 29, 35, 0.6) 0%, rgba(29, 29, 35, 0.35) 40%, transparent 70%);
+  }
+
+  /* The chalk pieces cut out of the tint and shade, brightened */
+  .sw-pop {
+    filter: saturate(1.6) contrast(1.08) brightness(1.08);
+    -webkit-mask: var(--sw-mask) center / cover no-repeat;
+    mask: var(--sw-mask) center / cover no-repeat;
+  }
+</style>

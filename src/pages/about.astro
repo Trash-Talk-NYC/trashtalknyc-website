@@ -38,7 +38,7 @@ const bioFlyer: Record<string, string> = {
 };
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 8, desktop: 5 };
+const bricks: BrickRows = { phone: 8, desktop: 7 };
 ---
 
 <BaseLayout
@@ -51,6 +51,7 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
     <div class="tm-hero-inner">
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->
+      <img class="hero-ill" src={illFamilyVests.src} alt="" />
       <div class="mono tm-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="tm-title" data-en="The Team" data-es="El Equipo">The Team</h1>
       <figure class="tm-photo paste f-sticker">
@@ -104,7 +105,6 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
        /about#join-the-team; keep the anchor landing here. -->
   <section class="lend" id="join-the-team">
     <div class="wrap lend-grid">
-      <img class="ill" src={illFamilyVests.src} alt="" />
       <div>
         <h2 data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
         <p data-en="We need your help!" data-es="¡Necesitamos tu ayuda!">We need your help!</p>
@@ -254,19 +254,6 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
     padding-block: 40px;
   }
 
-  .lend-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-    align-items: center;
-  }
-
-  /* Whole drawing, never cropped (same call as the homepage crew art) */
-  .lend .ill {
-    width: 120px;
-    height: auto;
-  }
-
   .lend h2 { font-size: 2.8rem; }
   .lend p { margin: 12px 0 26px; font-size: 1.2rem; font-weight: 500; }
   .lend .btn { width: 100%; }
@@ -293,8 +280,6 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
 
   @media (min-width: 761px) {
     .lend { padding-block: 56px; }
-    .lend-grid { grid-template-columns: auto minmax(0, 1fr); gap: 40px; }
-    .lend .ill { width: 190px; }
     .lend h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); }
     .lend .btn { width: auto; }
   }

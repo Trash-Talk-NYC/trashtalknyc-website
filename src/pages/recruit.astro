@@ -1,4 +1,5 @@
 ---
+import illFamilyVests from '../assets/ill-family-vests-beige.svg';
 import Bricks from '../components/Bricks.astro';
 import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import { Image } from 'astro:assets';
@@ -93,6 +94,7 @@ const bricks: BrickRows = { phone: 8, desktop: 6 };
        formalize any of it, in either language. -->
   <section class="rc-wall brick-hero" style={brickHeroStyle(bricks)}>
     <Bricks rows={bricks} />
+    <img class="hero-ill rc-ill" src={illFamilyVests.src} alt="" />
     <article class="note paste f-sticker">
       <Image src={vestSticker} alt="" class="slap note-slap" width={104} densities={[1, 2]} />
       <h1 class="note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h1>

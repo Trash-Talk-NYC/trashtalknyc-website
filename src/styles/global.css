@@ -402,6 +402,15 @@ form .btn-primary {
    files (one SVG per color), so no masking is involved. */
 img.ill { height: auto; display: block; }
 
+/* The one drawing a page gets, above its hero title (captain's C2,
+   2026-10-09: one per page, in the hero only — none further down) */
+img.hero-ill {
+  display: block;
+  width: clamp(64px, 8vw, 120px);
+  height: auto;
+  margin-inline: auto;
+}
+
 /* Vest sticker slapped over a pasted card's corner */
 .slap {
   position: absolute;

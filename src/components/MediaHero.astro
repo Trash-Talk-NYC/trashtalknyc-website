@@ -1,4 +1,5 @@
 ---
+import illTrash from '../assets/ill-trash-lav.svg';
 import Bricks from './Bricks.astro';
 import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 /**
@@ -27,12 +28,14 @@ interface Props {
 const { eyebrow, eyebrowHref, title, description } = Astro.props;
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 3 };
+const bricks: BrickRows = { phone: 6, desktop: 5 };
 ---
 
 <section class="mh-hero brick-hero" style={brickHeroStyle(bricks)}>
   <Bricks rows={bricks} />
   <div class="mh-inner">
+    <!-- The page's one drawing (captain's C2): "talk trash" -->
+    <img class="hero-ill" src={illTrash.src} alt="" />
     {eyebrow && (
       eyebrowHref ? (
         <a class="mono mh-eyebrow" href={eyebrowHref}>

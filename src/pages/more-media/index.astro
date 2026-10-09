@@ -4,9 +4,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
 import { PHOTO_ALBUMS, mediaSections, moreMediaTagline, type MediaSectionId } from '../../lib/media';
 import vestSticker from '../../assets/vest-sticker.png';
-import illGloveShovel from '../../assets/ill-glove-shovel-beige.svg';
-import illFamilyVests from '../../assets/ill-family-vests-beige.svg';
-import illTrash from '../../assets/ill-trash-purple.svg';
 
 /**
  * More Media — /more-media (captain, 2026-10-09): a title + description
@@ -17,13 +14,13 @@ import illTrash from '../../assets/ill-trash-purple.svg';
  * inventing shows or posts.
  */
 
-// Per-channel poster stock and drawing (copy and routes come from media.ts),
+// Per-channel poster stock (copy and routes come from media.ts),
 // the button that reads on that stock, and how the poster is stuck up
 // (a mix of sticker, staple, and tape).
-const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn: string; flyer: string; sticker: boolean }> = {
-  youtube: { tone: 'mm-purple', ill: illGloveShovel, soonBtn: 'btn-ghost-light', flyer: 'f-sticker', sticker: true },
-  podcast: { tone: 'mm-green', ill: illFamilyVests, soonBtn: 'btn-ghost-light', flyer: 'f-staple', sticker: false },
-  substack: { tone: 'mm-paper', ill: illTrash, soonBtn: 'btn-purple', flyer: 'f-tape f-torn', sticker: false },
+const look: Record<MediaSectionId, { tone: string; soonBtn: string; flyer: string; sticker: boolean }> = {
+  youtube: { tone: 'mm-purple', soonBtn: 'btn-ghost-light', flyer: 'f-sticker', sticker: true },
+  podcast: { tone: 'mm-green', soonBtn: 'btn-ghost-light', flyer: 'f-staple', sticker: false },
+  substack: { tone: 'mm-paper', soonBtn: 'btn-purple', flyer: 'f-tape f-torn', sticker: false },
 };
 ---
 
@@ -40,7 +37,6 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
     {mediaSections.map((s) => (
       <article class:list={['mm-card', 'paste', look[s.id].tone, look[s.id].flyer]}>
         {look[s.id].sticker && <Image src={vestSticker} alt="" class="slap mm-slap" width={96} densities={[1, 2]} />}
-        <img class="ill mm-ill" src={look[s.id].ill.src} alt="" />
         <h2 class="mm-name">{s.label}</h2>
         <p class="mm-blurb" data-en={s.blurb.en} data-es={s.blurb.es}>{s.blurb.en}</p>
         {s.comingSoon ? (
@@ -98,12 +94,6 @@ const look: Record<MediaSectionId, { tone: string; ill: { src: string }; soonBtn
 
   .mm-card :global(.mm-slap) { right: -8px; transform: rotate(9deg); }
 
-  .mm-ill {
-    width: 128px;
-    height: 96px;
-    object-fit: contain;
-    object-position: left center;
-  }
 
   .mm-name {
     font-size: 2.8rem;

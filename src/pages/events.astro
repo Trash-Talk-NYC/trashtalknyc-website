@@ -6,7 +6,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import HeroEventCard from '../components/HeroEventCard.astro';
 import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
-import illFamilyVests from '../assets/ill-family-vests-beige.svg';
+import illGloveShovel from '../assets/ill-glove-shovel-beige.svg';
+import SectionWall from '../components/SectionWall.astro';
+import wallColorGraffiti from '../assets/walls/wall-color-graffiti.jpg';
 import vestSticker from '../assets/vest-sticker.png';
 
 const { upcoming: upcomingRaw } = await fetchEventsAtBuildTime();
@@ -17,7 +19,7 @@ const upcoming = upcomingRaw.map(ev => ({
 const nextEvent = upcoming[0]?.props ?? null;
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 7, desktop: 4 };
+const bricks: BrickRows = { phone: 7, desktop: 5 };
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -36,6 +38,7 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
   <section class="ev-hero brick-hero" style={brickHeroStyle(bricks)}>
     <Bricks rows={bricks} />
     <div class="ev-hero-inner">
+      <img class="hero-ill" src={illGloveShovel.src} alt="" />
       <h1 class="ev-title"><span data-en="Club" data-es="Eventos">Club</span> <span class="accent" data-en="Events" data-es="del Club">Events</span></h1>
       {nextEvent ? (
         <HeroEventCard {...nextEvent} />
@@ -49,8 +52,10 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
     </div>
   </section>
 
-  <!-- EVENTS LIST -->
-  <section class="wrap ev-section">
+  <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4) -->
+  <section class="ev-section wall">
+    <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.55} seed={4} />
+    <div class="wrap">
     <div class="list-head">
       <h2 data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</h2>
       <span class="list-note mono">Eventbrite</span>
@@ -77,7 +82,6 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
          vest sticker like the other pasted cards -->
     <div class="nudge paste f-sticker">
       <Image src={vestSticker} alt="" class="slap nudge-slap" width={104} densities={[1, 2]} />
-      <img class="ill" src={illFamilyVests.src} alt="" />
       <div>
         <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
         <div class="row">
@@ -85,6 +89,7 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
           <a class="btn btn-ghost-light" href="https://trashtalknyc.eventbrite.com" target="_blank" rel="noopener" data-en="See us on Eventbrite →" data-es="Vernos en Eventbrite →">See us on Eventbrite →</a>
         </div>
       </div>
+    </div>
     </div>
   </section>
 
@@ -353,12 +358,6 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
     transform: rotate(9deg);
   }
 
-  /* Whole drawing, never cropped — same call as the homepage crew art */
-  .nudge .ill {
-    width: 96px;
-    height: auto;
-  }
-
   .nudge p { margin: 0 0 16px; font-size: 1.15rem; }
   .nudge .row { display: flex; flex-wrap: wrap; gap: 12px; }
   .nudge .btn { width: 100%; }
@@ -368,14 +367,12 @@ const bricks: BrickRows = { phone: 7, desktop: 4 };
     .list-head h2 { font-size: clamp(3rem, 6vw, 4.8rem); }
 
     .nudge {
-      grid-template-columns: auto minmax(0, 1fr);
       gap: 28px;
       padding: 32px clamp(20px, 4vw, 44px);
       margin-block: 30px 70px;
     }
 
     .nudge :global(.nudge-slap) { top: -38px; right: -20px; width: 104px; }
-    .nudge .ill { width: 130px; }
     .nudge .btn { width: auto; }
   }
 

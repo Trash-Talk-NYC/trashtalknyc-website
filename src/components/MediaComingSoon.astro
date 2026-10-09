@@ -15,13 +15,11 @@ import vestSticker from '../assets/vest-sticker.png';
 
 interface Props {
   id: MediaSectionId;
-  /** Line drawing for the poster (pre-colored for paper). */
-  ill: { src: string };
   /** What's coming, in a sentence. */
   note: { en: string; es: string };
 }
 
-const { id, ill, note } = Astro.props;
+const { id, note } = Astro.props;
 const section = getMediaSection(id);
 ---
 
@@ -37,7 +35,6 @@ const section = getMediaSection(id);
 <section class="wrap cs-body">
   <div class="cs-card paste f-sticker">
     <Image src={vestSticker} alt="" class="slap cs-slap" width={104} densities={[1, 2]} />
-    <img class="ill cs-ill" src={ill.src} alt="" />
     <div>
       <h2 class="cs-title" data-en="Coming soon" data-es="Muy pronto">Coming soon</h2>
       <p class="cs-note" data-en={note.en} data-es={note.es}>{note.en}</p>
@@ -73,7 +70,6 @@ const section = getMediaSection(id);
     transform: rotate(9deg);
   }
 
-  .cs-ill { width: 130px; }
 
   .cs-title {
     font-size: 2.8rem;
@@ -94,13 +90,11 @@ const section = getMediaSection(id);
     .cs-body { padding-block: 80px 104px; }
 
     .cs-card {
-      grid-template-columns: auto minmax(0, 1fr);
       gap: 36px;
       padding: 40px clamp(24px, 4vw, 48px);
     }
 
     .cs-card :global(.cs-slap) { top: -40px; right: -22px; width: 104px; }
-    .cs-ill { width: 170px; }
     .cs-title { font-size: clamp(3rem, 4.4vw, 4rem); }
     .cs-row .btn { width: auto; }
   }

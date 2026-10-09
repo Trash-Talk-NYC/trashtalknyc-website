@@ -5,7 +5,6 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
-import illTrash from '../../assets/ill-trash-lav.svg';
 import illGlovePlant from '../../assets/ill-glove-plant-beige.svg';
 
 /**
@@ -109,7 +108,7 @@ const story: Block[] = [
 ];
 
 // Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 3 };
+const bricks: BrickRows = { phone: 6, desktop: 4 };
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
@@ -121,6 +120,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   <section class="fd-hero brick-hero" style={brickHeroStyle(bricks)}>
     <Bricks rows={bricks} />
     <div class="fd-hero-inner">
+      <img class="hero-ill" src={illGlovePlant.src} alt="" />
       <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="fd-title">
         <span data-en="From the" data-es="Del">From the</span><br />
@@ -133,9 +133,6 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
        things beside it are the margin drawings, which are decoration,
        not content. -->
   <section class="fd-body">
-    <div class="fd-margin" aria-hidden="true">
-      <img src={illTrash.src} alt="" />
-    </div>
     <article class="story paste f-staple">
       <!-- Byline card (captain, 2026-08-13): circular photo + name +
            title, replacing the text-only byline. david-founder.jpg is a
@@ -180,9 +177,6 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
         <span>{founderName}</span>
       </p>
     </article>
-    <div class="fd-margin" aria-hidden="true">
-      <img src={illGlovePlant.src} alt="" />
-    </div>
   </section>
 </BaseLayout>
 
@@ -236,16 +230,6 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     align-items: start;
   }
 
-  .fd-margin {
-    display: none;
-    gap: 40px;
-    justify-items: center;
-    position: sticky;
-    top: calc(var(--nav-h) + 24px);
-  }
-
-  .fd-margin img { width: min(190px, 100%); }
-
   /* David's letter as one wheatpasted sheet. One measured reading
      column; the recruit note proved this size/weight comfortable for
      long text on paper. */
@@ -257,13 +241,13 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
 
   @media (min-width: 761px) {
     .fd-body {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 45rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 45rem);
+      justify-content: center;
       gap: 28px;
       padding: 56px clamp(16px, 4vw, 48px) 72px;
     }
 
-    .fd-margin { display: grid; }
-    .story { grid-column: 2; padding: 44px clamp(22px, 4vw, 56px) 48px; }
+    .story { padding: 44px clamp(22px, 4vw, 56px) 48px; }
   }
 
   /* Byline card — the one element above the story that is not David's

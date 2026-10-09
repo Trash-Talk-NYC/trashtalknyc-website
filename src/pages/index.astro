@@ -9,14 +9,8 @@ import bricksTop from '../assets/bricks-top-lav.svg';
 import bricksBottom from '../assets/bricks-bottom-lav.svg';
 // Colored variant: the donate flyer is poster paper now, where the
 // beige line drawing would disappear.
-import illTreebed from '../assets/ill-treebed.svg';
-import illGloveShovel from '../assets/ill-glove-shovel-beige.svg';
-import illGlovePlant from '../assets/ill-glove-plant-beige.svg';
-import illFamilyVests from '../assets/ill-family-vests-beige.svg';
-import WallPhoto from '../components/WallPhoto.astro';
+import SectionWall from '../components/SectionWall.astro';
 import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
-import wallColorGraffiti from '../assets/walls/wall-color-graffiti.jpg';
-import wallPurpleShutter from '../assets/walls/wall-purple-shutter.jpg';
 import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
 
 const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
@@ -64,12 +58,12 @@ const FEATURED_TIKTOK = {
 <!-- HERO: the brick drawing split into its two halves, stretched edge to
      edge, with the vest sticker logo centered in the opening and one
      button that says "Events" (captain). -->
-<!-- Every homepage section is a different real wall (captain,
-     2026-10-09), darkened so its text and flyers read. The hero's red
-     brick is also flattened (low contrast) so the lavender brick
-     drawing on top stays the star. -->
+<!-- Section backgrounds are the captain's A4 (2026-10-09): torn wall
+     photos, purple duotone for cleanup sections, green chalk for
+     planting ones. The hero's brick is shaded deep so the lavender
+     brick drawing on top stays the star. -->
 <section class="hero wall" id="top">
-  <WallPhoto src={wallRedBrick} dim={0.8} filter="contrast(0.5) saturate(0.6)" eager />
+  <SectionWall kind="cleanup" src={wallRedBrick} tear="bottom" dim={0.8} seed={1} />
   <img class="bricks bricks-top" src={bricksTop.src} alt="" />
   <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
   <div class="hero-inner">
@@ -82,28 +76,25 @@ const FEATURED_TIKTOK = {
   </div>
 </section>
 
-<!-- DONATE: the "Because of you:" card styled as a wheatpasted flyer
-     (captain) — poster paper, a tilt, the vest sticker pinning the
-     corner, and the GoFundMe widget boxed inside. -->
-<section class="bento wall">
-  <WallPhoto src={wallColorGraffiti} dim={0.6} />
-  <div class="wrap bento-grid">
-    <article class="card donate paste f-sticker f-torn" id="donate">
-      <Image src={vestSticker} alt="" class="slap slap-donate" width={110} densities={[1, 2]} />
-      <img class="ill donate-art" src={illTreebed.src} alt="" />
-      <h2 class="donate-eyebrow" data-en="Donate" data-es="Dona">Donate</h2>
-      <h3 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h3>
-      <div class="gfm">
-        <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
-      </div>
-      <p class="donate-note" data-en="Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk NYC empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
-    </article>
+<!-- DONATE (captain's B5, left-aligned, 2026-10-09): "Because of you" is
+     the headline with "Donate" as a small eyebrow, the note below it,
+     and the GoFundMe widget sitting plain — no flyer card. A planting
+     section, since the funds go to flower-planting and builds. -->
+<section class="donate-sec wall" id="donate">
+  <SectionWall kind="planting" dim={0.45} seed={2} />
+  <div class="wrap donate">
+    <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
+    <h2 class="donate-title" data-en="Because of you" data-es="Gracias a ti">Because of you</h2>
+    <p class="donate-note" data-en="Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk NYC empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
+    <div class="gfm">
+      <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
+    </div>
   </div>
 </section>
 
 <!-- SOCIALS -->
-<section class="socials wall">
-  <WallPhoto src={wallPurpleShutter} dim={0.62} />
+<!-- Plain ground between the two photo sections -->
+<section class="socials">
   <div class="wrap">
     <h2 data-en="Socials" data-es="Redes">Socials</h2>
     <div class="soc-grid">
@@ -163,17 +154,14 @@ const FEATURED_TIKTOK = {
 </script>
 
 <!-- NEWSLETTER SIGNUP -->
+<!-- A cleanup section: the newsletter signs people up for cleanups -->
 <section class="signup wall" id="signup">
-  <WallPhoto src={wallMetalShutter} dim={0.55} />
+  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} seed={3} />
   <div class="wrap signup-grid">
     <div class="sign-head">
       <div class="sign-text">
         <h2 class="sign-plate"><span data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</span> <span class="accent" data-en="Newsletter" data-es="Boletín">Newsletter</span></h2>
         <p class="sign-blurb" data-en="News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club." data-es="Noticias de la basura, más historias de Trash Talk NYC: no solo eventos, sino también información interna y artículos del club.">News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club.</p>
-      </div>
-      <div class="sign-arts" aria-hidden="true">
-        <img class="ill sign-art-shovel" src={illGloveShovel.src} alt="" />
-        <img class="ill sign-art-plant" src={illGlovePlant.src} alt="" />
       </div>
     </div>
 
@@ -320,7 +308,6 @@ const FEATURED_TIKTOK = {
 <!-- Post No Bills green, not a wall (captain, 2026-10-09) -->
 <section class="crew">
   <div class="wrap crew-grid">
-    <img class="ill crew-art" src={illFamilyVests.src} alt="" />
     <div>
       <h2 data-en="Help Trash Talk NYC behind the scenes" data-es="Ayuda a Trash Talk NYC detrás de cámaras">Help Trash Talk NYC behind the scenes</h2>
       <p data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
@@ -385,80 +372,39 @@ const FEATURED_TIKTOK = {
   }
 
   /* ── DONATE ── */
-  .bento { padding-block: 44px 30px; }
+  .donate-sec { padding-block: 56px 64px; }
 
-  .bento-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 42.5rem);
-    justify-content: center;
-  }
-
-  .card {
-    position: relative;
-    padding: 34px 20px 24px;
-  }
-
-  /* The donate card as a wheatpasted FLYER (captain): poster paper
-     with ink type, a slight tilt, and the vest sticker pinning the
-     corner — same device as the signup form sheet. */
   .donate {
-    --flyer-bg: var(--paper);
-    color: var(--black);
+    display: grid;
+    justify-items: start;
+    gap: 10px;
   }
 
-  .donate :global(.slap-donate) {
-    top: -30px;
-    left: -10px;
-    width: 76px;
-    height: auto;
-    transform: rotate(-9deg);
-  }
+  .donate-eyebrow { color: var(--yellow); font-size: 0.9rem; }
 
-  .donate-art {
-    position: absolute;
-    width: 110px;
-    right: 4px;
-    top: 4px;
-    opacity: 0.9;
-  }
-
-  /* The card's heading in Londrina, with "Because of you:" as its
-     subheading (captain, 2026-10-09) */
-  .donate-eyebrow {
-    font-size: 2.2rem;
-    line-height: 1;
-    color: var(--green);
-    /* Clears the vest sticker pinning the flyer's top-left corner */
-    margin-left: 54px;
-    margin-bottom: 8px;
-  }
-
-  /* Same indent as the heading above it, which clears the sticker */
   .donate-title {
-    margin-left: 54px;
-    font-size: 1.7rem;
-    color: var(--purple);
-    margin-bottom: 22px;
-    padding-right: 100px;
+    font-size: clamp(3rem, 6vw, 5rem);
+    line-height: 0.95;
+    color: var(--beige);
   }
 
-  /* No outline around the widget (captain, 2026-10-09) */
-  .gfm { color: var(--black); }
+  .donate-note {
+    margin: 4px 0 18px;
+    max-width: 46ch;
+    font-size: 1.15rem;
+    line-height: 1.5;
+    color: var(--beige);
+  }
 
-  /* The live GoFundMe widget sits straight on the card; its internals
-     are an iframe and stay GoFundMe's. */
+  /* The live widget sits straight on the section; its internals are an
+     iframe and stay GoFundMe's */
+  .gfm { width: min(100%, 34rem); }
   .gfm :global(.gfm-embed) { min-height: 180px; }
 
-  .donate-note { margin: 30px 0 0; font-size: 1.12rem; }
-
   @media (min-width: 761px) {
-    .bento { padding-block: 84px 64px; }
-    .card { padding: 40px 34px 34px; }
-    .donate :global(.slap-donate) { top: -42px; left: -26px; width: 110px; }
-    .donate-eyebrow { margin-left: 64px; }
-    .donate-art { width: 170px; right: 10px; top: 6px; }
-    .donate-eyebrow { font-size: clamp(2.4rem, 4vw, 3.2rem); }
-    .donate-title { margin-left: 64px; font-size: clamp(1.7rem, 2.6vw, 2.2rem); padding-right: 160px; }
+    .donate-sec { padding-block: 88px 96px; }
+    .donate-eyebrow { font-size: 1rem; }
+    .donate-note { font-size: 1.25rem; }
   }
 
   /* ── SOCIALS ── */
@@ -601,9 +547,9 @@ const FEATURED_TIKTOK = {
   }
 
   /* ── NEWSLETTER ── */
+  /* No border lines: the torn wall edges separate it now */
   .signup {
     padding-block: 36px 52px;
-    border-block: 3px solid var(--beige);
   }
 
   .signup-grid {
@@ -632,24 +578,10 @@ const FEATURED_TIKTOK = {
 
   .sign-blurb { font-size: 1.2rem; max-width: 32ch; margin: 0; }
 
-  .sign-arts {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: none;
-  }
-
-  /* The glove drawings carry empty space at the top of their artboard;
-     crop so they sit near the section top. */
-  .sign-arts .ill { width: 80px; height: 74px; object-fit: contain; }
-  .sign-arts .sign-art-plant { object-fit: cover; object-position: center 42%; height: 56px; }
-
   @media (min-width: 761px) {
     .signup { padding-block: 56px 88px; }
     .sign-head { gap: 16px; }
     .sign-text { gap: 16px; }
-    .sign-arts .ill { width: 120px; height: 110px; }
-    .sign-arts .sign-art-plant { height: 84px; }
   }
 
   @media (min-width: 1101px) {
@@ -823,13 +755,6 @@ const FEATURED_TIKTOK = {
     align-items: center;
   }
 
-  /* The whole drawing, never cropped (captain, 2026-10-09): it's near-
-     square, so width alone sizes it */
-  .crew-art {
-    width: 140px;
-    height: auto;
-  }
-
   .crew h2 { font-size: 2.8rem; margin-bottom: 16px; }
 
   .crew p {
@@ -843,8 +768,6 @@ const FEATURED_TIKTOK = {
 
   @media (min-width: 761px) {
     .crew { padding-block: 44px 80px; }
-    .crew-grid { grid-template-columns: auto minmax(0, 1fr); gap: 56px; }
-    .crew-art { width: 230px; }
     .crew h2 { font-size: clamp(2.8rem, 5vw, 4.4rem); margin-bottom: 18px; }
     .crew p { margin: 0 0 56px; }
     .crew .btn { width: auto; }
