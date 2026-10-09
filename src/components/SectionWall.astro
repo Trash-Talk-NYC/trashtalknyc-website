@@ -28,12 +28,19 @@ interface Props {
   dim?: number;
   /** Varies the tear so neighboring sections don't rip identically. */
   seed?: number;
+  /**
+   * Planting only: a selector (inside the section) for the text column
+   * the chalk pieces must stay out from behind. The photo and its mask
+   * are then framed together so that column sits on bare sidewalk.
+   */
+  keepClear?: string;
 }
 
-const { kind, src, tear = 'both', dim = 0.35, seed = 1 } = Astro.props;
+const { kind, src, tear = 'both', dim = 0.35, seed = 1, keepClear } = Astro.props;
 if (kind === 'cleanup' && !src) throw new Error('SectionWall: a cleanup wall needs a photo (src)');
 
-const photo = await getImage({ src: kind === 'planting' ? chalkPhoto : src!, width: 1600, format: 'webp' });
+// 2400 is the chalk original's full width, so zoomed framings stay sharp
+const photo = await getImage({ src: kind === 'planting' ? chalkPhoto : src!, width: kind === 'planting' ? 2400 : 1600, format: 'webp' });
 
 /** A ragged edge: deterministic jitter so builds are stable. */
 function edge(fromTop: boolean): string[] {
@@ -55,7 +62,7 @@ const clip = `polygon(${[...top, ...bottom].join(',')})`;
 const bg = `background-image:url(${photo.src})`;
 ---
 
-<div class:list={['sw-layer', `sw-${kind}`]} aria-hidden="true" style={`clip-path:${clip};--sw-dim:${dim}`}>
+<div class:list={['sw-layer', `sw-${kind}`]} aria-hidden="true" style={`clip-path:${clip};--sw-dim:${dim}`} data-keep-clear={kind === 'planting' ? keepClear : undefined}>
   {kind === 'cleanup' ? (
     <div class="sw-photo sw-duo" style={bg}></div>
   ) : (
@@ -72,6 +79,39 @@ const bg = `background-image:url(${photo.src})`;
     </>
   )}
 </div>
+
+<script>
+  // Frames the chalk photo (and its mask, identically) so no chalk piece
+  // sits behind a section's text column. Geometry of the pieces, from
+  // the hand-placed chalk-mask.svg (fractions of the photo):
+  //   main cluster starts at x 0.354 (and spans y 0.30–0.79)
+  //   left cluster lies at x ≤ 0.165, y ≥ 0.53
+  // With the photo's left edge on the section's left edge, the main
+  // cluster begins MAIN_X × width in, so the width is chosen to push it
+  // past the column; and the photo is tall enough (top-aligned) that the
+  // section ends above the left cluster. Without JS the wall keeps its
+  // plain cover framing.
+  const MAIN_X = 0.354;
+  const LEFT_CLUSTER_Y = 0.53;
+  const RATIO = 1.5; // the chalk photo is 3:2
+  const CLEARANCE = 24;
+
+  function frame(layer: HTMLElement) {
+    const section = layer.parentElement;
+    const column = section?.querySelector(layer.dataset.keepClear ?? '');
+    if (!section || !column) return;
+    const s = section.getBoundingClientRect();
+    const right = Math.max(...Array.from(column.children, (c) => c.getBoundingClientRect().right)) - s.left;
+    const width = Math.ceil(Math.max(s.width, (right + CLEARANCE) / MAIN_X, (s.height / LEFT_CLUSTER_Y) * RATIO));
+    layer.style.setProperty('--sw-size', `${width}px auto`);
+    layer.style.setProperty('--sw-pos', '0 0');
+  }
+
+  document.querySelectorAll<HTMLElement>('.sw-layer[data-keep-clear]').forEach((layer) => {
+    frame(layer);
+    if (layer.parentElement) new ResizeObserver(() => frame(layer)).observe(layer.parentElement);
+  });
+</script>
 
 <style>
   .sw-layer {
@@ -91,9 +131,10 @@ const bg = `background-image:url(${photo.src})`;
     inset: 0;
   }
 
+  /* Photo and mask share one framing (see the script) */
   .sw-photo {
-    background-size: cover;
-    background-position: center;
+    background-size: var(--sw-size, cover);
+    background-position: var(--sw-pos, center);
   }
 
   /* Purple duotone: the photo's luminance over Deep Purple */
@@ -122,7 +163,7 @@ const bg = `background-image:url(${photo.src})`;
   /* The chalk pieces cut out of the tint and shade, brightened */
   .sw-pop {
     filter: saturate(1.6) contrast(1.08) brightness(1.08);
-    -webkit-mask: var(--sw-mask) center / cover no-repeat;
-    mask: var(--sw-mask) center / cover no-repeat;
+    -webkit-mask: var(--sw-mask) var(--sw-pos, center) / var(--sw-size, cover) no-repeat;
+    mask: var(--sw-mask) var(--sw-pos, center) / var(--sw-size, cover) no-repeat;
   }
 </style>

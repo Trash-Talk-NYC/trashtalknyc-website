@@ -81,7 +81,7 @@ const FEATURED_TIKTOK = {
      and the GoFundMe widget sitting plain — no flyer card. A planting
      section, since the funds go to flower-planting and builds. -->
 <section class="donate-sec wall" id="donate">
-  <SectionWall kind="planting" dim={0.45} seed={2} />
+  <SectionWall kind="planting" dim={0.45} seed={2} keepClear=".donate" />
   <div class="wrap donate">
     <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
     <h2 class="donate-title" data-en="Because of you" data-es="Gracias a ti">Because of you</h2>
@@ -397,9 +397,14 @@ const FEATURED_TIKTOK = {
   }
 
   /* The live widget sits straight on the section; its internals are an
-     iframe and stay GoFundMe's */
-  .gfm { width: min(100%, 34rem); }
+     iframe and stay GoFundMe's. Their card stretches to the iframe up to
+     480px and then centers on a white page, so the wrapper is capped at
+     exactly that width: wider would show white strips beside the card.
+     Height stays automatic (GoFundMe's script resizes the iframe as the
+     card's title wraps on narrow phones). */
+  .gfm { width: min(100%, 480px); }
   .gfm :global(.gfm-embed) { min-height: 180px; }
+  .gfm :global(.gfm-embed-iframe) { display: block; }
 
   @media (min-width: 761px) {
     .donate-sec { padding-block: 88px 96px; }
