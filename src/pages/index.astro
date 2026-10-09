@@ -44,6 +44,11 @@ const orgSchema = {
 
 // The reel the captain asked to feature by the Socials section (2026-10-09)
 const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
+// …and the TikTok beside it (captain, 2026-10-09)
+const FEATURED_TIKTOK = {
+  url: 'https://www.tiktok.com/@trashtalk_nyc/video/7692418087739526431',
+  id: '7692418087739526431',
+};
 ---
 
 <BaseLayout
@@ -87,8 +92,8 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     <article class="card donate paste f-sticker f-torn" id="donate">
       <Image src={vestSticker} alt="" class="slap slap-donate" width={110} densities={[1, 2]} />
       <img class="ill donate-art" src={illTreebed.src} alt="" />
-      <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
-      <h2 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h2>
+      <h2 class="donate-eyebrow" data-en="Donate" data-es="Dona">Donate</h2>
+      <h3 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h3>
       <div class="gfm">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
@@ -112,35 +117,49 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
       ))}
     </div>
 
-    <!-- Featured reel (captain, 2026-10-09): Instagram's official embed,
-         pasted up and pinned like the other cards. The blockquote IS the
-         fallback: until embed.js swaps it for the player (or if it never
-         loads) it's a plain link to the reel. embed.js is only fetched
-         when the section nears the viewport (script below), so Instagram
-         isn't contacted by visitors who never scroll this far. -->
-    <figure class="reel paste f-sticker">
-      <Image src={vestSticker} alt="" class="slap reel-slap" width={96} densities={[1, 2]} />
-      <figcaption class="mono reel-cap" data-en="From our Instagram" data-es="De nuestro Instagram">From our Instagram</figcaption>
-      <blockquote class="instagram-media reel-embed" data-instgrm-permalink={`${FEATURED_REEL}?utm_source=ig_embed`} data-instgrm-version="14">
-        <a href={FEATURED_REEL} target="_blank" rel="noopener" data-en="Watch this reel on Instagram →" data-es="Mira este reel en Instagram →">Watch this reel on Instagram →</a>
-      </blockquote>
-    </figure>
+    <!-- Featured posts (captain, 2026-10-09): Instagram's and TikTok's
+         official embeds, side by side on desktop and stacked on phones.
+         Each blockquote IS its fallback: until the platform script swaps
+         it for the player (or if it never loads) it's a plain link to
+         the post. The scripts are only fetched when this row nears the
+         viewport (script below), so neither platform is contacted by
+         visitors who never scroll this far. -->
+    <div class="feeds">
+      <figure class="feed paste f-sticker">
+        <Image src={vestSticker} alt="" class="slap feed-slap" width={96} densities={[1, 2]} />
+        <figcaption class="mono feed-cap" data-en="From our Instagram" data-es="De nuestro Instagram">From our Instagram</figcaption>
+        <blockquote class="instagram-media feed-embed" data-instgrm-permalink={`${FEATURED_REEL}?utm_source=ig_embed`} data-instgrm-version="14">
+          <a href={FEATURED_REEL} target="_blank" rel="noopener" data-en="Watch this reel on Instagram →" data-es="Mira este reel en Instagram →">Watch this reel on Instagram →</a>
+        </blockquote>
+      </figure>
+      <figure class="feed paste f-tape">
+        <figcaption class="mono feed-cap" data-en="From our TikTok" data-es="De nuestro TikTok">From our TikTok</figcaption>
+        <blockquote class="tiktok-embed feed-embed" cite={FEATURED_TIKTOK.url} data-video-id={FEATURED_TIKTOK.id}>
+          <section>
+            <a href={FEATURED_TIKTOK.url} target="_blank" rel="noopener" data-en="Watch this video on TikTok →" data-es="Mira este video en TikTok →">Watch this video on TikTok →</a>
+          </section>
+        </blockquote>
+      </figure>
+    </div>
   </div>
 </section>
 
 <script>
-  // Load Instagram's embed script only when the reel is about to be seen
-  const reel = document.querySelector('.reel-embed');
-  if (reel && 'IntersectionObserver' in window) {
+  // Load the Instagram and TikTok embed scripts only when the featured
+  // posts are about to be seen
+  const feeds = document.querySelector('.feeds');
+  if (feeds && 'IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       if (!entries.some((e) => e.isIntersecting)) return;
       io.disconnect();
-      const s = document.createElement('script');
-      s.src = 'https://www.instagram.com/embed.js';
-      s.async = true;
-      document.body.appendChild(s);
+      for (const src of ['https://www.instagram.com/embed.js', 'https://www.tiktok.com/embed.js']) {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        document.body.appendChild(s);
+      }
     }, { rootMargin: '600px 0px' });
-    io.observe(reel);
+    io.observe(feeds);
   }
 </script>
 
@@ -405,15 +424,21 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     opacity: 0.9;
   }
 
+  /* The card's heading in Londrina, with "Because of you:" as its
+     subheading (captain, 2026-10-09) */
   .donate-eyebrow {
+    font-size: 2.2rem;
+    line-height: 1;
     color: var(--green);
     /* Clears the vest sticker pinning the flyer's top-left corner */
     margin-left: 54px;
     margin-bottom: 8px;
   }
 
+  /* Same indent as the heading above it, which clears the sticker */
   .donate-title {
-    font-size: 2.6rem;
+    margin-left: 54px;
+    font-size: 1.7rem;
     color: var(--purple);
     margin-bottom: 22px;
     padding-right: 100px;
@@ -439,7 +464,8 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     .donate :global(.slap-donate) { top: -42px; left: -26px; width: 110px; }
     .donate-eyebrow { margin-left: 64px; }
     .donate-art { width: 170px; right: 10px; top: 6px; }
-    .donate-title { font-size: clamp(2.6rem, 4.8vw, 3.8rem); padding-right: 160px; }
+    .donate-eyebrow { font-size: clamp(2.4rem, 4vw, 3.2rem); }
+    .donate-title { margin-left: 64px; font-size: clamp(1.7rem, 2.6vw, 2.2rem); padding-right: 160px; }
     .gfm { padding: 18px; }
   }
 
@@ -496,18 +522,27 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     color: var(--purple);
   }
 
-  /* Instagram's player is 326–540px wide; the paper frame hugs it */
-  .reel {
+  /* The featured posts: stacked on phones, side by side from 761px.
+     Both players are 325–540px wide, so each paper frame is capped
+     near that and the pair centers in the row. */
+  .feeds {
+    display: grid;
+    grid-template-columns: minmax(0, 26.25rem);
+    justify-content: center;
+    align-items: start;
+    gap: 48px;
+    margin-top: 44px;
+  }
+
+  .feed {
     position: relative;
-    width: 100%;
-    max-width: 26.25rem;
-    margin: 40px auto 0;
+    margin: 0;
     padding: 14px 12px 12px;
     --flyer-bg: var(--paper);
     color: var(--black);
   }
 
-  .reel :global(.reel-slap) {
+  .feed :global(.feed-slap) {
     top: -30px;
     right: -10px;
     width: 64px;
@@ -515,30 +550,35 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
     transform: rotate(9deg);
   }
 
-  .reel-cap {
+  .feed-cap {
     color: var(--purple);
     margin-bottom: 10px;
   }
 
-  /* Overrides for Instagram's own inline styles, so the player and its
-     link fallback fill the frame instead of floating with margins */
-  .reel :global(.instagram-media),
-  .reel :global(iframe.instagram-media) {
+  /* Overrides for the platforms' own inline styles, so each player and
+     its link fallback fill the frame instead of floating with margins */
+  .feed :global(.instagram-media),
+  .feed :global(iframe.instagram-media),
+  .feed :global(.tiktok-embed) {
     width: 100% !important;
     min-width: 0 !important;
     max-width: none !important;
     margin: 0 !important;
   }
 
-  .reel-embed {
-    margin: 0;
+  .feed-embed { margin: 0; }
+
+  /* The dashed link box is the fallback look only: TikTok keeps its
+     blockquote around the player it injects, so drop the box once an
+     iframe is inside (Instagram replaces its blockquote outright) */
+  .feed-embed:not(:has(iframe)) {
     padding: 28px 16px;
     background: var(--paper-bright);
     border: 2px dashed rgba(29, 29, 35, 0.3);
     text-align: center;
   }
 
-  .reel-embed a {
+  .feed-embed a {
     font-family: var(--mono);
     font-weight: 700;
     font-size: 0.9rem;
@@ -547,8 +587,9 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 
   @media (min-width: 761px) {
     .socials { padding-block: 64px 70px; }
-    .reel { margin-top: 56px; padding: 18px 16px 16px; }
-    .reel :global(.reel-slap) { top: -40px; right: -30px; width: 90px; }
+    .feeds { grid-template-columns: repeat(2, minmax(0, 26.25rem)); gap: clamp(32px, 4vw, 64px); margin-top: 60px; }
+    .feed { padding: 18px 16px 16px; }
+    .feed :global(.feed-slap) { top: -40px; right: -30px; width: 90px; }
     .soc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
     .soc-tile { padding: 20px 18px; }
     .soc-tile:last-child:nth-child(odd) { grid-column: auto; }
