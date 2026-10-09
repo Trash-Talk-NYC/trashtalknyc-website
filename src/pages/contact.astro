@@ -283,7 +283,9 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     display: grid;
     grid-template-columns: minmax(0, 62rem);
     justify-content: center;
-    padding-block: 30px 44px;
+    /* A full section of its own (captain, 2026-10-09): generous room
+       above and below the picker */
+    padding-block: 72px 88px;
   }
 
   .ct-form {
@@ -468,7 +470,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   .ct-join .btn { width: 100%; }
 
   @media (min-width: 761px) {
-    .ct-body { padding-block: 56px 80px; }
+    .ct-body { padding-block: 128px 144px; }
 
     .ct-form { padding: 30px clamp(18px, 3vw, 36px); }
     .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
