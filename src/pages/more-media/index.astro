@@ -1,4 +1,6 @@
 ---
+import SectionWall from '../../components/SectionWall.astro';
+import wallRedBrick from '../../assets/walls/wall-red-brick.jpg';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
@@ -33,7 +35,11 @@ const look: Record<MediaSectionId, { tone: string; soonBtn: string; flyer: strin
     description={moreMediaTagline}
   />
 
-  <section class="wrap mm-grid" aria-label="Channels">
+  <!-- One torn-edge wall behind the channels and the albums strip
+       (captain, 2026-10-09), purple kept light so the posters read -->
+  <section class="mm-wall wall">
+  <SectionWall kind="cleanup" src={wallRedBrick} dim={0.5} duotone={0.18} seed={8} />
+  <div class="wrap mm-grid" role="group" aria-label="Channels">
     {mediaSections.map((s) => (
       <article class:list={['mm-card', 'paste', look[s.id].tone, look[s.id].flyer]}>
         {look[s.id].sticker && <Image src={vestSticker} alt="" class="slap mm-slap" width={96} densities={[1, 2]} />}
@@ -53,15 +59,16 @@ const look: Record<MediaSectionId, { tone: string; soonBtn: string; flyer: strin
         )}
       </article>
     ))}
-  </section>
+  </div>
 
   <!-- Photo Albums is a More Media page but not a channel, so it gets
        its own strip below the three-channel layout -->
-  <section class="wrap mm-albums">
+  <div class="wrap mm-albums">
     <a class="mm-albums-card paste f-staple" href={PHOTO_ALBUMS.path}>
       <span class="mm-albums-name" data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</span>
       <span class="btn btn-purple" data-en="Look →" data-es="Ver →">Look →</span>
     </a>
+  </div>
   </section>
 </BaseLayout>
 

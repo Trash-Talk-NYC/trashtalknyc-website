@@ -1,4 +1,6 @@
 ---
+import SectionWall from '../components/SectionWall.astro';
+import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
 import Bricks from '../components/Bricks.astro';
 import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -49,7 +51,11 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   <!-- The form is its own section and "Help out behind the scenes" is
        the next one (captain, 2026-10-09) — no side column, no loose
        decoration beside them. -->
-  <section class="wrap ct-body">
+  <!-- A torn-edge wall behind the picker (captain, 2026-10-09), purple
+       kept light like Club Events so the flyers and form stay readable -->
+  <section class="ct-wall wall">
+  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} duotone={0.18} seed={7} />
+  <div class="wrap ct-body">
     <div class="ct-form">
       <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
       <div class="tiles" role="group" aria-labelledby="pickLabel">
@@ -230,6 +236,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
       </div>
     </div>
 
+  </div>
   </section>
 
   <section class="ct-join" aria-labelledby="joinBannerHeading">

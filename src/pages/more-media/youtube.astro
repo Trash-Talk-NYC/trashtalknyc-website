@@ -1,4 +1,6 @@
 ---
+import SectionWall from '../../components/SectionWall.astro';
+import wallRedBrick from '../../assets/walls/wall-red-brick.jpg';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
@@ -36,7 +38,10 @@ const videoTitle = {
 
   <MediaSubnav current="youtube" />
 
-  <section class="wrap yt-body">
+  <!-- Torn-edge wall like the other More Media pages (captain, 2026-10-09) -->
+  <section class="yt-wall wall">
+  <SectionWall kind="cleanup" src={wallRedBrick} dim={0.5} duotone={0.18} seed={9} />
+  <div class="wrap yt-body">
     <figure class="yt-frame paste f-sticker">
       <Image src={vestSticker} alt="" class="slap yt-slap" width={110} densities={[1, 2]} />
       <div class="yt-ratio">
@@ -59,6 +64,7 @@ const videoTitle = {
         <span data-en="More on our YouTube channel →" data-es="Más en nuestro canal de YouTube →">More on our YouTube channel →</span>
       </a>
     )}
+  </div>
   </section>
 </BaseLayout>
 
