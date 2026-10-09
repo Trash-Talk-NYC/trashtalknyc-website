@@ -50,28 +50,30 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
        the next one (captain, 2026-10-09) — no side column, no loose
        decoration beside them. -->
   <section class="wrap ct-body">
-    <div class="ct-form paste f-tape">
+    <div class="ct-form">
       <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
       <div class="tiles" role="group" aria-labelledby="pickLabel">
-        <button type="button" class="tile" aria-pressed="false" data-type="lead">
+        <!-- Four large taped flyers in a 2 × 2 grid (captain's H1 pick,
+             2026-10-09); the chosen form opens below as its own sheet -->
+        <button type="button" class="tile paste f-tape" aria-pressed="false" data-type="lead">
           <b data-en="Lead a Cleanup" data-es="Lidera una Limpieza">Lead a Cleanup</b>
           <small data-en="Apply to lead a cleanup with Trash Talk NYC" data-es="Postúlate para liderar una limpieza con Trash Talk NYC">Apply to lead a cleanup with Trash Talk NYC</small>
         </button>
-        <button type="button" class="tile" aria-pressed="false" data-type="partnership">
+        <button type="button" class="tile paste" aria-pressed="false" data-type="partnership">
           <b data-en="Collaborate" data-es="Colaborar">Collaborate</b>
           <small data-en="For content or podcast collaborations" data-es="Para colaboraciones de contenido o pódcast">For content or podcast collaborations</small>
         </button>
-        <button type="button" class="tile" aria-pressed="false" data-type="sponsor">
+        <button type="button" class="tile paste" aria-pressed="false" data-type="sponsor">
           <b data-en="Sponsor" data-es="Patrocinar">Sponsor</b>
           <small data-en="Put your name behind cleanups" data-es="Pon tu nombre detrás de las limpiezas">Put your name behind cleanups</small>
         </button>
-        <button type="button" class="tile" aria-pressed="false" data-type="general">
+        <button type="button" class="tile paste f-tape" aria-pressed="false" data-type="general">
           <b data-en="General" data-es="General">General</b>
           <small data-en="For questions, concerns, or a website bug" data-es="Para preguntas, comentarios o un error del sitio">For questions, concerns, or a website bug</small>
         </button>
       </div>
 
-      <div class="form-area" id="formArea" hidden>
+      <div class="form-area paste f-staple" id="formArea" hidden>
         <h2 id="formHeading">Message Trash Talk NYC</h2>
         <p class="intro" id="formIntro">Questions, concerns, or report a bug on the site.</p>
 
@@ -288,61 +290,60 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     padding-block: 72px 88px;
   }
 
-  .ct-form {
-    --flyer-bg: var(--paper);
-    color: var(--black);
-    padding: 22px 14px;
-  }
+  .ct-form { color: var(--beige); }
 
-  .pick-label { color: var(--black); margin-bottom: 10px; }
+  .pick-label { color: var(--yellow); margin-bottom: 22px; font-size: 0.9rem; }
 
   /* ── TILES ── */
+  /* Always 2 × 2, phones included (the captain's pick is a square) */
   .tiles {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 6px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 14px;
   }
 
   .tile {
+    --flyer-bg: var(--paper);
     display: grid;
-    gap: 4px;
+    gap: 10px;
     justify-items: start;
     align-content: start;
+    min-height: 11rem;
+    padding: 24px 14px 18px;
+    border: 0;
     text-align: left;
-    padding: 12px;
-    border: var(--ink);
-    border-radius: 10px;
-    background: var(--paper-bright);
     color: var(--black);
+    font: inherit;
     cursor: pointer;
-    transition: transform 0.12s;
   }
 
-  .tile:hover { transform: translate(-1px, -2px); background: var(--yellow); }
+  /* The untaped pair hangs slightly crooked, like flyers put up by hand */
+  .tile:nth-child(2) { transform: rotate(1deg); }
+  .tile:nth-child(3) { transform: rotate(-1deg); }
+
+  .tile:hover { --flyer-bg: var(--yellow); }
 
   .tile b {
-    font-family: var(--body);
-    font-weight: 700;
-    font-size: 1.1rem;
-    line-height: 1.05;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 1.7rem;
+    line-height: 1;
+    color: var(--purple);
   }
 
-  .tile small { font-size: 0.9rem; line-height: 1.25; opacity: 0.8; }
+  .tile small { font-size: 1rem; line-height: 1.35; }
 
-  .tile[aria-pressed='true'] {
-    background: var(--purple);
-    color: var(--beige);
-    border-color: var(--purple);
-  }
-
-  .tile[aria-pressed='true'] img { filter: brightness(0) invert(0.92); }
+  .tile[aria-pressed='true'] { --flyer-bg: var(--purple); color: var(--beige); }
+  .tile[aria-pressed='true'] b { color: var(--yellow); }
 
   /* ── FORM AREA ── */
   .form-area {
-    margin-top: 22px;
-    padding-top: 22px;
-    border-top: 2px dashed var(--black);
+    --flyer-bg: var(--paper);
+    color: var(--black);
+    margin-top: 44px;
+    padding: 28px 18px;
+    /* A long form only takes a hair of tilt */
+    transform: rotate(-0.3deg);
   }
 
   .form-area[hidden] { display: none; }
@@ -472,10 +473,11 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   @media (min-width: 761px) {
     .ct-body { padding-block: 128px 144px; }
 
-    .ct-form { padding: 30px clamp(18px, 3vw, 36px); }
-    .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-    .tile { padding: 14px 14px 16px; }
-    .tile b { font-size: 1.2rem; }
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 36px; }
+    .tile { min-height: 13rem; padding: 36px 34px 32px; }
+    .tile b { font-size: clamp(2.6rem, 3.6vw, 3.4rem); }
+    .tile small { font-size: 1.25rem; }
+    .form-area { margin-top: 64px; padding: 40px clamp(22px, 4vw, 48px); }
     .form-area form { gap: 14px 12px; }
     .form-area label { font-size: 1rem; }
 

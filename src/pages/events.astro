@@ -58,29 +58,39 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     </div>
 
     {upcoming.length > 0 ? (
-      <div class="ev-list" id="eventsListInner">
-        {upcoming.map(({ props, latLng }) => (
-          <EventCard {...props} latLng={latLng} />
-        ))}
-      </div>
-    ) : (
-      <div class="no-events">
-        <p data-en="No upcoming events right now. Stay tuned on our Eventbrite page for new dates." data-es="No hay eventos próximos. ¡Síguenos en Eventbrite para nuevas fechas!">No upcoming events right now. Stay tuned on our Eventbrite page for new dates.</p>
-      </div>
-    )}
+      <>
+        <div class="ev-list" id="eventsListInner">
+          {upcoming.map(({ props, latLng }) => (
+            <EventCard {...props} latLng={latLng} />
+          ))}
+        </div>
 
-    <!-- Closing newsletter nudge (captain's wording), sitting straight on
-         the section with no card around it (captain, 2026-10-09) -->
-    <div class="nudge">
-      <div>
-        <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
-        <div class="row">
+        <!-- Closing newsletter nudge (captain's wording), sitting straight on
+             the section with no card around it (captain, 2026-10-09) -->
+        <div class="nudge">
+          <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
+          <div class="row">
+            <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
+            <!-- The same sticker icons as the header strip (captain, 2026-10-09) -->
+            <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
+          </div>
+        </div>
+      </>
+    ) : (
+      <!-- No events (captain's F3 pick, 2026-10-09, copy verbatim): the
+           message on the left, the newsletter and socials on the right -->
+      <div class="no-events">
+        <div class="ne-msg">
+          <p class="ne-title" data-en="No dates yet." data-es="Aún no hay fechas.">No dates yet.</p>
+          <p class="ne-sub" data-en="New cleanups get posted here." data-es="Las nuevas limpiezas se publican aquí.">New cleanups get posted here.</p>
+        </div>
+        <div class="ne-actions">
           <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
-          <!-- The same sticker icons as the header strip (captain, 2026-10-09) -->
+          <p class="ne-or" data-en="or follow along" data-es="o síguenos">or follow along</p>
           <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
         </div>
       </div>
-    </div>
+    )}
     </div>
   </section>
 
@@ -318,11 +328,25 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
   }
 
   .no-events {
-    padding: 8px 0 32px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
     color: var(--beige);
-    font-size: 1.2rem;
-    font-weight: 500;
+    padding: 8px 0 56px;
   }
+
+  .ne-title {
+    margin: 0 0 6px;
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    line-height: 1;
+  }
+
+  .ne-sub { margin: 0; font-size: 1.2rem; font-weight: 500; }
+
+  .ne-actions { display: grid; justify-items: start; gap: 12px; }
+  .ne-or { margin: 6px 0 0; font-size: 1rem; font-weight: 500; opacity: 0.85; }
 
   .nudge {
     color: var(--beige);
@@ -338,6 +362,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     .list-head h2 { font-size: clamp(3rem, 6vw, 4.8rem); }
 
     .nudge { margin-block: 36px 84px; }
+    .no-events { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; padding-bottom: 88px; }
     .nudge p { font-size: 1.3rem; }
     .nudge .btn { width: auto; }
   }

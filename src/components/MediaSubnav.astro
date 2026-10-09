@@ -35,30 +35,39 @@ const { current } = Astro.props;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 14px 12px;
     list-style: none;
   }
 
+  /* Tape labels (captain's S2 pick, 2026-10-09): each link is a slightly
+     tilted strip of translucent yellow tape with ragged ends; the current
+     page is solid yellow tape */
   a {
     display: inline-flex;
     align-items: center;
     min-height: var(--tap);
-    padding: 8px 18px;
-    border: 2.5px solid var(--beige);
-    /* Rectangular, not pills (captain, 2026-10-09) */
-    border-radius: 0;
+    padding: 8px 20px;
+    background: rgba(243, 207, 2, 0.2);
+    clip-path: polygon(0 6%, 3% 0, 97% 4%, 100% 12%, 97% 30%, 100% 50%, 97% 72%, 100% 92%, 96% 100%, 3% 96%, 0 86%, 3% 66%, 0 46%, 3% 26%);
     font-family: var(--mono);
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--beige);
     text-decoration: none;
+    transform: rotate(-1.5deg);
+    transition: background 0.15s;
   }
 
-  a:hover { background: var(--beige); color: var(--black); }
+  li:nth-child(even) a { transform: rotate(1.5deg); }
+
+  a:hover { background: rgba(243, 207, 2, 0.4); }
 
   a[aria-current='page'] {
     background: var(--yellow);
-    border-color: var(--yellow);
     color: var(--black);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a { transition: none; }
   }
 </style>
