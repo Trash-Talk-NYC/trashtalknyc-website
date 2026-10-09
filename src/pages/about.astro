@@ -105,13 +105,12 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
 
   <!-- Closing hand-off to the recruitment page. Old emails linked
        /about#join-the-team; keep the anchor landing here. -->
-  <!-- Just the heading, the roles button, and the team inbox — nothing
-       else (captain, 2026-10-09: "unbelievably messy" before) -->
+  <!-- A short row: the heading with the roles button beside it, nothing
+       else (captain, 2026-10-09) -->
   <section class="lend" id="join-the-team">
     <div class="wrap lend-inner">
       <h2 data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
       <a class="btn btn-primary" href="/recruit" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
-      <a class="lend-mail" href="mailto:team@trashtalknyc.org">team@trashtalknyc.org</a>
     </div>
   </section>
 </BaseLayout>
@@ -254,35 +253,21 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   .lend {
     background-color: var(--green);
     color: var(--beige);
-    padding-block: 40px;
+    padding-block: 32px;
   }
 
   .lend-inner {
-    display: grid;
-    justify-items: start;
-    gap: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
   }
 
-  .lend h2 { font-size: 2.8rem; }
-  .lend .btn { width: 100%; justify-self: stretch; }
-
-  /* Big, yellow, underlined: it has to read as tappable on phones */
-  .lend-mail {
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: clamp(1.15rem, 4.6vw, 1.7rem);
-    color: var(--yellow);
-    text-decoration: underline;
-    text-decoration-thickness: 3px;
-    text-underline-offset: 5px;
-    overflow-wrap: anywhere;
-  }
-
-  .lend-mail:hover { color: var(--beige); }
+  .lend h2 { font-size: 2.4rem; }
 
   @media (min-width: 761px) {
-    .lend { padding-block: 56px; }
-    .lend h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); }
-    .lend .btn { width: auto; justify-self: start; }
+    .lend { padding-block: 40px; }
+    .lend h2 { font-size: clamp(2.6rem, 4vw, 3.6rem); }
   }
 </style>

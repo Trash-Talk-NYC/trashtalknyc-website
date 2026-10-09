@@ -5,11 +5,11 @@ import MediaHero from '../../../components/MediaHero.astro';
 import MediaSubnav from '../../../components/MediaSubnav.astro';
 import SectionWall from '../../../components/SectionWall.astro';
 import { MORE_MEDIA_PATH } from '../../../lib/media';
-import { albumCountLabel, albumPath, albums } from '../../../lib/albums';
+import { albumPath, albumStatusLabel, albums } from '../../../lib/albums';
 
 /**
  * More Media → Photo Albums (captain, 2026-10-09). The list is the
- * captain's E3 pick: one row per album — its name, photo count (or "coming
+ * captain's E3 pick: one row per album — its name (or "coming
  * soon") and a film-strip peek of its photos — so it stays easy to scan as
  * albums are added (data in src/lib/albums.ts). A row with photos opens
  * that album as a photo book.
@@ -38,7 +38,7 @@ const EMPTY_FRAMES = 4;
     <div class="wrap pa-body">
       <ul class="pa-list">
         {albums.map((album) => {
-          const count = albumCountLabel(album);
+          const status = albumStatusLabel(album);
           const open = album.photos.length > 0;
           const Row = open ? 'a' : 'div';
           return (
@@ -47,7 +47,7 @@ const EMPTY_FRAMES = 4;
                 <div class="pa-meta">
                   <span class="mono pa-num" data-en={album.number.en} data-es={album.number.es}>{album.number.en}</span>
                   <h2 class="pa-name" data-en={album.name.en} data-es={album.name.es}>{album.name.en}</h2>
-                  <span class="mono pa-count" data-en={count.en} data-es={count.es}>{count.en}</span>
+                  {status && <span class="mono pa-count" data-en={status.en} data-es={status.es}>{status.en}</span>}
                 </div>
                 <div class="pa-strip" aria-hidden="true">
                   {open

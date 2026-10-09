@@ -84,9 +84,7 @@ export const albums: Album[] = [
 
 export const albumPath = (album: Album) => `${PHOTO_ALBUMS.path}/${album.slug}`;
 
-/** "5 photos" / "Coming soon", in both languages. */
-export function albumCountLabel(album: Album): Copy {
-  const n = album.photos.length;
-  if (n === 0) return { en: 'Coming soon', es: 'Muy pronto' };
-  return n === 1 ? { en: '1 photo', es: '1 foto' } : { en: `${n} photos`, es: `${n} fotos` };
+/** "Coming soon" for an album without photos; no photo counts (captain, 2026-10-09). */
+export function albumStatusLabel(album: Album): Copy | null {
+  return album.photos.length === 0 ? { en: 'Coming soon', es: 'Muy pronto' } : null;
 }

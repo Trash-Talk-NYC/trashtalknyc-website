@@ -5,6 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import HeroEventCard from '../components/HeroEventCard.astro';
 import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
+import SocialLinks from '../components/SocialLinks.astro';
 import SectionWall from '../components/SectionWall.astro';
 import wallColorGraffiti from '../assets/walls/wall-color-graffiti.jpg';
 
@@ -45,7 +46,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
 
   <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4) -->
   <section class="ev-section wall">
-    <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.5} duotone={0.55} seed={4} />
+    <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.5} duotone={0.4} seed={4} />
     <div class="wrap">
     <div class="list-head">
       <h2 data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</h2>
@@ -75,7 +76,8 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
         <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
         <div class="row">
           <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
-          <a class="btn btn-ghost-light" href="https://trashtalknyc.eventbrite.com" target="_blank" rel="noopener" data-en="See us on Eventbrite →" data-es="Vernos en Eventbrite →">See us on Eventbrite →</a>
+          <!-- The same sticker icons as the header strip (captain, 2026-10-09) -->
+          <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
         </div>
       </div>
     </div>
@@ -328,7 +330,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
   }
 
   .nudge p { margin: 0 0 16px; font-size: 1.2rem; font-weight: 500; max-width: 46ch; }
-  .nudge .row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .nudge .row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 24px; }
   .nudge .btn { width: 100%; }
 
   @media (min-width: 761px) {

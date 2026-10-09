@@ -21,7 +21,7 @@ interface Props {
   eyebrowHref?: string;
   /** One entry per line; the last line takes the accent color. */
   title: Copy[];
-  description: Copy;
+  description?: Copy;
 }
 
 const { eyebrow, eyebrowHref, title, description } = Astro.props;
@@ -50,7 +50,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
         </>
       ))}
     </h1>
-    <p class="mh-desc" data-en={description.en} data-es={description.es}>{description.en}</p>
+    {description && <p class="mh-desc" data-en={description.en} data-es={description.es}>{description.en}</p>}
   </div>
 </section>
 
