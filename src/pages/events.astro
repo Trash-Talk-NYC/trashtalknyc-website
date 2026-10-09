@@ -329,12 +329,13 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     padding-bottom: 40px;
   }
 
-  /* One left-aligned unit (captain, 2026-10-09): the message, then the
-     newsletter button with "or follow along" and the icons on its row */
+  /* Message left, actions grouped right and centered against it, sitting
+     close (captain, 2026-10-09); stacked on phones */
   .no-events {
     display: grid;
     gap: 22px;
     justify-items: start;
+    align-items: center;
     color: var(--beige);
     padding: 8px 0 56px;
   }
@@ -348,7 +349,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
 
   .ne-sub { margin: 0; font-size: 1.2rem; font-weight: 500; }
 
-  .ne-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+  .ne-actions { display: grid; justify-items: start; gap: 14px; }
   .ne-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
   .ne-or { margin: 0; font-size: 1rem; font-weight: 500; opacity: 0.85; }
 
@@ -366,7 +367,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     .list-head h2 { font-size: clamp(3rem, 6vw, 4.8rem); }
 
     .nudge { margin-block: 36px 84px; }
-    .no-events { padding-bottom: 88px; }
+    .no-events { grid-template-columns: auto auto; justify-content: start; column-gap: clamp(48px, 6vw, 96px); padding-bottom: 88px; }
     .nudge p { font-size: 1.3rem; }
     .nudge .btn { width: auto; }
   }

@@ -356,7 +356,9 @@ const FEATURED_TIKTOK = {
     margin: 0;
   }
 
-  .hero-btns .btn { padding: 12px 34px; font-size: 0.8rem; }
+  /* Big on purpose (captain, 2026-10-09); rem-based, so it grows with
+     the fluid root size on wide screens */
+  .hero-btns .btn { padding: 16px 44px; font-size: 1.05rem; border-width: 3px; }
 
   @media (min-width: 761px) {
     /* Both full brick halves (69.62vw, see brick-rows.generated.ts) plus
@@ -368,7 +370,7 @@ const FEATURED_TIKTOK = {
     .hero :global(.hero-logo) { width: min(27.5rem, 52%); }
     /* A real destination button at desktop scale — the mobile-sized one
        read "unbelievably small" against the full-width hero (captain) */
-    .hero-btns .btn { padding: 18px 64px; font-size: 1.05rem; }
+    .hero-btns .btn { padding: 1.4rem 4.5rem; font-size: 1.45rem; box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.35); }
   }
 
   /* ── DONATE ── */
