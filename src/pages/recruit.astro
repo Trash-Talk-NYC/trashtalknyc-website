@@ -141,10 +141,13 @@ const roles = [
     width: 100%;
   }
 
+  /* Right padding keeps the heading clear of the vest sticker pinned to
+     the card's corner at every width */
   .note-title {
     font-size: 2.2rem;
     color: var(--purple);
     margin-bottom: 16px;
+    padding-right: 52px;
   }
 
   .note p {
@@ -159,8 +162,8 @@ const roles = [
   /* Vest sticker pinning the wheatpasted letter to the wall — the same
      device as the signup form and the About photo (captain likes it) */
   .note :global(.note-slap) {
-    top: -30px;
-    right: -8px;
+    top: -36px;
+    right: -10px;
     width: 72px;
     height: auto;
     transform: rotate(10deg);
@@ -171,7 +174,7 @@ const roles = [
   @media (min-width: 761px) {
     .rc-wall { padding: 88px clamp(16px, 5vw, 60px) 56px; }
     .note { padding: 34px clamp(20px, 4vw, 48px); }
-    .note-title { font-size: clamp(2.2rem, 4vw, 3rem); }
+    .note-title { font-size: clamp(2.2rem, 4vw, 3rem); padding-right: 72px; }
     .note p { font-size: 1.1rem; }
     .note :global(.note-slap) { top: -40px; right: -24px; width: 104px; }
   }
