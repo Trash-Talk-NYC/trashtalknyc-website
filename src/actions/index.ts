@@ -375,8 +375,11 @@ export const server = {
             MESSAGE: input.experience,
             HEAR_ABOUT_US: input.hear,
             HEAR_ABOUT_US_OTHER: hearOther,
-            WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on' ? 'true' : 'false',
           }),
+          // Both are Brevo BOOLEAN attributes, so they must be JSON booleans:
+          // Brevo silently drops a 'true'/'false' string for a boolean field
+          // (WAIVER_ACCEPTED went unrecorded that way until 2026-10-10)
+          WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on',
           [PHOTO_CONSENT_ATTRIBUTE]: input.photoConsent === 'on',
         },
         requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
