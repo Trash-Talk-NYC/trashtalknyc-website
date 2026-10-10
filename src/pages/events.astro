@@ -57,42 +57,32 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
       <span data-en="Sorted nearest to farthest" data-es="Ordenado del más cercano al más lejano">Sorted nearest to farthest</span>
     </div>
 
-    {upcoming.length > 0 ? (
-      <>
-        <div class="ev-list" id="eventsListInner">
-          {upcoming.map(({ props, latLng }) => (
-            <EventCard {...props} latLng={latLng} />
-          ))}
-        </div>
-
-        <!-- Closing newsletter nudge (captain's wording), sitting straight on
-             the section with no card around it (captain, 2026-10-09) -->
-        <div class="nudge">
-          <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
-          <div class="row">
-            <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
-            <!-- The same sticker icons as the header strip (captain, 2026-10-09) -->
-            <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
-          </div>
-        </div>
-      </>
-    ) : (
-      <!-- No events (captain's F3 pick, 2026-10-09, copy verbatim): the
-           message on the left, the newsletter and socials on the right -->
-      <div class="no-events">
-        <div class="ne-msg">
-          <p class="ne-title" data-en="No dates yet." data-es="Aún no hay fechas.">No dates yet.</p>
-          <p class="ne-sub" data-en="New cleanups get posted here." data-es="Las nuevas limpiezas se publican aquí.">New cleanups get posted here.</p>
-        </div>
-        <div class="ne-actions">
-          <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
-          <div class="ne-follow">
-            <p class="ne-or" data-en="or follow along" data-es="o síguenos">or follow along</p>
-            <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
-          </div>
-        </div>
+    {upcoming.length > 0 && (
+      <div class="ev-list" id="eventsListInner">
+        {upcoming.map(({ props, latLng }) => (
+          <EventCard {...props} latLng={latLng} />
+        ))}
       </div>
     )}
+
+    <!-- How to hear about events, as one taped poster (captain, 2026-10-10:
+         not naked text on the photo). With no events posted it also says
+         so; otherwise it closes the list. -->
+    <section class="hear paste f-tape" aria-labelledby="hearHeading">
+      <h3 id="hearHeading" class="hear-title" data-en="The best way to hear about events" data-es="La mejor manera de enterarte de los eventos">The best way to hear about events</h3>
+      {upcoming.length > 0 ? (
+        <p class="hear-line" data-en="Join the newsletter and hear about every cleanup, including the ones near you." data-es="Únete al boletín y entérate de cada limpieza, incluidas las que estén cerca de ti.">Join the newsletter and hear about every cleanup, including the ones near you.</p>
+      ) : (
+        <p class="hear-line" data-en="No dates are posted yet. Join the newsletter and you'll hear about new cleanups first." data-es="Aún no hay fechas publicadas. Únete al boletín y te enterarás primero de las nuevas limpiezas.">No dates are posted yet. Join the newsletter and you'll hear about new cleanups first.</p>
+      )}
+      <div class="hear-actions">
+        <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
+        <div class="hear-follow">
+          <p class="hear-or" data-en="or follow along" data-es="o síguenos">or follow along</p>
+          <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
+        </div>
+      </div>
+    </section>
     </div>
   </section>
 
@@ -311,7 +301,7 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
 
   .dist-sort-label svg { width: 13px; height: 13px; stroke: var(--yellow); flex-shrink: 0; }
 
-  /* flow-root keeps the closing nudge's bottom margin inside the
+  /* flow-root keeps the closing poster's bottom margin inside the
      section, so its buttons clear the torn bottom edge */
   .ev-section { display: flow-root; }
 
@@ -329,47 +319,47 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     padding-bottom: 40px;
   }
 
-  /* Message left, actions grouped right and centered against it, sitting
-     close (captain, 2026-10-09); stacked on phones */
-  .no-events {
-    display: grid;
-    gap: 22px;
-    justify-items: start;
-    align-items: center;
-    color: var(--beige);
-    padding: 8px 0 56px;
-  }
 
-  .ne-title {
-    margin: 0 0 6px;
-    font-family: var(--display);
-    font-size: clamp(2.2rem, 4vw, 3.2rem);
-    line-height: 1;
-  }
 
-  .ne-sub { margin: 0; font-size: 1.2rem; font-weight: 500; }
 
-  .ne-actions { display: grid; justify-items: start; gap: 14px; }
-  .ne-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-  .ne-or { margin: 0; font-size: 1rem; font-weight: 500; opacity: 0.85; }
 
-  .nudge {
-    color: var(--beige);
-    margin-block: 20px 52px;
-  }
 
-  .nudge p { margin: 0 0 16px; font-size: 1.2rem; font-weight: 500; max-width: 46ch; }
-  .nudge .row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 24px; }
-  .nudge .btn { width: 100%; }
 
   @media (min-width: 761px) {
     .list-head { padding-block: 56px 22px; }
     .list-head h2 { font-size: clamp(3rem, 6vw, 4.8rem); }
 
-    .nudge { margin-block: 36px 84px; }
-    .no-events { grid-template-columns: auto auto; justify-content: start; column-gap: clamp(48px, 6vw, 96px); padding-bottom: 88px; }
-    .nudge p { font-size: 1.3rem; }
-    .nudge .btn { width: auto; }
+  }
+
+  /* ── HOW TO HEAR ABOUT EVENTS (taped poster) ── */
+  .hear {
+    --flyer-bg: var(--paper);
+    color: var(--black);
+    display: grid;
+    gap: 12px;
+    justify-items: start;
+    max-width: 46rem;
+    margin-block: 16px 56px;
+    padding: 30px 20px 26px;
+  }
+
+  .hear-title {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1;
+    color: var(--purple);
+  }
+
+  .hear-line { margin: 0 0 6px; font-size: 1.15rem; line-height: 1.45; max-width: 44ch; }
+
+  .hear-actions { display: grid; justify-items: start; gap: 16px; }
+  .hear-actions .btn { width: 100%; justify-content: center; }
+  .hear-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .hear-or { margin: 0; font-weight: 500; }
+
+  @media (min-width: 761px) {
+    .hear { padding: 38px 40px 34px; margin-block: 28px 88px; }
+    .hear-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; }
+    .hear-actions .btn { width: auto; }
   }
 
   /* ── RSVP MODAL (localhost fallback) ── */

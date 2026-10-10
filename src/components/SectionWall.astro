@@ -36,14 +36,14 @@ interface Props {
   /** Varies the tear so neighboring sections don't rip identically. */
   seed?: number;
   /**
-   * Planting only: a selector (inside the section) for the text column
-   * the chalk pieces must stay out from behind. The photo and its mask
-   * are then framed together so that column sits on bare sidewalk.
+   * Draws a thin Poster Beige line along the torn edges, for a wall that
+   * meets another dark section and would otherwise blur into it (Contact,
+   * captain 2026-10-10).
    */
-  keepClear?: string;
+  outline?: boolean;
 }
 
-const { kind, src, tear = 'both', dim = 0.35, duotone = 1, seed = 1, keepClear } = Astro.props;
+const { kind, src, tear = 'both', dim = 0.35, duotone = 1, seed = 1, outline = false } = Astro.props;
 if (kind === 'cleanup' && !src) throw new Error('SectionWall: a cleanup wall needs a photo (src)');
 
 // 2400 is the chalk original's full width, so zoomed framings stay sharp
@@ -71,7 +71,10 @@ const bg = `background-image:url(${photo.src})`;
 const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 1600, format: 'webp' }) : null;
 ---
 
-<div class:list={['sw-layer', `sw-${kind}`]} aria-hidden="true" style={`clip-path:${clip};--sw-dim:${dim}`} data-keep-clear={kind === 'planting' ? keepClear : undefined}>
+<!-- The outline is a drop-shadow on this unclipped wrapper, so it follows
+     the clipped layer's torn edge exactly -->
+<div class:list={['sw-wrap', { 'sw-outlined': outline }]} aria-hidden="true">
+<div class:list={['sw-layer', `sw-${kind}`]} style={`clip-path:${clip};--sw-dim:${dim}`}>
   {kind === 'cleanup' ? (
     <>
       {duotone < 1 && <div class="sw-photo" style={bg}></div>}
@@ -87,80 +90,25 @@ const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 16
   {mask && <div class="sw-photo sw-pop" style={`${bg};--sw-mask:url(${mask.src})`}></div>}
   {(kind === 'planting' || duotone < 1) && <div class="sw-legible"></div>}
 </div>
+</div>
 
-<script>
-  // Frames the chalk photo (and its mask, identically) as zoomed OUT as
-  // possible while no chalk PIECE sits behind the section's text column
-  // (captain: "zoom the chalk picture out a little"; the drawn chalk lines
-  // may run behind the copy, softened by .sw-legible). The pieces, as
-  // rotated rectangles in the photo's 2000×1333 frame (from the hand-placed
-  // src/assets/walls/chalk-mask.svg): [cx, cy, w, h, degrees].
-  const PIECES: Array<[number, number, number, number, number]> = [
-    [1045, 462, 170, 62, 20], [808, 640, 195, 72, 35], [1400, 572, 125, 62, 15],
-    [1485, 555, 125, 62, -80], [1825, 442, 105, 58, -5], [1220, 755, 195, 72, 35],
-    [1840, 782, 195, 68, 60], [1752, 885, 105, 62, -50], [1677, 1010, 115, 72, 75],
-    [162, 760, 82, 82, 0], [155, 845, 72, 100, 0], [281, 812, 64, 92, 0],
-  ];
-  const FRAME_W = 2000;
-  const FRAME_H = 1333;
-  const RATIO = 1.5; // the chalk photo is 3:2
-  const CLEARANCE = 24;
-
-  // Each piece's axis-aligned bounds as fractions of the photo
-  const boxes = PIECES.map(([cx, cy, w, h, deg]) => {
-    const t = (deg * Math.PI) / 180;
-    const hw = Math.abs((w / 2) * Math.cos(t)) + Math.abs((h / 2) * Math.sin(t));
-    const hh = Math.abs((w / 2) * Math.sin(t)) + Math.abs((h / 2) * Math.cos(t));
-    return { l: (cx - hw) / FRAME_W, r: (cx + hw) / FRAME_W, t: (cy - hh) / FRAME_H, b: (cy + hh) / FRAME_H };
-  });
-
-  function frame(layer: HTMLElement) {
-    const section = layer.parentElement;
-    const column = section?.querySelector(layer.dataset.keepClear ?? '');
-    if (!section || !column) return;
-    const s = section.getBoundingClientRect();
-    const kids = Array.from(column.children, (c) => c.getBoundingClientRect());
-    const col = {
-      l: Math.min(...kids.map((k) => k.left)) - s.left - CLEARANCE,
-      r: Math.max(...kids.map((k) => k.right)) - s.left + CLEARANCE,
-      t: Math.min(...kids.map((k) => k.top)) - s.top - CLEARANCE,
-      b: Math.max(...kids.map((k) => k.bottom)) - s.top + CLEARANCE,
-    };
-    // Smallest photo width that still covers the section…
-    const minW = Math.max(s.width, s.height * RATIO);
-    // …then zoom in only as far as it takes, trying the photo anchored
-    // left and right, until no piece overlaps the column
-    for (let w = minW; w <= minW * 4; w *= 1.02) {
-      const h = w / RATIO;
-      for (const anchorRight of [true, false]) {
-        const x0 = anchorRight ? s.width - w : 0;
-        const clear = boxes.every((p) => {
-          const pl = x0 + p.l * w, pr = x0 + p.r * w, pt = p.t * h, pb = p.b * h;
-          const visible = pr > 0 && pl < s.width && pb > 0 && pt < s.height;
-          return !visible || pr < col.l || pl > col.r || pb < col.t || pt > col.b;
-        });
-        if (clear) {
-          layer.style.setProperty('--sw-size', `${Math.ceil(w)}px auto`);
-          layer.style.setProperty('--sw-pos', anchorRight ? '100% 0' : '0 0');
-          return;
-        }
-      }
-    }
-  }
-
-  document.querySelectorAll<HTMLElement>('.sw-layer[data-keep-clear]').forEach((layer) => {
-    frame(layer);
-    if (layer.parentElement) new ResizeObserver(() => frame(layer)).observe(layer.parentElement);
-  });
-</script>
 
 <style>
-  .sw-layer {
+  .sw-wrap {
     position: absolute;
     inset: 0;
     z-index: -1;
-    overflow: hidden;
     pointer-events: none;
+  }
+
+  .sw-outlined {
+    filter: drop-shadow(0 -3px 0 var(--beige)) drop-shadow(0 3px 0 var(--beige));
+  }
+
+  .sw-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
     /* Blends below stay inside this layer */
     isolation: isolate;
   }
@@ -172,7 +120,11 @@ const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 16
     inset: 0;
   }
 
-  /* Photo and mask share one framing (see the script) */
+  /* Photo and mask share one framing, so the mask stays registered.
+     Plain cover (2026-10-10): the earlier zoom that kept every chalk piece
+     off the copy made the photo unrecognizable on phones (captain), so the
+     whole drawing shows and .sw-legible shades the copy side instead.
+     A section may set --sw-size / --sw-pos to frame it differently. */
   .sw-photo {
     background-size: var(--sw-size, cover);
     background-position: var(--sw-pos, center);
@@ -196,10 +148,18 @@ const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 16
 
   /* Sections set their copy left, so a busy wall (bright chalk, or
      graffiti showing its own colors) is softened on that side only */
+  /* Phones stack the copy across the full width, so the shade is even
+     there; desktop sets copy left, so only that side darkens */
   .sw-legible {
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgba(29, 29, 35, 0.6) 0%, rgba(29, 29, 35, 0.35) 40%, transparent 70%);
+    background: rgba(29, 29, 35, 0.3);
+  }
+
+  @media (min-width: 761px) {
+    .sw-legible {
+      background: linear-gradient(90deg, rgba(29, 29, 35, 0.7) 0%, rgba(29, 29, 35, 0.45) 42%, transparent 72%);
+    }
   }
 
   /* The chalk pieces cut out of the tint and shade, brightened */

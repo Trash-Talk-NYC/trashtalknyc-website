@@ -1,6 +1,4 @@
 ---
-import Bricks from '../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import vestSticker from '../assets/vest-sticker.png';
@@ -9,7 +7,7 @@ import vestSticker from '../assets/vest-sticker.png';
  * Open Roles — the recruitment page, top-level at /recruit (captain,
  * round 20; moved from /contact/join, where it was "Join the Team").
  * 2026-10 redesign: no hero and no page-title box — "A note before
- * you apply" sits directly on the brick wall as one wheatpasted
+ * you apply" is one wheatpasted
  * letter (and is the page's h1), then the two role posters and the
  * email button. Applications stay email-only.
  *
@@ -47,7 +45,6 @@ const roles = [
       en: 'Run the channels. Social media is a vital organ of Trash Talk NYC.',
       es: 'Maneja las cuentas. Las redes sociales son un órgano vital de Trash Talk NYC.',
     },
-    pace: null,
   },
   {
     tone: 'r-black',
@@ -58,7 +55,6 @@ const roles = [
       en: "Help us tell the slower, deeper stories behind Trash Talk NYC. We move fast on cleanups, but we want to document projects, people, and policy over time. In just three months there is a compound effect of sustained community effort we are looking forward to capturing.",
       es: 'Ayúdanos a contar las historias más lentas y profundas detrás de Trash Talk NYC. En las limpiezas nos movemos rápido, pero queremos documentar proyectos, personas y políticas a lo largo del tiempo. En apenas tres meses ya hay un efecto compuesto del esfuerzo comunitario sostenido que esperamos capturar.',
     },
-    pace: { en: 'The long story', es: 'La historia larga' },
   },
 ].map((r) => ({
   ...r,
@@ -68,8 +64,6 @@ const roles = [
   },
 }));
 
-// Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 8, desktop: 6 };
 ---
 
 <BaseLayout
@@ -91,8 +85,8 @@ const bricks: BrickRows = { phone: 8, desktop: 6 };
        and the email-only line last ("anyways" and the double "!!"
        are theirs — never correct either). Do not smooth, join, or
        formalize any of it, in either language. -->
-  <section class="rc-wall brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} />
+  <!-- No brick frame around the note (captain, 2026-10-10) -->
+  <section class="rc-wall">
     <article class="note paste f-sticker">
       <Image src={vestSticker} alt="" class="slap note-slap" width={104} densities={[1, 2]} />
       <h1 class="note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h1>
@@ -108,9 +102,6 @@ const bricks: BrickRows = { phone: 8, desktop: 6 };
     <div class="roles">
       {roles.map((r) => (
         <a class:list={['role', 'paste', r.tone, r.tone === 'r-black' ? 'f-tape' : 'f-staple']} href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es}>
-          {r.pace && (
-            <span class="pace mono" data-en={r.pace.en} data-es={r.pace.es}>{r.pace.en}</span>
-          )}
           <span class="role-t" data-en={r.title.en} data-es={r.title.es}>{r.title.en}</span>
           <span class="role-d" data-en={r.desc.en} data-es={r.desc.es}>{r.desc.en}</span>
           <span class="apply mono"><span data-en="Apply →" data-es="Postúlate →">Apply →</span></span>
@@ -136,7 +127,7 @@ const bricks: BrickRows = { phone: 8, desktop: 6 };
     overflow: hidden;
     display: grid;
     place-items: center;
-    padding: calc(100vw * 0.2) 12px calc(100vw * 0.18);
+    padding: 56px 12px 40px;
   }
 
   .note {
@@ -178,7 +169,7 @@ const bricks: BrickRows = { phone: 8, desktop: 6 };
   .email-addr { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 
   @media (min-width: 761px) {
-    .rc-wall { padding: calc(100vw * 0.13) clamp(16px, 5vw, 60px) calc(100vw * 0.12); }
+    .rc-wall { padding: 88px clamp(16px, 5vw, 60px) 56px; }
     .note { padding: 34px clamp(20px, 4vw, 48px); }
     .note-title { font-size: clamp(2.2rem, 4vw, 3rem); }
     .note p { font-size: 1.1rem; }
@@ -220,7 +211,6 @@ const bricks: BrickRows = { phone: 8, desktop: 6 };
     box-shadow: inset 0 0 0 3px var(--lavender);
   }
 
-  .pace { color: var(--yellow); }
 
   .role-t {
     font-family: var(--display);

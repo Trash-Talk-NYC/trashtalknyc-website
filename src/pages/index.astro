@@ -81,7 +81,7 @@ const FEATURED_TIKTOK = {
      and the GoFundMe widget sitting plain — no flyer card. A planting
      section, since the funds go to flower-planting and builds. -->
 <section class="donate-sec wall" id="donate">
-  <SectionWall kind="planting" dim={0.45} seed={2} keepClear=".donate" />
+  <SectionWall kind="planting" dim={0.4} seed={2} />
   <div class="wrap donate">
     <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
     <h2 class="donate-title" data-en="Because of you" data-es="Gracias a ti">Because of you</h2>
@@ -315,7 +315,7 @@ const FEATURED_TIKTOK = {
     <div>
       <h2 data-en="Help Trash Talk NYC behind the scenes" data-es="Ayuda a Trash Talk NYC detrás de cámaras">Help Trash Talk NYC behind the scenes</h2>
       <p data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
-      <a href="/recruit" class="btn btn-ghost-light" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
+      <a href="/recruit" class="btn btn-ghost-light" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
     </div>
   </div>
 </section>
@@ -378,7 +378,13 @@ const FEATURED_TIKTOK = {
   }
 
   /* ── DONATE ── */
-  .donate-sec { padding-block: 56px 64px; }
+  /* Phones: the whole chalk photo as a band under the widget, so the
+     drawing reads instead of a cropped sliver (captain, 2026-10-10) */
+  .donate-sec {
+    --sw-size: 100% auto;
+    --sw-pos: center bottom;
+    padding-block: 56px calc(66.7vw + 16px);
+  }
 
   .donate {
     display: grid;
@@ -413,7 +419,7 @@ const FEATURED_TIKTOK = {
   .gfm :global(.gfm-embed-iframe) { display: block; }
 
   @media (min-width: 761px) {
-    .donate-sec { padding-block: 88px 96px; }
+    .donate-sec { --sw-size: cover; --sw-pos: center; padding-block: 88px 96px; }
     .donate-eyebrow { font-size: 1rem; }
     .donate-note { font-size: 1.25rem; }
   }

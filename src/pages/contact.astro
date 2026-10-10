@@ -54,7 +54,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   <!-- A torn-edge wall behind the picker (captain, 2026-10-09), purple
        kept light like Club Events so the flyers and form stay readable -->
   <section class="ct-wall wall">
-  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} duotone={0.18} seed={7} />
+  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} duotone={0.18} seed={7} outline />
   <div class="wrap ct-body">
     <div class="ct-form">
       <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
@@ -244,7 +244,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
       <div>
         <h2 id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
         <p data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo o alguien que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
-        <a class="btn btn-primary" href="/recruit" data-en="See more →" data-es="Ver más →">See more →</a>
+        <a class="btn btn-primary" href="/recruit" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
       </div>
     </div>
   </section>
@@ -292,14 +292,25 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     display: grid;
     grid-template-columns: minmax(0, 62rem);
     justify-content: center;
-    /* A full section of its own (captain, 2026-10-09): generous room
-       above and below the picker */
-    padding-block: 72px 88px;
+    /* Its own section, without the dead band under the hero that read as a
+       gap (captain, 2026-10-10) */
+    padding-block: 44px 72px;
   }
 
   .ct-form { color: var(--beige); }
 
-  .pick-label { color: var(--yellow); margin-bottom: 22px; font-size: 0.9rem; }
+  /* Anchored as a solid tape label (captain, 2026-10-10: the bare line
+     looked naked on the wall) */
+  .pick-label {
+    display: inline-block;
+    margin-bottom: 26px;
+    padding: 8px 18px;
+    background: var(--yellow);
+    color: var(--black);
+    font-size: 0.95rem;
+    transform: rotate(-1.5deg);
+    clip-path: polygon(0 6%, 3% 0, 97% 4%, 100% 12%, 97% 30%, 100% 50%, 97% 72%, 100% 92%, 96% 100%, 3% 96%, 0 86%, 3% 66%, 0 46%, 3% 26%);
+  }
 
   /* ── TILES ── */
   /* Always 2 × 2, phones included (the captain's pick is a square) */
@@ -478,7 +489,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   .ct-join .btn { width: 100%; }
 
   @media (min-width: 761px) {
-    .ct-body { padding-block: 128px 144px; }
+    .ct-body { padding-block: 64px 112px; }
 
     .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 36px; }
     .tile { min-height: 13rem; padding: 36px 34px 32px; }
