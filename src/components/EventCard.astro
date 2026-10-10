@@ -32,7 +32,7 @@ const btnId = `eb-trigger-${id}`;
 ---
 
 <article
-  class="ev-card paste upcoming"
+  class="ev-card paste f-staple upcoming"
   data-event-id={id}
   data-end={endIso}
   data-lat={latLng?.lat ?? undefined}
@@ -88,7 +88,7 @@ const btnId = `eb-trigger-${id}`;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 14px;
     align-items: center;
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     padding: 16px 14px;
   }
@@ -133,7 +133,7 @@ const btnId = `eb-trigger-${id}`;
 
   .ev-name {
     font-family: var(--body);
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.5rem;
     line-height: 1.05;
     color: var(--purple);
@@ -144,7 +144,7 @@ const btnId = `eb-trigger-${id}`;
     flex-wrap: wrap;
     gap: 6px 18px;
     margin-top: 10px;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.92rem;
   }
 
@@ -154,7 +154,7 @@ const btnId = `eb-trigger-${id}`;
   .maps { display: flex; gap: 14px; margin-top: 8px; font-size: 0.92rem; }
   .maps a {
     color: var(--purple);
-    font-weight: 600;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
     min-height: 24px;

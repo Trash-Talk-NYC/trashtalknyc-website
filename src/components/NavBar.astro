@@ -16,6 +16,7 @@
 import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
+import { MORE_MEDIA_PATH, PHOTO_ALBUMS, mediaSections } from '../lib/media';
 import wordmarkSticker from '../assets/wordmark-sticker.png';
 
 const pathname = Astro.url.pathname;
@@ -35,6 +36,10 @@ const isRecruit  = isUnder('/recruit');
 // The About parent highlights when any of its children is current
 const isAbout    = isTeam || isFounder || isRecruit;
 const isContact  = isUnder('/contact');
+// More Media parent lights for the overview and every channel subpage;
+// the "All Media" child lights only on the overview itself
+const isMedia    = isUnder(MORE_MEDIA_PATH);
+const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH + '/';
 ---
 
 <nav aria-label="Main">
@@ -46,7 +51,7 @@ const isContact  = isUnder('/contact');
     <ul class="nav-links">
       <li><a href="/" class:list={{ active: isHome }} data-en="Home" data-es="Inicio">Home</a></li>
       <li><a href="/events" class:list={{ active: isEvents }} data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-      <li class="nav-dropdown" id="aboutDropdown">
+      <li class="nav-dropdown">
         <!-- Disclosure pattern (APG): the parent is a toggle, not a link —
              /about stays reachable as "The Team" below. aria-expanded is the
              whole submenu contract; no menu roles, no aria-haspopup.
@@ -58,7 +63,6 @@ const isContact  = isUnder('/contact');
         <button
           type="button"
           class:list={['nav-drop-toggle', { active: isAbout }]}
-          id="aboutDropToggle"
           aria-expanded="false"
           aria-controls="aboutDropMenu"
         >
@@ -71,6 +75,29 @@ const isContact  = isUnder('/contact');
           <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
           <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
           <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
+        </ul>
+      </li>
+      <!-- More Media (captain, 2026-10-09): same disclosure pattern as
+           About — the overview is the first child, then one link per
+           channel subpage, all from media.ts. -->
+      <li class="nav-dropdown">
+        <button
+          type="button"
+          class:list={['nav-drop-toggle', { active: isMedia }]}
+          aria-expanded="false"
+          aria-controls="mediaDropMenu"
+        >
+          <span data-en="More Media" data-es="Más Medios">More Media</span>
+          <svg class="drop-caret" aria-hidden="true" width="10" height="7" viewBox="0 0 10 7" fill="none">
+            <path d="M1 1.5 5 5.5 9 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <ul class="nav-drop-menu" id="mediaDropMenu">
+          <li><a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a></li>
+          {mediaSections.map((m) => (
+            <li><a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a></li>
+          ))}
+          <li><a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a></li>
         </ul>
       </li>
       <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
@@ -94,7 +121,7 @@ const isContact  = isUnder('/contact');
       <a href="/" class:list={{ active: isHome }} data-en="Home" data-es="Inicio">Home</a>
       <a href="/events" class:list={{ active: isEvents }} data-en="Club Events" data-es="Eventos del Club">Club Events</a>
       <div class="m-group">
-        <button type="button" class:list={['m-drop', { active: isAbout }]} id="mAboutToggle" aria-expanded="false" aria-controls="mAboutSub">
+        <button type="button" class:list={['m-drop', { active: isAbout }]} aria-expanded="false" aria-controls="mAboutSub">
           <span data-en="About" data-es="Nosotros">About</span>
           <span class="chev" aria-hidden="true">▾</span>
         </button>
@@ -102,6 +129,19 @@ const isContact  = isUnder('/contact');
           <a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a>
           <a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a>
           <a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a>
+        </div>
+      </div>
+      <div class="m-group">
+        <button type="button" class:list={['m-drop', { active: isMedia }]} aria-expanded="false" aria-controls="mMediaSub">
+          <span data-en="More Media" data-es="Más Medios">More Media</span>
+          <span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <div class="m-sub" id="mMediaSub" hidden>
+          <a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a>
+          {mediaSections.map((m) => (
+            <a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a>
+          ))}
+          <a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a>
         </div>
       </div>
       <a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a>
@@ -116,18 +156,6 @@ const isContact  = isUnder('/contact');
 <script>
   const burger = document.getElementById('navBurger');
   const menu = document.getElementById('mMenu');
-
-  const dropdown = document.getElementById('aboutDropdown');
-  const dropToggle = document.getElementById('aboutDropToggle');
-  const dropMenu = document.getElementById('aboutDropMenu');
-
-  const mAboutToggle = document.getElementById('mAboutToggle');
-  const mAboutSub = document.getElementById('mAboutSub');
-
-  function setDropOpen(open: boolean) {
-    dropdown?.classList.toggle('open', open);
-    dropToggle?.setAttribute('aria-expanded', String(open));
-  }
 
   function setMenuOpen(open: boolean) {
     if (menu) menu.hidden = !open;
@@ -144,58 +172,78 @@ const isContact  = isUnder('/contact');
     a.addEventListener('click', () => setMenuOpen(false));
   });
 
-  // Phone About sub-list; starts open when an About page is current so
-  // the lit child is visible the moment the sheet opens
-  function setMAboutOpen(open: boolean) {
-    if (mAboutSub) mAboutSub.hidden = !open;
-    mAboutToggle?.setAttribute('aria-expanded', String(open));
+  // ── Phone sub-lists (About, More Media) ──
+  // Each starts open when one of its pages is current, so the lit child
+  // is visible the moment the sheet opens
+  document.querySelectorAll<HTMLButtonElement>('.m-drop').forEach((toggle) => {
+    const sub = document.getElementById(toggle.getAttribute('aria-controls') ?? '');
+    const setOpen = (open: boolean) => {
+      if (sub) sub.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+    toggle.addEventListener('click', () => setOpen(sub?.hidden ?? false));
+    if (toggle.classList.contains('active')) setOpen(true);
+  });
+
+  // ── Desktop dropdowns (disclosure pattern), one wiring per menu ──
+  const dropdowns = Array.from(document.querySelectorAll<HTMLElement>('.nav-dropdown'));
+  const closers = new Map<HTMLElement, () => void>();
+
+  function wireDropdown(dropdown: HTMLElement) {
+    const toggle = dropdown.querySelector<HTMLButtonElement>('.nav-drop-toggle');
+    const list = dropdown.querySelector<HTMLElement>('.nav-drop-menu');
+    if (!toggle || !list) return;
+
+    const setOpen = (open: boolean) => {
+      dropdown.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+    closers.set(dropdown, () => setOpen(false));
+
+    toggle.addEventListener('click', () => {
+      const open = toggle.getAttribute('aria-expanded') !== 'true';
+      // One menu open at a time, so the two panels never overlap
+      if (open) closers.forEach((close, d) => d !== dropdown && close());
+      setOpen(open);
+    });
+
+    // ArrowDown on the closed toggle opens and moves into the list, per APG
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setOpen(true);
+        list.querySelector('a')?.focus();
+      }
+    });
+
+    list.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const items = Array.from(list.querySelectorAll('a'));
+      const i = items.indexOf(document.activeElement as HTMLAnchorElement);
+      if (i === -1) return;
+      e.preventDefault();
+      const next = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+      items[next].focus();
+    });
+
+    dropdown.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    // Click-away and focus-leave both dismiss; Tab itself is never trapped
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target as Node)) setOpen(false);
+    });
+
+    dropdown.addEventListener('focusout', (e) => {
+      if (!dropdown.contains(e.relatedTarget as Node)) setOpen(false);
+    });
   }
 
-  mAboutToggle?.addEventListener('click', () => {
-    setMAboutOpen(mAboutSub?.hidden ?? false);
-  });
-
-  if (mAboutToggle?.classList.contains('active')) setMAboutOpen(true);
-
-  // ── About dropdown (disclosure pattern) ──
-  dropToggle?.addEventListener('click', () => {
-    setDropOpen(dropToggle.getAttribute('aria-expanded') !== 'true');
-  });
-
-  // ArrowDown on the closed toggle opens and moves into the list, per APG
-  dropToggle?.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setDropOpen(true);
-      dropMenu?.querySelector('a')?.focus();
-    }
-  });
-
-  dropMenu?.addEventListener('keydown', (e) => {
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-    const items = Array.from(dropMenu.querySelectorAll('a'));
-    const i = items.indexOf(document.activeElement as HTMLAnchorElement);
-    if (i === -1) return;
-    e.preventDefault();
-    const next = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
-    items[next].focus();
-  });
-
-  dropdown?.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && dropdown.classList.contains('open')) {
-      setDropOpen(false);
-      dropToggle?.focus();
-    }
-  });
-
-  // Click-away and focus-leave both dismiss; Tab itself is never trapped
-  document.addEventListener('click', (e) => {
-    if (dropdown && !dropdown.contains(e.target as Node)) setDropOpen(false);
-  });
-
-  dropdown?.addEventListener('focusout', (e) => {
-    if (!dropdown.contains(e.relatedTarget as Node)) setDropOpen(false);
-  });
+  dropdowns.forEach(wireDropdown);
 </script>
 
 <style>
@@ -242,7 +290,7 @@ const isContact  = isUnder('/contact');
     align-items: center;
     gap: 26px;
     list-style: none;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.08rem;
   }
 
@@ -282,7 +330,7 @@ const isContact  = isUnder('/contact');
 
   .nav-drop-toggle {
     font: inherit;
-    font-weight: 600;
+    font-weight: 500;
     background: none;
     border-top: none;
     border-left: none;
@@ -418,7 +466,7 @@ const isContact  = isUnder('/contact');
 
   .m-sub a {
     font-family: var(--body);
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.25rem;
     text-decoration: none;
     padding: 7px 0 7px 18px;
@@ -458,5 +506,18 @@ const isContact  = isUnder('/contact');
     .nav-lang { display: block; }
     .burger { display: none; }
     .m-menu { display: none !important; }
+
+    /* Labels never wrap: a two-line "Club Events" breaks the bar */
+    .nav-links a,
+    .nav-drop-toggle { white-space: nowrap; }
+  }
+
+  /* Five top-level items (More Media joined in 2026-10) only fit the
+     narrow end of desktop with tighter spacing and type */
+  @media (min-width: 761px) and (max-width: 1060px) {
+    .nav-bar { gap: 16px; }
+    .nav-links { gap: 16px; font-size: 0.98rem; }
+    nav :global(.nav-logo) { width: 78px; }
+    nav :global(.nav-cta) { padding: 10px 14px; }
   }
 </style>

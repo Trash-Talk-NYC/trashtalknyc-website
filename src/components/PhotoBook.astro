@@ -1,0 +1,362 @@
+---
+/**
+ * An album as a photo book (captain's D1 pick, 2026-10-09). Desktop: two
+ * pages open, the right page turns over like a real book. Phone: one page
+ * at a time with a page-flip. Move with the ← / → buttons, the arrow keys
+ * while the book has focus, or a swipe. prefers-reduced-motion swaps the
+ * turn for a crossfade.
+ *
+ * The photos render server-side as a plain list, which is what readers get
+ * without JS (a simple stacked album). The script then builds the book from
+ * those same <img> elements, so srcset, alt text, and the language toggle's
+ * alt swaps all carry over.
+ */
+import { Image } from 'astro:assets';
+import type { AlbumPhoto } from '../lib/albums';
+
+interface Props {
+  photos: AlbumPhoto[];
+  /** Accessible name for the book, e.g. "The Lab". */
+  label: { en: string; es: string };
+}
+
+const { photos, label } = Astro.props;
+---
+
+<section class="pb" data-photo-book aria-roledescription="photo book" aria-labelledby="pbLabel">
+  <span class="sr-only" id="pbLabel" data-en={label.en} data-es={label.es}>{label.en}</span>
+
+  <!-- No-JS album and the book's photo source -->
+  <ol class="pb-src">
+    {photos.map((p, i) => (
+      <li>
+        <Image
+          src={p.src}
+          alt={p.alt.en}
+          data-alt-en={p.alt.en}
+          data-alt-es={p.alt.es}
+          class="pb-img"
+          width={1200}
+          widths={[480, 800, 1200]}
+          sizes="(min-width: 761px) 46vw, 92vw"
+          loading={i < 2 ? 'eager' : 'lazy'}
+        />
+      </li>
+    ))}
+  </ol>
+
+  <!-- Filled in by the script -->
+  <div class="pb-stage" tabindex="0" hidden>
+    <div class="pb-book"></div>
+  </div>
+  <div class="pb-nav" hidden>
+    <button type="button" class="pb-btn" data-dir="-1">
+      <span aria-hidden="true">←</span><span class="sr-only" data-en="Previous page" data-es="Página anterior">Previous page</span>
+    </button>
+    <p class="mono pb-count" aria-live="polite"></p>
+    <button type="button" class="pb-btn" data-dir="1">
+      <span aria-hidden="true">→</span><span class="sr-only" data-en="Next page" data-es="Página siguiente">Next page</span>
+    </button>
+  </div>
+</section>
+
+<script>
+  import { getCurrentLang, onLanguageChange } from '../lib/language';
+
+  const TURN_MS = 700;
+  const desktop = window.matchMedia('(min-width: 761px)');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('[data-photo-book]').forEach((root) => {
+    const src = Array.from(root.querySelectorAll<HTMLImageElement>('.pb-src img'));
+    const stage = root.querySelector<HTMLElement>('.pb-stage')!;
+    const book = root.querySelector<HTMLElement>('.pb-book')!;
+    const nav = root.querySelector<HTMLElement>('.pb-nav')!;
+    const count = root.querySelector<HTMLElement>('.pb-count')!;
+    const [prevBtn, nextBtn] = Array.from(root.querySelectorAll<HTMLButtonElement>('.pb-btn'));
+    if (src.length === 0) return;
+
+    // Take over from the plain list
+    root.classList.add('pb-on');
+    stage.hidden = false;
+    nav.hidden = false;
+
+    /** Pages per view: a two-page spread on desktop, one page on phones. */
+    const perView = () => (desktop.matches ? 2 : 1);
+    const views = () => Math.ceil(src.length / perView());
+    let view = 0;
+    let busy = false;
+
+    /** A page holding photo k, or a blank page past the end. */
+    function page(k: number, cls: string, decorative = false): HTMLElement {
+      const el = document.createElement('div');
+      el.className = `pb-page ${cls}`;
+      const img = src[k];
+      if (img) {
+        const copy = img.cloneNode() as HTMLImageElement;
+        copy.loading = 'eager';
+        if (decorative) copy.alt = '';
+        el.append(copy);
+      }
+      return el;
+    }
+
+    function draw() {
+      const n = perView();
+      const first = view * n;
+      book.className = `pb-book ${n === 2 ? 'pb-spread' : 'pb-single'}`;
+      book.replaceChildren(...(n === 2 ? [page(first, 'pb-l'), page(first + 1, 'pb-r')] : [page(first, 'pb-one')]));
+      const lang = getCurrentLang();
+      const total = views();
+      count.textContent = lang === 'es' ? `Página ${view + 1} de ${total}` : `Page ${view + 1} of ${total}`;
+      prevBtn.disabled = view === 0;
+      nextBtn.disabled = view >= total - 1;
+    }
+
+    /** The turning sheet: front shows one photo, back shows another. */
+    function leaf(front: number, back: number, cls: string): HTMLElement {
+      const el = document.createElement('div');
+      el.className = `pb-leaf ${cls}`;
+      el.setAttribute('aria-hidden', 'true');
+      const f = page(front, 'pb-face', true);
+      const b = page(back, 'pb-face pb-back', true);
+      el.append(f, b);
+      return el;
+    }
+
+    function finish() {
+      draw();
+      busy = false;
+    }
+
+    function go(dir: 1 | -1) {
+      const next = view + dir;
+      if (busy || next < 0 || next >= views()) return;
+      busy = true;
+      const n = perView();
+
+      if (reduced.matches) {
+        // Crossfade instead of a page turn
+        book.classList.add('pb-fading');
+        window.setTimeout(() => {
+          view = next;
+          draw();
+          book.classList.remove('pb-fading');
+          busy = false;
+        }, 200);
+        return;
+      }
+
+      if (n === 2) {
+        const cur = view * 2;
+        const to = next * 2;
+        if (dir === 1) {
+          // Right page turns over to the left, revealing the next spread
+          book.querySelector('.pb-r')?.replaceWith(page(to + 1, 'pb-r'));
+          const sheet = leaf(cur + 1, to, 'pb-leaf-right');
+          book.append(sheet);
+          requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('pb-turned')));
+        } else {
+          // Left page turns back over to the right
+          book.querySelector('.pb-l')?.replaceWith(page(to, 'pb-l'));
+          const sheet = leaf(to + 1, cur, 'pb-leaf-right pb-turned');
+          book.append(sheet);
+          requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.remove('pb-turned')));
+        }
+      } else {
+        // One page: the current page flips away to reveal the next, or the
+        // previous page flips back over it
+        if (dir === 1) {
+          const sheet = leaf(view, -1, 'pb-leaf-one');
+          book.replaceChildren(page(next, 'pb-one'), sheet);
+          requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('pb-turned')));
+        } else {
+          const sheet = leaf(next, -1, 'pb-leaf-one pb-turned');
+          book.append(sheet);
+          requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.remove('pb-turned')));
+        }
+      }
+      view = next;
+      window.setTimeout(finish, TURN_MS);
+    }
+
+    prevBtn.addEventListener('click', () => go(-1));
+    nextBtn.addEventListener('click', () => go(1));
+
+    stage.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    });
+
+    // Swipe: a mostly-horizontal drag of 40px+ turns the page
+    let x0: number | null = null;
+    let y0 = 0;
+    stage.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; });
+    stage.addEventListener('pointerup', (e) => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0;
+      const dy = e.clientY - y0;
+      x0 = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
+    });
+    stage.addEventListener('pointercancel', () => { x0 = null; });
+
+    // Crossing the breakpoint changes pages per view; keep the same photo in sight
+    desktop.addEventListener('change', () => {
+      const firstPhoto = view * (desktop.matches ? 1 : 2);
+      view = Math.floor(firstPhoto / perView());
+      draw();
+    });
+
+    // Alt text and the counter follow the language toggle
+    onLanguageChange((lang) => {
+      src.forEach((img) => {
+        const alt = img.getAttribute(`data-alt-${lang}`);
+        if (alt) img.alt = alt;
+      });
+      if (!busy) draw();
+    });
+    const lang = getCurrentLang();
+    src.forEach((img) => {
+      const alt = img.getAttribute(`data-alt-${lang}`);
+      if (alt) img.alt = alt;
+    });
+
+    draw();
+  });
+</script>
+
+<style>
+  .pb { display: grid; gap: 20px; }
+
+  /* Without JS: a simple stacked album */
+  .pb-src {
+    list-style: none;
+    display: grid;
+    gap: 20px;
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+
+  .pb-src :global(.pb-img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 10px solid var(--paper);
+  }
+
+  .pb-on .pb-src { display: none; }
+
+  .pb-stage {
+    outline-offset: 8px;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .pb-book {
+    position: relative;
+    margin-inline: auto;
+    perspective: 2200px;
+    transition: opacity 0.2s;
+  }
+
+  .pb-book.pb-fading { opacity: 0; }
+
+  /* Phone: one portrait page */
+  .pb-single {
+    width: min(92vw, 30rem);
+    aspect-ratio: 4 / 5;
+  }
+
+  /* Desktop: an open book, two portrait pages */
+  .pb-spread {
+    width: min(92vw, 66rem);
+    aspect-ratio: 8 / 5;
+  }
+
+  .pb-book :global(.pb-page) {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    padding: clamp(10px, 1.4vw, 20px);
+    background: var(--paper);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .pb-book :global(.pb-page img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+
+  .pb-book :global(.pb-one) { left: 0; width: 100%; }
+  .pb-book :global(.pb-l) { left: 0; width: 50%; box-shadow: inset -14px 0 18px -14px rgba(0, 0, 0, 0.35), 0 10px 24px rgba(0, 0, 0, 0.45); }
+  .pb-book :global(.pb-r) { left: 50%; width: 50%; box-shadow: inset 14px 0 18px -14px rgba(0, 0, 0, 0.35), 0 10px 24px rgba(0, 0, 0, 0.45); }
+
+  /* The turning sheet: two faces back to back, hinged on the spine */
+  .pb-book :global(.pb-leaf) {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    z-index: 5;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.3, 0.1, 0.2, 1);
+  }
+
+  .pb-book :global(.pb-leaf-right) { left: 50%; width: 50%; }
+  .pb-book :global(.pb-leaf-one) { left: 0; width: 100%; }
+  .pb-book :global(.pb-leaf.pb-turned) { transform: rotateY(-180deg); }
+
+  .pb-book :global(.pb-face) {
+    left: 0;
+    width: 100%;
+    backface-visibility: hidden;
+  }
+
+  .pb-book :global(.pb-back) { transform: rotateY(180deg); }
+
+  /* A one-page flip leaves to the left and fades, so it never covers
+     the next page from the wrong side */
+  .pb-book :global(.pb-leaf-one) { transition: transform 0.7s cubic-bezier(0.3, 0.1, 0.2, 1), opacity 0.7s; }
+  .pb-book :global(.pb-leaf-one.pb-turned) { opacity: 0; }
+
+  .pb-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .pb-btn {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 48px;
+    background: var(--yellow);
+    color: var(--black);
+    border: var(--ink);
+    border-radius: 0;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 rgba(234, 233, 218, 0.35);
+  }
+
+  .pb-btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; }
+
+  .pb-count {
+    min-width: 8.5em;
+    margin: 0;
+    text-align: center;
+    color: var(--beige);
+    font-size: 0.9rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pb-book :global(.pb-leaf) { transition: none; }
+  }
+</style>

@@ -3,8 +3,9 @@
  * raw fetch() — the @getbrevo/brevo SDK would add a dependency for a
  * couple of endpoints.
  *
- * The custom attributes sent here (BOROUGH, PHONE, HEAR_ABOUT_US,
- * WAIVER_ACCEPTED, ORGANIZATION, MESSAGE, INQUIRY_TYPE) exist live in
+ * The custom attributes sent here (BOROUGH, COUNTRY, STATE_REGION, CITY,
+ * ZIP_CODE, PHONE, HEAR_ABOUT_US, WAIVER_ACCEPTED, ORGANIZATION, MESSAGE,
+ * INQUIRY_TYPE, and the lead-application set) exist live in
  * Brevo; adding a new one requires creating it in the Brevo dashboard
  * first or Brevo rejects the payload. (EXPERIENCE is dormant — kept in
  * Brevo for historical contacts, no longer written.)
@@ -48,9 +49,12 @@ function retryDelayMs(res: Response): number {
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
+/** Text attributes are strings; Brevo boolean attributes take a real JSON boolean. */
+export type BrevoAttributes = Record<string, string | boolean>;
+
 export interface BrevoUpsert {
   email: string;
-  attributes: Record<string, string>;
+  attributes: BrevoAttributes;
   listId: number;
 }
 

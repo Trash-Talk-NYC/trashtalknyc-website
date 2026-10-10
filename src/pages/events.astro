@@ -1,11 +1,13 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import HeroEventCard from '../components/HeroEventCard.astro';
 import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
-import illFamilyVests from '../assets/ill-family-vests-beige.svg';
+import SocialLinks from '../components/SocialLinks.astro';
+import SectionWall from '../components/SectionWall.astro';
+import wallColorGraffiti from '../assets/walls/wall-color-graffiti.jpg';
 
 const { upcoming: upcomingRaw } = await fetchEventsAtBuildTime();
 const upcoming = upcomingRaw.map(ev => ({
@@ -13,6 +15,10 @@ const upcoming = upcomingRaw.map(ev => ({
   latLng: ev.venue?.lat != null ? { lat: ev.venue.lat, lng: ev.venue.lng! } : null,
 }));
 const nextEvent = upcoming[0]?.props ?? null;
+
+// Whole brick rows per half: as many as this hero's height fits
+// The hero is shorter with no event card in it, so it gets fewer rows
+const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, desktop: 3 };
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -28,28 +34,22 @@ const nextEvent = upcoming[0]?.props ?? null;
 
   <!-- HERO: centered title in the brick frame with the next event as a
        wheatpasted poster card (captain: no trash can drawing here). -->
-  <section class="ev-hero">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="ev-hero brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="ev-hero-inner">
       <h1 class="ev-title"><span data-en="Club" data-es="Eventos">Club</span> <span class="accent" data-en="Events" data-es="del Club">Events</span></h1>
-      {nextEvent ? (
-        <HeroEventCard {...nextEvent} />
-      ) : (
-        <div class="next-empty paste">
-          <p data-en="No upcoming events right now. Check back soon!" data-es="No hay eventos próximos. ¡Vuelve pronto!">
-            No upcoming events right now. Check back soon!
-          </p>
-        </div>
-      )}
+      <!-- With no upcoming event the hero is just the title; the "no
+           events" line lives under All Club Events (captain, 2026-10-09) -->
+      {nextEvent && <HeroEventCard {...nextEvent} />}
     </div>
   </section>
 
-  <!-- EVENTS LIST -->
-  <section class="wrap ev-section">
+  <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4) -->
+  <section class="ev-section wall">
+    <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.5} duotone={0.18} seed={4} />
+    <div class="wrap">
     <div class="list-head">
       <h2 data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</h2>
-      <span class="list-note mono">Eventbrite</span>
     </div>
 
     <div class="dist-sort-label mono" id="distSortLabel" style="display:none">
@@ -58,27 +58,41 @@ const nextEvent = upcoming[0]?.props ?? null;
     </div>
 
     {upcoming.length > 0 ? (
-      <div class="ev-list" id="eventsListInner">
-        {upcoming.map(({ props, latLng }) => (
-          <EventCard {...props} latLng={latLng} />
-        ))}
-      </div>
-    ) : (
-      <div class="no-events">
-        <p data-en="No upcoming events right now. Stay tuned on our Eventbrite page for new dates." data-es="No hay eventos próximos. ¡Síguenos en Eventbrite para nuevas fechas!">No upcoming events right now. Stay tuned on our Eventbrite page for new dates.</p>
-      </div>
-    )}
+      <>
+        <div class="ev-list" id="eventsListInner">
+          {upcoming.map(({ props, latLng }) => (
+            <EventCard {...props} latLng={latLng} />
+          ))}
+        </div>
 
-    <!-- Closing newsletter nudge (captain's wording) -->
-    <div class="nudge paste">
-      <img class="ill" src={illFamilyVests.src} alt="" />
-      <div>
-        <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
-        <div class="row">
+        <!-- Closing newsletter nudge (captain's wording), sitting straight on
+             the section with no card around it (captain, 2026-10-09) -->
+        <div class="nudge">
+          <p data-en="Join the newsletter and know about all events, and ones in your area." data-es="Únete al boletín y entérate de todos los eventos, y de los que haya en tu zona.">Join the newsletter and know about all events, and ones in your area.</p>
+          <div class="row">
+            <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
+            <!-- The same sticker icons as the header strip (captain, 2026-10-09) -->
+            <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
+          </div>
+        </div>
+      </>
+    ) : (
+      <!-- No events (captain's F3 pick, 2026-10-09, copy verbatim): the
+           message on the left, the newsletter and socials on the right -->
+      <div class="no-events">
+        <div class="ne-msg">
+          <p class="ne-title" data-en="No dates yet." data-es="Aún no hay fechas.">No dates yet.</p>
+          <p class="ne-sub" data-en="New cleanups get posted here." data-es="Las nuevas limpiezas se publican aquí.">New cleanups get posted here.</p>
+        </div>
+        <div class="ne-actions">
           <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
-          <a class="btn btn-ghost-light" href="https://trashtalknyc.eventbrite.com" target="_blank" rel="noopener" data-en="See us on Eventbrite →" data-es="Vernos en Eventbrite →">See us on Eventbrite →</a>
+          <div class="ne-follow">
+            <p class="ne-or" data-en="or follow along" data-es="o síguenos">or follow along</p>
+            <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
+          </div>
         </div>
       </div>
+    )}
     </div>
   </section>
 
@@ -247,7 +261,7 @@ const nextEvent = upcoming[0]?.props ?? null;
   .ev-hero-inner {
     position: relative;
     z-index: 1;
-    max-width: 760px;
+    max-width: 47.5rem;
     margin-inline: auto;
     display: grid;
     gap: 22px;
@@ -269,15 +283,6 @@ const nextEvent = upcoming[0]?.props ?? null;
      over "del Club"): one-line Spanish outgrows the brick opening. */
   .ev-title span { display: block; }
 
-  .next-empty {
-    width: min(560px, 100%);
-    background-color: var(--paper);
-    color: var(--black);
-    padding: 24px 18px;
-    text-align: center;
-    font-weight: 600;
-  }
-
   @media (min-width: 761px) {
     .ev-hero-inner { gap: 30px; padding: calc(100vw * 0.085) 16px calc(100vw * 0.085); }
     .ev-title { font-size: clamp(4.4rem, 8vw, 7rem); }
@@ -294,7 +299,6 @@ const nextEvent = upcoming[0]?.props ?? null;
   }
 
   .list-head h2 { font-size: 3rem; color: var(--lavender); }
-  .list-note { color: var(--yellow); }
 
   .dist-sort-label {
     display: flex;
@@ -306,6 +310,10 @@ const nextEvent = upcoming[0]?.props ?? null;
   }
 
   .dist-sort-label svg { width: 13px; height: 13px; stroke: var(--yellow); flex-shrink: 0; }
+
+  /* flow-root keeps the closing nudge's bottom margin inside the
+     section, so its buttons clear the torn bottom edge */
+  .ev-section { display: flow-root; }
 
   .ev-section :global(.dist-badge) {
     font-family: var(--mono);
@@ -321,46 +329,46 @@ const nextEvent = upcoming[0]?.props ?? null;
     padding-bottom: 40px;
   }
 
+  /* Message left, actions grouped right and centered against it, sitting
+     close (captain, 2026-10-09); stacked on phones */
   .no-events {
-    padding: 24px 0 40px;
+    display: grid;
+    gap: 22px;
+    justify-items: start;
+    align-items: center;
     color: var(--beige);
-    font-weight: 600;
+    padding: 8px 0 56px;
   }
+
+  .ne-title {
+    margin: 0 0 6px;
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    line-height: 1;
+  }
+
+  .ne-sub { margin: 0; font-size: 1.2rem; font-weight: 500; }
+
+  .ne-actions { display: grid; justify-items: start; gap: 14px; }
+  .ne-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .ne-or { margin: 0; font-size: 1rem; font-weight: 500; opacity: 0.85; }
 
   .nudge {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-    align-items: center;
-    background-color: var(--green);
     color: var(--beige);
-    padding: 24px 18px;
-    margin-block: 20px 44px;
+    margin-block: 20px 52px;
   }
 
-  .nudge .ill {
-    width: 120px;
-    height: 92px;
-    object-fit: cover;
-    object-position: center 55%;
-  }
-
-  .nudge p { margin: 0 0 16px; font-size: 1.15rem; }
-  .nudge .row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .nudge p { margin: 0 0 16px; font-size: 1.2rem; font-weight: 500; max-width: 46ch; }
+  .nudge .row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 24px; }
   .nudge .btn { width: 100%; }
 
   @media (min-width: 761px) {
     .list-head { padding-block: 56px 22px; }
     .list-head h2 { font-size: clamp(3rem, 6vw, 4.8rem); }
 
-    .nudge {
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 28px;
-      padding: 32px clamp(20px, 4vw, 44px);
-      margin-block: 30px 70px;
-    }
-
-    .nudge .ill { width: 150px; height: 120px; }
+    .nudge { margin-block: 36px 84px; }
+    .no-events { grid-template-columns: auto auto; justify-content: start; column-gap: clamp(48px, 6vw, 96px); padding-bottom: 88px; }
+    .nudge p { font-size: 1.3rem; }
     .nudge .btn { width: auto; }
   }
 

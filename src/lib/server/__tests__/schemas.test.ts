@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { signupSchema, contactSchema, BOROUGHS } from '../schemas';
+import { signupSchema, contactSchema } from '../schemas';
 
 const validSignup = {
   fname: 'Jane',
   lname: 'Doe',
   email: 'jane@example.com',
-  borough: 'Brooklyn',
+  country: 'United States',
+  zip: '11211',
+  hear: 'Word of Mouth',
   waiverCheck: 'on',
   ageCheck: 'on',
+};
+
+const validAbroad = {
+  ...validSignup,
+  country: 'United Kingdom',
+  zip: '',
+  city: 'London, England',
 };
 
 const validContact = {
@@ -24,8 +33,20 @@ describe('signupSchema', () => {
   });
 
   it('accepts optional fields as empty strings (how empty inputs submit)', () => {
-    const result = signupSchema.safeParse({ ...validSignup, phone: '', experience: '', hear: '', botcheck: '' });
+    const result = signupSchema.safeParse({ ...validSignup, phone: '', experience: '', hearOther: '', region: '', postal: '', city: '', botcheck: '' });
     expect(result.success).toBe(true);
+  });
+
+  it('requires how-did-you-hear (captain, 2026-10)', () => {
+    expect(signupSchema.safeParse({ ...validSignup, hear: '' }).success).toBe(false);
+    const { hear: _omitted, ...withoutHear } = validSignup;
+    expect(signupSchema.safeParse(withoutHear).success).toBe(false);
+  });
+
+  it('accepts the new hear choices with and without the free-text companion', () => {
+    expect(signupSchema.safeParse({ ...validSignup, hear: 'Article' }).success).toBe(true);
+    expect(signupSchema.safeParse({ ...validSignup, hear: 'Somewhere else', hearOther: 'A podcast' }).success).toBe(true);
+    expect(signupSchema.safeParse({ ...validSignup, hear: 'Somewhere else', hearOther: '' }).success).toBe(true);
   });
 
   it.each(['fname', 'lname', 'email'])('rejects missing %s', (field) => {
@@ -34,14 +55,6 @@ describe('signupSchema', () => {
 
   it('rejects an invalid email', () => {
     expect(signupSchema.safeParse({ ...validSignup, email: 'not-an-email' }).success).toBe(false);
-  });
-
-  it.each(BOROUGHS)('accepts borough %s', (borough) => {
-    expect(signupSchema.safeParse({ ...validSignup, borough }).success).toBe(true);
-  });
-
-  it('rejects an unknown borough', () => {
-    expect(signupSchema.safeParse({ ...validSignup, borough: 'Hoboken' }).success).toBe(false);
   });
 
   it('trims whitespace-only names down to invalid', () => {
@@ -61,6 +74,13 @@ describe('signupSchema', () => {
     expect(signupSchema.safeParse(validSignup).success).toBe(true);
   });
 
+  it('photo consent is optional and only accepts a checked box', () => {
+    expect(signupSchema.safeParse(validSignup).success).toBe(true);
+    const checked = signupSchema.safeParse({ ...validSignup, photoConsent: 'on' });
+    expect(checked.success && checked.data.photoConsent).toBe('on');
+    expect(signupSchema.safeParse({ ...validSignup, photoConsent: 'yes' }).success).toBe(false);
+  });
+
   it('passes the Turnstile token through and tolerates its absence', () => {
     const withToken = signupSchema.safeParse({ ...validSignup, 'cf-turnstile-response': 'tok' });
     expect(withToken.success && withToken.data['cf-turnstile-response']).toBe('tok');
@@ -69,6 +89,36 @@ describe('signupSchema', () => {
 
   it('rejects a Turnstile token beyond the documented 2048-char max', () => {
     expect(signupSchema.safeParse({ ...validSignup, 'cf-turnstile-response': 'x'.repeat(2049) }).success).toBe(false);
+  });
+
+  describe('location (country first)', () => {
+    it('a US signup needs only a 5-digit ZIP', () => {
+      expect(signupSchema.safeParse(validSignup).success).toBe(true);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '1121' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: 'abcde' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '11211-1234' }).success).toBe(false);
+    });
+
+    it('outside the US requires a city, with region and postal code optional', () => {
+      expect(signupSchema.safeParse(validAbroad).success).toBe(true);
+      expect(signupSchema.safeParse({ ...validAbroad, city: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validAbroad, region: 'Greater London', postal: 'SW1A 1AA' }).success).toBe(true);
+    });
+
+    it('takes postal codes in any format outside the US', () => {
+      expect(signupSchema.safeParse({ ...validAbroad, country: 'Canada', city: 'Toronto, Ontario', postal: 'M5V 2T6' }).success).toBe(true);
+    });
+
+    it('rejects a missing country or one outside the offered list', () => {
+      expect(signupSchema.safeParse({ ...validSignup, country: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validAbroad, country: 'Atlantis' }).success).toBe(false);
+    });
+
+    it('enforces phone validity when a phone is given', () => {
+      expect(signupSchema.safeParse({ ...validSignup, phone: 'abc' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, phone: '(212) 555-0123' }).success).toBe(true);
+    });
   });
 });
 

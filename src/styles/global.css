@@ -5,10 +5,11 @@
    typography, the grain overlay, and cross-page utilities.
 
    2026-10 identity (TTNYC Style Guide): the site IS the flyer.
-   Roadtop Black ground, Poster Beige header, wheatpasted paper
-   cards, the official line illustrations, die-cut sticker icons.
-   No photo backgrounds, no tape strips, no tilted label chips, no
-   outlined background words, no ticker, no tear-off tabs.
+   Roadtop Black ground, Poster Beige header, plain paper flyer cards
+   stuck up with stickers, tape, or staples, the official line
+   illustrations, die-cut sticker icons, and (homepage, 2026-10-09)
+   darkened real wall photos behind sections. Still banned: tilted
+   label chips, outlined background words, tickers, tear-off tabs.
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── DESIGN TOKENS ── */
@@ -43,7 +44,9 @@
      scroll padding. */
   --nav-h: calc(65px + env(safe-area-inset-top, 0px));
   --gutter: clamp(16px, 4vw, 48px);
-  --container: 1240px;
+  /* rem, so the measure widens with the fluid root size and line
+     lengths stay proportional on wide screens */
+  --container: 77.5rem;
 
   /* Device safe areas (notch / dynamic island / home indicator).
      All 0 today: viewport-fit=cover is deliberately absent (see
@@ -72,6 +75,11 @@
 [hidden] { display: none !important; }
 
 html {
+  /* Fluid root: 16px (the user's default) up to 1440px wide, then
+     growing to 20px at 2560px. Every rem-sized heading, body line,
+     button, and container scales together on big screens; percentages
+     keep the user's own font-size preference as the base. */
+  font-size: clamp(100%, 0.679rem + 0.357vw, 125%);
   scroll-behavior: smooth;
   /* Keep in-page anchor targets (#signup, #donate, …) clear of the
      sticky nav, which otherwise clips their first --nav-h pixels */
@@ -100,13 +108,13 @@ body {
   background: var(--black);
   color: var(--beige);
   font-family: var(--body);
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1.45;
   overflow-x: hidden;
 }
 
 @media (min-width: 761px) {
-  body { font-size: 18px; }
+  body { font-size: 1.125rem; }
 }
 
 /* The page ground is Roadtop Black (captain, 2026-09-30); the beige
@@ -129,6 +137,11 @@ h1, h2, h3 {
 
 a { color: inherit; }
 button { font: inherit; }
+
+/* The UA's "bolder" climbs past the loaded faces (a <b> inside a Medium
+   label resolved to a faux 900), so emphasis is pinned to Barlow Bold —
+   one of the three body weights the style guide uses (400/500/700). */
+b, strong { font-weight: 700; }
 
 :focus-visible {
   outline: 3px solid var(--yellow);
@@ -170,6 +183,20 @@ body::after {
   letter-spacing: 0.06em;
   font-size: 0.78rem;
   text-transform: none;
+}
+
+/* Visually hidden but announced — e.g. a bilingual accessible name,
+   since setLang never translates aria-label attributes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── BUTTONS ── */
@@ -235,32 +262,104 @@ form .btn-primary {
   box-shadow: 4px 4px 0 var(--black);
 }
 
-/* ── WHEATPASTE ── */
-/* Posters glued flat to the wall: no tape, no outline, no lifted
-   shadow. Creases and glue-soaked edges come from layered gradients
-   over the paper (captain's "wheatpasted" card look). Consumers set
-   their own background-color (usually --paper) and ink color. */
+/* ── FLYERS ON THE WALL ── */
+/* Cards are plain paper flyers put up on the wall (captain, 2026-10-09:
+   no crease or grain overlays — an opaque overlay may come later).
+   Consumers set the stock with --flyer-bg (never background-color
+   directly): the tape and torn devices move the paper onto a clipped
+   ::before layer so tape and stickers can overhang the sheet without
+   being clipped with it. */
 .paste {
   position: relative;
+  isolation: isolate;
   border: 0;
   border-radius: 1px;
-  box-shadow: inset 0 0 0 2px rgba(29, 29, 35, 0.06), inset 0 0 28px rgba(29, 29, 35, 0.1);
-  isolation: isolate;
+  background-color: var(--flyer-bg, var(--paper));
 }
 
-.paste::before {
+/* How each flyer is stuck up — mix them across a page (captain):
+   .f-sticker  pinned by the vest sticker (.slap img inside the card)
+   .f-tape     yellow tape across the top, rough paper edges
+   .f-staple   staple at the top, curled bottom-right corner
+   .f-torn     ripped bottom edge; composes with .f-tape or .f-sticker,
+               not .f-staple (both need the paper layer) */
+.f-sticker {
+  transform: rotate(-0.8deg);
+  box-shadow: 4px 6px 0 rgba(0, 0, 0, 0.35);
+}
+
+.f-tape,
+.f-torn,
+.f-staple {
+  background-color: transparent;
+  filter: drop-shadow(3px 7px 9px rgba(0, 0, 0, 0.45));
+}
+
+.f-tape::before,
+.f-torn::before,
+.f-staple::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  mix-blend-mode: multiply;
-  border-radius: inherit;
+  background-color: var(--flyer-bg, var(--paper));
+}
+
+.f-tape { transform: rotate(-1.2deg); }
+
+.f-tape::before {
+  clip-path: polygon(0 0.6%, 7% 0, 16% 0.7%, 29% 0, 43% 0.6%, 57% 0, 71% 0.7%, 86% 0, 100% 0.6%, 99.4% 30%, 100% 62%, 99.5% 100%, 82% 99.4%, 63% 100%, 44% 99.3%, 24% 100%, 0 99.4%, 0.6% 64%, 0 32%);
+}
+
+/* The tape strip: translucent yellow with ragged torn ends */
+.f-tape::after {
+  content: '';
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  z-index: 3;
+  width: clamp(76px, 24%, 128px);
+  height: 26px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(243, 207, 2, 0.78);
+  clip-path: polygon(0 8%, 3% 0, 97% 4%, 100% 14%, 97% 30%, 100% 50%, 97% 72%, 100% 92%, 96% 100%, 3% 96%, 0 86%, 3% 66%, 0 46%, 3% 26%);
+  pointer-events: none;
+}
+
+.f-torn::before {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), 94% calc(100% - 4px), 87% calc(100% - 14px), 79% calc(100% - 3px), 71% calc(100% - 12px), 62% 100%, 54% calc(100% - 13px), 45% calc(100% - 2px), 37% calc(100% - 14px), 28% calc(100% - 4px), 19% calc(100% - 13px), 11% calc(100% - 2px), 4% calc(100% - 11px), 0 calc(100% - 5px));
+}
+
+.f-tape.f-torn::before {
+  clip-path: polygon(0 0.6%, 7% 0, 16% 0.7%, 29% 0, 43% 0.6%, 57% 0, 71% 0.7%, 86% 0, 100% 0.6%, 99.4% 40%, 100% calc(100% - 12px), 94% calc(100% - 4px), 87% calc(100% - 14px), 79% calc(100% - 3px), 71% calc(100% - 12px), 62% 100%, 54% calc(100% - 13px), 45% calc(100% - 2px), 37% calc(100% - 14px), 28% calc(100% - 4px), 19% calc(100% - 13px), 11% calc(100% - 2px), 4% calc(100% - 11px), 0 calc(100% - 5px), 0.6% 40%);
+}
+
+/* Paper with its bottom-right corner folded away… */
+.f-staple { transform: rotate(0.9deg); }
+
+.f-staple::before {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 34px), calc(100% - 34px) 100%, 0 100%);
+}
+
+/* …then the staple and the folded-over flap, both drawn as background
+   layers of one pseudo-element */
+.f-staple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
   background:
-    linear-gradient(97deg, transparent 31%, rgba(29, 29, 35, 0.07) 31.4%, transparent 32.6%),
-    linear-gradient(176deg, transparent 58%, rgba(29, 29, 35, 0.06) 58.3%, transparent 59.8%),
-    linear-gradient(84deg, transparent 72%, rgba(255, 255, 255, 0.18) 72.3%, transparent 73.5%),
-    radial-gradient(120% 90% at 20% 10%, transparent 60%, rgba(29, 29, 35, 0.08));
+    linear-gradient(#8a8a8a, #d6d6d6 45%, #5e5e5e) top 9px center / 28px 5px no-repeat,
+    linear-gradient(315deg, transparent 50%, #c9c6b4 50%, #f2efe1 100%) right bottom / 34px 34px no-repeat;
+}
+
+/* A section with a WallPhoto behind it: the photo layer sits at
+   z-index -1 inside this section's own stacking context */
+.wall {
+  position: relative;
+  isolation: isolate;
 }
 
 /* ── BRICK FRAME & ILLUSTRATIONS ── */
@@ -277,6 +376,27 @@ form .btn-primary {
 
 .bricks-top { top: 10px; }
 .bricks-bottom { bottom: 10px; }
+
+/* A hero framed by <Bricks>: tall enough for its whole-row halves at
+   every width (brickHeroStyle in src/lib/bricks.ts sets the values), so
+   the halves never overlap and no brick is ever sliced */
+.brick-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: var(--brick-min-phone);
+  /* When the min-height wins, keep the content centered in the opening */
+  display: grid;
+  align-content: center;
+}
+
+/* <Bricks> renders a phone and a desktop pair; only one pair shows */
+.bricks-desktop { display: none; }
+
+@media (min-width: 761px) {
+  .brick-hero { min-height: var(--brick-min-desktop); }
+  .bricks-phone { display: none; }
+  .bricks-desktop { display: block; }
+}
 
 /* Official line drawings ship pre-colored per section as plain <img>
    files (one SVG per color), so no masking is involved. */
@@ -344,7 +464,7 @@ input[aria-invalid='true'] { border-color: var(--error); }
   border-radius: 999px;
   padding: 4px 11px;
   min-height: var(--tap);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
   background: transparent;
   color: var(--black);

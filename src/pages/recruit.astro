@@ -1,14 +1,16 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
+import vestSticker from '../assets/vest-sticker.png';
 
 /**
  * Open Roles — the recruitment page, top-level at /recruit (captain,
  * round 20; moved from /contact/join, where it was "Join the Team").
  * 2026-10 redesign: no hero and no page-title box — "A note before
  * you apply" sits directly on the brick wall as one wheatpasted
- * letter (and is the page's h1), then the three role posters and the
+ * letter (and is the page's h1), then the two role posters and the
  * email button. Applications stay email-only.
  *
  * The "[your name]" placeholder in the mailto subject is deliberate —
@@ -28,6 +30,9 @@ const baseSubject = {
   es: 'Soy [tu nombre] y quiero unirme a Trash Talk NYC',
 };
 
+// Two roles since 2026-10 (captain: "remove all roles other than
+// social media manager and long form videography") — the Content
+// Videographer / Editor poster lives in git history if it returns.
 const roles = [
   {
     tone: 'r-purple',
@@ -35,20 +40,14 @@ const roles = [
     // Captain's copy verbatim ("vital organ" stays exactly); only
     // "channel" was pluralized — the club runs Instagram, TikTok and
     // Eventbrite. The Spanish keeps the anatomical metaphor.
+    // Every bare "Trash Talk" on this page (both role descriptions and
+    // the note) became "Trash Talk NYC" on the captain's approval
+    // (2026-10-09), a sanctioned change to the verbatim copy.
     desc: {
-      en: 'Run the channels. Social media is a vital organ of Trash Talk.',
-      es: 'Maneja las cuentas. Las redes sociales son un órgano vital de Trash Talk.',
+      en: 'Run the channels. Social media is a vital organ of Trash Talk NYC.',
+      es: 'Maneja las cuentas. Las redes sociales son un órgano vital de Trash Talk NYC.',
     },
     pace: null,
-  },
-  {
-    tone: 'r-green',
-    title: { en: 'Content Videographer / Editor', es: 'Videógrafo/a / Editor/a de Contenido' },
-    desc: {
-      en: 'Film on the ground with us: cleanups, builds, and future projects.',
-      es: 'Filma en el terreno con nosotros: limpiezas, construcciones y proyectos futuros.',
-    },
-    pace: { en: 'On the ground', es: 'En el terreno' },
   },
   {
     tone: 'r-black',
@@ -56,8 +55,8 @@ const roles = [
     // Captain's copy — people and policy over time, and the three-month
     // compound effect are theirs; keep the substance intact.
     desc: {
-      en: "Help us tell the slower, deeper stories behind Trash Talk. We move fast on cleanups, but we want to document projects, people, and policy over time. In just three months there is a compound effect of sustained community effort we are looking forward to capturing.",
-      es: 'Ayúdanos a contar las historias más lentas y profundas detrás de Trash Talk. En las limpiezas nos movemos rápido, pero queremos documentar proyectos, personas y políticas a lo largo del tiempo. En apenas tres meses ya hay un efecto compuesto del esfuerzo comunitario sostenido que esperamos capturar.',
+      en: "Help us tell the slower, deeper stories behind Trash Talk NYC. We move fast on cleanups, but we want to document projects, people, and policy over time. In just three months there is a compound effect of sustained community effort we are looking forward to capturing.",
+      es: 'Ayúdanos a contar las historias más lentas y profundas detrás de Trash Talk NYC. En las limpiezas nos movemos rápido, pero queremos documentar proyectos, personas y políticas a lo largo del tiempo. En apenas tres meses ya hay un efecto compuesto del esfuerzo comunitario sostenido que esperamos capturar.',
     },
     pace: { en: 'The long story', es: 'La historia larga' },
   },
@@ -68,11 +67,14 @@ const roles = [
     es: `${baseSubject.es} — ${r.title.es}`,
   },
 }));
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 8, desktop: 6 };
 ---
 
 <BaseLayout
   title="Open Roles — Trash Talk NYC"
-  description="Trash Talk NYC needs helping hands. Open roles in social media and video, on the ground across the boroughs. Apply by email to team@trashtalknyc.org."
+  description="Trash Talk NYC needs helping hands. Open roles in social media and long-form video. Apply by email to team@trashtalknyc.org."
 >
   <!-- The note is the first substantial content on the page and is
        CAPTAIN'S COPY VERBATIM throughout (rounds 22–24): the
@@ -89,15 +91,15 @@ const roles = [
        and the email-only line last ("anyways" and the double "!!"
        are theirs — never correct either). Do not smooth, join, or
        formalize any of it, in either language. -->
-  <section class="rc-wall">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
-    <article class="note paste">
+  <section class="rc-wall brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
+    <article class="note paste f-sticker">
+      <Image src={vestSticker} alt="" class="slap note-slap" width={104} densities={[1, 2]} />
       <h1 class="note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h1>
       <p data-en="The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech." data-es="La mejor manera de saber si algo funciona es probarlo, y creemos que eso aplica a eventos, contenido, colaboraciones y tecnología.">The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech.</p>
-      <p data-en="Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:" data-es="Dado el crecimiento de Trash Talk, nos movemos rápido, y con esfuerzo. Algunas preferencias para ilustrar:">Given Trash Talk's growth, we move fast, and with effort. Some preferences to illustrate:</p>
+      <p data-en="Given Trash Talk NYC's growth, we move fast, and with effort. Some preferences to illustrate:" data-es="Dado el crecimiento de Trash Talk NYC, nos movemos rápido, y con esfuerzo. Algunas preferencias para ilustrar:">Given Trash Talk NYC's growth, we move fast, and with effort. Some preferences to illustrate:</p>
       <p data-en="We never overlook the ease of iMessage, WhatsApp, and Signal. Instant messaging is how we stay updated with the team, along with many folks we get to meet at events. The same thinking mutates a ton of minutiae prone to generating unnecessary friction. A quick phone call usually beats scheduling a 30 minute Google Meet. “I posted this in the drive, take a look when you get a chance” becomes “here's the link, it's in the drive too.”" data-es="Nunca pasamos por alto la facilidad de iMessage, WhatsApp y Signal. La mensajería instantánea es como nos mantenemos al día con el equipo, y con mucha gente que conocemos en los eventos. La misma lógica muta un montón de minucias propensas a generar fricción innecesaria. Una llamada rápida suele ganarle a agendar un Google Meet de 30 minutos. “lo subí al drive, échale un ojo cuando puedas” se convierte en “aquí va el link, también está en el drive”.">We never overlook the ease of iMessage, WhatsApp, and Signal. Instant messaging is how we stay updated with the team, along with many folks we get to meet at events. The same thinking mutates a ton of minutiae prone to generating unnecessary friction. A quick phone call usually beats scheduling a 30 minute Google Meet. “I posted this in the drive, take a look when you get a chance” becomes “here's the link, it's in the drive too.”</p>
-      <p data-en="The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk. We have a lot of fun. Stay a while!" data-es="Los eventos son especiales. Sea cual sea el rol, conectar con los vecinos es una parte vital de Trash Talk. Nos divertimos mucho. ¡Quédate un rato!">The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk. We have a lot of fun. Stay a while!</p>
+      <p data-en="The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk NYC. We have a lot of fun. Stay a while!" data-es="Los eventos son especiales. Sea cual sea el rol, conectar con los vecinos es una parte vital de Trash Talk NYC. Nos divertimos mucho. ¡Quédate un rato!">The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk NYC. We have a lot of fun. Stay a while!</p>
       <p data-en="Applications are email-only. If you think you are a good fit, but don't see a corresponding role, please message us anyways!!" data-es="Las solicitudes son solo por correo. Si crees que encajas bien, pero no ves un rol que corresponda, ¡¡escríbenos igual!!">Applications are email-only. If you think you are a good fit, but don't see a corresponding role, please message us anyways!!</p>
     </article>
   </section>
@@ -105,7 +107,7 @@ const roles = [
   <section class="wrap rc-body">
     <div class="roles">
       {roles.map((r) => (
-        <a class:list={['role', 'paste', r.tone]} href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es}>
+        <a class:list={['role', 'paste', r.tone, r.tone === 'r-black' ? 'f-tape' : 'f-staple']} href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es}>
           {r.pace && (
             <span class="pace mono" data-en={r.pace.en} data-es={r.pace.es}>{r.pace.en}</span>
           )}
@@ -115,8 +117,14 @@ const roles = [
         </a>
       ))}
     </div>
+    <!-- The address alone read as plain text on phones; a leading verb
+         and the arrow make it an action (captain: "like an action
+         word"). The address stays visible so it can be remembered or
+         long-pressed. -->
     <div class="email">
-      <a class="btn btn-primary" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>✉ {TEAM_EMAIL}</a>
+      <a class="btn btn-primary" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>
+        <span data-en="✉ Email" data-es="✉ Escribe a">✉ Email</span> <span class="email-addr">{TEAM_EMAIL}</span> <span aria-hidden="true">→</span>
+      </a>
     </div>
   </section>
 </BaseLayout>
@@ -134,10 +142,10 @@ const roles = [
   .note {
     position: relative;
     z-index: 1;
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     padding: 26px 18px;
-    max-width: 820px;
+    max-width: 51.25rem;
     margin-inline: auto;
     width: 100%;
   }
@@ -157,11 +165,24 @@ const roles = [
 
   .note p:last-child { margin-bottom: 0; }
 
+  /* Vest sticker pinning the wheatpasted letter to the wall — the same
+     device as the signup form and the About photo (captain likes it) */
+  .note :global(.note-slap) {
+    top: -30px;
+    right: -8px;
+    width: 72px;
+    height: auto;
+    transform: rotate(10deg);
+  }
+
+  .email-addr { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+
   @media (min-width: 761px) {
     .rc-wall { padding: calc(100vw * 0.13) clamp(16px, 5vw, 60px) calc(100vw * 0.12); }
     .note { padding: 34px clamp(20px, 4vw, 48px); }
     .note-title { font-size: clamp(2.2rem, 4vw, 3rem); }
     .note p { font-size: 1.1rem; }
+    .note :global(.note-slap) { top: -40px; right: -24px; width: 104px; }
   }
 
   /* ── ROLES ── */
@@ -190,12 +211,12 @@ const roles = [
 
   .role:hover { transform: translate(-2px, -3px) rotate(-0.4deg); }
 
-  .r-purple { background-color: var(--purple); }
-  .r-green { background-color: var(--green); }
+  .r-purple { --flyer-bg: var(--purple); }
+  .r-green { --flyer-bg: var(--green); }
 
   /* The black role poster needs an edge on the black ground */
   .r-black {
-    background-color: var(--black);
+    --flyer-bg: var(--black);
     box-shadow: inset 0 0 0 3px var(--lavender);
   }
 
@@ -227,19 +248,26 @@ const roles = [
     text-align: center;
   }
 
+  /* The team inbox is the page's one action, so it is the biggest
+     button on the site (captain, 2026-10-09: "bigger and more
+     pronounced") */
   .email .btn {
     width: 100%;
-    font-size: 0.9rem;
-    padding: 16px 26px;
+    font-size: 1rem;
+    padding: 18px 22px;
     letter-spacing: 0.02em;
+    overflow-wrap: anywhere;
+    box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.4);
   }
 
   @media (min-width: 761px) {
     .rc-body { gap: 34px; padding-block: 40px 72px; }
-    .roles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+    /* Two posters since 2026-10; capped and centered so a pair doesn't
+       stretch into billboard-wide sheets inside the 1240px wrap */
+    .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 57.5rem; margin-inline: auto; width: 100%; }
     .role { padding: 26px 24px 22px; }
     .role-t { font-size: 2.2rem; }
-    .email .btn { width: auto; font-size: 1rem; }
+    .email .btn { width: auto; font-size: clamp(1.15rem, 1.6vw, 1.4rem); padding: 22px 36px; }
   }
 
   @media (prefers-reduced-motion: reduce) {

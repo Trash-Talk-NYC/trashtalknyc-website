@@ -80,9 +80,11 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- Type per the TTNYC Style Guide: Londrina Solid Regular (display),
-       Barlow Semi Condensed (body), Space Mono Bold (accents). -->
+       Barlow Semi Condensed (body, at the guide's Regular / Medium /
+       Bold only), Space Mono Bold (accents). Load nothing else: an
+       unloaded weight gets faux-bolded by the browser. -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Londrina+Solid&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Londrina+Solid&family=Barlow+Semi+Condensed:wght@400;500;700&family=Space+Mono:wght@700&display=swap"
     rel="stylesheet"
   />
 </head>

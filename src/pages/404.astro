@@ -1,26 +1,25 @@
 ---
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
-import illTrash from '../assets/ill-trash-lav.svg';
 
 // Prerendered so URL misses (mostly bot scans) get a static, CDN-cacheable
 // body instead of a fresh SSR function render per request.
 export const prerender = true;
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 8, desktop: 5 };
 ---
 
 <BaseLayout title="Page Not Found — Trash Talk NYC" description="This page doesn't exist." noindex>
 
-  <!-- 404: a dead-end block. Brick wall edge to edge, the trash can
-       that took the page, a street-sign-yellow Dead End diamond, and
-       the way back. -->
-  <section class="nf">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <!-- 404: a dead-end block. Brick wall edge to edge, a street-sign-
+       yellow Dead End diamond, and the way back. -->
+  <section class="nf brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="nf-inner">
       <div class="nf-row" aria-hidden="true">
         <div class="sign"><span data-en="DEAD END" data-es="SIN SALIDA">DEAD END</span></div>
-        <img class="ill" src={illTrash.src} alt="" />
       </div>
       <div class="mono nf-code" data-en="Error 404 — Wrong Block" data-es="Error 404 — Cuadra Equivocada">Error 404 — Wrong Block</div>
       <h1 data-en="This page got picked up with the trash." data-es="Esta página se fue con la basura.">This page got picked up with the trash.</h1>
@@ -33,19 +32,13 @@ export const prerender = true;
 </BaseLayout>
 
 <style>
+  /* One brick-frame behavior site-wide (captain): edge-to-edge halves
+     scaling with the viewport, content kept inside the opening by the
+     vw-proportional padding — same pattern as the homepage hero. */
   .nf {
     position: relative;
     overflow: hidden;
-    min-height: calc(min(900px, 100vw) * 0.72);
-    display: grid;
-    align-items: center;
     border-bottom: var(--ink);
-  }
-
-  .nf .bricks {
-    width: min(900px, 100%);
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .nf-inner {
@@ -54,7 +47,7 @@ export const prerender = true;
     display: grid;
     justify-items: center;
     gap: 16px;
-    padding: 56px 34px;
+    padding: calc(100vw * 0.17) 34px calc(100vw * 0.16);
     text-align: center;
   }
 
@@ -64,7 +57,6 @@ export const prerender = true;
     gap: 18px;
   }
 
-  .nf-row .ill { width: clamp(96px, 12vw, 150px); }
 
   /* Street-sign-yellow diamond */
   .sign {
@@ -120,7 +112,7 @@ export const prerender = true;
   }
 
   @media (min-width: 761px) {
-    .nf-inner { padding: 48px 30px; }
+    .nf-inner { padding: calc(100vw * 0.09) 30px calc(100vw * 0.085); }
     .nf h1 { font-size: clamp(2.2rem, 4.4vw, 3.8rem); }
     .nf-actions { flex-direction: row; flex-wrap: wrap; }
   }

@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediaComingSoon from '../../components/MediaComingSoon.astro';
+
+/**
+ * More Media → Substack (captain, 2026-10-09). Nothing is published there
+ * yet, so the page is an honest "coming soon" — see MediaComingSoon.
+ */
+---
+
+<BaseLayout
+  title="Substack — Trash Talk NYC"
+  description="The Trash Talk NYC Substack is coming soon: written stories, inside information, and articles."
+>
+  <MediaComingSoon
+    id="substack"
+    note={{
+      en: 'Our Substack isn’t live yet. Join the newsletter and you’ll hear the moment it launches.',
+      es: 'Nuestro Substack todavía no está activo. Únete al boletín y te enterarás en cuanto se lance.',
+    }}
+  />
+</BaseLayout>

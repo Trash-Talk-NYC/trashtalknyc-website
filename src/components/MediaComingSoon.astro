@@ -1,0 +1,118 @@
+---
+/**
+ * Body of a More Media subpage whose channel isn't live yet (Podcast,
+ * Substack as of 2026-10). Honest by design: no invented shows,
+ * episodes, or posts — just that it's coming and how to hear when it
+ * lands. When the captain supplies the channel URL in socials.ts, the
+ * section's `comingSoon` flag in media.ts flips and this gets replaced
+ * by real content.
+ */
+import { Image } from 'astro:assets';
+import MediaHero from './MediaHero.astro';
+import MediaSubnav from './MediaSubnav.astro';
+import { MORE_MEDIA_PATH, getMediaSection, type MediaSectionId } from '../lib/media';
+import vestSticker from '../assets/vest-sticker.png';
+import SectionWall from './SectionWall.astro';
+import wallCanSculpture from '../assets/walls/wall-can-sculpture.jpg';
+import wallStickerForklift from '../assets/walls/wall-sticker-forklift.jpg';
+
+interface Props {
+  id: MediaSectionId;
+  /** What's coming, in a sentence. */
+  note: { en: string; es: string };
+}
+
+const { id, note } = Astro.props;
+const section = getMediaSection(id);
+---
+
+<MediaHero
+  eyebrow={{ en: 'More Media', es: 'Más Medios' }}
+  eyebrowHref={MORE_MEDIA_PATH}
+  title={[{ en: section.label, es: section.label }]}
+  description={section.blurb}
+/>
+
+<MediaSubnav current={id} />
+
+<!-- Torn-edge wall like the other More Media pages, a different photo on
+     each (captain, 2026-10-09): Podcast the crushed-can sculpture,
+     Substack the sticker-covered forklift -->
+<section class="cs-wall wall">
+<SectionWall
+  kind="cleanup"
+  src={id === 'podcast' ? wallCanSculpture : wallStickerForklift}
+  dim={0.55}
+  duotone={0.18}
+  seed={id === 'podcast' ? 10 : 11}
+/>
+<div class="wrap cs-body">
+  <div class="cs-card paste f-sticker">
+    <Image src={vestSticker} alt="" class="slap cs-slap" width={104} densities={[1, 2]} />
+    <div>
+      <h2 class="cs-title" data-en="Coming soon" data-es="Muy pronto">Coming soon</h2>
+      <p class="cs-note" data-en={note.en} data-es={note.es}>{note.en}</p>
+      <div class="cs-row">
+        <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
+        <a class="btn btn-purple" href={MORE_MEDIA_PATH} data-en="Back to More Media" data-es="Volver a Más Medios">Back to More Media</a>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<style>
+  .cs-body { padding-block: 64px 80px; }
+
+  .cs-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    max-width: 53.75rem;
+    margin-inline: auto;
+    padding: 30px 20px 28px;
+    --flyer-bg: var(--paper);
+    color: var(--black);
+  }
+
+  .cs-card :global(.cs-slap) {
+    top: -32px;
+    right: -6px;
+    width: 74px;
+    height: auto;
+    transform: rotate(9deg);
+  }
+
+
+  .cs-title {
+    font-size: 2.8rem;
+    line-height: 0.95;
+    color: var(--purple);
+  }
+
+  .cs-note {
+    margin: 10px 0 20px;
+    font-size: 1.15rem;
+    line-height: 1.45;
+  }
+
+  .cs-row { display: flex; flex-wrap: wrap; gap: 14px; }
+  /* Square-cornered buttons across More Media (captain, 2026-10-09) */
+  .cs-row .btn { border-radius: 0; }
+  .cs-row .btn { width: 100%; }
+
+  @media (min-width: 761px) {
+    .cs-body { padding-block: 80px 104px; }
+
+    .cs-card {
+      gap: 36px;
+      padding: 40px clamp(24px, 4vw, 48px);
+    }
+
+    .cs-card :global(.cs-slap) { top: -40px; right: -22px; width: 104px; }
+    .cs-title { font-size: clamp(3rem, 4.4vw, 4rem); }
+    .cs-row .btn { width: auto; }
+  }
+</style>

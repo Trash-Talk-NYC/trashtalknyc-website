@@ -1,17 +1,18 @@
 ---
 /**
- * Black strip above the nav pointing at club socials, with the
- * Instagram / YouTube / TikTok sticker icons. Visible on all widths
- * (the 2026-10 redesign keeps it on phones; it is the black band the
- * status bar blends into at the top of the page).
+ * Black strip above the nav pointing at club socials, with all five
+ * sticker icons (captain: Facebook and LinkedIn join the strip).
+ * Visible on all widths (the 2026-10 redesign keeps it on phones; it
+ * is the black band the status bar blends into at the top of the
+ * page). "Socials" replaced "Keep up with club socials" (captain).
  */
 import SocialLinks from './SocialLinks.astro';
 ---
 
 <div class="social-bar">
-  <span class="social-bar-text" data-en="Keep up with club socials" data-es="Síguenos en redes">Keep up with club socials</span>
+  <span class="social-bar-text" data-en="Socials" data-es="Redes">Socials</span>
   <div class="social-bar-divider" aria-hidden="true"></div>
-  <SocialLinks ids={['instagram', 'youtube', 'tiktok']} />
+  <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
 </div>
 
 <style>
@@ -24,7 +25,7 @@ import SocialLinks from './SocialLinks.astro';
     gap: 10px;
     padding: 12px max(16px, var(--safe-right)) 12px max(16px, var(--safe-left));
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .social-bar-divider {

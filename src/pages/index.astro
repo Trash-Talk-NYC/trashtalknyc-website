@@ -7,12 +7,13 @@ import { countries } from '../lib/countries';
 import vestSticker from '../assets/vest-sticker.png';
 import bricksTop from '../assets/bricks-top-lav.svg';
 import bricksBottom from '../assets/bricks-bottom-lav.svg';
-import illTreebed from '../assets/ill-treebed-beige.svg';
-import illGloveShovel from '../assets/ill-glove-shovel-beige.svg';
-import illGlovePlant from '../assets/ill-glove-plant-beige.svg';
-import illFamilyVests from '../assets/ill-family-vests-beige.svg';
+// Colored variant: the donate flyer is poster paper now, where the
+// beige line drawing would disappear.
+import SectionWall from '../components/SectionWall.astro';
+import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
+import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
 
-const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'linkedin', 'facebook']);
+const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
 
 // Baked in at build time (pages are prerendered): when unset, no widget
 // renders and the signup action skips Turnstile verification. After setting
@@ -33,6 +34,14 @@ const orgSchema = {
     'https://trashtalknyc.eventbrite.com',
   ],
 };
+
+// The reel the captain asked to feature by the Socials section (2026-10-09)
+const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
+// …and the TikTok beside it (captain, 2026-10-09)
+const FEATURED_TIKTOK = {
+  url: 'https://www.tiktok.com/@trashtalk_nyc/video/7692418087739526431',
+  id: '7692418087739526431',
+};
 ---
 
 <BaseLayout
@@ -49,7 +58,12 @@ const orgSchema = {
 <!-- HERO: the brick drawing split into its two halves, stretched edge to
      edge, with the vest sticker logo centered in the opening and one
      button that says "Events" (captain). -->
-<section class="hero" id="top">
+<!-- Section backgrounds are the captain's A4 (2026-10-09): torn wall
+     photos, purple duotone for cleanup sections, green chalk for
+     planting ones. The hero's brick is shaded deep so the lavender
+     brick drawing on top stays the star. -->
+<section class="hero wall" id="top">
+  <SectionWall kind="cleanup" src={wallRedBrick} tear="bottom" dim={0.8} seed={1} />
   <img class="bricks bricks-top" src={bricksTop.src} alt="" />
   <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
   <div class="hero-inner">
@@ -62,53 +76,97 @@ const orgSchema = {
   </div>
 </section>
 
-<!-- DONATE -->
-<section class="bento">
-  <div class="wrap bento-grid">
-    <article class="card donate paste" id="donate">
-      <img class="ill donate-art" src={illTreebed.src} alt="" />
-      <h2 class="donate-title" data-en="Because of you:" data-es="Gracias a ti:">Because of you:</h2>
-      <div class="gfm">
-        <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
-      </div>
-      <p class="donate-note" data-en="Trash Talk started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
-    </article>
+<!-- DONATE (captain's B5, left-aligned, 2026-10-09): "Because of you" is
+     the headline with "Donate" as a small eyebrow, the note below it,
+     and the GoFundMe widget sitting plain — no flyer card. A planting
+     section, since the funds go to flower-planting and builds. -->
+<section class="donate-sec wall" id="donate">
+  <SectionWall kind="planting" dim={0.45} seed={2} keepClear=".donate" />
+  <div class="wrap donate">
+    <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
+    <h2 class="donate-title" data-en="Because of you" data-es="Gracias a ti">Because of you</h2>
+    <p class="donate-note" data-en="Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk NYC empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
+    <div class="gfm">
+      <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
+    </div>
   </div>
 </section>
 
 <!-- SOCIALS -->
+<!-- Plain ground between the two photo sections -->
 <section class="socials">
   <div class="wrap">
-    <h2 data-en="Keep up with club socials" data-es="Síguenos en redes">Keep up with club socials</h2>
+    <h2 data-en="Socials" data-es="Redes">Socials</h2>
     <div class="soc-grid">
-      {socialTiles.map((c) => (
-        <a class="soc-tile paste" href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
+      {socialTiles.map((c, i) => (
+        <a class:list={['soc-tile', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
           <span class="soc-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={c.path} /></svg></span>
           <b>{c.label}</b>
           <small>{c.handle}</small>
         </a>
       ))}
     </div>
+
+    <!-- Featured posts (captain, 2026-10-09): Instagram's and TikTok's
+         official embeds, side by side on desktop and stacked on phones.
+         Each blockquote IS its fallback: until the platform script swaps
+         it for the player (or if it never loads) it's a plain link to
+         the post. The scripts are only fetched when this row nears the
+         viewport (script below), so neither platform is contacted by
+         visitors who never scroll this far. -->
+    <div class="feeds">
+      <figure class="feed paste f-sticker">
+        <Image src={vestSticker} alt="" class="slap feed-slap" width={96} densities={[1, 2]} />
+        <figcaption class="mono feed-cap" data-en="From our Instagram" data-es="De nuestro Instagram">From our Instagram</figcaption>
+        <blockquote class="instagram-media feed-embed" data-instgrm-permalink={`${FEATURED_REEL}?utm_source=ig_embed`} data-instgrm-version="14">
+          <a href={FEATURED_REEL} target="_blank" rel="noopener" data-en="Watch this reel on Instagram →" data-es="Mira este reel en Instagram →">Watch this reel on Instagram →</a>
+        </blockquote>
+      </figure>
+      <figure class="feed paste f-tape">
+        <figcaption class="mono feed-cap" data-en="From our TikTok" data-es="De nuestro TikTok">From our TikTok</figcaption>
+        <blockquote class="tiktok-embed feed-embed" cite={FEATURED_TIKTOK.url} data-video-id={FEATURED_TIKTOK.id}>
+          <section>
+            <a href={FEATURED_TIKTOK.url} target="_blank" rel="noopener" data-en="Watch this video on TikTok →" data-es="Mira este video en TikTok →">Watch this video on TikTok →</a>
+          </section>
+        </blockquote>
+      </figure>
+    </div>
   </div>
 </section>
 
+<script>
+  // Load the Instagram and TikTok embed scripts only when the featured
+  // posts are about to be seen
+  const feeds = document.querySelector('.feeds');
+  if (feeds && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      for (const src of ['https://www.instagram.com/embed.js', 'https://www.tiktok.com/embed.js']) {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        document.body.appendChild(s);
+      }
+    }, { rootMargin: '600px 0px' });
+    io.observe(feeds);
+  }
+</script>
+
 <!-- NEWSLETTER SIGNUP -->
-<section class="signup" id="signup">
+<!-- A cleanup section: the newsletter signs people up for cleanups -->
+<section class="signup wall" id="signup">
+  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} seed={3} />
   <div class="wrap signup-grid">
     <div class="sign-head">
       <div class="sign-text">
         <h2 class="sign-plate"><span data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</span> <span class="accent" data-en="Newsletter" data-es="Boletín">Newsletter</span></h2>
-        <p class="sign-blurb" data-en="Get emailed about cleanups, tree guard builds, and other beautification efforts in your neighborhood." data-es="Recibe correos sobre limpiezas, construcción de protectores de árboles y otros esfuerzos de embellecimiento en tu vecindario.">Get emailed about cleanups, tree guard builds, and other beautification efforts in your neighborhood.</p>
-      </div>
-      <div class="sign-arts" aria-hidden="true">
-        <img class="ill sign-art-shovel" src={illGloveShovel.src} alt="" />
-        <img class="ill sign-art-plant" src={illGlovePlant.src} alt="" />
+        <p class="sign-blurb" data-en="News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club." data-es="Noticias de la basura, más historias de Trash Talk NYC: no solo eventos, sino también información interna y artículos del club.">News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club.</p>
       </div>
     </div>
 
     <div class="form-wrap">
-      <form id="volunteerForm" class="paste" method="POST" action={actions.signup}>
-        <Image src={vestSticker} alt="" class="slap slap-form" width={110} densities={[1, 2]} />
+      <form id="volunteerForm" class="paste f-tape" method="POST" action={actions.signup}>
         <input type="hidden" name="botcheck" value="" />
         <input type="hidden" name="startedAt" id="signupStartedAt" value="" />
 
@@ -129,25 +187,14 @@ const orgSchema = {
           <input type="tel" id="phone" name="phone" autocomplete="tel" />
         </div>
 
-        <div class="field full">
-          <label for="borough" data-en="Which borough do you live in? *" data-es="¿En qué condado vives? *">Which borough do you live in? *</label>
-          <select id="borough" name="borough" required>
-            <option value="" selected disabled data-en="Select your borough" data-es="Selecciona tu condado">Select your borough</option>
-            <option value="Manhattan">Manhattan</option>
-            <option value="Brooklyn">Brooklyn</option>
-            <option value="Queens">Queens</option>
-            <option value="The Bronx" data-en="The Bronx" data-es="El Bronx">The Bronx</option>
-            <option value="Staten Island">Staten Island</option>
-            <option value="Not in NYC" data-en="Not in NYC" data-es="Fuera de NYC">Not in NYC</option>
-          </select>
-        </div>
-
-        <!-- Outside-NYC flow: country (starts on the US), city picked
-             from a list, ZIP for the US only (captain). -->
-        <div class="field full" id="whereGroup" hidden>
-          <span class="lbl" data-en="Where are you located? *" data-es="¿Dónde te encuentras? *">Where are you located? *</span>
+        <!-- Location, country first (captain, 2026-10-09). US: a ZIP fills
+             in city and state, and an NYC ZIP sets the borough without
+             asking. Elsewhere: the city from a list, plus an optional
+             region and a postal code in any format. -->
+        <div class="field full" id="whereGroup" role="group" aria-labelledby="whereLabel">
+          <span class="lbl" id="whereLabel" data-en="Where are you located? *" data-es="¿Dónde te encuentras? *">Where are you located? *</span>
           <div class="loc-row">
-            <div class="field">
+            <div class="field loc-wide">
               <label for="w-country" data-en="Country" data-es="País">Country</label>
               <select id="w-country" name="country">
                 {countries.map((c) => (
@@ -155,16 +202,25 @@ const orgSchema = {
                 ))}
               </select>
             </div>
-            <div class="field">
+            <div class="field loc-wide" id="zipGroup">
+              <label for="w-zip" data-en="ZIP code *" data-es="Código ZIP *">ZIP code *</label>
+              <input id="w-zip" name="zip" required inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder="e.g. 11211" data-placeholder-en="e.g. 11211" data-placeholder-es="p.ej. 11211" aria-describedby="zipStatus" />
+              <p class="zip-status" id="zipStatus" aria-live="polite"></p>
+            </div>
+            <div class="field loc-wide" id="cityGroup" hidden>
               <label for="w-city" data-en="City *" data-es="Ciudad *">City *</label>
               <div class="addr">
                 <input id="w-city" name="city" autocomplete="off" placeholder="Start typing your city" data-placeholder-en="Start typing your city" data-placeholder-es="Empieza a escribir tu ciudad" role="combobox" aria-autocomplete="list" aria-expanded="false" />
                 <ul class="addr-list" id="cityList" role="listbox" hidden></ul>
               </div>
             </div>
-            <div class="field" id="zipGroup">
-              <label for="w-zip" data-en="ZIP code *" data-es="Código ZIP *">ZIP code *</label>
-              <input id="w-zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 07030" data-placeholder-en="e.g. 07030" data-placeholder-es="p.ej. 07030" />
+            <div class="field" id="regionGroup" hidden>
+              <label for="w-region"><span data-en="State / province / region" data-es="Estado / provincia / región">State / province / region</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+              <input id="w-region" name="region" autocomplete="address-level1" />
+            </div>
+            <div class="field" id="postalGroup" hidden>
+              <label for="w-postal"><span data-en="Postal code" data-es="Código postal">Postal code</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+              <input id="w-postal" name="postal" autocomplete="postal-code" />
             </div>
           </div>
         </div>
@@ -175,15 +231,19 @@ const orgSchema = {
         </div>
 
         <div class="field full">
-          <label for="hear"><span data-en="How'd you hear about us?" data-es="¿Cómo nos conociste?">How'd you hear about us?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
-          <!-- value attributes must exactly match the HEAR_ABOUT_US enum
-               options configured in Brevo; display text is friendlier -->
-          <select id="hear" name="hear">
-            <option value="" selected data-en="Select one" data-es="Selecciona una opción">Select one</option>
+          <label for="hear" data-en="How'd you hear about us? *" data-es="¿Cómo nos conociste? *">How'd you hear about us? *</label>
+          <!-- Required (captain). Value attributes must exactly match the
+               HEAR_ABOUT_US enum options configured in Brevo; display text
+               is friendlier. "Article" and "Somewhere else" are new values
+               the signup action tolerates Brevo rejecting (see the fallback
+               in src/actions/index.ts) until they exist in the dashboard. -->
+          <select id="hear" name="hear" required>
+            <option value="" selected disabled data-en="Select one" data-es="Selecciona una opción">Select one</option>
             <option value="Saw Tree Guard" data-en="Saw a Tree Guard" data-es="Vi un Tree Guard">Saw a Tree Guard</option>
             <option value="Saw the Purple Vests" data-en="Saw the Purple Vests" data-es="Vi los chalecos morados">Saw the Purple Vests</option>
             <option value="My Block Entered the Clean Zone" data-en="My block entered the Clean Zone" data-es="Mi cuadra entró a la Zona Limpia">My block entered the Clean Zone</option>
             <option value="Word of Mouth" data-en="Word of mouth" data-es="De boca en boca">Word of mouth</option>
+            <option value="Article" data-en="An article" data-es="Un artículo">An article</option>
             <option value="Instagram" data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
             <option value="TikTok" data-en="TikTok" data-es="TikTok">TikTok</option>
             <option value="LinkedIn" data-en="LinkedIn" data-es="LinkedIn">LinkedIn</option>
@@ -191,7 +251,14 @@ const orgSchema = {
             <option value="YouTube" data-en="YouTube" data-es="YouTube">YouTube</option>
             <option value="Flyer / QR Code" data-en="Flyer / QR code" data-es="Volante / código QR">Flyer / QR code</option>
             <option value="Local Community Board" data-en="Local community board" data-es="Junta comunitaria local">Local community board</option>
+            <option value="Somewhere else" data-en="Somewhere else" data-es="En otro lugar">Somewhere else</option>
           </select>
+        </div>
+
+        <!-- Shown only for "Somewhere else" so the captain learns where -->
+        <div class="field full" id="hearOtherGroup" hidden>
+          <label for="hearOther"><span data-en="Where was that?" data-es="¿Dónde fue?">Where was that?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
+          <input type="text" id="hearOther" name="hearOther" maxlength="200" placeholder="e.g. a podcast, a newsletter, my block's group chat" data-placeholder-en="e.g. a podcast, a newsletter, my block's group chat" data-placeholder-es="p.ej. un pódcast, un boletín, el chat de mi cuadra" />
         </div>
 
         <!-- WAIVER -->
@@ -200,17 +267,21 @@ const orgSchema = {
           <div class="waiver-body" id="waiverText">
             By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br /><br />
             To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br /><br />
-            I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br /><br />
-            I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.
+            I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.
           </div>
         </div>
         <label class="check full">
           <input type="checkbox" id="waiverCheck" name="waiverCheck" required />
-          <span data-en="I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior. Entiendo que este es un documento legalmente vinculante y firmo voluntariamente. *">I have read and agree to the Release &amp; Waiver of Liability above. I understand this is a legally binding document and I am signing voluntarily. *</span>
+          <span data-en="I've read and agree to the Release &amp; Waiver of Liability above, and I'm signing it voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior, y la firmo voluntariamente. *">I've read and agree to the Release &amp; Waiver of Liability above, and I'm signing it voluntarily. *</span>
         </label>
         <label class="check full">
           <input type="checkbox" id="ageCheck" name="ageCheck" required />
           <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *</span>
+        </label>
+        <!-- Optional photo consent (captain, 2026-10-09): not required to sign up -->
+        <label class="check full">
+          <input type="checkbox" id="photoConsent" name="photoConsent" />
+          <span><span data-en="Trash Talk NYC may use photos and videos of me taken at events." data-es="Trash Talk NYC puede usar fotos y videos míos tomados en los eventos.">Trash Talk NYC may use photos and videos of me taken at events.</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></span>
         </label>
 
         {turnstileSiteKey && (
@@ -219,14 +290,14 @@ const orgSchema = {
           </div>
         )}
 
-        <button type="submit" class="btn btn-primary full form-submit" data-en="Submit my signup →" data-es="Enviar mi inscripción →">Submit my signup →</button>
+        <button type="submit" class="btn btn-primary full form-submit" data-en="Submit →" data-es="Enviar →">Submit →</button>
         <!-- No data-en/data-es here: setLang() would inject the error text on
              every toggle even when no error occurred; the submit handler and
              onLanguageChange own this element's content -->
         <p class="form-error full" id="signupFormError" aria-live="polite"></p>
       </form>
 
-      <div class="form-success paste" id="formSuccess">
+      <div class="form-success paste f-tape" id="formSuccess">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>
         <h3 data-en="Success" data-es="Éxito">Success</h3>
         <p data-en="We'll be in touch. See you out there." data-es="Estaremos en contacto. Nos vemos allá.">We'll be in touch. See you out there.</p>
@@ -237,12 +308,12 @@ const orgSchema = {
 
 <!-- BEHIND-THE-SCENES CREW CALLOUT: the signup above is the mailing list
      and is for everyone; this is the pitch for people who want to WORK on
-     Trash Talk (roles live at /recruit). -->
+     Trash Talk NYC (roles live at /recruit). -->
+<!-- Post No Bills green, not a wall (captain, 2026-10-09) -->
 <section class="crew">
   <div class="wrap crew-grid">
-    <img class="ill crew-art" src={illFamilyVests.src} alt="" />
     <div>
-      <h2 data-en="Help Trash Talk behind the scenes" data-es="Ayuda a Trash Talk detrás de cámaras">Help Trash Talk behind the scenes</h2>
+      <h2 data-en="Help Trash Talk NYC behind the scenes" data-es="Ayuda a Trash Talk NYC detrás de cámaras">Help Trash Talk NYC behind the scenes</h2>
       <p data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
       <a href="/recruit" class="btn btn-ghost-light" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
     </div>
@@ -253,18 +324,6 @@ const orgSchema = {
 </BaseLayout>
 
 <style>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
   /* ── HERO ── */
   /* Hero min-height keeps the two brick halves from colliding at any
      width; the inner padding tracks the bricks' own height. */
@@ -289,7 +348,7 @@ const orgSchema = {
 
   .hero :global(.hero-logo) {
     width: 64%;
-    max-width: 440px;
+    max-width: 27.5rem;
     height: auto;
     transform: rotate(-3deg);
     filter: drop-shadow(6px 6px 0 rgba(234, 233, 218, 0.25));
@@ -301,70 +360,62 @@ const orgSchema = {
     margin: 0;
   }
 
-  .hero-btns .btn { padding: 12px 34px; font-size: 0.8rem; }
+  /* Big on purpose (captain, 2026-10-09); rem-based, so it grows with
+     the fluid root size on wide screens */
+  .hero-btns .btn { padding: 16px 44px; font-size: 1.05rem; border-width: 3px; }
 
   @media (min-width: 761px) {
-    .hero { min-height: calc(100vw * 0.7); }
+    /* Both full brick halves (69.62vw, see brick-rows.generated.ts) plus
+       their 10px insets and a 12px gap — 0.7vw alone let them touch */
+    .hero { min-height: calc(69.62vw + 32px); }
     .hero .bricks-top { top: 10px; }
     .hero .bricks-bottom { bottom: 10px; }
     .hero-inner { gap: 26px; padding: calc(100vw * 0.075) 16px calc(100vw * 0.08); }
-    .hero :global(.hero-logo) { width: min(440px, 52%); }
-    .hero-btns .btn { padding: 14px 22px; font-size: 0.85rem; }
+    .hero :global(.hero-logo) { width: min(27.5rem, 52%); }
+    /* A real destination button at desktop scale — the mobile-sized one
+       read "unbelievably small" against the full-width hero (captain) */
+    .hero-btns .btn { padding: 1.4rem 4.5rem; font-size: 1.45rem; box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.35); }
   }
 
   /* ── DONATE ── */
-  .bento { padding-block: 44px 30px; }
-
-  .bento-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 680px);
-    justify-content: center;
-  }
-
-  .card {
-    position: relative;
-    padding: 34px 20px 24px;
-  }
+  .donate-sec { padding-block: 56px 64px; }
 
   .donate {
-    background-color: var(--green);
+    display: grid;
+    justify-items: start;
+    gap: 10px;
+  }
+
+  .donate-eyebrow { color: var(--yellow); font-size: 0.9rem; }
+
+  .donate-title {
+    font-size: clamp(3rem, 6vw, 5rem);
+    line-height: 0.95;
     color: var(--beige);
   }
 
-  .donate-art {
-    position: absolute;
-    width: 110px;
-    right: 4px;
-    top: 4px;
-    opacity: 0.9;
+  .donate-note {
+    margin: 4px 0 18px;
+    max-width: 46ch;
+    font-size: 1.15rem;
+    line-height: 1.5;
+    color: var(--beige);
   }
 
-  .donate-title {
-    font-size: 2.6rem;
-    margin-bottom: 22px;
-    padding-right: 100px;
-  }
-
-  .gfm {
-    background: var(--paper);
-    color: var(--black);
-    border: var(--ink);
-    border-radius: 10px;
-    padding: 12px;
-  }
-
-  /* The live GoFundMe widget, boxed in poster paper so it reads as part
-     of the card; its internals are an iframe and stay GoFundMe's. */
+  /* The live widget sits straight on the section; its internals are an
+     iframe and stay GoFundMe's. Their card stretches to the iframe up to
+     480px and then centers on a white page, so the wrapper is capped at
+     exactly that width: wider would show white strips beside the card.
+     Height stays automatic (GoFundMe's script resizes the iframe as the
+     card's title wraps on narrow phones). */
+  .gfm { width: min(100%, 480px); }
   .gfm :global(.gfm-embed) { min-height: 180px; }
-
-  .donate-note { margin: 30px 0 0; font-size: 1.12rem; }
+  .gfm :global(.gfm-embed-iframe) { display: block; }
 
   @media (min-width: 761px) {
-    .bento { padding-block: 84px 64px; }
-    .card { padding: 40px 34px 34px; }
-    .donate-art { width: 170px; right: 10px; top: 6px; }
-    .donate-title { font-size: clamp(2.6rem, 4.8vw, 3.8rem); padding-right: 160px; }
-    .gfm { padding: 18px; }
+    .donate-sec { padding-block: 88px 96px; }
+    .donate-eyebrow { font-size: 1rem; }
+    .donate-note { font-size: 1.25rem; }
   }
 
   /* ── SOCIALS ── */
@@ -387,7 +438,7 @@ const orgSchema = {
     justify-items: start;
     gap: 6px;
     padding: 16px 14px;
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     text-decoration: none;
     transition: transform 0.15s;
@@ -420,8 +471,83 @@ const orgSchema = {
     color: var(--purple);
   }
 
+  /* The featured posts: stacked on phones, side by side from 761px.
+     Both players are 325–540px wide, so each paper frame is capped
+     near that and the pair centers in the row. */
+  .feeds {
+    display: grid;
+    grid-template-columns: minmax(0, 26.25rem);
+    justify-content: center;
+    align-items: start;
+    gap: 48px;
+    margin-top: 44px;
+  }
+
+  .feed {
+    position: relative;
+    margin: 0;
+    padding: 14px 12px 12px;
+    --flyer-bg: var(--paper);
+    color: var(--black);
+  }
+
+  .feed :global(.feed-slap) {
+    top: -30px;
+    right: -10px;
+    width: 64px;
+    height: auto;
+    transform: rotate(9deg);
+  }
+
+  .feed-cap {
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+
+  /* Overrides for the platforms' own inline styles, so each player and
+     its link fallback fill the frame instead of floating with margins */
+  .feed :global(.instagram-media),
+  .feed :global(iframe.instagram-media),
+  .feed :global(.tiktok-embed) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .feed-embed { margin: 0; }
+
+  /* The dashed link box is the fallback look only: TikTok keeps its
+     blockquote around the player it injects, so drop the box once an
+     iframe is inside (Instagram replaces its blockquote outright) */
+  .feed-embed:not(:has(iframe)) {
+    padding: 28px 16px;
+    background: var(--paper-bright);
+    border: 2px dashed rgba(29, 29, 35, 0.3);
+    text-align: center;
+  }
+
+  .feed-embed a {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--purple);
+  }
+
   @media (min-width: 761px) {
     .socials { padding-block: 64px 70px; }
+    /* Similar lengths side by side (captain, 2026-10-09): Instagram's
+       player grows taller with its width while TikTok's stays ~745px,
+       so Instagram gets the wider column (px, because both players size
+       in px) and the paper frames stretch to the taller one */
+    .feeds {
+      grid-template-columns: minmax(0, 560px) minmax(0, 360px);
+      align-items: stretch;
+      gap: clamp(32px, 4vw, 64px);
+      margin-top: 60px;
+    }
+    .feed { padding: 18px 16px 16px; }
+    .feed :global(.feed-slap) { top: -40px; right: -30px; width: 90px; }
     .soc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
     .soc-tile { padding: 20px 18px; }
     .soc-tile:last-child:nth-child(odd) { grid-column: auto; }
@@ -432,9 +558,9 @@ const orgSchema = {
   }
 
   /* ── NEWSLETTER ── */
+  /* No border lines: the torn wall edges separate it now */
   .signup {
     padding-block: 36px 52px;
-    border-block: 3px solid var(--beige);
   }
 
   .signup-grid {
@@ -463,24 +589,10 @@ const orgSchema = {
 
   .sign-blurb { font-size: 1.2rem; max-width: 32ch; margin: 0; }
 
-  .sign-arts {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: none;
-  }
-
-  /* The glove drawings carry empty space at the top of their artboard;
-     crop so they sit near the section top. */
-  .sign-arts .ill { width: 80px; height: 74px; object-fit: contain; }
-  .sign-arts .sign-art-plant { object-fit: cover; object-position: center 42%; height: 56px; }
-
   @media (min-width: 761px) {
     .signup { padding-block: 56px 88px; }
     .sign-head { gap: 16px; }
     .sign-text { gap: 16px; }
-    .sign-arts .ill { width: 120px; height: 110px; }
-    .sign-arts .sign-art-plant { height: 84px; }
   }
 
   @media (min-width: 1101px) {
@@ -493,24 +605,17 @@ const orgSchema = {
 
   /* ── FORM ── */
   #volunteerForm {
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     border-radius: 6px;
     padding: 22px 14px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 12px 10px;
-    transform: rotate(-0.3deg);
+    /* Taped up, but a long form only takes a hair of tilt */
+    transform: rotate(-0.4deg);
   }
 
-  #volunteerForm :global(.slap-form) {
-    bottom: -34px;
-    right: -10px;
-    top: auto;
-    width: 74px;
-    height: auto;
-    transform: rotate(-9deg);
-  }
 
   #volunteerForm label,
   #volunteerForm .lbl { font-size: 0.88rem; }
@@ -519,14 +624,29 @@ const orgSchema = {
   #volunteerForm select,
   #volunteerForm textarea { font-size: 0.95rem; padding: 8px 10px; }
 
+  /* align-items: start keeps the country select level with the ZIP
+     input when the ZIP's status line makes its column taller */
   .loc-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 10px;
+    align-items: start;
   }
 
-  .loc-row .field:first-child { grid-column: 1 / -1; }
+  /* Country, ZIP, and city take a full row on phones; region and
+     postal code share one */
+  .loc-row .loc-wide { grid-column: 1 / -1; }
   .loc-row .field[hidden] { display: none; }
+
+  .zip-status {
+    min-height: 1.3em;
+    margin: 2px 0 0;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--green);
+  }
+
+  .zip-status:empty { display: none; }
 
   .waiver {
     border: 2.5px dashed var(--black);
@@ -604,7 +724,7 @@ const orgSchema = {
 
   .form-success {
     display: none;
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     border-radius: 6px;
     padding: 3rem 2rem;
@@ -613,21 +733,14 @@ const orgSchema = {
 
   .form-success svg { width: 3rem; height: 3rem; color: var(--purple); margin-bottom: 1rem; }
   .form-success h3 { font-size: 2.4rem; color: var(--purple); margin-bottom: 0.5rem; }
-  .form-success p { font-weight: 600; }
+  .form-success p { font-weight: 500; }
 
   @media (min-width: 761px) {
     #volunteerForm {
       padding: 34px;
       gap: 14px;
-      box-shadow: 8px 8px 0 var(--purple);
     }
 
-    #volunteerForm :global(.slap-form) {
-      top: -52px;
-      right: -26px;
-      bottom: auto;
-      width: 110px;
-    }
 
     #volunteerForm label,
     #volunteerForm .lbl { font-size: 1rem; }
@@ -636,8 +749,7 @@ const orgSchema = {
     #volunteerForm select,
     #volunteerForm textarea { font-size: 1.05rem; padding: 9px 12px; }
 
-    .loc-row { grid-template-columns: 1.2fr 1fr 0.8fr; }
-    .loc-row .field:first-child { grid-column: auto; }
+    .loc-row .loc-wide { grid-column: auto; }
   }
 
   /* ── CREW CALLOUT ── */
@@ -654,30 +766,22 @@ const orgSchema = {
     align-items: center;
   }
 
-  .crew-art {
-    width: 150px;
-    height: 110px;
-    object-fit: cover;
-    object-position: center 55%;
-  }
-
   .crew h2 { font-size: 2.8rem; margin-bottom: 16px; }
 
   .crew p {
     font-size: 1.18rem;
     line-height: 1.62;
     max-width: 52ch;
-    margin: 0 0 40px;
+    /* Same paragraph-to-button rhythm as the rest of the site */
+    margin: 0 0 22px;
   }
 
   .crew .btn { width: 100%; }
 
   @media (min-width: 761px) {
     .crew { padding-block: 44px 80px; }
-    .crew-grid { grid-template-columns: auto minmax(0, 1fr); gap: 56px; }
-    .crew-art { width: 260px; height: 170px; }
     .crew h2 { font-size: clamp(2.8rem, 5vw, 4.4rem); margin-bottom: 18px; }
-    .crew p { margin: 0 0 56px; }
+    .crew p { margin: 0 0 26px; }
     .crew .btn { width: auto; }
   }
 </style>
@@ -685,16 +789,17 @@ const orgSchema = {
 <script>
   import { actions } from 'astro:actions';
   import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
-  import { attachFieldValidation } from '../lib/clientValidation';
+  import { attachFieldValidation, setFieldError } from '../lib/clientValidation';
+  import { boroughForZip, parseZipPlace, zipLookupUrl, type Borough, type ZipPlace } from '../lib/zip';
   import { countries, US_COUNTRY, OTHER_COUNTRY } from '../lib/countries';
   import { attachCombobox, fetchJson, type ComboOption } from '../lib/combobox';
 
   attachFieldValidation();
 
   // ── WAIVER TEXT (bilingual) ──
-  const waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.<br><br>I grant permission for Trash Talk NYC to photograph or video me during the event for use on social media, including Instagram (@trashtalk_nyc), for promotional and community purposes. Notify the organizer on the day if you do not consent.';
+  const waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.';
 
-  const waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.<br><br>Doy permiso a Trash Talk NYC para fotografiarme o filmarme durante el evento para su uso en redes sociales, incluido Instagram (@trashtalk_nyc), con fines promocionales y comunitarios. Notifique al organizador el día del evento si no da su consentimiento.';
+  const waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.';
 
   const signupErrorEl = document.getElementById('signupFormError');
 
@@ -714,21 +819,125 @@ const orgSchema = {
   const startedAtInput = document.getElementById('signupStartedAt') as HTMLInputElement | null;
   if (startedAtInput) startedAtInput.value = String(Date.now());
 
-  // ── OUTSIDE-NYC FLOW ──
-  const boroughSelect = document.getElementById('borough') as HTMLSelectElement | null;
-  const whereGroup = document.getElementById('whereGroup') as HTMLElement | null;
+  // ── "SOMEWHERE ELSE" FOLLOW-UP ──
+  const hearSelect = document.getElementById('hear') as HTMLSelectElement | null;
+  const hearOtherGroup = document.getElementById('hearOtherGroup') as HTMLElement | null;
+  const hearOtherInput = document.getElementById('hearOther') as HTMLInputElement | null;
+
+  hearSelect?.addEventListener('change', () => {
+    if (!hearOtherGroup || !hearOtherInput) return;
+    const somewhereElse = hearSelect.value === 'Somewhere else';
+    hearOtherGroup.hidden = !somewhereElse;
+    // A hidden field must never submit a stale value
+    if (!somewhereElse) hearOtherInput.value = '';
+  });
+
+  // ── LOCATION (country first) ──
+  // US: the ZIP fills in city and state (zippopotam.us, free and
+  // keyless) and an NYC ZIP names the borough from our own table, so
+  // there is no borough question. Elsewhere: city from a list plus an
+  // optional region and postal code. The server re-checks all of it,
+  // so this is only a preview and an early typo catch.
   const countrySelect = document.getElementById('w-country') as HTMLSelectElement | null;
-  const cityInput = document.getElementById('w-city') as HTMLInputElement | null;
-  const cityList = document.getElementById('cityList') as HTMLUListElement | null;
   const zipGroup = document.getElementById('zipGroup') as HTMLElement | null;
   const zipInput = document.getElementById('w-zip') as HTMLInputElement | null;
+  const zipStatus = document.getElementById('zipStatus') as HTMLElement | null;
+  const cityGroup = document.getElementById('cityGroup') as HTMLElement | null;
+  const cityInput = document.getElementById('w-city') as HTMLInputElement | null;
+  const cityList = document.getElementById('cityList') as HTMLUListElement | null;
+  const regionGroup = document.getElementById('regionGroup') as HTMLElement | null;
+  const regionInput = document.getElementById('w-region') as HTMLInputElement | null;
+  const postalGroup = document.getElementById('postalGroup') as HTMLElement | null;
+  const postalInput = document.getElementById('w-postal') as HTMLInputElement | null;
 
-  // ── CITY PICKER ──
-  // People choose a real city from a list instead of free typing. The
-  // list comes from the Open-Meteo geocoding API (free, keyless),
-  // scoped to the selected country's ISO code. An Open-Meteo outage
-  // (network error or non-ok response) lets the typed city stand: the
-  // server accepts any non-empty city, so signups never block on it.
+  const ZIP_MSG = {
+    short: { en: 'Enter a 5-digit ZIP code.', es: 'Escribe un código ZIP de 5 dígitos.' },
+    unknown: { en: "We couldn't find that ZIP code.", es: 'No encontramos ese código ZIP.' },
+    looking: { en: 'Looking up your ZIP…', es: 'Buscando tu código ZIP…' },
+  };
+
+  const BOROUGH_ES: Record<Borough, string> = {
+    Manhattan: 'Manhattan',
+    Brooklyn: 'Brooklyn',
+    Queens: 'Queens',
+    'The Bronx': 'El Bronx',
+    'Staten Island': 'Staten Island',
+  };
+
+  type ZipState =
+    | { kind: 'empty' }
+    | { kind: 'short' }
+    | { kind: 'looking' }
+    | { kind: 'found'; place: ZipPlace; borough: Borough | undefined }
+    | { kind: 'unknown' }
+    // Lookup service down: the server still takes the ZIP, so no error
+    | { kind: 'unavailable'; borough: Borough | undefined };
+
+  let zipState: ZipState = { kind: 'empty' };
+  let zipLookupSeq = 0;
+
+  /** Renders the ZIP's status line and validity from zipState, in the current language. */
+  function renderZip() {
+    if (!zipInput || !zipStatus) return;
+    const lang = getCurrentLang();
+    const boroughText = (b: Borough | undefined) =>
+      b ? (lang === 'es' ? ` · Condado: ${BOROUGH_ES[b]}` : ` · Borough: ${b}`) : '';
+    let status = '';
+    let error = '';
+    switch (zipState.kind) {
+      case 'looking':
+        status = ZIP_MSG.looking[lang];
+        break;
+      case 'found':
+        status = `${zipState.place.city}, ${zipState.place.stateCode}${boroughText(zipState.borough)}`;
+        break;
+      case 'unavailable':
+        status = boroughText(zipState.borough).replace(/^ · /, '');
+        break;
+      case 'unknown':
+        error = ZIP_MSG.unknown[lang];
+        break;
+      case 'short':
+        error = ZIP_MSG.short[lang];
+        break;
+    }
+    zipStatus.textContent = status;
+    setFieldError(zipInput, error);
+  }
+
+  async function checkZip(final: boolean) {
+    if (!zipInput) return;
+    // Digits only, five max: paste-friendly ("11211-1234" → "11211")
+    const digits = zipInput.value.replace(/\D/g, '').slice(0, 5);
+    if (zipInput.value !== digits) zipInput.value = digits;
+    const seq = ++zipLookupSeq;
+
+    if (!digits) zipState = { kind: 'empty' };
+    else if (digits.length < 5) zipState = final ? { kind: 'short' } : { kind: 'empty' };
+    else {
+      zipState = { kind: 'looking' };
+      renderZip();
+      const borough = boroughForZip(digits);
+      try {
+        const res = await fetch(zipLookupUrl(digits), { signal: AbortSignal.timeout(5000) });
+        const place = res.ok ? parseZipPlace(await res.json()) : null;
+        if (seq !== zipLookupSeq) return; // a newer keystroke owns the field
+        if (res.status === 404) zipState = { kind: 'unknown' };
+        else zipState = place ? { kind: 'found', place, borough } : { kind: 'unavailable', borough };
+      } catch {
+        if (seq !== zipLookupSeq) return;
+        zipState = { kind: 'unavailable', borough };
+      }
+    }
+    renderZip();
+  }
+
+  zipInput?.addEventListener('input', () => void checkZip(false));
+  zipInput?.addEventListener('blur', () => void checkZip(true));
+
+  // ── CITY PICKER (outside the US) ──
+  // A real city from the Open-Meteo geocoding list (free, keyless),
+  // scoped to the chosen country. An outage lets the typed city stand.
   const countryCodes = new Map(countries.map((c) => [c.value, c.code]));
 
   type OpenMeteoSearch = {
@@ -746,7 +955,7 @@ const orgSchema = {
       .filter((r) => (other ? true : r.country_code === code))
       .slice(0, 6)
       .map((r) => {
-        const region = r.country_code === 'US' ? r.admin1 : other ? r.country : r.admin1;
+        const region = other ? r.country : r.admin1;
         return region && region !== r.name ? `${r.name}, ${region}` : r.name;
       });
     return [...new Set(hits)].map((c) => ({ value: c, text: c }));
@@ -764,35 +973,34 @@ const orgSchema = {
         })
       : null;
 
-  function syncLocation() {
-    if (!boroughSelect || !whereGroup || !countrySelect || !cityInput || !zipGroup || !zipInput) return;
-    const outside = boroughSelect.value === 'Not in NYC';
+  /** Shows the US or the outside-US fields for the chosen country. */
+  function syncCountry() {
+    if (!countrySelect || !zipGroup || !zipInput || !cityGroup || !cityInput) return;
     const us = countrySelect.value === US_COUNTRY;
-    whereGroup.hidden = !outside;
-    cityInput.required = outside;
-    // A non-US country hides ZIP so it is just City (captain)
     zipGroup.hidden = !us;
-    zipInput.required = outside && us;
-    const zipBad = outside && us && !!zipInput.value && !/^\d{5}(-\d{4})?$/.test(zipInput.value);
-    zipInput.setCustomValidity(zipBad ? (getCurrentLang() === 'es' ? 'Escribe un código ZIP de 5 dígitos.' : 'Enter a 5-digit ZIP code.') : '');
-    // Fields hidden from the user must never submit stale values
-    if (!outside) {
+    zipInput.required = us;
+    cityGroup.hidden = us;
+    cityInput.required = !us;
+    if (regionGroup) regionGroup.hidden = us;
+    if (postalGroup) postalGroup.hidden = us;
+    // Fields hidden from the person must never submit stale values
+    if (us) {
       cityPicker?.reset();
+      if (regionInput) regionInput.value = '';
+      if (postalInput) postalInput.value = '';
+    } else {
       zipInput.value = '';
-      zipInput.setCustomValidity('');
+      zipState = { kind: 'empty' };
+      renderZip();
     }
   }
 
-  boroughSelect?.addEventListener('change', () => {
-    syncLocation();
-    if (boroughSelect.value === 'Not in NYC') countrySelect?.focus();
-  });
   countrySelect?.addEventListener('change', () => {
     cityPicker?.reset();
-    syncLocation();
+    syncCountry();
   });
-  zipInput?.addEventListener('input', syncLocation);
-  syncLocation();
+  onLanguageChange(renderZip);
+  syncCountry();
 
   // ── SUBMIT ──
   document.getElementById('volunteerForm')?.addEventListener('submit', async (e) => {

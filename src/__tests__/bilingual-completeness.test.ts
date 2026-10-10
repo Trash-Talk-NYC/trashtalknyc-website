@@ -33,6 +33,8 @@ const PAIRS: ReadonlyArray<readonly [en: string, es: string]> = [
   // scripts — but the copy still has to exist in both languages.
   ['data-placeholder-en', 'data-placeholder-es'],
   ['data-subject-en', 'data-subject-es'],
+  ['data-title-en', 'data-title-es'],
+  ['data-alt-en', 'data-alt-es'],
 ];
 
 interface Gap {

@@ -1,12 +1,10 @@
 ---
+import Bricks from '../../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../../lib/bricks';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
-import bricksTop from '../../assets/bricks-top-lav.svg';
-import bricksBottom from '../../assets/bricks-bottom-lav.svg';
-import illTrash from '../../assets/ill-trash-lav.svg';
-import illGlovePlant from '../../assets/ill-glove-plant-beige.svg';
 
 /**
  * From the Founder — /about/from-the-founder: David's first-person
@@ -107,6 +105,9 @@ const story: Block[] = [
     es: 'Quiero usar la expresión artística, el paisajismo inteligente, la sociología y el diseño urbano para reducir los índices de basura en las calles. La visibilidad, la eficiencia y la descentralización son componentes clave de esta misión. La ciudad de Nueva York tiene una población lista y esperando para ayudar. Si hacemos los procesos claros y eficientes, podemos activar una red de voluntarios para lograr cambios visibles y significativos en nuestra ciudad.',
   },
 ];
+
+// Whole brick rows per half: as many as this hero's height fits
+const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
@@ -115,9 +116,8 @@ const story: Block[] = [
        the captain's chosen page name (rename, 2026-08-13), split into
        two leaves so the language toggle can restructure it: EN
        "From the / Founder" becomes ES "Del / Fundador" leaf by leaf. -->
-  <section class="fd-hero">
-    <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-    <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <section class="fd-hero brick-hero" style={brickHeroStyle(bricks)}>
+    <Bricks rows={bricks} />
     <div class="fd-hero-inner">
       <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="fd-title">
@@ -131,10 +131,7 @@ const story: Block[] = [
        things beside it are the margin drawings, which are decoration,
        not content. -->
   <section class="fd-body">
-    <div class="fd-margin" aria-hidden="true">
-      <img src={illTrash.src} alt="" />
-    </div>
-    <article class="story paste">
+    <article class="story paste f-staple">
       <!-- Byline card (captain, 2026-08-13): circular photo + name +
            title, replacing the text-only byline. david-founder.jpg is a
            committed square crop of IMG_0952_Original.jpeg (sharp
@@ -178,27 +175,18 @@ const story: Block[] = [
         <span>{founderName}</span>
       </p>
     </article>
-    <div class="fd-margin" aria-hidden="true">
-      <img src={illGlovePlant.src} alt="" />
-    </div>
   </section>
 </BaseLayout>
 
 <style>
   /* ── HERO ── */
+  /* One brick-frame behavior site-wide (captain): edge-to-edge halves
+     scaling with the viewport, content kept inside the opening by the
+     vw-proportional padding — same pattern as the homepage hero. */
   .fd-hero {
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);
-    min-height: calc(min(780px, 100vw) * 0.72);
-    display: grid;
-    align-items: center;
-  }
-
-  .fd-hero .bricks {
-    width: min(780px, 100%);
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .fd-hero-inner {
@@ -207,7 +195,7 @@ const story: Block[] = [
     display: grid;
     justify-items: center;
     gap: 10px;
-    padding: 40px 30px;
+    padding: calc(100vw * 0.17) 22px calc(100vw * 0.17);
   }
 
   /* "Just About above it, slightly larger" — the captain's call: the
@@ -227,6 +215,7 @@ const story: Block[] = [
   .fd-title .accent { color: var(--lavender); }
 
   @media (min-width: 761px) {
+    .fd-hero-inner { padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
     .fd-title { font-size: clamp(3.2rem, 6vw, 5.4rem); }
   }
 
@@ -239,34 +228,24 @@ const story: Block[] = [
     align-items: start;
   }
 
-  .fd-margin {
-    display: none;
-    gap: 40px;
-    justify-items: center;
-    position: sticky;
-    top: calc(var(--nav-h) + 24px);
-  }
-
-  .fd-margin img { width: min(190px, 100%); }
-
   /* David's letter as one wheatpasted sheet. One measured reading
      column; the recruit note proved this size/weight comfortable for
      long text on paper. */
   .story {
-    background-color: var(--paper);
+    --flyer-bg: var(--paper);
     color: var(--black);
     padding: 28px 18px 32px;
   }
 
   @media (min-width: 761px) {
     .fd-body {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 45rem);
+      justify-content: center;
       gap: 28px;
       padding: 56px clamp(16px, 4vw, 48px) 72px;
     }
 
-    .fd-margin { display: grid; }
-    .story { grid-column: 2; padding: 44px clamp(22px, 4vw, 56px) 48px; }
+    .story { padding: 44px clamp(22px, 4vw, 56px) 48px; }
   }
 
   /* Byline card — the one element above the story that is not David's
@@ -322,7 +301,7 @@ const story: Block[] = [
   .story-lede {
     font-size: 1.25rem;
     line-height: 1.5;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   @media (min-width: 761px) {

@@ -1,0 +1,45 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import MediaHero from '../../../components/MediaHero.astro';
+import PhotoBook from '../../../components/PhotoBook.astro';
+import SectionWall from '../../../components/SectionWall.astro';
+import { PHOTO_ALBUMS } from '../../../lib/media';
+import { albums, type Album } from '../../../lib/albums';
+
+/**
+ * One album, read as a photo book (captain's D1 pick, 2026-10-09). Only
+ * albums with photos get a page; the rest show "coming soon" on the list.
+ */
+export const getStaticPaths = (() =>
+  albums.filter((a) => a.photos.length > 0).map((album) => ({ params: { album: album.slug }, props: { album } }))) satisfies GetStaticPaths;
+
+const { album } = Astro.props as { album: Album };
+---
+
+<BaseLayout
+  title={`${album.name.en} — Photo Albums — Trash Talk NYC`}
+  description={`${album.number.en}: ${album.name.en}. Photos from Trash Talk NYC.`}
+>
+  <MediaHero
+    eyebrow={PHOTO_ALBUMS.label}
+    eyebrowHref={PHOTO_ALBUMS.path}
+    title={[album.number, album.name]}
+  />
+
+  <!-- A planting section (the lab, seedlings): green chalk -->
+  <section class="ab-sec wall">
+    <SectionWall kind="planting" dim={0.55} seed={6} />
+    <div class="wrap ab-body">
+      <PhotoBook photos={album.photos} label={album.name} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .ab-body { padding-block: 56px 72px; }
+
+  @media (min-width: 761px) {
+    .ab-body { padding-block: 80px 96px; }
+  }
+</style>

@@ -1,0 +1,183 @@
+---
+import SectionWall from '../../components/SectionWall.astro';
+// The brick photo joined to its mirror image: twice as wide, so cover-
+// filling the section shows the bricks at about half the size (captain:
+// the bricks looked huge at 1440)
+import wallRedBrickWide from '../../assets/walls/wall-red-brick-wide.jpg';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediaHero from '../../components/MediaHero.astro';
+import { PHOTO_ALBUMS, mediaSections, moreMediaTagline, type MediaSectionId } from '../../lib/media';
+import vestSticker from '../../assets/vest-sticker.png';
+
+/**
+ * More Media — /more-media (captain, 2026-10-09): a title + description
+ * hero ("Hear us talk trash across several platforms.") over a three-
+ * section layout, one paper poster per channel, stuck up a different
+ * way each (sticker, staple, tape). Podcast and Substack have
+ * no links yet, so their posters say "coming soon" honestly instead of
+ * inventing shows or posts.
+ */
+
+// Per-channel poster stock (copy and routes come from media.ts),
+// the button that reads on that stock, and how the poster is stuck up
+// (a mix of sticker, staple, and tape).
+const look: Record<MediaSectionId, { tone: string; soonBtn: string; flyer: string; sticker: boolean }> = {
+  youtube: { tone: 'mm-purple', soonBtn: 'btn-ghost-light', flyer: 'f-sticker', sticker: true },
+  podcast: { tone: 'mm-green', soonBtn: 'btn-ghost-light', flyer: 'f-staple', sticker: false },
+  substack: { tone: 'mm-paper', soonBtn: 'btn-purple', flyer: 'f-tape f-torn', sticker: false },
+};
+---
+
+<BaseLayout
+  title="More Media — Trash Talk NYC"
+  description="Hear Trash Talk NYC talk trash across several platforms: videos on YouTube, plus a podcast and a Substack on the way."
+>
+  <MediaHero
+    title={[{ en: 'More', es: 'Más' }, { en: 'Media', es: 'Medios' }]}
+    description={moreMediaTagline}
+  />
+
+  <!-- One torn-edge wall behind the channels and the albums strip
+       (captain, 2026-10-09), purple kept light so the posters read -->
+  <section class="mm-wall wall">
+  <SectionWall kind="cleanup" src={wallRedBrickWide} dim={0.5} duotone={0.18} seed={8} />
+  <div class="wrap mm-grid" role="group" aria-label="Channels">
+    {mediaSections.map((s) => (
+      <article class:list={['mm-card', 'paste', look[s.id].tone, look[s.id].flyer]}>
+        {look[s.id].sticker && <Image src={vestSticker} alt="" class="slap mm-slap" width={96} densities={[1, 2]} />}
+        <h2 class="mm-name">{s.label}</h2>
+        <p class="mm-blurb" data-en={s.blurb.en} data-es={s.blurb.es}>{s.blurb.en}</p>
+        {s.comingSoon ? (
+          <>
+            <p class="mono mm-soon" data-en="Coming soon" data-es="Muy pronto">Coming soon</p>
+            <a class:list={['btn', look[s.id].soonBtn, 'mm-btn']} href={s.path}>
+              <span data-en={`${s.action.en} →`} data-es={`${s.action.es} →`}>{s.action.en} →</span>
+            </a>
+          </>
+        ) : (
+          <a class="btn btn-primary mm-btn" href={s.path}>
+            <span data-en={`${s.action.en} →`} data-es={`${s.action.es} →`}>{s.action.en} →</span>
+          </a>
+        )}
+      </article>
+    ))}
+  </div>
+
+  <!-- Photo Albums is a More Media page but not a channel, so it gets
+       its own strip below the three-channel layout -->
+  <div class="wrap mm-albums">
+    <a class="mm-albums-card paste f-staple" href={PHOTO_ALBUMS.path}>
+      <span class="mm-albums-name" data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</span>
+      <span class="btn btn-purple" data-en="Look →" data-es="Ver →">Look →</span>
+    </a>
+  </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .mm-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 52px;
+    padding-block: 64px 0;
+  }
+
+  .mm-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 30px 22px 26px;
+  }
+
+  .mm-purple { --flyer-bg: var(--purple); color: var(--beige); }
+  .mm-green { --flyer-bg: var(--green); color: var(--beige); }
+  .mm-paper { --flyer-bg: var(--paper); color: var(--black); }
+
+  .mm-card :global(.mm-slap) {
+    top: -34px;
+    width: 76px;
+    height: auto;
+  }
+
+  .mm-card :global(.mm-slap) { right: -8px; transform: rotate(9deg); }
+
+
+  .mm-name {
+    font-size: 2.8rem;
+    line-height: 0.95;
+  }
+
+  /* Yellow on purple, white on the green Podcast poster (captain,
+     2026-10-09) */
+  .mm-purple .mm-name { color: var(--yellow); }
+  .mm-green .mm-name { color: var(--beige); }
+  .mm-paper .mm-name { color: var(--purple); }
+
+  .mm-blurb {
+    margin: 0;
+    font-size: 1.12rem;
+    line-height: 1.45;
+  }
+
+  .mm-soon {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+
+  .mm-purple .mm-soon,
+  .mm-green .mm-soon { color: var(--yellow); }
+  .mm-paper .mm-soon { color: var(--green); }
+
+  /* The action sits on the card's bottom edge so the three posters
+     line up their buttons on desktop */
+  .mm-btn { margin-top: auto; align-self: stretch; }
+
+  .mm-albums { padding-block: 52px 72px; }
+
+  .mm-albums-card {
+    --flyer-bg: var(--paper);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 24px;
+    padding: 24px 22px;
+    color: var(--black);
+    text-decoration: none;
+  }
+
+  .mm-albums-name {
+    font-family: var(--display);
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--purple);
+  }
+
+  .mm-albums-card:hover .btn { background: var(--yellow); color: var(--black); }
+
+  /* Square-cornered buttons across More Media (captain, 2026-10-09) */
+  .mm-btn,
+  .mm-albums-card .btn { border-radius: 0; }
+
+  @media (min-width: 761px) {
+    .mm-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(24px, 3vw, 40px);
+      padding-block: 88px 0;
+    }
+
+    .mm-card {
+      padding: 36px clamp(20px, 2.4vw, 32px) 30px;
+    }
+
+    .mm-card :global(.mm-slap) { top: -40px; width: 92px; }
+    .mm-name { font-size: clamp(2.8rem, 3.6vw, 3.6rem); }
+    .mm-btn { align-self: flex-start; }
+    .mm-albums { padding-block: 64px 104px; }
+    .mm-albums-card { padding: 30px clamp(24px, 3vw, 40px); }
+    .mm-albums-name { font-size: clamp(2.8rem, 4vw, 3.6rem); }
+  }
+</style>
