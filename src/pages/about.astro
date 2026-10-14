@@ -14,7 +14,7 @@ import vestSticker from '../assets/vest-sticker.png';
  * David-first on phones (CSS order), each with a round face chip cropped
  * from the group photo. Bios come verbatim from src/lib/team.ts — never
  * edit them here. Someone without a photo or bio yet (Dave) gets the vest
- * sticker in the chip and a "coming soon" tile, never invented text.
+ * sticker in the chip and a muted "Bio coming soon" line, never invented text.
  *
  * The face-chip crops are background-size/-position percentages tuned
  * by eye against the group photo in the approved mockups; they are
@@ -95,7 +95,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
             </div>
           </div>
           {p.bio.length === 0 && (
-            <p class="bio-soon mono" data-en="Bio coming soon" data-es="Biografía muy pronto">Bio coming soon</p>
+            <p class="bio-soon" data-en="Bio coming soon" data-es="Biografía muy pronto">Bio coming soon</p>
           )}
           {p.bio.map((b) =>
             b.parts ? (
@@ -253,18 +253,9 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
 
   .face-none :global(.face-sticker) { width: 44px; height: auto; transform: rotate(-8deg); }
 
-  /* Where the bio will go — the same muted "coming soon" stock as an
-     empty photo album */
-  .bio-soon {
-    display: grid;
-    place-items: center;
-    min-height: 7.5rem;
-    padding: 16px;
-    background: #cfcdbd;
-    color: #6b6a61;
-    font-size: 0.9rem;
-    text-align: center;
-  }
+  /* Where the bio will go: one muted line in the body style, so the
+     sheet stays short instead of showing an empty slab */
+  .bio .bio-soon { color: #6b6a61; }
 
   .bio h2 { font-size: 2.4rem; color: var(--purple); }
   .bio p { margin: 0; font-size: 1.05rem; line-height: 1.55; }
@@ -284,9 +275,6 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
     .bio h2 { font-size: 2.8rem; }
     .b-nandi { order: 1; }
     .b-david { order: 2; }
-    /* A placeholder sheet stands as tall as its neighbor, the tile
-       taking up the room the bio will fill */
-    .b-dave { align-self: stretch; grid-template-rows: auto 1fr; }
   }
 
   /* ── LEND A HAND ── */
