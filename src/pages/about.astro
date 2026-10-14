@@ -9,10 +9,12 @@ import vestSticker from '../assets/vest-sticker.png';
 
 /**
  * The Team — the group photo pasted up like a poster inside the brick
- * frame, then the three wheatpasted bio sheets in photo order on
- * desktop (Nandi, David, Fabiola) and David-first on phones (CSS
- * order), each with a round face chip cropped from the group photo.
- * Bios come verbatim from src/lib/team.ts — never edit them here.
+ * frame, then the wheatpasted bio sheets in photo order on desktop
+ * (Nandi, David, Fabiola, then Dave, who isn't in the photo) and
+ * David-first on phones (CSS order), each with a round face chip cropped
+ * from the group photo. Bios come verbatim from src/lib/team.ts — never
+ * edit them here. Someone without a photo or bio yet (Dave) gets the vest
+ * sticker in the chip and a "coming soon" tile, never invented text.
  *
  * The face-chip crops are background-size/-position percentages tuned
  * by eye against the group photo in the approved mockups; they are
@@ -34,6 +36,7 @@ const bioFlyer: Record<string, string> = {
   nandi: 'f-tape',
   david: 'f-staple',
   fabiola: 'f-tape f-torn',
+  dave: 'f-staple',
 };
 
 // Whole brick rows per half: as many as this hero's height fits
@@ -75,16 +78,25 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
       {team.map((p) => (
         <article class:list={['bio', 'paste', `b-${p.id}`, bioFlyer[p.id]]}>
           <div class="who">
-            <span
-              class="face"
-              style={`background-image:url(${faceImage.src});background-size:${faceCrops[p.id]?.size};background-position:${faceCrops[p.id]?.position}`}
-              aria-hidden="true"
-            ></span>
+            {faceCrops[p.id] ? (
+              <span
+                class="face"
+                style={`background-image:url(${faceImage.src});background-size:${faceCrops[p.id].size};background-position:${faceCrops[p.id].position}`}
+                aria-hidden="true"
+              ></span>
+            ) : (
+              <span class="face face-none" aria-hidden="true">
+                <Image src={vestSticker} alt="" class="face-sticker" width={56} densities={[1, 2]} />
+              </span>
+            )}
             <div class="who-text">
               <h2>{p.name}</h2>
               <span class="role mono" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</span>
             </div>
           </div>
+          {p.bio.length === 0 && (
+            <p class="bio-soon mono" data-en="Bio coming soon" data-es="Biografía muy pronto">Bio coming soon</p>
+          )}
           {p.bio.map((b) =>
             b.parts ? (
               <p>
@@ -232,6 +244,28 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
     flex: none;
   }
 
+  /* No photo yet: the vest sticker sits in the chip instead of a face */
+  .face-none {
+    display: grid;
+    place-items: center;
+    background: var(--green);
+  }
+
+  .face-none :global(.face-sticker) { width: 44px; height: auto; transform: rotate(-8deg); }
+
+  /* Where the bio will go — the same muted "coming soon" stock as an
+     empty photo album */
+  .bio-soon {
+    display: grid;
+    place-items: center;
+    min-height: 7.5rem;
+    padding: 16px;
+    background: #cfcdbd;
+    color: #6b6a61;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
   .bio h2 { font-size: 2.4rem; color: var(--purple); }
   .bio p { margin: 0; font-size: 1.05rem; line-height: 1.55; }
   .bio a { color: var(--purple); font-weight: 700; }
@@ -240,13 +274,19 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   .b-david { order: 1; }
   .b-nandi { order: 2; }
   .b-fabiola { order: 3; }
+  .b-dave { order: 4; }
 
+  /* Four sheets: two by two on desktop, so the verbatim bios keep a
+     readable measure */
   @media (min-width: 761px) {
-    .bios { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; padding-bottom: 64px; }
+    .bios { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 28px; padding-bottom: 64px; }
     .bio { padding: 26px 24px 24px; }
     .bio h2 { font-size: 2.8rem; }
     .b-nandi { order: 1; }
     .b-david { order: 2; }
+    /* A placeholder sheet stands as tall as its neighbor, the tile
+       taking up the room the bio will fill */
+    .b-dave { align-self: stretch; grid-template-rows: auto 1fr; }
   }
 
   /* ── LEND A HAND ── */

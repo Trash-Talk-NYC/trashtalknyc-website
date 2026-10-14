@@ -18,8 +18,6 @@ describe('team data', () => {
 
   it('gives every bio paragraph both language variants', () => {
     for (const member of team) {
-      expect(member.bio.length, `${member.id} bio paragraphs`).toBeGreaterThan(0);
-
       for (const [index, paragraph] of member.bio.entries()) {
         // Mixed-content paragraphs carry their strings on `parts` leaves
         // instead of on the paragraph itself.
@@ -47,4 +45,12 @@ describe('team data', () => {
       expect(member!.metaDescription).toContain(member!.role.en);
     },
   );
+
+  // A member without a bio yet gets a placeholder card on the About page;
+  // a meta description would have to invent what the bio doesn't say.
+  it('gives no metaDescription to a member without a bio', () => {
+    for (const member of team.filter((entry) => entry.bio.length === 0)) {
+      expect(member.metaDescription, member.id).toBeUndefined();
+    }
+  });
 });

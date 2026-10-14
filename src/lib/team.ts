@@ -55,6 +55,7 @@ export interface TeamMember {
   id: string;
   name: string;
   role: { en: string; es: string };
+  /** Empty until the captain supplies the person's own words — never invent one. */
   bio: BioParagraph[];
   socials: TeamSocial[];
   /**
@@ -62,11 +63,11 @@ export interface TeamMember {
    * (no individual photos exist yet — the captain may supply some
    * later). fx/fy = the point of the full frame (as fractions) to
    * centre the portrait on; z = zoom factor relative to the frame
-   * width.
+   * width. Absent for anyone who isn't in the group photo.
    */
-  portrait: { fx: number; fy: number; z: number };
-  /** English-only on purpose — meta descriptions don't translate (see AGENTS.md, SEO section). */
-  metaDescription: string;
+  portrait?: { fx: number; fy: number; z: number };
+  /** English-only on purpose — meta descriptions don't translate (see AGENTS.md, SEO section). Absent until there is a bio to describe. */
+  metaDescription?: string;
 }
 
 // TODO(captain): real LinkedIn/Instagram/IMDb URLs for the placeholder
@@ -191,6 +192,16 @@ export const team: TeamMember[] = [
     portrait: { fx: 0.625, fy: 0.44, z: 3.6 },
     metaDescription:
       "Meet Fabiola, Technology at Trash Talk NYC, building the club's website and tech so finding events, joining the list, and supporting the cleanups works for everyone.",
+  },
+  {
+    // Dave is a different person from David (captain, 2026-10-14). No
+    // photo or bio yet: the About card shows a placeholder until the
+    // captain sends them — fill `bio` with his own words, verbatim.
+    id: 'dave',
+    name: 'Dave',
+    role: { en: 'Sponsorship Manager', es: 'Gerente de Patrocinios' },
+    bio: [],
+    socials: [],
   },
 ];
 
