@@ -123,6 +123,10 @@ body {
 main {
   background: var(--black);
   display: flow-root;
+  /* Corner tapes and stickers hang past their cards onto the wall; at the
+     screen edge they must not widen the page. clip (not hidden) makes no
+     scroll container, so sticky and anchor behavior are unchanged. */
+  overflow-x: clip;
 }
 
 img, svg, video { max-width: 100%; }
@@ -275,25 +279,23 @@ form .btn-primary {
   border: 0;
   border-radius: 1px;
   background-color: var(--flyer-bg, var(--paper));
+  /* One hard offset shadow under every card, so each sheet sits ON the
+     wall photo behind it (captain, 2026-10-15) */
+  box-shadow: 6px 7px 0 rgba(20, 20, 24, 0.55);
 }
 
 /* How each flyer is stuck up — mix them across a page (captain):
    .f-sticker  pinned by the vest sticker (.slap img inside the card)
-   .f-tape     yellow tape across the top, rough paper edges
+   .f-tape     two yellow tapes across the top-left and bottom-right
+               corners, rough paper edges
    .f-staple   staple at the top, curled bottom-right corner
    .f-torn     ripped bottom edge; composes with .f-tape or .f-sticker,
                not .f-staple (both need the paper layer) */
-.f-sticker {
-  transform: rotate(-0.8deg);
-  box-shadow: 4px 6px 0 rgba(0, 0, 0, 0.35);
-}
+.f-sticker { transform: rotate(-0.8deg); }
 
 .f-tape,
 .f-torn,
-.f-staple {
-  background-color: transparent;
-  filter: drop-shadow(3px 7px 9px rgba(0, 0, 0, 0.45));
-}
+.f-staple { background-color: transparent; }
 
 .f-tape::before,
 .f-torn::before,
@@ -312,19 +314,20 @@ form .btn-primary {
   clip-path: polygon(0 0.6%, 7% 0, 16% 0.7%, 29% 0, 43% 0.6%, 57% 0, 71% 0.7%, 86% 0, 100% 0.6%, 99.4% 30%, 100% 62%, 99.5% 100%, 82% 99.4%, 63% 100%, 44% 99.3%, 24% 100%, 0 99.4%, 0.6% 64%, 0 32%);
 }
 
-/* The tape strip: translucent yellow with ragged torn ends */
+/* Two strips of translucent yellow tape with ragged ends, angled across
+   the top-left and bottom-right corners: half on the paper, half on the
+   wall, so the sheet is visibly held up (captain, 2026-10-15). Each strip
+   is a fixed-size SVG whose center sits 6px inside its corner; the layer
+   reaches 40px past the card so the strips' wall halves aren't cut off. */
 .f-tape::after {
   content: '';
   position: absolute;
-  top: -13px;
-  left: 50%;
+  inset: -40px;
   z-index: 3;
-  width: clamp(76px, 24%, 128px);
-  height: 26px;
-  transform: translateX(-50%) rotate(-3deg);
-  background: rgba(243, 207, 2, 0.78);
-  clip-path: polygon(0 8%, 3% 0, 97% 4%, 100% 14%, 97% 30%, 100% 50%, 97% 72%, 100% 92%, 96% 100%, 3% 96%, 0 86%, 3% 66%, 0 46%, 3% 26%);
   pointer-events: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='8,38 11,37 89,38 92,40 90,44 92,48 90,53 92,58 89,63 11,62 8,60 10,55 8,50 10,45' fill='%23F3CF02' fill-opacity='0.86' transform='rotate(-42 50 50)'/%3E%3C/svg%3E") left -4px top -4px / 100px 100px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='8,38 11,37 89,38 92,40 90,44 92,48 90,53 92,58 89,63 11,62 8,60 10,55 8,50 10,45' fill='%23F3CF02' fill-opacity='0.86' transform='rotate(-48 50 50)'/%3E%3C/svg%3E") right -4px bottom -4px / 100px 100px no-repeat;
 }
 
 .f-torn::before {

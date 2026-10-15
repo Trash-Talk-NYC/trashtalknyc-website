@@ -76,10 +76,12 @@ const src = (half: 'top' | 'bottom', n: number) => {
     const height = (t: number, b: number) =>
       (BRICK_ROW_RATIOS.top[t - 1] + BRICK_ROW_RATIOS.bottom[b - 1]) * w + 2 * INSET - overlap;
 
-    // The content's own height, ignoring any height we set before
+    // The content's own height, ignoring any height we set before. Out-of-
+    // flow children (the bricks themselves, a SectionWall background) fill
+    // the section, so measuring them would pin it at its current height.
     const content = Math.max(
       ...Array.from(section.children)
-        .filter((c) => !c.classList.contains('bricks') && c.tagName !== 'SCRIPT')
+        .filter((c) => c.tagName !== 'SCRIPT' && getComputedStyle(c).position !== 'absolute')
         .map((c) => (c as HTMLElement).offsetHeight),
     );
 

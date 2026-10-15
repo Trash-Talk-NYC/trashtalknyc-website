@@ -9,12 +9,10 @@ import vestSticker from '../assets/vest-sticker.png';
 
 /**
  * The Team — the group photo pasted up like a poster inside the brick
- * frame, then the wheatpasted bio sheets in photo order on desktop
- * (Nandi, David, Fabiola, then Dave, who isn't in the photo) and
- * David-first on phones (CSS order), each with a round face chip cropped
- * from the group photo. Bios come verbatim from src/lib/team.ts — never
- * edit them here. Someone without a photo or bio yet (Dave) gets the vest
- * sticker in the chip and a muted "Bio coming soon" line, never invented text.
+ * frame, then the three wheatpasted bio sheets in photo order on
+ * desktop (Nandi, David, Fabiola) and David-first on phones (CSS
+ * order), each with a round face chip cropped from the group photo.
+ * Bios come verbatim from src/lib/team.ts — never edit them here.
  *
  * The face-chip crops are background-size/-position percentages tuned
  * by eye against the group photo in the approved mockups; they are
@@ -36,7 +34,6 @@ const bioFlyer: Record<string, string> = {
   nandi: 'f-tape',
   david: 'f-staple',
   fabiola: 'f-tape f-torn',
-  dave: 'f-staple',
 };
 
 // Whole brick rows per half: as many as this hero's height fits
@@ -56,7 +53,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->
       <div class="mono tm-eyebrow" data-en="About" data-es="Nosotros">About</div>
-      <h1 class="tm-title"><span data-en="The" data-es="El">The</span> <span class="accent" data-en="Team" data-es="Equipo">Team</span></h1>
+      <h1 class="tm-title" data-en="The Team" data-es="El Equipo">The Team</h1>
       <figure class="tm-photo paste f-sticker">
         <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
         <Image
@@ -78,25 +75,16 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
       {team.map((p) => (
         <article class:list={['bio', 'paste', `b-${p.id}`, bioFlyer[p.id]]}>
           <div class="who">
-            {faceCrops[p.id] ? (
-              <span
-                class="face"
-                style={`background-image:url(${faceImage.src});background-size:${faceCrops[p.id].size};background-position:${faceCrops[p.id].position}`}
-                aria-hidden="true"
-              ></span>
-            ) : (
-              <span class="face face-none" aria-hidden="true">
-                <Image src={vestSticker} alt="" class="face-sticker" width={56} densities={[1, 2]} />
-              </span>
-            )}
+            <span
+              class="face"
+              style={`background-image:url(${faceImage.src});background-size:${faceCrops[p.id]?.size};background-position:${faceCrops[p.id]?.position}`}
+              aria-hidden="true"
+            ></span>
             <div class="who-text">
               <h2>{p.name}</h2>
               <span class="role mono" data-en={p.role.en} data-es={p.role.es}>{p.role.en}</span>
             </div>
           </div>
-          {p.bio.length === 0 && (
-            <p class="bio-soon" data-en="Bio coming soon" data-es="Biografía muy pronto">Bio coming soon</p>
-          )}
           {p.bio.map((b) =>
             b.parts ? (
               <p>
@@ -149,10 +137,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   /* Same eyebrow voice as the founder page's */
   .tm-eyebrow { color: var(--yellow); font-size: 1.02rem; margin-bottom: -6px; }
 
-  /* Purple highlights one word of a two-tone heading, never all of it
-     (team feedback, 2026-10-15) */
-  .tm-title { font-size: 3.4rem; line-height: 0.92; color: var(--beige); }
-  .tm-title .accent { color: var(--lavender); }
+  .tm-title { font-size: 3.4rem; line-height: 0.92; color: var(--lavender); }
 
   .tm-photo {
     position: relative;
@@ -247,20 +232,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
     flex: none;
   }
 
-  /* No photo yet: the vest sticker sits in the chip instead of a face */
-  .face-none {
-    display: grid;
-    place-items: center;
-    background: var(--green);
-  }
-
-  .face-none :global(.face-sticker) { width: 44px; height: auto; transform: rotate(-8deg); }
-
-  /* Where the bio will go: one muted line in the body style, so the
-     sheet stays short instead of showing an empty slab */
-  .bio .bio-soon { color: #6b6a61; }
-
-  .bio h2 { font-size: 2.4rem; }
+  .bio h2 { font-size: 2.4rem; color: var(--purple); }
   .bio p { margin: 0; font-size: 1.05rem; line-height: 1.55; }
   .bio a { color: var(--purple); font-weight: 700; }
 
@@ -268,12 +240,9 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   .b-david { order: 1; }
   .b-nandi { order: 2; }
   .b-fabiola { order: 3; }
-  .b-dave { order: 4; }
 
-  /* Four sheets: two by two on desktop, so the verbatim bios keep a
-     readable measure */
   @media (min-width: 761px) {
-    .bios { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 28px; padding-bottom: 64px; }
+    .bios { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; padding-bottom: 64px; }
     .bio { padding: 26px 24px 24px; }
     .bio h2 { font-size: 2.8rem; }
     .b-nandi { order: 1; }

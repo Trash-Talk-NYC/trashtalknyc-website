@@ -70,7 +70,7 @@ const roles = [
   description="Trash Talk NYC needs helping hands. Open roles in social media and long-form video. Apply by email to team@trashtalknyc.org."
 >
   <section class="wrap rc-body">
-    <h1 class="rc-title"><span data-en="Open" data-es="Puestos">Open</span> <span class="accent" data-en="Roles" data-es="Abiertos">Roles</span></h1>
+    <h1 class="rc-title"><span data-en="Open" data-es="Puestos">Open</span> <span data-en="Roles" data-es="Abiertos">Roles</span></h1>
     <div class="roles">
       {roles.map((r) => (
         <a class:list={['role', 'paste', r.tone, r.tone === 'r-black' ? 'f-tape' : 'f-staple']} href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es}>
@@ -104,7 +104,6 @@ const roles = [
 
   /* Purple highlights one word of a two-tone heading, never all of it */
   .rc-title { font-size: 3.4rem; line-height: 0.95; color: var(--beige); }
-  .rc-title .accent { color: var(--lavender); }
 
   .roles {
     display: grid;
@@ -131,7 +130,7 @@ const roles = [
   /* The black role poster needs an edge on the black ground */
   .r-black {
     --flyer-bg: var(--black);
-    box-shadow: inset 0 0 0 3px var(--lavender);
+    box-shadow: inset 0 0 0 3px var(--lavender), 6px 7px 0 rgba(20, 20, 24, 0.55);
   }
 
 

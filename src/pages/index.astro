@@ -8,13 +8,16 @@ import vestSticker from '../assets/vest-sticker.png';
 import wordmarkStickerLg from '../assets/stickers/wordmark-sticker-lg.png';
 import wordmarkSticker from '../assets/wordmark-sticker.png';
 import plainVestSticker from '../assets/stickers/plain-vest-sticker.png';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
+import Bricks from '../components/Bricks.astro';
+import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import SectionWall from '../components/SectionWall.astro';
 import YouTubeEmbed from '../components/YouTubeEmbed.astro';
 import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
-import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
-import { albums } from '../lib/albums';
+// The captain's own wall photos (2026-10-15), curated for color
+import wallBubbleLetters from '../assets/walls/wall-bubble-letters.webp';
+import wallPasteUps from '../assets/walls/wall-paste-ups.webp';
+import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
+import { galleryPhotos } from '../lib/gallery';
 import { featuredVideo } from '../lib/media';
 
 const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
@@ -50,23 +53,28 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 // share of the logo's box, w its width as a share of the logo's width,
 // r0 → r its spin as it lands. They stay inside the logo's box vertically,
 // so the headline under it is never covered. `wide` ones only show on
-// desktop, where the hero has room beside the logo.
+// desktop, where the hero has room beside the logo. Four on phones, six on
+// desktop: enough to read as a sticker bomb without crowding the headline
+// (captain, 2026-10-15: "use the space efficiently without it being too
+// busy").
 const bombStickers = [
-  { src: vestSticker, x: -30, y: 24, w: 36, r: -16, r0: -40 },
-  { src: wordmarkSticker, x: 130, y: 28, w: 44, r: 14, r0: 36 },
+  { src: vestSticker, x: -30, y: 26, w: 36, r: -16, r0: -40 },
+  { src: wordmarkSticker, x: 130, y: 30, w: 44, r: 14, r0: 36 },
   { src: plainVestSticker, x: -20, y: 76, w: 30, r: 12, r0: 30 },
   { src: vestSticker, x: 124, y: 76, w: 32, r: -10, r0: -34 },
-  // The two tucked behind the logo's top corners are vests: their shape
-  // still reads half-covered, where a cut-off wordmark looks broken
-  { src: plainVestSticker, x: 4, y: 6, w: 24, r: -14, r0: -36 },
-  { src: vestSticker, x: 98, y: 4, w: 26, r: 16, r0: 40 },
-  { src: wordmarkSticker, x: -66, y: 54, w: 34, r: 8, r0: 28, wide: true },
-  { src: plainVestSticker, x: 166, y: 52, w: 28, r: -14, r0: -36, wide: true },
+  { src: wordmarkSticker, x: -68, y: 52, w: 34, r: 8, r0: 28, wide: true },
+  { src: plainVestSticker, x: 168, y: 50, w: 28, r: -14, r0: -36, wide: true },
 ];
 
+// The continuous brick wall (as on the Team page): on desktop the side
+// columns run unbroken and the hero is only as tall as its content; phones
+// get three whole rows above and below. The full 70vw drawing used to set
+// the hero's height and left a band of empty wall (captain, 2026-10-15).
+const heroBricks: BrickRows = { phone: 3, desktop: 8 };
+
 // Where contributions go: planting and tools (team feedback, 2026-10-15,
-// replacing the chalk wall). From the Lab album, so its alt text is shared.
-const contributePhoto = albums[0].photos[0];
+// replacing the chalk wall). From the gallery, so its alt text is shared.
+const contributePhoto = galleryPhotos[0];
 ---
 
 <BaseLayout
@@ -89,10 +97,9 @@ const contributePhoto = albums[0].photos[0];
      photos, purple duotone for cleanup sections, green chalk for
      planting ones. The hero's brick is shaded deep so the lavender
      brick drawing on top stays the star. -->
-<section class="hero wall" id="top">
-  <SectionWall kind="cleanup" src={wallRedBrick} tear="bottom" dim={0.8} seed={1} />
-  <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-  <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+<section class="hero brick-hero wall" id="top" style={brickHeroStyle(heroBricks)}>
+  <SectionWall kind="cleanup" src={wallRedBrick} tear="bottom" dim={0.5} duotone={0.2} seed={1} />
+  <Bricks rows={heroBricks} continuous />
   <div class="hero-inner">
     <div class="bomb">
       {bombStickers.map((st, i) => (
@@ -108,7 +115,7 @@ const contributePhoto = albums[0].photos[0];
       ))}
       <Image src={wordmarkStickerLg} alt="Trash Talk NYC" class="hero-logo" width={420} densities={[1, 2]} loading="eager" fetchpriority="high" />
     </div>
-    <h1 class="hero-title"><span data-en="New York City's" data-es="El club de limpieza">New York City's</span> <span class="accent" data-en="Cleanup Club" data-es="de Nueva York">Cleanup Club</span></h1>
+    <h1 class="hero-title"><span data-en="New York City's" data-es="El club de limpieza">New York City's</span> <span data-en="Cleanup Club" data-es="de Nueva York">Cleanup Club</span></h1>
     <p class="hero-sub" data-en="Let's clean NYC, together" data-es="Limpiemos NYC, juntos">Let's clean NYC, together</p>
     <div class="hero-btns">
       <a href="/events" class="btn btn-primary" data-en="Events" data-es="Eventos">Events</a>
@@ -119,15 +126,18 @@ const contributePhoto = albums[0].photos[0];
 <!-- CONTRIBUTE (captain's B5, left-aligned, 2026-10-09): "Because of you"
      is the headline with "Contribute" as a small eyebrow (never "Donate":
      Trash Talk NYC is an LLC, team feedback 2026-10-15), the note below
-     it, and the GoFundMe widget sitting plain. Beside it, a photo of where
-     the money goes. The old #donate anchor still lands here. -->
-<section class="contribute-sec" id="contribute">
+     it, and the GoFundMe widget, all on one cream flyer taped to a vivid
+     graffiti wall (captain, 2026-10-15). Beside it, a photo of where the
+     money goes. The old #donate anchor still lands here. -->
+<section class="contribute-sec wall" id="contribute">
+  <SectionWall kind="cleanup" src={wallBubbleLetters} dim={0} duotone={0} seed={2} />
   <span id="donate" class="anchor-alias" aria-hidden="true"></span>
   <div class="wrap contribute">
-    <div class="contribute-main">
+    <div class="contribute-main paste f-tape">
       <div class="mono contribute-eyebrow" data-en="Contribute" data-es="Contribuye">Contribute</div>
       <h2 class="contribute-title" data-en="Because of you" data-es="Gracias a ti">Because of you</h2>
-      <p class="contribute-note" data-en="Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk NYC empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
+      <!-- The captain's line (2026-10-15); no dollar amount yet -->
+      <p class="contribute-note" data-en="This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City." data-es="Este fondo nos ha permitido construir más de 15 protectores de árboles, comprar equipo para producción y organizar más de dos docenas de eventos gratuitos en la ciudad de Nueva York.">This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City.</p>
       <div class="gfm">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
@@ -150,11 +160,12 @@ const contributePhoto = albums[0].photos[0];
 <!-- NEWSLETTER SIGNUP: above the socials (team feedback, 2026-10-15) -->
 <!-- A cleanup section: the newsletter signs people up for cleanups -->
 <section class="signup wall" id="signup">
-  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} seed={3} />
+  <SectionWall kind="cleanup" src={wallPasteUps} dim={0} duotone={0} seed={3} />
   <div class="wrap signup-grid">
     <div class="sign-head">
-      <div class="sign-text">
-        <h2 class="sign-plate"><span data-en="Stay in the" data-es="Mantente al">Stay in the</span> <span class="accent" data-en="loop" data-es="día">loop</span></h2>
+      <!-- On a cream flyer, so the copy holds AA on the full-color wall -->
+      <div class="sign-text paste f-staple">
+        <h2 class="sign-plate"><span data-en="Stay in the" data-es="Mantente al">Stay in the</span> <span data-en="loop" data-es="día">loop</span></h2>
         <p class="sign-blurb" data-en="See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more." data-es="Mira en qué anda Trash Talk NYC y cómo puedes participar suscribiéndote a nuestro boletín semanal. Recibirás los próximos eventos, lo más destacado de la comunidad, noticias sobre la basura y el cuidado urbano, y más.">See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more.</p>
       </div>
     </div>
@@ -239,7 +250,7 @@ const contributePhoto = albums[0].photos[0];
             <option value="My Block Entered the Clean Zone" data-en="My block entered the Clean Zone" data-es="Mi cuadra entró a la Zona Limpia">My block entered the Clean Zone</option>
             <option value="Word of Mouth" data-en="Word of mouth" data-es="De boca en boca">Word of mouth</option>
             <option value="Article" data-en="An article" data-es="Un artículo">An article</option>
-            <option value="Instagram" data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
+            <option value="Instagram" data-en="Instagram" data-es="Instagram">Instagram</option>
             <option value="TikTok" data-en="TikTok" data-es="TikTok">TikTok</option>
             <option value="LinkedIn" data-en="LinkedIn" data-es="LinkedIn">LinkedIn</option>
             <option value="Facebook" data-en="Facebook" data-es="Facebook">Facebook</option>
@@ -302,11 +313,12 @@ const contributePhoto = albums[0].photos[0];
 </section>
 
 <!-- SOCIALS -->
-<!-- Plain ground after the newsletter wall; the homepage ends here
-     (team feedback, 2026-10-15) -->
-<section class="socials">
+<!-- The homepage ends here (team feedback, 2026-10-15), on a sticker-
+     covered wall behind the cream tiles -->
+<section class="socials wall">
+  <SectionWall kind="cleanup" src={wallStickerPole} tear="top" dim={0} duotone={0} seed={8} />
   <div class="wrap">
-    <h2 data-en="Follow us on social" data-es="Síguenos en redes">Follow us on social</h2>
+    <h2 class="soc-title paste f-tape" data-en="Follow us on social" data-es="Síguenos en redes">Follow us on social</h2>
     <div class="soc-grid">
       {socialTiles.map((c, i) => (
         <a class:list={['soc-tile', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
@@ -364,23 +376,17 @@ const contributePhoto = albums[0].photos[0];
   /* ── HERO ── */
   /* Hero min-height keeps the two brick halves from colliding at any
      width; the inner padding tracks the bricks' own height. */
-  .hero {
-    position: relative;
-    overflow: hidden;
-    min-height: calc(100vw * 1.12);
-    border-bottom: var(--ink);
-  }
+  .hero { border-bottom: var(--ink); }
 
-  .hero .bricks-top { top: 6px; }
-  .hero .bricks-bottom { bottom: 6px; }
-
+  /* Phones: clear of the three brick rows above and below (each half is
+     ~15% of the width tall, plus its 10px inset) */
   .hero-inner {
     position: relative;
     z-index: 1;
     display: grid;
     justify-items: center;
-    gap: 16px;
-    padding: calc(100vw * 0.13) 16px calc(100vw * 0.14);
+    gap: 12px;
+    padding: calc(100vw * 0.15 + 22px) 16px calc(100vw * 0.15 + 26px);
   }
 
   /* ── STICKER BOMB ── */
@@ -389,7 +395,7 @@ const contributePhoto = albums[0].photos[0];
     position: relative;
     width: 46%;
     max-width: 26rem;
-    margin-block: 6% 4px;
+    margin-block: 4% 2px;
   }
 
   .hero :global(.hero-logo) {
@@ -444,7 +450,6 @@ const contributePhoto = albums[0].photos[0];
     color: var(--beige);
   }
 
-  .hero-title .accent { color: var(--lavender); }
 
   .hero-sub {
     margin: -4px 0 6px;
@@ -468,11 +473,10 @@ const contributePhoto = albums[0].photos[0];
   @media (min-width: 761px) {
     /* Both full brick halves (69.62vw, see brick-rows.generated.ts) plus
        their 10px insets and a 12px gap — 0.7vw alone let them touch */
-    .hero { min-height: calc(69.62vw + 32px); }
-    .hero .bricks-top { top: 10px; }
-    .hero .bricks-bottom { bottom: 10px; }
-    .hero-inner { gap: 26px; padding: calc(100vw * 0.075) 16px calc(100vw * 0.08); }
-    .bomb { width: min(22rem, 26vw); margin-block: 3% 0; }
+    /* Desktop: the continuous wall's full-width top and bottom rows are
+       ~10% of the width tall; the content sits just inside them */
+    .hero-inner { gap: 18px; padding: calc(100vw * 0.1 + 16px) 16px calc(100vw * 0.1 + 20px); }
+    .bomb { width: min(20rem, 22vw); margin-block: 0; }
     .bomb :global(.bomb-wide) { display: block; }
     .hero-title { max-width: none; font-size: clamp(3rem, 5.4vw, 6rem); }
     .hero-sub { font-size: clamp(1.1rem, 1.6vw, 1.6rem); }
@@ -482,13 +486,9 @@ const contributePhoto = albums[0].photos[0];
   }
 
   /* ── CONTRIBUTE ── */
-  /* Solid Post No Bills green: the photo shows where the money goes, so
-     the section itself stays quiet */
   .contribute-sec {
     position: relative;
-    background-color: var(--green);
-    color: var(--beige);
-    padding-block: 56px 64px;
+    padding-block: 64px 72px;
   }
 
   /* Old links to #donate land at the section top, clear of the nav */
@@ -502,17 +502,19 @@ const contributePhoto = albums[0].photos[0];
   }
 
   .contribute-main {
+    --flyer-bg: var(--paper);
+    color: var(--black);
     display: grid;
     justify-items: start;
     gap: 10px;
+    padding: 30px 18px 22px;
   }
 
-  .contribute-eyebrow { color: var(--yellow); font-size: 0.9rem; }
+  .contribute-eyebrow { color: var(--green); font-size: 0.9rem; }
 
   .contribute-title {
     font-size: clamp(3rem, 6vw, 5rem);
     line-height: 0.95;
-    color: var(--beige);
   }
 
   .contribute-note {
@@ -520,7 +522,6 @@ const contributePhoto = albums[0].photos[0];
     max-width: 46ch;
     font-size: 1.15rem;
     line-height: 1.5;
-    color: var(--beige);
   }
 
   /* The live widget sits straight on the section; its internals are an
@@ -551,8 +552,9 @@ const contributePhoto = albums[0].photos[0];
   }
 
   @media (min-width: 761px) {
-    .contribute-sec { padding-block: 88px 96px; }
+    .contribute-sec { padding-block: 96px 104px; }
     .contribute { grid-template-columns: minmax(0, 1fr) auto; gap: 64px; }
+    .contribute-main { padding: 40px 40px 34px; }
     .contribute-photo { width: clamp(16rem, 26vw, 24rem); margin-right: 2vw; }
     .contribute-eyebrow { font-size: 1rem; }
     .contribute-note { font-size: 1.25rem; }
@@ -561,10 +563,14 @@ const contributePhoto = albums[0].photos[0];
   /* ── SOCIALS ── */
   .socials { padding-block: 44px 48px; }
 
-  .socials h2 {
-    font-size: clamp(2.6rem, 5vw, 4rem);
-    color: var(--beige);
-    margin-bottom: 24px;
+  /* The heading is its own cream strip, so it reads on the full-color wall */
+  .soc-title {
+    --flyer-bg: var(--paper);
+    display: inline-block;
+    color: var(--black);
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    padding: 18px 22px 12px;
+    margin-bottom: 32px;
   }
 
   .soc-grid {
@@ -717,22 +723,28 @@ const contributePhoto = albums[0].photos[0];
     gap: 8px;
   }
 
-  .sign-text { display: grid; gap: 12px; min-width: 0; flex: 1; }
+  .sign-text {
+    --flyer-bg: var(--paper);
+    color: var(--black);
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+    padding: 26px 20px 30px;
+  }
 
   .sign-plate {
     font-size: clamp(3.2rem, 8vw, 5rem);
-    color: var(--beige);
     overflow-wrap: anywhere;
   }
 
-  .sign-plate .accent { color: var(--yellow); }
 
   .sign-blurb { font-size: 1.2rem; max-width: 40ch; margin: 0; }
 
   @media (min-width: 761px) {
     .signup { padding-block: 56px 88px; }
     .sign-head { gap: 16px; }
-    .sign-text { gap: 16px; }
+    .sign-text { gap: 16px; padding: 34px 32px 38px; }
   }
 
   @media (min-width: 1101px) {

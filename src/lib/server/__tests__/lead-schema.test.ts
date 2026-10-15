@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { leadSchema } from '../schemas';
 import { buildLeadNoteLines } from '../leadNote';
+import { leadBehalfAttribute } from '../../leadOptions';
 import { rollingMonths } from '../../months';
 
 const currentMonth = rollingMonths(1)[0].value;
@@ -10,7 +11,7 @@ const validLead = {
   lname: 'Doe',
   email: 'jane@example.com',
   phone: '(212) 555-0123',
-  behalf: 'individual',
+  behalf: ['individual'],
   startAddress: '708 WEST 171 STREET, New York, NY, USA',
   startAddressId: 'nycpad:venue:337433',
   startAddressPoint: '-73.938,40.843',
@@ -24,8 +25,20 @@ describe('leadSchema', () => {
     expect(leadSchema.safeParse(validLead).success).toBe(true);
   });
 
-  it('accepts an organization request', () => {
-    expect(leadSchema.safeParse({ ...validLead, behalf: 'organization' }).success).toBe(true);
+  it.each(['individual', 'nonprofit', 'educational', 'religious'])('accepts a request on behalf of %s', (behalf) => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: [behalf] }).success).toBe(true);
+  });
+
+  it('takes several at once, but at least one', () => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['nonprofit', 'educational'] }).success).toBe(true);
+    expect(leadSchema.safeParse({ ...validLead, behalf: [] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: undefined }).success).toBe(false);
+  });
+
+  it('needs a description when "Other" is checked', () => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['other'] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['nonprofit', 'other'], behalfOther: '  ' }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['other'], behalfOther: 'Our block association' }).success).toBe(true);
   });
 
   it.each(['fname', 'lname', 'email', 'phone', 'startAddress', 'startAddressId', 'startAddressPoint', 'cleaningNeed', 'preferredMonth'])(
@@ -77,19 +90,20 @@ describe('leadSchema', () => {
     expect(leadSchema.safeParse({ ...validLead, preferredMonth: 'whenever' }).success).toBe(false);
   });
 
-  it('rejects an unknown behalf', () => {
-    expect(leadSchema.safeParse({ ...validLead, behalf: 'robot' }).success).toBe(false);
+  it('rejects an unknown behalf, including the retired "organization"', () => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['robot'] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['organization'] }).success).toBe(false);
   });
 });
 
 describe('buildLeadNoteLines', () => {
   it('writes the choices out in plain English for the team', () => {
     const lines = buildLeadNoteLines(
-      { behalf: 'organization', cleaningNeed: 'needles', support: ['supplies', 'cleanup-group'], participants: '8', preferredMonth: 'May 2027' },
+      { behalf: ['nonprofit', 'religious'], cleaningNeed: 'needles', support: ['supplies', 'cleanup-group'], participants: '8', preferredMonth: 'May 2027' },
       '708 WEST 171 STREET, New York, NY, USA',
     );
     expect(lines).toEqual([
-      'Requesting on behalf of: organization',
+      'Requesting on behalf of: A nonprofit, A religious institution',
       'Starting address: 708 WEST 171 STREET, New York, NY, USA',
       'What needs cleaning: Needles',
       'Support needed: Supplies, Starting a cleanup group afterwards',
@@ -98,11 +112,29 @@ describe('buildLeadNoteLines', () => {
     ]);
   });
 
+  it('writes out what "Other" means', () => {
+    const lines = buildLeadNoteLines(
+      { behalf: ['other'], behalfOther: 'Our block association', cleaningNeed: 'streets', support: ['promotion'], participants: '', preferredMonth: 'May 2027' },
+      'x',
+    );
+    expect(lines[0]).toBe('Requesting on behalf of: Other: Our block association');
+  });
+
   it('says when no group size was given', () => {
     const lines = buildLeadNoteLines(
-      { behalf: 'individual', cleaningNeed: 'other', support: ['other'], participants: undefined, preferredMonth: 'May 2027' },
+      { behalf: ['individual'], cleaningNeed: 'other', support: ['other'], participants: undefined, preferredMonth: 'May 2027' },
       'x',
     );
     expect(lines).toContain('Number of participants: not given');
+  });
+});
+
+describe('leadBehalfAttribute', () => {
+  it("only ever sends Brevo's two existing LEAD_BEHALF values", () => {
+    expect(leadBehalfAttribute(['individual'])).toBe('individual');
+    for (const b of ['nonprofit', 'educational', 'religious', 'other'] as const) {
+      expect(leadBehalfAttribute([b])).toBe('organization');
+      expect(leadBehalfAttribute(['individual', b])).toBe('organization');
+    }
   });
 });

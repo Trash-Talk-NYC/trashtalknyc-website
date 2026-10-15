@@ -31,7 +31,7 @@ const year = new Date().getFullYear();
     <div class="foot-right">
       <!-- The footer's only logo now, so it names the brand -->
       <Image src={vestSticker} alt="Trash Talk NYC" class="foot-vest" width={220} densities={[1, 2]} />
-      <div class="foot-big"><span data-en="Let's clean NYC," data-es="Limpiemos NYC,">Let's clean NYC,</span><br /><span class="accent" data-en="together" data-es="juntos">together</span></div>
+      <div class="foot-big"><span data-en="Let's clean NYC," data-es="Limpiemos NYC,">Let's clean NYC,</span><br /><span data-en="together" data-es="juntos">together</span></div>
       <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
     </div>
     <div class="copy">© {year} Trash Talk NYC</div>
@@ -97,7 +97,6 @@ const year = new Date().getFullYear();
     text-align: left;
   }
 
-  .foot-big .accent { color: var(--yellow); }
 
   .copy {
     border-top: 1px solid rgba(234, 233, 218, 0.2);

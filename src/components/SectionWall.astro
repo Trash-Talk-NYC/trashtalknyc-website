@@ -3,7 +3,9 @@
  * A section background in the captain's A4 treatment (2026-10-09):
  * a real wall photo with a rough torn edge, toned by what the section is
  * about —
- *   cleanup:  the given wall photo in a Deep Purple duotone
+ *   cleanup:  the given wall photo in a Deep Purple duotone, or in its
+ *             own colors with `duotone={0}` (the captain's vivid street
+ *             walls behind cream flyers, 2026-10-15)
  *   planting: the chalked-sidewalk photo tinted Post No Bills green, with
  *             the chalk pieces themselves masked back to full color
  * Drop it as the FIRST child of a section with the global `.wall` class;
@@ -30,7 +32,8 @@ interface Props {
   dim?: number;
   /**
    * Cleanup only: how strongly the purple duotone covers the photo, 0–1.
-   * Below 1 the wall's own colors show through (Club Events, captain).
+   * Below 1 the wall's own colors show through (Club Events, captain);
+   * 0 is the photo in full color.
    */
   duotone?: number;
   /** Varies the tear so neighboring sections don't rip identically. */
@@ -78,7 +81,7 @@ const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 16
   {kind === 'cleanup' ? (
     <>
       {duotone < 1 && <div class="sw-photo" style={bg}></div>}
-      <div class="sw-photo sw-duo" style={`${bg};opacity:${duotone}`}></div>
+      {duotone > 0 && <div class="sw-photo sw-duo" style={`${bg};opacity:${duotone}`}></div>}
     </>
   ) : (
     <>
@@ -86,9 +89,11 @@ const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 16
       <div class="sw-tint"></div>
     </>
   )}
-  <div class="sw-shade"></div>
+  {dim > 0 && <div class="sw-shade"></div>}
   {mask && <div class="sw-photo sw-pop" style={`${bg};--sw-mask:url(${mask.src})`}></div>}
-  {(kind === 'planting' || duotone < 1) && <div class="sw-legible"></div>}
+  {/* A full-color wall (no duotone, no dim) carries no shade at all: its
+       text sits on cream cards instead (captain, 2026-10-15) */}
+  {(kind === 'planting' || (duotone > 0 && duotone < 1)) && <div class="sw-legible"></div>}
 </div>
 </div>
 

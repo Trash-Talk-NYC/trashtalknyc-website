@@ -1,12 +1,12 @@
 ---
 import SectionWall from '../components/SectionWall.astro';
-import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
+import wallGreenBox from '../assets/walls/wall-green-box.webp';
 import Bricks from '../components/Bricks.astro';
 import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
-import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
+import { BEHALF_OPTIONS, CLEANING_NEEDS, PARTNERSHIP_TYPES, SUPPORT_NEEDS } from '../lib/leadOptions';
 
 /**
  * Contact — Talk Trash (sentence case, captain 2026-10-09). The choices are poster tiles in the captain's
@@ -47,7 +47,8 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     <Bricks rows={bricks} />
     <div class="ct-hero-inner">
       <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
-      <h1 class="ct-title"><span data-en="Talk" data-es="Habla">Talk</span><br /><span class="accent" data-en="Trash" data-es="Basura">Trash</span></h1>
+      <!-- The captain's headline (2026-10-15) -->
+      <h1 class="ct-title"><span data-en="Let's Talk" data-es="Hablemos">Let's Talk</span><br /><span data-en="Trash" data-es="de Basura">Trash</span></h1>
     </div>
   </section>
 
@@ -57,7 +58,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   <!-- A torn-edge wall behind the picker (captain, 2026-10-09), purple
        kept light like Club Events so the flyers and form stay readable -->
   <section class="ct-wall wall">
-  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} duotone={0.18} seed={7} outline />
+  <SectionWall kind="cleanup" src={wallGreenBox} dim={0} duotone={0} seed={7} outline />
   <div class="wrap ct-body">
     <div class="ct-form">
       <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
@@ -66,11 +67,11 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
              2026-10-09); the chosen form opens below as its own sheet -->
         <button type="button" class="tile paste f-tape" aria-pressed="false" data-type="lead">
           <b data-en="Lead a Cleanup" data-es="Lidera una Limpieza">Lead a Cleanup</b>
-          <small data-en="Get help leading a cleanup in your community" data-es="Recibe apoyo para liderar una limpieza en tu comunidad">Get help leading a cleanup in your community</small>
+          <small data-en="Request support in leading a cleanup in your community" data-es="Pide apoyo para liderar una limpieza en tu comunidad">Request support in leading a cleanup in your community</small>
         </button>
         <button type="button" class="tile paste" aria-pressed="false" data-type="partnership">
           <b data-en="Partner" data-es="Asociarse">Partner</b>
-          <small data-en="Partner on co-programs, initiatives, content, or corporate events" data-es="Asóciate con nosotros en programas conjuntos, iniciativas, contenido o eventos corporativos">Partner on co-programs, initiatives, content, or corporate events</small>
+          <small data-en="Partner on programs, initiatives, content, or corporate events" data-es="Asóciate con nosotros en programas, iniciativas, contenido o eventos corporativos">Partner on programs, initiatives, content, or corporate events</small>
         </button>
         <button type="button" class="tile paste" aria-pressed="false" data-type="sponsor">
           <b data-en="Sponsor" data-es="Patrocinar">Sponsor</b>
@@ -116,6 +117,16 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
             <label for="c-phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
             <input type="tel" id="c-phone" name="phone" autocomplete="tel" />
           </div>
+          <!-- Partner only: the kind picks which team inbox hears about it -->
+          <div class="field full" id="partnerTypeGroup" hidden>
+            <label for="c-ptype" data-en="What kind of partnership? *" data-es="¿Qué tipo de alianza? *">What kind of partnership? *</label>
+            <select id="c-ptype" name="partnershipType">
+              <option value="" selected disabled data-en="Select one" data-es="Selecciona una opción">Select one</option>
+              {PARTNERSHIP_TYPES.map((t) => (
+                <option value={t.value} data-en={t.en} data-es={t.es}>{t.en}</option>
+              ))}
+            </select>
+          </div>
           <div class="field full" id="orgGroup" hidden>
             <label for="c-org" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
             <input type="text" id="c-org" name="organization" autocomplete="organization" />
@@ -141,15 +152,25 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
         <form id="leadForm" method="POST" action={actions.leadCleanup} hidden>
           <input type="hidden" name="botcheck" value="" />
           <input type="hidden" name="startedAt" data-started-at value="" />
-          <input type="hidden" name="behalf" id="behalfInput" value="individual" />
 
-          <fieldset class="field full bare-fieldset">
-            <legend class="lbl" id="behalfLabel" data-en="Requesting on behalf of *" data-es="Solicitud en nombre de *">Requesting on behalf of *</legend>
-            <div class="chips" role="radiogroup" aria-labelledby="behalfLabel">
-              <button type="button" class="chip-btn" role="radio" aria-checked="true" data-behalf="individual" data-en="An individual" data-es="Una persona">An individual</button>
-              <button type="button" class="chip-btn" role="radio" aria-checked="false" data-behalf="organization" data-en="An organization" data-es="Una organización">An organization</button>
+          <!-- Check all that apply (captain, 2026-10-15); at least one is
+               required, which the submit handler checks (HTML can't) -->
+          <fieldset class="field full bare-fieldset" id="behalfGroup" aria-describedby="behalfErr">
+            <legend class="lbl" data-en="Requesting on behalf of (check all that apply) *" data-es="Solicitud en nombre de (marca todo lo que corresponda) *">Requesting on behalf of (check all that apply) *</legend>
+            <div class="checks">
+              {BEHALF_OPTIONS.map((o) => (
+                <label class="check-chip">
+                  <input type="checkbox" name="behalf" value={o.value} />
+                  <span data-en={o.en} data-es={o.es}>{o.en}</span>
+                </label>
+              ))}
             </div>
+            <p class="f-err" id="behalfErr" aria-live="polite" hidden></p>
           </fieldset>
+          <div class="field full" id="behalfOtherGroup" hidden>
+            <label for="l-behalf-other" data-en="Who is the request on behalf of? *" data-es="¿En nombre de quién es la solicitud? *">Who is the request on behalf of? *</label>
+            <input type="text" id="l-behalf-other" name="behalfOther" maxlength="200" />
+          </div>
 
           <div class="field">
             <label for="l-fname" data-en="First name *" data-es="Nombre *">First name *</label>
@@ -292,7 +313,6 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     line-height: 0.92;
   }
 
-  .ct-title .accent { color: var(--lavender); }
 
   @media (min-width: 761px) {
     .ct-hero-inner { padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
@@ -563,7 +583,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
   import { attachFieldValidation, setFieldError } from '../lib/clientValidation';
   import { rollingMonths } from '../lib/months';
-import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
+import { BEHALF_OPTIONS, CLEANING_NEEDS, PARTNERSHIP_TYPES, SUPPORT_NEEDS } from '../lib/leadOptions';
   import { attachCombobox, fetchJson, type BilingualText, type ComboOption, type Combobox } from '../lib/combobox';
   import { ADDRESS_UNAVAILABLE } from '../lib/addressErrors';
 
@@ -582,6 +602,8 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
   const msgForm = document.getElementById('contactForm') as HTMLFormElement;
   const leadForm = document.getElementById('leadForm') as HTMLFormElement;
   const orgGroup = document.getElementById('orgGroup') as HTMLElement;
+  const partnerTypeGroup = document.getElementById('partnerTypeGroup') as HTMLElement;
+  const partnerTypeSelect = document.getElementById('c-ptype') as HTMLSelectElement;
   const orgInput = document.getElementById('c-org') as HTMLInputElement;
   const inquiryTypeInput = document.getElementById('inquiryType') as HTMLInputElement;
   const successDiv = document.getElementById('formSuccess') as HTMLElement;
@@ -604,13 +626,13 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
     lead: {
       en: {
         heading: 'Request support to lead a cleanup',
-        intro: 'Get help leading a cleanup in your community.',
+        intro: 'Request support in leading a cleanup in your community.',
         successTitle: 'Request sent!',
         successLine: "We'll be in touch about supporting your cleanup.",
       },
       es: {
         heading: 'Pide apoyo para liderar una limpieza',
-        intro: 'Recibe apoyo para liderar una limpieza en tu comunidad.',
+        intro: 'Pide apoyo para liderar una limpieza en tu comunidad.',
         successTitle: '¡Solicitud enviada!',
         successLine: 'Te contactaremos para apoyar tu limpieza.',
       },
@@ -679,6 +701,11 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
       const needsOrg = type !== 'general';
       orgGroup.hidden = !needsOrg;
       orgInput.required = needsOrg;
+      const isPartner = type === 'partnership';
+      partnerTypeGroup.hidden = !isPartner;
+      partnerTypeSelect.required = isPartner;
+      // A hidden select must never submit a stale choice
+      if (!isPartner) partnerTypeSelect.selectedIndex = 0;
       inquiryTypeInput.value = type;
     }
 
@@ -686,6 +713,7 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
     contactErrorEl.textContent = '';
     leadErrorEl.textContent = '';
     showSupportError(false);
+    showBehalfError(false);
     applyCopy();
   }
 
@@ -698,6 +726,7 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
     if (contactErrorEl.textContent) contactErrorEl.textContent = submitErrorText(lang);
     if (leadErrorEl.textContent) leadErrorEl.textContent = submitErrorText(lang);
     if (!supportErr.hidden) showSupportError(true);
+    if (!behalfErr.hidden) showBehalfError(true);
   });
 
   // ── SUPPORT NEEDED (at least one) ──
@@ -715,24 +744,30 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
     if (supportBoxes.some((b) => b.checked)) showSupportError(false);
   }));
 
-  // ── CHIP RADIOS (behalf) ──
-  /** Wires a chip group; returns a picker so the group can be set programmatically. */
-  function wireChips(selector: string, onPick: (value: string) => void): (value: string) => void {
-    const chips = Array.from(document.querySelectorAll<HTMLButtonElement>(selector));
-    const valueOf = (chip: HTMLButtonElement) => chip.dataset.behalf ?? '';
-    function pick(chip: HTMLButtonElement) {
-      chips.forEach((c) => c.setAttribute('aria-checked', String(c === chip)));
-      onPick(valueOf(chip));
-    }
-    chips.forEach((chip) => chip.addEventListener('click', () => pick(chip)));
-    return (value) => {
-      const chip = chips.find((c) => valueOf(c) === value);
-      if (chip) pick(chip);
-    };
+  // ── ON BEHALF OF (check all that apply, at least one) ──
+  const behalfBoxes = Array.from(document.querySelectorAll<HTMLInputElement>('#behalfGroup input[name="behalf"]'));
+  const behalfErr = document.getElementById('behalfErr') as HTMLParagraphElement;
+  const behalfOtherGroup = document.getElementById('behalfOtherGroup') as HTMLElement;
+  const behalfOtherInput = document.getElementById('l-behalf-other') as HTMLInputElement;
+  const BEHALF_MSG = { en: 'Check at least one.', es: 'Marca al menos una opción.' };
+
+  function showBehalfError(show: boolean) {
+    behalfErr.hidden = !show;
+    behalfErr.textContent = show ? BEHALF_MSG[getCurrentLang()] : '';
   }
 
-  const behalfInput = document.getElementById('behalfInput') as HTMLInputElement;
-  const pickBehalf = wireChips('[data-behalf]', (v) => { behalfInput.value = v; });
+  function syncBehalfOther() {
+    const other = behalfBoxes.some((b) => b.value === 'other' && b.checked);
+    behalfOtherGroup.hidden = !other;
+    behalfOtherInput.required = other;
+    // A hidden field must never submit a stale value
+    if (!other) behalfOtherInput.value = '';
+  }
+
+  behalfBoxes.forEach((box) => box.addEventListener('change', () => {
+    syncBehalfOther();
+    if (behalfBoxes.some((b) => b.checked)) showBehalfError(false);
+  }));
 
   // ── NYC ADDRESS PICKER (GeoSearch autocomplete) ──
   // People pick a real suggestion; free text never satisfies the field.
@@ -960,7 +995,8 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
    */
   function resetLeadForm() {
     leadForm.reset();
-    pickBehalf('individual');
+    syncBehalfOther();
+    showBehalfError(false);
     showSupportError(false);
     addressPickers.forEach((picker) => picker.combo.reset());
     monthSelect.selectedIndex = 0;
@@ -1006,10 +1042,15 @@ import { CLEANING_NEEDS, SUPPORT_NEEDS } from '../lib/leadOptions';
   ) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (form === leadForm && !supportBoxes.some((b) => b.checked)) {
-        showSupportError(true);
-        supportBoxes[0]?.focus();
-        return;
+      if (form === leadForm) {
+        const noBehalf = !behalfBoxes.some((b) => b.checked);
+        const noSupport = !supportBoxes.some((b) => b.checked);
+        showBehalfError(noBehalf);
+        showSupportError(noSupport);
+        if (noBehalf || noSupport) {
+          (noBehalf ? behalfBoxes[0] : supportBoxes[0])?.focus();
+          return;
+        }
       }
       const btn = form.querySelector<HTMLButtonElement>('.form-submit')!;
       const originalText = btn.textContent ?? '';

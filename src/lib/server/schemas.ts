@@ -5,7 +5,7 @@ import { isValidPhone } from '../phone';
 import { COUNTRY_VALUES, US_COUNTRY } from '../countries';
 import { US_ZIP_PATTERN } from '../zip';
 import { isValidPreferredMonth } from '../months';
-import { CLEANING_NEED_VALUES, SUPPORT_NEED_VALUES } from '../leadOptions';
+import { BEHALF_VALUES, CLEANING_NEED_VALUES, PARTNERSHIP_TYPE_VALUES, SUPPORT_NEED_VALUES } from '../leadOptions';
 
 /**
  * Fields shared by the site forms, matching the inputs rendered on the
@@ -91,6 +91,8 @@ export const contactSchema = z
   .object({
     ...baseFields,
     inquiryType: z.enum(['general', 'partnership', 'sponsor']),
+    // The Partner tile's "What kind of partnership?" (captain, 2026-10-15)
+    partnershipType: z.enum(PARTNERSHIP_TYPE_VALUES).optional(),
     phone: optionalPhone,
     organization: z.string().trim().max(300).optional(),
     message: z.string().trim().min(1, 'Message is required').max(5000),
@@ -100,6 +102,11 @@ export const contactSchema = z
   .refine((data) => data.inquiryType === 'general' || !!data.organization?.trim(), {
     message: 'Organization name is required for partnership and sponsorship inquiries',
     path: ['organization'],
+  })
+  // The partnership kind picks the inbox, so a partner inquiry needs one
+  .refine((data) => data.inquiryType !== 'partnership' || !!data.partnershipType, {
+    message: 'Please choose what kind of partnership',
+    path: ['partnershipType'],
   });
 
 /**
@@ -111,31 +118,42 @@ export const contactSchema = z
  * and the mailing address were dropped on team feedback (2026-10-15);
  * the choice lists live in src/lib/leadOptions.ts.
  */
-export const leadSchema = z.object({
-  ...baseFields,
-  behalf: z.enum(['individual', 'organization']),
-  phone: requiredPhone,
-  startAddress: z.string().trim().min(1, 'Starting address is required').max(300),
-  startAddressId: z.string().trim().min(1, 'Pick a starting address from the list').max(120),
-  startAddressPoint: z.string().trim().min(1, 'Pick a starting address from the list').max(60),
-  cleaningNeed: z.enum(CLEANING_NEED_VALUES, { errorMap: () => ({ message: 'Please choose what needs cleaning' }) }),
-  support: z
-    .array(z.enum(SUPPORT_NEED_VALUES))
-    .min(1, 'Please choose at least one kind of support')
-    .max(SUPPORT_NEED_VALUES.length),
-  // Optional, so empty is fine; anything typed must be a whole number of
-  // people. `.optional()` stays outermost (see optionalPhone).
-  participants: z
-    .string()
-    .trim()
-    .refine((v) => !v || (/^\d{1,5}$/.test(v) && Number(v) >= 1), 'Please enter a number of participants')
-    .optional(),
-  preferredMonth: z
-    .string()
-    .trim()
-    .refine((v) => isValidPreferredMonth(v), 'Please choose an upcoming month'),
-  photos: z.array(z.instanceof(File)).optional(),
-});
+export const leadSchema = z
+  .object({
+    ...baseFields,
+    // Check all that apply (captain, 2026-10-15), at least one
+    behalf: z
+      .array(z.enum(BEHALF_VALUES))
+      .min(1, 'Please choose who the request is on behalf of')
+      .max(BEHALF_VALUES.length),
+    // What "Other" means, when they checked it
+    behalfOther: z.string().trim().max(200).optional(),
+    phone: requiredPhone,
+    startAddress: z.string().trim().min(1, 'Starting address is required').max(300),
+    startAddressId: z.string().trim().min(1, 'Pick a starting address from the list').max(120),
+    startAddressPoint: z.string().trim().min(1, 'Pick a starting address from the list').max(60),
+    cleaningNeed: z.enum(CLEANING_NEED_VALUES, { errorMap: () => ({ message: 'Please choose what needs cleaning' }) }),
+    support: z
+      .array(z.enum(SUPPORT_NEED_VALUES))
+      .min(1, 'Please choose at least one kind of support')
+      .max(SUPPORT_NEED_VALUES.length),
+    // Optional, so empty is fine; anything typed must be a whole number of
+    // people. `.optional()` stays outermost (see optionalPhone).
+    participants: z
+      .string()
+      .trim()
+      .refine((v) => !v || (/^\d{1,5}$/.test(v) && Number(v) >= 1), 'Please enter a number of participants')
+      .optional(),
+    preferredMonth: z
+      .string()
+      .trim()
+      .refine((v) => isValidPreferredMonth(v), 'Please choose an upcoming month'),
+    photos: z.array(z.instanceof(File)).optional(),
+  })
+  .refine((data) => !data.behalf.includes('other') || !!data.behalfOther?.trim(), {
+    message: 'Please tell us who the request is on behalf of',
+    path: ['behalfOther'],
+  });
 
 export type SignupInput = z.infer<typeof signupSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;

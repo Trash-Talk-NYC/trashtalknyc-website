@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls } from '../events';
+import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls, groupPastByBorough, mapEventbriteEvent } from '../events';
 import type { EventData } from '../events';
 
 // ── formatDate ──────────────────────────────────────────────────────────────
@@ -164,6 +164,29 @@ describe('fetchEventsAtBuildTime', () => {
     expect(ev.venue?.lng).toBe(-73.969);
   });
 
+  it('keeps the venue ZIP and the original cover image', async () => {
+    mockEventbrite({
+      current_future: [
+        {
+          ...rawEvent,
+          venue: { ...rawEvent.venue, address: { ...rawEvent.venue.address, postal_code: '11215' } },
+          logo: { url: 'https://img.evbuc.com/cropped.jpg', original: { url: 'https://img.evbuc.com/original.jpg' } },
+        },
+      ],
+    });
+
+    const { upcoming } = await fetchEventsAtBuildTime();
+    expect(upcoming[0].venue?.postalCode).toBe('11215');
+    expect(upcoming[0].imageUrl).toBe('https://img.evbuc.com/original.jpg');
+  });
+
+  it('has no image when Eventbrite has none', async () => {
+    mockEventbrite({ current_future: [rawEvent] });
+
+    const { upcoming } = await fetchEventsAtBuildTime();
+    expect(upcoming[0].imageUrl).toBeNull();
+  });
+
   it('produces map URLs and card name without "[object Object]"', async () => {
     mockEventbrite({ current_future: [rawEvent] });
 
@@ -290,5 +313,42 @@ describe('fetchEventsAtBuildTime', () => {
     expect(past).toEqual([]);
 
     warnSpy.mockRestore();
+  });
+});
+
+// ── groupPastByBorough ──────────────────────────────────────────────────────
+
+describe('groupPastByBorough', () => {
+  const at = (id: string, zip: string | null) =>
+    mapEventbriteEvent({
+      id,
+      name: { text: id },
+      url: `https://eventbrite.com/e/${id}`,
+      status: 'completed',
+      start: { local: null, utc: '2026-09-01T14:00:00Z' },
+      end: { local: null, utc: '2026-09-01T16:00:00Z' },
+      venue: zip === null ? null : { name: 'Park', address: { postal_code: zip } },
+    });
+
+  it('groups by the venue ZIP, in borough order, outside-NYC last', () => {
+    const groups = groupPastByBorough([
+      at('qns', '11104'),
+      at('nj', '07030'),
+      at('mn1', '10032'),
+      at('bk', '11211'),
+      at('none', null),
+      at('mn2', '10002'),
+    ]);
+    expect(groups.map((g) => g.borough)).toEqual(['Manhattan', 'Brooklyn', 'Queens', null]);
+    expect(groups[0].events.map((e) => e.id)).toEqual(['mn1', 'mn2']);
+    expect(groups[3].events.map((e) => e.id)).toEqual(['nj', 'none']);
+  });
+
+  it('reads a ZIP+4 by its first five digits', () => {
+    expect(groupPastByBorough([at('bx', '10451-1234')])[0].borough).toBe('The Bronx');
+  });
+
+  it('returns no groups for no events', () => {
+    expect(groupPastByBorough([])).toEqual([]);
   });
 });

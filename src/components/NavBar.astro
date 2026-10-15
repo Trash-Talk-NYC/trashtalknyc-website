@@ -17,7 +17,7 @@
 import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
-import { MORE_MEDIA_PATH, PHOTO_ALBUMS, mediaSections } from '../lib/media';
+import { GALLERY, MORE_MEDIA_PATH, liveMediaSections } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
 
 const pathname = Astro.url.pathname;
@@ -96,10 +96,10 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
         </button>
         <ul class="nav-drop-menu" id="mediaDropMenu">
           <li><a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a></li>
-          {mediaSections.map((m) => (
+          {liveMediaSections.map((m) => (
             <li><a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a></li>
           ))}
-          <li><a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a></li>
+          <li><a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a></li>
         </ul>
       </li>
       <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
@@ -140,10 +140,10 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
         </button>
         <div class="m-sub" id="mMediaSub" hidden>
           <a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a>
-          {mediaSections.map((m) => (
+          {liveMediaSections.map((m) => (
             <a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a>
           ))}
-          <a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a>
+          <a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a>
         </div>
       </div>
       <a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a>
