@@ -58,7 +58,7 @@ describe('contact action Brevo list routing', () => {
   it('routes partnership inquiries to the CONTACT_COLLAB list', async () => {
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(
-      contactInput({ inquiryType: 'partnership', organization: 'Acme Org' }),
+      contactInput({ inquiryType: 'partnership', partnershipType: 'podcast', organization: 'Acme Org' }),
       contactCtx(),
     );
 
@@ -150,6 +150,9 @@ describe('contact action team notification', () => {
     process.env.CONTACT_SPONSOR = '333';
     process.env.CONTACT_NOTIFY_TO = 'team@trashtalknyc.org';
     process.env.SPONSOR_NOTIFY_TO = 'sponsors@trashtalknyc.org';
+    process.env.PARTNER_CONTENT_NOTIFY_TO = 'content@trashtalknyc.org';
+    process.env.PODCAST_NOTIFY_TO = 'podcast@trashtalknyc.org';
+    process.env.NONPROFIT_NOTIFY_TO = 'nonprofits@trashtalknyc.org';
     process.env.CONTACT_NOTIFY_FROM = 'site@trashtalknyc.org';
   });
 
@@ -160,6 +163,9 @@ describe('contact action team notification', () => {
     delete process.env.CONTACT_SPONSOR;
     delete process.env.CONTACT_NOTIFY_TO;
     delete process.env.SPONSOR_NOTIFY_TO;
+    delete process.env.PARTNER_CONTENT_NOTIFY_TO;
+    delete process.env.PODCAST_NOTIFY_TO;
+    delete process.env.NONPROFIT_NOTIFY_TO;
     delete process.env.CONTACT_NOTIFY_FROM;
   });
 
@@ -168,7 +174,7 @@ describe('contact action team notification', () => {
     await server.contact.handler(contactInput({ inquiryType: 'general' }), contactCtx());
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(
-      contactInput({ inquiryType: 'partnership', organization: 'Acme Org' }),
+      contactInput({ inquiryType: 'partnership', partnershipType: 'influencer', organization: 'Acme Org' }),
       contactCtx(),
     );
 
@@ -176,10 +182,47 @@ describe('contact action team notification', () => {
     expect(sendBrevoEmail).toHaveBeenLastCalledWith(
       'test-key',
       expect.objectContaining({
-        to: [{ email: 'team@trashtalknyc.org' }],
+        to: [{ email: 'content@trashtalknyc.org' }],
         replyTo: expect.objectContaining({ email: 'jane@example.com' }),
       }),
     );
+  });
+
+  it.each([
+    ['content-collaboration', 'content@trashtalknyc.org'],
+    ['content-creation', 'content@trashtalknyc.org'],
+    ['influencer', 'content@trashtalknyc.org'],
+    ['corporate-event', 'content@trashtalknyc.org'],
+    ['other', 'content@trashtalknyc.org'],
+    ['podcast', 'podcast@trashtalknyc.org'],
+    ['nonprofit', 'nonprofits@trashtalknyc.org'],
+  ])('routes a %s partnership to its own inbox', async (partnershipType, inbox) => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType, organization: 'Acme Org' }), contactCtx());
+
+    expect(sendBrevoEmail).toHaveBeenCalledWith('test-key', expect.objectContaining({ to: [{ email: inbox }] }));
+  });
+
+  it('names the partnership kind in the email and the CRM note', async () => {
+    createBrevoNote.mockClear();
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType: 'podcast', organization: 'Acme Org' }), contactCtx());
+
+    expect(sendBrevoEmail.mock.calls[0][1].htmlContent).toContain('Podcast');
+    expect(createBrevoNote.mock.calls[0][2]).toContain('Partnership: Podcast');
+  });
+
+  it('logs an error naming the unset inbox — and never falls back to the general address', async () => {
+    delete process.env.PODCAST_NOTIFY_TO;
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    const result = await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType: 'podcast', organization: 'Acme Org' }), contactCtx());
+
+    expect(result).toEqual({ ok: true });
+    expect(sendBrevoEmail).not.toHaveBeenCalled();
+    expect(errors.mock.calls.map(([line]) => String(line)).join('\n')).toContain('"envVar":"PODCAST_NOTIFY_TO"');
+    errors.mockRestore();
   });
 
   it('notifies the sponsorship inbox — not the general team address — for sponsor inquiries', async () => {

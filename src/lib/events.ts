@@ -1,4 +1,5 @@
 import type { Lang } from './language';
+import { BOROUGHS, boroughForZip, type Borough } from './zip';
 
 export type EventData = {
   id: string;
@@ -11,9 +12,13 @@ export type EventData = {
     name: string | null;
     address: string | null;
     city: string | null;
+    /** The venue's ZIP, which places a past event in its borough. */
+    postalCode: string | null;
     lat: number | null;
     lng: number | null;
   } | null;
+  /** The event's own Eventbrite cover image, when it has one. */
+  imageUrl: string | null;
 };
 
 export type EventCardProps = {
@@ -38,10 +43,11 @@ type EventbriteApiEvent = {
   end: { local: string | null; utc: string };
   venue?: {
     name: string | null;
-    address?: { localized_address_display?: string | null; city?: string | null } | null;
+    address?: { localized_address_display?: string | null; city?: string | null; postal_code?: string | null } | null;
     latitude?: string | null;
     longitude?: string | null;
   } | null;
+  logo?: { url?: string | null; original?: { url?: string | null } | null } | null;
 };
 
 export function mapEventbriteEvent(e: EventbriteApiEvent): EventData {
@@ -57,11 +63,38 @@ export function mapEventbriteEvent(e: EventbriteApiEvent): EventData {
           name: e.venue.name,
           address: e.venue.address?.localized_address_display || null,
           city: e.venue.address?.city || null,
+          postalCode: e.venue.address?.postal_code || null,
           lat: e.venue.latitude ? parseFloat(e.venue.latitude) : null,
           lng: e.venue.longitude ? parseFloat(e.venue.longitude) : null,
         }
       : null,
+    // The original upload, not Eventbrite's cropped 2:1 rendition
+    imageUrl: e.logo?.original?.url || e.logo?.url || null,
   };
+}
+
+/** A borough, or null for events held outside the five boroughs. */
+export type EventPlace = Borough | null;
+
+export interface PastEventGroup {
+  borough: EventPlace;
+  events: EventData[];
+}
+
+/**
+ * Past events grouped by borough (captain, 2026-10-15: "by borough"), in
+ * the five boroughs' usual order, then anything outside NYC or without a
+ * ZIP last. The borough comes from the venue ZIP through the same NYC
+ * ZIP table the signup uses. Events keep their order inside each group
+ * (newest first, as fetched). Empty groups are left out.
+ */
+export function groupPastByBorough(events: EventData[]): PastEventGroup[] {
+  const groups = new Map<EventPlace, EventData[]>([...BOROUGHS, null].map((b) => [b, []]));
+  for (const ev of events) {
+    const zip = ev.venue?.postalCode?.trim().slice(0, 5) ?? '';
+    groups.get(boroughForZip(zip) ?? null)!.push(ev);
+  }
+  return [...groups].filter(([, list]) => list.length > 0).map(([borough, list]) => ({ borough, events: list }));
 }
 
 export function toEventCardProps(ev: EventData): EventCardProps {

@@ -1,6 +1,5 @@
 ---
 import '../styles/global.css';
-import SocialBar from '../components/SocialBar.astro';
 import NavBar from '../components/NavBar.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 
@@ -12,10 +11,9 @@ interface Props {
   ogTitle?: string;
   /** Set on pages that must not be indexed (404). */
   noindex?: boolean;
-  showSocialBar?: boolean;
 }
 
-const { title, description, ogTitle = title, noindex = false, showSocialBar = true } = Astro.props;
+const { title, description, ogTitle = title, noindex = false } = Astro.props;
 
 // Astro.site comes from astro.config.mjs, so canonical/og URLs are absolute
 // production URLs even on previews and local builds — which is what social
@@ -81,16 +79,16 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- Type per the TTNYC Style Guide: Londrina Solid Regular (display),
        Barlow Semi Condensed (body, at the guide's Regular / Medium /
-       Bold only), Space Mono Bold (accents). Load nothing else: an
-       unloaded weight gets faux-bolded by the browser. -->
+       Bold only), Space Mono Bold (accents). Londrina Black (900) is
+       loaded for one thing only, the header's "Trash Talk NYC" name
+       (captain's N1, 2026-10-15). Load nothing else: an unloaded weight
+       gets faux-bolded by the browser. -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Londrina+Solid&family=Barlow+Semi+Condensed:wght@400;500;700&family=Space+Mono:wght@700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Barlow+Semi+Condensed:wght@400;500;700&family=Space+Mono:wght@700&display=swap"
     rel="stylesheet"
   />
 </head>
 <body>
-
-  {showSocialBar && <SocialBar />}
 
   <NavBar />
 

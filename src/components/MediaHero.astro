@@ -19,7 +19,7 @@ interface Props {
   /** Accent line above the title; rendered as a link when `eyebrowHref` is set. */
   eyebrow?: Copy;
   eyebrowHref?: string;
-  /** One entry per line; the last line takes the accent color. */
+  /** One entry per line, all one color (no accent words in headings, captain 2026-10-15). */
   title: Copy[];
   description?: Copy;
 }
@@ -46,7 +46,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
       {title.map((line, i) => (
         <>
           {i > 0 && <br />}
-          <span class:list={{ accent: i === title.length - 1 && title.length > 1 }} data-en={line.en} data-es={line.es}>{line.en}</span>
+          <span data-en={line.en} data-es={line.es}>{line.en}</span>
         </>
       ))}
     </h1>
@@ -92,7 +92,6 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     color: var(--beige);
   }
 
-  .mh-title .accent { color: var(--lavender); }
 
   /* On phones the opening between the brick halves is roughly half the
      viewport, so the description wraps to stay inside it */

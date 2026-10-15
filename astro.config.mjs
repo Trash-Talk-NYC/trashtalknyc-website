@@ -16,6 +16,13 @@ export default defineConfig({
     // The recruitment page moved from /contact/join (round 20); old
     // links must keep landing on the roles, permanently.
     '/contact/join': { status: 301, destination: '/recruit' },
+    // Photo Albums became the one Gallery page (captain, 2026-10-15)
+    '/more-media/photo-albums': { status: 301, destination: '/more-media/gallery' },
+    '/more-media/photo-albums/the-lab': { status: 301, destination: '/more-media/gallery' },
+    // Hidden until the channels are ready (captain, 2026-10-15), so
+    // temporary: these pages come back when their links exist
+    '/more-media/podcast': { status: 302, destination: '/more-media' },
+    '/more-media/substack': { status: 302, destination: '/more-media' },
   },
   integrations: [
     // The 404 page carries noindex, so keep it out of the sitemap too.

@@ -26,7 +26,13 @@ export interface MediaSection {
   action: Copy;
   /** Off-site channel home; null while the captain hasn't supplied it. */
   channelHref: string | null;
-  /** True when the channel has nothing to show on the site yet. */
+  /**
+   * True while the channel isn't ready: it is hidden from the nav, the
+   * footer, and the More Media pages, and its route redirects to the
+   * overview (captain, 2026-10-15: "Take off substack and podcast until
+   * ready"). To launch one, flip this, add its page back (git history has
+   * the old coming-soon pages), and drop its redirect in astro.config.mjs.
+   */
   comingSoon: boolean;
 }
 
@@ -71,6 +77,9 @@ export const mediaSections: MediaSection[] = [
   },
 ];
 
+/** The channels people can actually visit today. */
+export const liveMediaSections = mediaSections.filter((s) => !s.comingSoon);
+
 export function getMediaSection(id: MediaSectionId): MediaSection {
   const section = mediaSections.find((s) => s.id === id);
   if (!section) throw new Error(`Unknown More Media section "${id}"`);
@@ -78,13 +87,14 @@ export function getMediaSection(id: MediaSectionId): MediaSection {
 }
 
 /**
- * Photo Albums (captain, 2026-10-09) — a More Media subpage that is not a
- * channel, so it sits outside mediaSections (the overview keeps its
- * three-channel layout) but joins the nav and the subpage switcher.
+ * The Gallery (captain, 2026-10-15: "general gallery -> by month"), which
+ * replaced the Photo Albums pages — a More Media page that is not a
+ * channel, so it sits outside mediaSections but joins the nav and the
+ * subpage switcher. Photos live in src/lib/gallery.ts.
  */
-export const PHOTO_ALBUMS = {
-  path: `${MORE_MEDIA_PATH}/photo-albums`,
-  label: { en: 'Photo Albums', es: 'Álbumes de Fotos' },
+export const GALLERY = {
+  path: `${MORE_MEDIA_PATH}/gallery`,
+  label: { en: 'Gallery', es: 'Galería' },
 } as const;
 
 /** The captain's line for the More Media hero (2026-10-09). */
@@ -103,6 +113,11 @@ export const featuredVideo = {
   caption: {
     en: 'Come visit Trash Talk NYC headquarters!',
     es: '¡Ven a visitar la sede de Trash Talk NYC!',
+  } satisfies Copy,
+  /** The player's accessible name (its iframe title). */
+  title: {
+    en: 'YouTube video: Come visit Trash Talk NYC headquarters!',
+    es: 'Video de YouTube: ¡Ven a visitar la sede de Trash Talk NYC!',
   } satisfies Copy,
 };
 

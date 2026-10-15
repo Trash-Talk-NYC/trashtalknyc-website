@@ -7,6 +7,9 @@ import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
 import { verifyNycAddress, type GeoVerifyResult } from '../lib/server/geosearch';
 import { MAX_PHOTOS, deleteLeadPhotos, processPhoto, storeLeadPhotos } from '../lib/server/photos';
+import { buildLeadNoteLines } from '../lib/server/leadNote';
+import { notifyRecipientVar } from '../lib/server/notifyRouting';
+import { PARTNERSHIP_TYPES, leadBehalfAttribute, leadOptionLabel, type PartnershipType } from '../lib/leadOptions';
 import {
   buildAttributes,
   buildInquiryEmail,
@@ -267,24 +270,30 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
 /**
  * Emails the team the moment a contact-form inquiry arrives (every tab) so a
  * new lead is seen without polling Brevo. Reply-to is the person who wrote
- * in, so a reply reaches them directly. Sponsor inquiries notify the
- * sponsorship inbox (SPONSOR_NOTIFY_TO) instead of the general team address —
- * with no fallback between the two, so a misroute is impossible.
+ * in, so a reply reaches them directly. Each kind of inquiry goes to its own
+ * inbox (notifyRecipientVar: general, sponsor, lead, and the partnership
+ * buckets), with no fallback between them, so a misroute is impossible.
  *
- * Dormant until both the tab's recipient var and CONTACT_NOTIFY_FROM (a
- * verified Brevo sender) are set — mirroring the Turnstile-keys pattern — so no
- * mail is sent in environments that have not opted in. Best-effort and never
- * throws: the contact upsert already succeeded and must not be undone by a
- * notification failure.
+ * An unset inbox var is logged as an error naming it
+ * (`inquiry_notify_unconfigured`), since that inquiry then reaches nobody by
+ * email. Without CONTACT_NOTIFY_FROM (a verified Brevo sender) nothing is
+ * sent at all, so environments that haven't opted in stay quiet. Best-effort
+ * and never throws: the contact upsert already succeeded and must not be
+ * undone by a notification failure.
  */
-async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
+async function tryNotifyInquiry(input: InquiryEmailInput & { partnershipType?: PartnershipType }): Promise<void> {
   const form: FormName = input.inquiryType === 'lead' ? 'lead' : 'contact';
   try {
     const apiKey = getEnv('BREVO_API_KEY');
-    const to = getEnv(input.inquiryType === 'sponsor' ? 'SPONSOR_NOTIFY_TO' : 'CONTACT_NOTIFY_TO');
     const from = getEnv('CONTACT_NOTIFY_FROM');
-    if (!apiKey || !to || !from) {
+    if (!apiKey || !from) {
       log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
+      return;
+    }
+    const toVar = notifyRecipientVar(input.inquiryType, input.partnershipType);
+    const to = getEnv(toVar);
+    if (!to) {
+      log('error', 'inquiry_notify_unconfigured', { form, inquiry: input.inquiryType, envVar: toVar });
       return;
     }
 
@@ -296,7 +305,7 @@ async function tryNotifyInquiry(input: InquiryEmailInput): Promise<void> {
       .filter(Boolean)
       .map((email) => ({ email }));
     if (recipients.length === 0) {
-      log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
+      log('error', 'inquiry_notify_unconfigured', { form, inquiry: input.inquiryType, envVar: toVar });
       return;
     }
 
@@ -438,8 +447,18 @@ export const server = {
         sponsor: 'contact-sponsor',
       };
       const noteForm = noteForms[input.inquiryType];
-      await tryCreateNote(noteForm, input.email, input.message);
-      await tryNotifyInquiry(input);
+      // The partnership kind rides in the note and the email, not a Brevo
+      // attribute, so no dashboard change can lose an inquiry (add-only)
+      const partnership =
+        input.inquiryType === 'partnership' && input.partnershipType
+          ? leadOptionLabel(PARTNERSHIP_TYPES, input.partnershipType)
+          : undefined;
+      await tryCreateNote(noteForm, input.email, partnership ? `Partnership: ${partnership}\n\n${input.message}` : input.message);
+      await tryNotifyInquiry({
+        ...input,
+        partnershipType: input.inquiryType === 'partnership' ? input.partnershipType : undefined,
+        extraRows: partnership ? [['Partnership', partnership]] : undefined,
+      });
 
       return { ok: true };
     },
@@ -466,10 +485,6 @@ export const server = {
       // as an error on that address field so the applicant knows to
       // re-pick it (or retry, when the map service is down).
       const start = await verifyAddressField('startAddress', input.startAddress, input.startAddressId, input.startAddressPoint);
-      const end =
-        input.routeType === 'oneway'
-          ? await verifyAddressField('endAddress', input.endAddress ?? '', input.endAddressId ?? '', input.endAddressPoint ?? '')
-          : undefined;
 
       // Route photos: content-validated, re-encoded (metadata including
       // GPS stripped), stored privately under random keys. File inputs
@@ -500,6 +515,12 @@ export const server = {
         photoKeys = stored.keys;
       }
 
+      // Only attributes that already exist in Brevo: the request's newer
+      // answers (what needs cleaning, support, group size) ride in the CRM
+      // note and the notification, so no dashboard change can lose a
+      // request. MAILING_ADDRESS, ROUTE_TYPE, and ROUTE_END are no longer
+      // asked (team feedback, 2026-10-15); the attributes stay in Brevo
+      // (add-only) with whatever older requests stored.
       try {
         await upsertOrThrow(
           'lead',
@@ -509,11 +530,8 @@ export const server = {
             LASTNAME: input.lname,
             PHONE: input.phone,
             INQUIRY_TYPE: 'lead',
-            LEAD_BEHALF: input.behalf,
-            MAILING_ADDRESS: input.mailingAddress,
-            ROUTE_TYPE: input.routeType,
+            LEAD_BEHALF: leadBehalfAttribute(input.behalf),
             ROUTE_START: start.label,
-            ROUTE_END: end?.label,
             PREFERRED_MONTH: input.preferredMonth,
           }),
           brevo,
@@ -524,17 +542,14 @@ export const server = {
         throw err;
       }
 
-      // The CRM note preserves the full application (attributes are
+      // The CRM note preserves the full request (attributes are
       // last-write-wins), including where the private photos live.
-      const noteLines = [
-        `Applying on behalf of: ${input.behalf}`,
-        `Mailing address: ${input.mailingAddress}`,
-        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${start.label}${end ? ` — end: ${end.label}` : ''}`,
-        `Preferred month: ${input.preferredMonth}`,
+      const noteLines = buildLeadNoteLines(input, start.label);
+      noteLines.push(
         photoKeys.length > 0
           ? `Photos (${photoKeys.length}, private Blobs store lead-route-photos): ${photoKeys.join(', ')}`
           : 'Photos: none attached',
-      ];
+      );
       const noted = await tryCreateNote('contact-lead', input.email, noteLines.join('\n'));
       if (!noted && photoKeys.length > 0) {
         log('warn', 'lead_photo_keys_unrecorded', { form: 'lead', keys: photoKeys.join(', ') });

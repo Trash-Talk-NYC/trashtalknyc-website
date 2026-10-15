@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { leadSchema } from '../schemas';
+import { buildLeadNoteLines } from '../leadNote';
+import { leadBehalfAttribute } from '../../leadOptions';
 import { rollingMonths } from '../../months';
 
 const currentMonth = rollingMonths(1)[0].value;
@@ -9,25 +11,37 @@ const validLead = {
   lname: 'Doe',
   email: 'jane@example.com',
   phone: '(212) 555-0123',
-  behalf: 'individual',
-  mailingAddress: '708 W 171st St, Apt 2, New York, NY 10032',
-  routeType: 'loop',
+  behalf: ['individual'],
   startAddress: '708 WEST 171 STREET, New York, NY, USA',
   startAddressId: 'nycpad:venue:337433',
   startAddressPoint: '-73.938,40.843',
+  cleaningNeed: 'tree-beds',
+  support: ['supplies'],
   preferredMonth: currentMonth,
 };
 
 describe('leadSchema', () => {
-  it('accepts a complete loop application', () => {
+  it('accepts a complete request', () => {
     expect(leadSchema.safeParse(validLead).success).toBe(true);
   });
 
-  it('accepts an organization application', () => {
-    expect(leadSchema.safeParse({ ...validLead, behalf: 'organization' }).success).toBe(true);
+  it.each(['individual', 'nonprofit', 'educational', 'religious'])('accepts a request on behalf of %s', (behalf) => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: [behalf] }).success).toBe(true);
   });
 
-  it.each(['fname', 'lname', 'email', 'phone', 'mailingAddress', 'startAddress', 'startAddressId', 'startAddressPoint', 'preferredMonth'])(
+  it('takes several at once, but at least one', () => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['nonprofit', 'educational'] }).success).toBe(true);
+    expect(leadSchema.safeParse({ ...validLead, behalf: [] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: undefined }).success).toBe(false);
+  });
+
+  it('needs a description when "Other" is checked', () => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['other'] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['nonprofit', 'other'], behalfOther: '  ' }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['other'], behalfOther: 'Our block association' }).success).toBe(true);
+  });
+
+  it.each(['fname', 'lname', 'email', 'phone', 'startAddress', 'startAddressId', 'startAddressPoint', 'cleaningNeed', 'preferredMonth'])(
     'rejects a missing %s (all required)',
     (field) => {
       expect(leadSchema.safeParse({ ...validLead, [field]: '' }).success).toBe(false);
@@ -39,30 +53,36 @@ describe('leadSchema', () => {
     expect(leadSchema.safeParse({ ...validLead, phone: '+44 20 7946 0958' }).success).toBe(true);
   });
 
-  it('requires an end address only for one-way routes', () => {
-    expect(leadSchema.safeParse({ ...validLead, routeType: 'oneway' }).success).toBe(false);
+  it('no longer asks for a mailing address, route type, or end address', () => {
+    const parsed = leadSchema.safeParse({ ...validLead, mailingAddress: '1 Main St', routeType: 'oneway', endAddress: 'x' });
+    expect(parsed.success).toBe(true);
+    // Unknown keys are stripped, so they can never reach Brevo
+    expect(parsed.success && 'mailingAddress' in parsed.data).toBe(false);
+    expect(parsed.success && 'routeType' in parsed.data).toBe(false);
+  });
+
+  it('takes one of the offered cleaning needs only', () => {
+    for (const need of ['tree-beds', 'streets', 'needles', 'other']) {
+      expect(leadSchema.safeParse({ ...validLead, cleaningNeed: need }).success).toBe(true);
+    }
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: 'graffiti' }).success).toBe(false);
+  });
+
+  it('needs at least one offered kind of support, and accepts several', () => {
+    expect(leadSchema.safeParse({ ...validLead, support: [] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, support: undefined }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, support: ['money'] }).success).toBe(false);
     expect(
-      leadSchema.safeParse({ ...validLead, routeType: 'oneway', endAddress: '710 WEST 171 STREET, New York, NY, USA' }).success,
-    ).toBe(false);
-    expect(
-      leadSchema.safeParse({
-        ...validLead,
-        routeType: 'oneway',
-        endAddress: '710 WEST 171 STREET, New York, NY, USA',
-        endAddressId: 'nycpad:venue:337434',
-      }).success,
-    ).toBe(false);
-    expect(
-      leadSchema.safeParse({
-        ...validLead,
-        routeType: 'oneway',
-        endAddress: '710 WEST 171 STREET, New York, NY, USA',
-        endAddressId: 'nycpad:venue:337434',
-        endAddressPoint: '-73.938,40.843',
-      }).success,
+      leadSchema.safeParse({ ...validLead, support: ['supplies', 'promotion', 'facilitation', 'cleanup-group', 'other'] }).success,
     ).toBe(true);
-    // Loop never needs one
-    expect(leadSchema.safeParse({ ...validLead, endAddress: '' }).success).toBe(true);
+  });
+
+  it('treats the number of participants as optional, but a whole number when given', () => {
+    expect(leadSchema.safeParse({ ...validLead, participants: '' }).success).toBe(true);
+    expect(leadSchema.safeParse({ ...validLead, participants: '12' }).success).toBe(true);
+    expect(leadSchema.safeParse({ ...validLead, participants: '0' }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, participants: '2.5' }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, participants: 'lots' }).success).toBe(false);
   });
 
   it('rejects a past or malformed preferred month', () => {
@@ -70,8 +90,51 @@ describe('leadSchema', () => {
     expect(leadSchema.safeParse({ ...validLead, preferredMonth: 'whenever' }).success).toBe(false);
   });
 
-  it('rejects an unknown behalf or route type', () => {
-    expect(leadSchema.safeParse({ ...validLead, behalf: 'robot' }).success).toBe(false);
-    expect(leadSchema.safeParse({ ...validLead, routeType: 'spiral' }).success).toBe(false);
+  it('rejects an unknown behalf, including the retired "organization"', () => {
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['robot'] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, behalf: ['organization'] }).success).toBe(false);
+  });
+});
+
+describe('buildLeadNoteLines', () => {
+  it('writes the choices out in plain English for the team', () => {
+    const lines = buildLeadNoteLines(
+      { behalf: ['nonprofit', 'religious'], cleaningNeed: 'needles', support: ['supplies', 'cleanup-group'], participants: '8', preferredMonth: 'May 2027' },
+      '708 WEST 171 STREET, New York, NY, USA',
+    );
+    expect(lines).toEqual([
+      'Requesting on behalf of: A nonprofit, A religious institution',
+      'Starting address: 708 WEST 171 STREET, New York, NY, USA',
+      'What needs cleaning: Needles',
+      'Support needed: Supplies, Starting a cleanup group afterwards',
+      'Number of participants: 8',
+      'Preferred month: May 2027',
+    ]);
+  });
+
+  it('writes out what "Other" means', () => {
+    const lines = buildLeadNoteLines(
+      { behalf: ['other'], behalfOther: 'Our block association', cleaningNeed: 'streets', support: ['promotion'], participants: '', preferredMonth: 'May 2027' },
+      'x',
+    );
+    expect(lines[0]).toBe('Requesting on behalf of: Other: Our block association');
+  });
+
+  it('says when no group size was given', () => {
+    const lines = buildLeadNoteLines(
+      { behalf: ['individual'], cleaningNeed: 'other', support: ['other'], participants: undefined, preferredMonth: 'May 2027' },
+      'x',
+    );
+    expect(lines).toContain('Number of participants: not given');
+  });
+});
+
+describe('leadBehalfAttribute', () => {
+  it("only ever sends Brevo's two existing LEAD_BEHALF values", () => {
+    expect(leadBehalfAttribute(['individual'])).toBe('individual');
+    for (const b of ['nonprofit', 'educational', 'religious', 'other'] as const) {
+      expect(leadBehalfAttribute([b])).toBe('organization');
+      expect(leadBehalfAttribute(['individual', b])).toBe('organization');
+    }
   });
 });
