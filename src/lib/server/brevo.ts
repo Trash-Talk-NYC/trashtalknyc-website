@@ -131,7 +131,7 @@ export interface InquiryEmailInput {
   message: string;
   phone?: string;
   organization?: string;
-  /** Extra label/value rows (the lead application's route details). */
+  /** Extra label/value rows (the lead request's preferred month). */
   extraRows?: Array<[label: string, value: string | undefined]>;
 }
 

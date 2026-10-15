@@ -57,7 +57,8 @@ Empty-string fields are dropped before upsert (`buildAttributes`) so updates nev
 | `PHOTO_CONSENT` (boolean) | ✓ JSON `true`/`false` from the optional photo-consent checkbox | — | — |
 | `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership` \| `sponsor`; plain text attribute — verified via the attributes API 2026-08, so new values need no dashboard work) | ✓ (`lead`) |
 | `ORGANIZATION` | — | ✓ (partnership + sponsor tabs, required there) | — |
-| `LEAD_BEHALF`, `MAILING_ADDRESS`, `ROUTE_TYPE`, `ROUTE_START`, `ROUTE_END`, `PREFERRED_MONTH` | — | — | ✓ (`ROUTE_END` one-way only; route labels are the GeoSearch-verified ones) |
+| `LEAD_BEHALF`, `ROUTE_START`, `PREFERRED_MONTH` | — | — | ✓ (`ROUTE_START` is the GeoSearch-verified starting address) |
+| `MAILING_ADDRESS`, `ROUTE_TYPE`, `ROUTE_END` | — | — | no longer sent (2026-10-15); kept in Brevo with older requests' values — never delete attributes |
 
 The 2026-10 attributes (`COUNTRY`, `CITY`, `ZIP_CODE`, and the lead set) must be created in the Brevo dashboard before those flows can land.
 

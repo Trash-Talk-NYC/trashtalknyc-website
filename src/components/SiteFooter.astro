@@ -1,17 +1,16 @@
 ---
 /**
- * Single site-wide footer in the 2026-10 identity: the wordmark
- * sticker, links, the "Keep NYC clean." sign-off with a large vest
- * sticker beside it, and the full sticker icon row (all five
- * channels). No bricks here — the captain removed the footer brick
- * frame (2026-09-30). The vest moved off the wordmark to a larger
- * right-aligned sticker of its own (captain, 2026-10).
+ * Single site-wide footer in the 2026-10 identity: links, the "Let's
+ * clean NYC, together" sign-off with a large vest sticker above it, and
+ * the full sticker icon row (all five channels). No bricks here — the
+ * captain removed the footer brick frame (2026-09-30). The wordmark
+ * sticker on the left was dropped so the logo shows once (team
+ * feedback, 2026-10-15).
  */
 import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
 import { MORE_MEDIA_PATH } from '../lib/media';
-import wordmarkSticker from '../assets/wordmark-sticker.png';
 import vestSticker from '../assets/vest-sticker.png';
 
 const year = new Date().getFullYear();
@@ -19,9 +18,6 @@ const year = new Date().getFullYear();
 
 <footer>
   <div class="wrap foot-grid">
-    <div class="foot-stickers">
-      <Image src={wordmarkSticker} alt="Trash Talk NYC" class="foot-logo" width={260} densities={[1, 2]} />
-    </div>
     <ul class="foot-links">
       <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
       <li><a href="/about" data-en="About" data-es="Nosotros">About</a></li>
@@ -33,8 +29,9 @@ const year = new Date().getFullYear();
       <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
     </ul>
     <div class="foot-right">
-      <Image src={vestSticker} alt="" class="foot-vest" width={220} densities={[1, 2]} />
-      <div class="foot-big"><span data-en="Keep NYC" data-es="Mantén NYC">Keep NYC</span><br /><span class="accent" data-en="clean." data-es="limpia.">clean.</span></div>
+      <!-- The footer's only logo now, so it names the brand -->
+      <Image src={vestSticker} alt="Trash Talk NYC" class="foot-vest" width={220} densities={[1, 2]} />
+      <div class="foot-big"><span data-en="Let's clean NYC," data-es="Limpiemos NYC,">Let's clean NYC,</span><br /><span class="accent" data-en="together" data-es="juntos">together</span></div>
       <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
     </div>
     <div class="copy">© {year} Trash Talk NYC</div>
@@ -55,17 +52,6 @@ const year = new Date().getFullYear();
     grid-template-columns: minmax(0, 1fr);
     gap: 28px;
     align-items: start;
-  }
-
-  .foot-stickers {
-    position: relative;
-    width: 170px;
-  }
-
-  footer :global(.foot-logo) {
-    width: 130px;
-    height: auto;
-    transform: rotate(-4deg);
   }
 
   /* The vest as its own large sticker beside the sign-off, right-
@@ -128,7 +114,7 @@ const year = new Date().getFullYear();
     footer { padding-block: 56px 32px; }
 
     .foot-grid {
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       gap: 48px;
     }
 

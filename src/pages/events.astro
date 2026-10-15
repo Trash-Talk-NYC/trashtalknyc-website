@@ -1,9 +1,6 @@
 ---
-import Bricks from '../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
-import HeroEventCard from '../components/HeroEventCard.astro';
 import { fetchEventsAtBuildTime, toEventCardProps } from '../lib/events';
 import SocialLinks from '../components/SocialLinks.astro';
 import SectionWall from '../components/SectionWall.astro';
@@ -14,11 +11,6 @@ const upcoming = upcomingRaw.map(ev => ({
   props: toEventCardProps(ev),
   latLng: ev.venue?.lat != null ? { lat: ev.venue.lat, lng: ev.venue.lng! } : null,
 }));
-const nextEvent = upcoming[0]?.props ?? null;
-
-// Whole brick rows per half: as many as this hero's height fits
-// The hero is shorter with no event card in it, so it gets fewer rows
-const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, desktop: 3 };
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -32,24 +24,15 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     }
   </script>
 
-  <!-- HERO: centered title in the brick frame with the next event as a
-       wheatpasted poster card (captain: no trash can drawing here). -->
-  <section class="ev-hero brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} />
-    <div class="ev-hero-inner">
-      <h1 class="ev-title"><span data-en="Club" data-es="Eventos">Club</span> <span class="accent" data-en="Events" data-es="del Club">Events</span></h1>
-      <!-- With no upcoming event the hero is just the title; the "no
-           events" line lives under All Club Events (captain, 2026-10-09) -->
-      {nextEvent && <HeroEventCard {...nextEvent} />}
-    </div>
-  </section>
-
-  <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4) -->
+  <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4).
+       The page opens straight on the list, no "Club Events" title hero
+       (team feedback, 2026-10-15); its next-event poster went with it,
+       since that event already leads the list. -->
   <section class="ev-section wall">
     <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.5} duotone={0.18} seed={4} />
     <div class="wrap">
     <div class="list-head">
-      <h2 data-en="All Club Events" data-es="Todos los Eventos del Club">All Club Events</h2>
+      <h1 class="list-title"><span data-en="Upcoming" data-es="Próximos">Upcoming</span> <span class="accent" data-en="Events" data-es="Eventos">Events</span></h1>
     </div>
 
     <div class="dist-sort-label mono" id="distSortLabel" style="display:none">
@@ -69,17 +52,19 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
          not naked text on the photo). With no events posted it also says
          so; otherwise it closes the list. -->
     <section class="hear paste f-tape" aria-labelledby="hearHeading">
-      <h3 id="hearHeading" class="hear-title" data-en="The best way to hear about events" data-es="La mejor manera de enterarte de los eventos">The best way to hear about events</h3>
+      <h2 id="hearHeading" class="hear-title"><span data-en="The best way to" data-es="La mejor manera de">The best way to</span> <span class="accent" data-en="hear about events" data-es="enterarte de los eventos">hear about events</span></h2>
       {upcoming.length > 0 ? (
         <p class="hear-line" data-en="Join the newsletter and hear about every cleanup, including the ones near you." data-es="Únete al boletín y entérate de cada limpieza, incluidas las que estén cerca de ti.">Join the newsletter and hear about every cleanup, including the ones near you.</p>
       ) : (
-        <p class="hear-line" data-en="No dates are posted yet. Join the newsletter and you'll hear about new cleanups first." data-es="Aún no hay fechas publicadas. Únete al boletín y te enterarás primero de las nuevas limpiezas.">No dates are posted yet. Join the newsletter and you'll hear about new cleanups first.</p>
+        <p class="hear-line" data-en="No dates are posted yet. Join the newsletter and you'll hear about upcoming events first." data-es="Aún no hay fechas publicadas. Únete al boletín y te enterarás primero de los próximos eventos.">No dates are posted yet. Join the newsletter and you'll hear about upcoming events first.</p>
       )}
       <div class="hear-actions">
         <a class="btn btn-primary" href="/#signup" data-en="Join the newsletter →" data-es="Únete al boletín →">Join the newsletter →</a>
         <div class="hear-follow">
-          <p class="hear-or" data-en="or follow along" data-es="o síguenos">or follow along</p>
-          <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
+          <!-- Events are only announced in Instagram stories, so that is
+               the one channel offered here (team feedback, 2026-10-15) -->
+          <p class="hear-or" data-en="or watch our Instagram stories" data-es="o mira nuestras historias de Instagram">or watch our Instagram stories</p>
+          <SocialLinks ids={['instagram']} />
         </div>
       </div>
     </section>
@@ -241,43 +226,6 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
 </BaseLayout>
 
 <style>
-  /* ── HERO ── */
-  .ev-hero {
-    position: relative;
-    overflow: hidden;
-    border-bottom: var(--ink);
-  }
-
-  .ev-hero-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 47.5rem;
-    margin-inline: auto;
-    display: grid;
-    gap: 22px;
-    justify-items: center;
-    padding: calc(100vw * 0.16) 22px calc(100vw * 0.16);
-  }
-
-  /* The vw term only bites below ~380px, where the brick sides close in
-     on "Eventos". */
-  .ev-title {
-    font-size: min(3.8rem, 16vw);
-    color: var(--beige);
-    text-align: center;
-  }
-
-  .ev-title .accent { color: var(--lavender); }
-
-  /* Every width stacks the two leaves ("Club" over "Events", "Eventos"
-     over "del Club"): one-line Spanish outgrows the brick opening. */
-  .ev-title span { display: block; }
-
-  @media (min-width: 761px) {
-    .ev-hero-inner { gap: 30px; padding: calc(100vw * 0.085) 16px calc(100vw * 0.085); }
-    .ev-title { font-size: clamp(4.4rem, 8vw, 7rem); }
-  }
-
   /* ── LIST ── */
   .list-head {
     display: flex;
@@ -285,10 +233,12 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     align-items: end;
     gap: 16px;
     flex-wrap: wrap;
-    padding-block: 40px 16px;
+    padding-block: 56px 16px;
   }
 
-  .list-head h2 { font-size: 3rem; color: var(--lavender); }
+  /* Purple highlights one phrase of a two-tone heading, never all of it */
+  .list-title { font-size: min(3.6rem, 15vw); line-height: 0.95; color: var(--beige); }
+  .list-title .accent { color: var(--lavender); }
 
   .dist-sort-label {
     display: flex;
@@ -319,16 +269,9 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
     padding-bottom: 40px;
   }
 
-
-
-
-
-
-
   @media (min-width: 761px) {
-    .list-head { padding-block: 56px 22px; }
-    .list-head h2 { font-size: clamp(3rem, 6vw, 4.8rem); }
-
+    .list-head { padding-block: 88px 26px; }
+    .list-title { font-size: clamp(4rem, 7vw, 6.4rem); }
   }
 
   /* ── HOW TO HEAR ABOUT EVENTS (taped poster) ── */
@@ -346,8 +289,9 @@ const bricks: BrickRows = nextEvent ? { phone: 7, desktop: 4 } : { phone: 5, des
   .hear-title {
     font-size: clamp(2rem, 4vw, 2.8rem);
     line-height: 1;
-    color: var(--purple);
   }
+
+  .hear-title .accent { color: var(--purple); }
 
   .hear-line { margin: 0 0 6px; font-size: 1.15rem; line-height: 1.45; max-width: 44ch; }
 

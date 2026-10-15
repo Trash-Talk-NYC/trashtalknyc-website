@@ -56,7 +56,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->
       <div class="mono tm-eyebrow" data-en="About" data-es="Nosotros">About</div>
-      <h1 class="tm-title" data-en="The Team" data-es="El Equipo">The Team</h1>
+      <h1 class="tm-title"><span data-en="The" data-es="El">The</span> <span class="accent" data-en="Team" data-es="Equipo">Team</span></h1>
       <figure class="tm-photo paste f-sticker">
         <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
         <Image
@@ -149,7 +149,10 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   /* Same eyebrow voice as the founder page's */
   .tm-eyebrow { color: var(--yellow); font-size: 1.02rem; margin-bottom: -6px; }
 
-  .tm-title { font-size: 3.4rem; line-height: 0.92; color: var(--lavender); }
+  /* Purple highlights one word of a two-tone heading, never all of it
+     (team feedback, 2026-10-15) */
+  .tm-title { font-size: 3.4rem; line-height: 0.92; color: var(--beige); }
+  .tm-title .accent { color: var(--lavender); }
 
   .tm-photo {
     position: relative;
@@ -257,7 +260,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
      sheet stays short instead of showing an empty slab */
   .bio .bio-soon { color: #6b6a61; }
 
-  .bio h2 { font-size: 2.4rem; color: var(--purple); }
+  .bio h2 { font-size: 2.4rem; }
   .bio p { margin: 0; font-size: 1.05rem; line-height: 1.55; }
   .bio a { color: var(--purple); font-weight: 700; }
 

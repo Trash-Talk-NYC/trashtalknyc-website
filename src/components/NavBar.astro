@@ -1,6 +1,7 @@
 ---
 /**
- * Sticky top navigation: the wordmark sticker, page links, About
+ * Sticky top navigation: the vest sticker and the "Trash Talk NYC" name
+ * (captain's N1, 2026-10-15), page links, About
  * dropdown, EN/ES toggle, Join CTA, and the phone menu (a beige sheet
  * that expands inside the sticky nav, under the bar). Owns active-page
  * detection. Deliberately a PLAIN sticky header — see the header
@@ -17,7 +18,7 @@ import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
 import { MORE_MEDIA_PATH, PHOTO_ALBUMS, mediaSections } from '../lib/media';
-import wordmarkSticker from '../assets/wordmark-sticker.png';
+import vestSticker from '../assets/vest-sticker.png';
 
 const pathname = Astro.url.pathname;
 
@@ -45,7 +46,8 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
 <nav aria-label="Main">
   <div class="nav-bar">
     <a class="nav-logo-link" href="/" aria-label="Trash Talk NYC home">
-      <Image src={wordmarkSticker} alt="" class="nav-logo" width={184} densities={[1, 2]} loading="eager" />
+      <Image src={vestSticker} alt="" class="nav-logo" width={64} densities={[1, 2]} loading="eager" />
+      <span class="nav-name" aria-hidden="true">Trash Talk NYC</span>
     </a>
 
     <ul class="nav-links">
@@ -270,19 +272,37 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
   }
 
   .nav-logo-link {
-    display: block;
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
     margin-right: auto;
+    text-decoration: none;
   }
 
-  /* The wordmark sticker hangs slightly below the bar like a slapped-on
-     sticker; the nav deliberately doesn't clip it. */
   nav :global(.nav-logo) {
-    width: 70px;
+    flex: none;
+    width: 40px;
     height: auto;
-    margin-top: 20px;
-    transform: rotate(-5deg);
-    filter: drop-shadow(3px 3px 0 var(--black));
+    transform: rotate(-4deg);
+    filter: drop-shadow(2px 2px 0 var(--black));
+  }
+
+  /* The one Londrina Black (900) use on the site: purple with a thin
+     ink outline painted under the fill and a hard ink shadow (captain's
+     N1). One line at every width: the name shrinks on narrow phones
+     rather than wrapping. */
+  .nav-name {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(1.15rem, 5.4vw, 1.5rem);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    color: var(--purple);
+    -webkit-text-stroke: 1.5px var(--black);
+    paint-order: stroke fill;
+    text-shadow: 2px 2px 0 var(--black);
   }
 
   .nav-links {
@@ -496,13 +516,11 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
   @media (min-width: 761px) {
     .nav-bar { height: 74px; gap: 28px; }
 
-    nav :global(.nav-logo) {
-      width: 92px;
-      margin-top: 26px;
-    }
+    nav :global(.nav-logo) { width: 50px; }
+    .nav-name { font-size: 1.6rem; }
 
     .nav-links { display: flex; margin-left: auto; }
-    .nav-logo-link { margin-right: 0; }
+    .nav-logo-link { margin-right: 0; flex: none; }
     .nav-lang { display: block; }
     .burger { display: none; }
     .m-menu { display: none !important; }
@@ -517,7 +535,16 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
   @media (min-width: 761px) and (max-width: 1060px) {
     .nav-bar { gap: 16px; }
     .nav-links { gap: 16px; font-size: 0.98rem; }
-    nav :global(.nav-logo) { width: 78px; }
+    nav :global(.nav-logo) { width: 42px; }
+    .nav-name { font-size: 1.3rem; }
     nav :global(.nav-cta) { padding: 10px 14px; }
+  }
+
+  /* The name beside the vest needs these last pixels at the very
+     narrowest desktop widths, or the dropdown chevrons get squeezed out */
+  @media (min-width: 761px) and (max-width: 860px) {
+    .nav-bar { gap: 12px; }
+    .nav-links { gap: 13px; }
+    .nav-name { font-size: 1.12rem; }
   }
 </style>

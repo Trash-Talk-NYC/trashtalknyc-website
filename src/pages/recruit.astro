@@ -1,15 +1,14 @@
 ---
-import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import vestSticker from '../assets/vest-sticker.png';
 
 /**
  * Open Roles — the recruitment page, top-level at /recruit (captain,
  * round 20; moved from /contact/join, where it was "Join the Team").
- * 2026-10 redesign: no hero and no page-title box — "A note before
- * you apply" is one wheatpasted
- * letter (and is the page's h1), then the two role posters and the
- * email button. Applications stay email-only.
+ * 2026-10 redesign: no hero and no page-title box. The page is a short
+ * "Open Roles" heading, the two role posters, and the email button.
+ * Applications stay email-only. The captain-verbatim "A note before you
+ * apply" letter was removed on team feedback (2026-10-15); it lives in
+ * git history.
  *
  * The "[your name]" placeholder in the mailto subject is deliberate —
  * a mailto can't know the sender, so the subject asks them to say so
@@ -70,35 +69,8 @@ const roles = [
   title="Open Roles — Trash Talk NYC"
   description="Trash Talk NYC needs helping hands. Open roles in social media and long-form video. Apply by email to team@trashtalknyc.org."
 >
-  <!-- The note is the first substantial content on the page and is
-       CAPTAIN'S COPY VERBATIM throughout (rounds 22–24): the
-       trying-it-out intro, "we move fast, and with effort" with its
-       comma, the messaging paragraph (rounds 24–28, all captain's:
-       "mutates a ton of minutiae prone to generating unnecessary
-       friction" stays exactly, both quoted chat messages stay
-       complete, and the SENTENCE ORDER is the captain's final
-       call — thesis first, then the two examples; sole firstmate
-       edit, flagged: their "friction; A quick" semicolon became a
-       full stop so the capital parses. One paragraph, flowing
-       prose, never re-break it into bullets), the four-sentence
-       events closer,
-       and the email-only line last ("anyways" and the double "!!"
-       are theirs — never correct either). Do not smooth, join, or
-       formalize any of it, in either language. -->
-  <!-- No brick frame around the note (captain, 2026-10-10) -->
-  <section class="rc-wall">
-    <article class="note paste f-sticker">
-      <Image src={vestSticker} alt="" class="slap note-slap" width={104} densities={[1, 2]} />
-      <h1 class="note-title" data-en="A note before you apply" data-es="Una nota antes de postularte">A note before you apply</h1>
-      <p data-en="The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech." data-es="La mejor manera de saber si algo funciona es probarlo, y creemos que eso aplica a eventos, contenido, colaboraciones y tecnología.">The best way to know if something works is trying it out, and we think this goes for events, content, collaborations, and tech.</p>
-      <p data-en="Given Trash Talk NYC's growth, we move fast, and with effort. Some preferences to illustrate:" data-es="Dado el crecimiento de Trash Talk NYC, nos movemos rápido, y con esfuerzo. Algunas preferencias para ilustrar:">Given Trash Talk NYC's growth, we move fast, and with effort. Some preferences to illustrate:</p>
-      <p data-en="We never overlook the ease of iMessage, WhatsApp, and Signal. Instant messaging is how we stay updated with the team, along with many folks we get to meet at events. The same thinking mutates a ton of minutiae prone to generating unnecessary friction. A quick phone call usually beats scheduling a 30 minute Google Meet. “I posted this in the drive, take a look when you get a chance” becomes “here's the link, it's in the drive too.”" data-es="Nunca pasamos por alto la facilidad de iMessage, WhatsApp y Signal. La mensajería instantánea es como nos mantenemos al día con el equipo, y con mucha gente que conocemos en los eventos. La misma lógica muta un montón de minucias propensas a generar fricción innecesaria. Una llamada rápida suele ganarle a agendar un Google Meet de 30 minutos. “lo subí al drive, échale un ojo cuando puedas” se convierte en “aquí va el link, también está en el drive”.">We never overlook the ease of iMessage, WhatsApp, and Signal. Instant messaging is how we stay updated with the team, along with many folks we get to meet at events. The same thinking mutates a ton of minutiae prone to generating unnecessary friction. A quick phone call usually beats scheduling a 30 minute Google Meet. “I posted this in the drive, take a look when you get a chance” becomes “here's the link, it's in the drive too.”</p>
-      <p data-en="The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk NYC. We have a lot of fun. Stay a while!" data-es="Los eventos son especiales. Sea cual sea el rol, conectar con los vecinos es una parte vital de Trash Talk NYC. Nos divertimos mucho. ¡Quédate un rato!">The events are special. No matter the role, connecting with neighbors is a vital part of Trash Talk NYC. We have a lot of fun. Stay a while!</p>
-      <p data-en="Applications are email-only. If you think you are a good fit, but don't see a corresponding role, please message us anyways!!" data-es="Las solicitudes son solo por correo. Si crees que encajas bien, pero no ves un rol que corresponda, ¡¡escríbenos igual!!">Applications are email-only. If you think you are a good fit, but don't see a corresponding role, please message us anyways!!</p>
-    </article>
-  </section>
-
   <section class="wrap rc-body">
+    <h1 class="rc-title"><span data-en="Open" data-es="Puestos">Open</span> <span class="accent" data-en="Roles" data-es="Abiertos">Roles</span></h1>
     <div class="roles">
       {roles.map((r) => (
         <a class:list={['role', 'paste', r.tone, r.tone === 'r-black' ? 'f-tape' : 'f-staple']} href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es}>
@@ -121,70 +93,18 @@ const roles = [
 </BaseLayout>
 
 <style>
-  /* ── NOTE ON THE BRICK WALL ── */
-  .rc-wall {
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    place-items: center;
-    padding: 56px 12px 40px;
-  }
-
-  .note {
-    position: relative;
-    z-index: 1;
-    --flyer-bg: var(--paper);
-    color: var(--black);
-    padding: 26px 18px;
-    max-width: 51.25rem;
-    margin-inline: auto;
-    width: 100%;
-  }
-
-  /* Right padding keeps the heading clear of the vest sticker pinned to
-     the card's corner at every width */
-  .note-title {
-    font-size: 2.2rem;
-    color: var(--purple);
-    margin-bottom: 16px;
-    padding-right: 52px;
-  }
-
-  .note p {
-    margin: 0 0 1em;
-    font-size: 1.02rem;
-    line-height: 1.65;
-    max-width: 68ch;
-  }
-
-  .note p:last-child { margin-bottom: 0; }
-
-  /* Vest sticker pinning the wheatpasted letter to the wall — the same
-     device as the signup form and the About photo (captain likes it) */
-  .note :global(.note-slap) {
-    top: -36px;
-    right: -10px;
-    width: 72px;
-    height: auto;
-    transform: rotate(10deg);
-  }
-
   .email-addr { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
-
-  @media (min-width: 761px) {
-    .rc-wall { padding: 88px clamp(16px, 5vw, 60px) 56px; }
-    .note { padding: 34px clamp(20px, 4vw, 48px); }
-    .note-title { font-size: clamp(2.2rem, 4vw, 3rem); padding-right: 72px; }
-    .note p { font-size: 1.1rem; }
-    .note :global(.note-slap) { top: -40px; right: -24px; width: 104px; }
-  }
 
   /* ── ROLES ── */
   .rc-body {
     display: grid;
     gap: 24px;
-    padding-block: 28px 44px;
+    padding-block: 56px 44px;
   }
+
+  /* Purple highlights one word of a two-tone heading, never all of it */
+  .rc-title { font-size: 3.4rem; line-height: 0.95; color: var(--beige); }
+  .rc-title .accent { color: var(--lavender); }
 
   .roles {
     display: grid;
@@ -254,7 +174,8 @@ const roles = [
   }
 
   @media (min-width: 761px) {
-    .rc-body { gap: 34px; padding-block: 40px 72px; }
+    .rc-body { gap: 34px; padding-block: 88px 72px; }
+    .rc-title { font-size: clamp(3.4rem, 6vw, 5.4rem); max-width: 57.5rem; margin-inline: auto; width: 100%; }
     /* Two posters since 2026-10; capped and centered so a pair doesn't
        stretch into billboard-wide sheets inside the 1240px wrap */
     .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 57.5rem; margin-inline: auto; width: 100%; }

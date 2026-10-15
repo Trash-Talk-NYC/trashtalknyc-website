@@ -7,6 +7,7 @@ import { isRateLimitedByBlobs } from '../lib/server/rate-limit';
 import { verifyTurnstileToken } from '../lib/server/turnstile';
 import { verifyNycAddress, type GeoVerifyResult } from '../lib/server/geosearch';
 import { MAX_PHOTOS, deleteLeadPhotos, processPhoto, storeLeadPhotos } from '../lib/server/photos';
+import { buildLeadNoteLines } from '../lib/server/leadNote';
 import {
   buildAttributes,
   buildInquiryEmail,
@@ -466,10 +467,6 @@ export const server = {
       // as an error on that address field so the applicant knows to
       // re-pick it (or retry, when the map service is down).
       const start = await verifyAddressField('startAddress', input.startAddress, input.startAddressId, input.startAddressPoint);
-      const end =
-        input.routeType === 'oneway'
-          ? await verifyAddressField('endAddress', input.endAddress ?? '', input.endAddressId ?? '', input.endAddressPoint ?? '')
-          : undefined;
 
       // Route photos: content-validated, re-encoded (metadata including
       // GPS stripped), stored privately under random keys. File inputs
@@ -500,6 +497,12 @@ export const server = {
         photoKeys = stored.keys;
       }
 
+      // Only attributes that already exist in Brevo: the request's newer
+      // answers (what needs cleaning, support, group size) ride in the CRM
+      // note and the notification, so no dashboard change can lose a
+      // request. MAILING_ADDRESS, ROUTE_TYPE, and ROUTE_END are no longer
+      // asked (team feedback, 2026-10-15); the attributes stay in Brevo
+      // (add-only) with whatever older requests stored.
       try {
         await upsertOrThrow(
           'lead',
@@ -510,10 +513,7 @@ export const server = {
             PHONE: input.phone,
             INQUIRY_TYPE: 'lead',
             LEAD_BEHALF: input.behalf,
-            MAILING_ADDRESS: input.mailingAddress,
-            ROUTE_TYPE: input.routeType,
             ROUTE_START: start.label,
-            ROUTE_END: end?.label,
             PREFERRED_MONTH: input.preferredMonth,
           }),
           brevo,
@@ -524,17 +524,14 @@ export const server = {
         throw err;
       }
 
-      // The CRM note preserves the full application (attributes are
+      // The CRM note preserves the full request (attributes are
       // last-write-wins), including where the private photos live.
-      const noteLines = [
-        `Applying on behalf of: ${input.behalf}`,
-        `Mailing address: ${input.mailingAddress}`,
-        `Route: ${input.routeType === 'loop' ? 'Loop' : 'One-way'} — start: ${start.label}${end ? ` — end: ${end.label}` : ''}`,
-        `Preferred month: ${input.preferredMonth}`,
+      const noteLines = buildLeadNoteLines(input, start.label);
+      noteLines.push(
         photoKeys.length > 0
           ? `Photos (${photoKeys.length}, private Blobs store lead-route-photos): ${photoKeys.join(', ')}`
           : 'Photos: none attached',
-      ];
+      );
       const noted = await tryCreateNote('contact-lead', input.email, noteLines.join('\n'));
       if (!noted && photoKeys.length > 0) {
         log('warn', 'lead_photo_keys_unrecorded', { form: 'lead', keys: photoKeys.join(', ') });

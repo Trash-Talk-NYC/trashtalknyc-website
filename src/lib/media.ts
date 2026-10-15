@@ -104,6 +104,11 @@ export const featuredVideo = {
     en: 'Come visit Trash Talk NYC headquarters!',
     es: '¡Ven a visitar la sede de Trash Talk NYC!',
   } satisfies Copy,
+  /** The player's accessible name (its iframe title). */
+  title: {
+    en: 'YouTube video: Come visit Trash Talk NYC headquarters!',
+    es: 'Video de YouTube: ¡Ven a visitar la sede de Trash Talk NYC!',
+  } satisfies Copy,
 };
 
 /** Privacy-enhanced embed host: no tracking cookies until playback. */
