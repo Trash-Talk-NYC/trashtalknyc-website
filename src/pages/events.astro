@@ -25,15 +25,16 @@ const upcoming = upcomingRaw.map(ev => ({
   </script>
 
   <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4).
-       The page opens straight on the list, no "Club Events" title hero
-       (team feedback, 2026-10-15); its next-event poster went with it,
-       since that event already leads the list. -->
+       The page opens straight on the list: no "Club Events" title hero
+       (team feedback, 2026-10-15; its next-event poster went with it,
+       since that event already leads the list) and no list heading
+       either (captain, 2026-10-15). The page name stays as a
+       screen-reader-only h1, the nav's own label. -->
   <section class="ev-section wall">
     <SectionWall kind="cleanup" src={wallColorGraffiti} dim={0.5} duotone={0.18} seed={4} />
     <div class="wrap">
-    <div class="list-head">
-      <h1 class="list-title"><span data-en="Upcoming" data-es="Próximos">Upcoming</span> <span class="accent" data-en="Events" data-es="Eventos">Events</span></h1>
-    </div>
+    <h1 class="sr-only" data-en="Club Events" data-es="Eventos del Club">Club Events</h1>
+    <div class="list-top"></div>
 
     <div class="dist-sort-label mono" id="distSortLabel" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
@@ -227,18 +228,8 @@ const upcoming = upcomingRaw.map(ev => ({
 
 <style>
   /* ── LIST ── */
-  .list-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding-block: 56px 16px;
-  }
-
-  /* Purple highlights one phrase of a two-tone heading, never all of it */
-  .list-title { font-size: min(3.6rem, 15vw); line-height: 0.95; color: var(--beige); }
-  .list-title .accent { color: var(--lavender); }
+  /* Room under the torn top edge before the first card */
+  .list-top { height: 48px; }
 
   .dist-sort-label {
     display: flex;
@@ -270,8 +261,7 @@ const upcoming = upcomingRaw.map(ev => ({
   }
 
   @media (min-width: 761px) {
-    .list-head { padding-block: 88px 26px; }
-    .list-title { font-size: clamp(4rem, 7vw, 6.4rem); }
+    .list-top { height: 72px; }
   }
 
   /* ── HOW TO HEAR ABOUT EVENTS (taped poster) ── */
