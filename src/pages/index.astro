@@ -631,9 +631,12 @@ const contributePhoto = albums[0].photos[0];
     color: var(--black);
   }
 
+  /* Flush with the corner on phones: the loaded reel makes the tilted
+     card tall enough that its top corner swings right, and a sticker
+     hanging past it pushed the page 3px wider than the screen */
   .feed :global(.feed-slap) {
     top: -30px;
-    right: -10px;
+    right: 0;
     width: 64px;
     height: auto;
     transform: rotate(9deg);
