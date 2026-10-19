@@ -19,6 +19,7 @@ import wallPasteUps from '../assets/walls/wall-paste-ups.webp';
 import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
 import { galleryPhotos } from '../lib/gallery';
 import { featuredVideo } from '../lib/media';
+import { raisedSentence } from '../lib/contribute';
 
 const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
 
@@ -75,11 +76,14 @@ const heroBricks: BrickRows = { phone: 3, desktop: 8 };
 // Where contributions go: planting and tools (team feedback, 2026-10-15,
 // replacing the chalk wall). From the gallery, so its alt text is shared.
 const contributePhoto = galleryPhotos[0];
+
+// Shown only once the captain fills in the amount (src/lib/contribute.ts)
+const raised = raisedSentence();
 ---
 
 <BaseLayout
   title="Trash Talk NYC"
-  description="Trash Talk NYC is New York City's cleanup club. Find upcoming community cleanup events, sign up for the newsletter, and help keep NYC clean."
+  description="Trash Talk NYC is New York City's cleanup club. Find upcoming community cleanup events, sign up for the newsletter. Let's clean NYC, together."
 >
 
 <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(orgSchema)} />
@@ -136,7 +140,9 @@ const contributePhoto = galleryPhotos[0];
     <div class="contribute-main paste f-tape">
       <div class="mono contribute-eyebrow" data-en="Contribute" data-es="Contribuye">Contribute</div>
       <h2 class="contribute-title" data-en="Because of you" data-es="Gracias a ti">Because of you</h2>
-      <!-- The captain's line (2026-10-15); no dollar amount yet -->
+      <!-- The captain's lines (2026-10-15/19); the amount raised appears
+           once it is set in src/lib/contribute.ts -->
+      {raised && <p class="contribute-note contribute-raised" data-en={raised.en} data-es={raised.es}>{raised.en}</p>}
       <p class="contribute-note" data-en="This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City." data-es="Este fondo nos ha permitido construir más de 15 protectores de árboles, comprar equipo para producción y organizar más de dos docenas de eventos gratuitos en la ciudad de Nueva York.">This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City.</p>
       <div class="gfm">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
@@ -523,6 +529,9 @@ const contributePhoto = galleryPhotos[0];
     font-size: 1.15rem;
     line-height: 1.5;
   }
+
+  /* The raised line leads the fund line, so the pair reads as one block */
+  .contribute-raised { margin-bottom: 6px; font-weight: 700; }
 
   /* The live widget sits straight on the section; its internals are an
      iframe and stay GoFundMe's. Their card stretches to the iframe up to

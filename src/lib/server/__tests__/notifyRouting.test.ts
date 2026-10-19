@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { notifyRecipientVar } from '../notifyRouting';
+import { notifyRoute } from '../notifyRouting';
 import { PARTNERSHIP_TYPE_VALUES } from '../../leadOptions';
 
-describe('notifyRecipientVar', () => {
-  it('gives each inquiry kind its own inbox var', () => {
-    expect(notifyRecipientVar('general')).toBe('CONTACT_NOTIFY_TO');
-    expect(notifyRecipientVar('sponsor')).toBe('SPONSOR_NOTIFY_TO');
-    expect(notifyRecipientVar('lead')).toBe('LEAD_NOTIFY_TO');
+describe('notifyRoute', () => {
+  it('gives each inquiry kind its own tag and inbox var', () => {
+    expect(notifyRoute('general')).toEqual({ tag: '[General]', envVar: 'CONTACT_NOTIFY_TO' });
+    expect(notifyRoute('sponsor')).toEqual({ tag: '[Sponsorship]', envVar: 'SPONSOR_NOTIFY_TO' });
+    expect(notifyRoute('lead')).toEqual({ tag: '[Lead a cleanup]', envVar: 'LEAD_NOTIFY_TO' });
   });
 
-  it('routes every partnership kind to one of the three partner inboxes', () => {
-    const vars = new Set(PARTNERSHIP_TYPE_VALUES.map((t) => notifyRecipientVar('partnership', t)));
-    expect([...vars].sort()).toEqual(['NONPROFIT_NOTIFY_TO', 'PARTNER_CONTENT_NOTIFY_TO', 'PODCAST_NOTIFY_TO']);
+  it('routes every partnership kind to one of the three partner categories', () => {
+    expect(notifyRoute('partnership', 'podcast')).toEqual({ tag: '[Podcast]', envVar: 'PODCAST_NOTIFY_TO' });
+    expect(notifyRoute('partnership', 'nonprofit')).toEqual({ tag: '[Nonprofit]', envVar: 'NONPROFIT_NOTIFY_TO' });
+    const routes = new Set(PARTNERSHIP_TYPE_VALUES.map((t) => notifyRoute('partnership', t).tag));
+    expect([...routes].sort()).toEqual(['[Content]', '[Nonprofit]', '[Podcast]']);
   });
 });

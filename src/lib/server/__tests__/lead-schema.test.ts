@@ -106,7 +106,7 @@ describe('buildLeadNoteLines', () => {
       'Requesting on behalf of: A nonprofit, A religious institution',
       'Starting address: 708 WEST 171 STREET, New York, NY, USA',
       'What needs cleaning: Needles',
-      'Support needed: Supplies, Starting a cleanup group afterwards',
+      'Support needed: Supplies, Creating a cleanup group afterward',
       'Number of participants: 8',
       'Preferred month: May 2027',
     ]);

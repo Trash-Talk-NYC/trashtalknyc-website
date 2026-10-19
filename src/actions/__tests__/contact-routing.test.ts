@@ -189,18 +189,29 @@ describe('contact action team notification', () => {
   });
 
   it.each([
-    ['content-collaboration', 'content@trashtalknyc.org'],
-    ['content-creation', 'content@trashtalknyc.org'],
-    ['influencer', 'content@trashtalknyc.org'],
-    ['corporate-event', 'content@trashtalknyc.org'],
-    ['other', 'content@trashtalknyc.org'],
-    ['podcast', 'podcast@trashtalknyc.org'],
-    ['nonprofit', 'nonprofits@trashtalknyc.org'],
-  ])('routes a %s partnership to its own inbox', async (partnershipType, inbox) => {
+    ['content-collaboration', 'content@trashtalknyc.org', '[Content]'],
+    ['content-creation', 'content@trashtalknyc.org', '[Content]'],
+    ['influencer', 'content@trashtalknyc.org', '[Content]'],
+    ['corporate-event', 'content@trashtalknyc.org', '[Content]'],
+    ['other', 'content@trashtalknyc.org', '[Content]'],
+    ['podcast', 'podcast@trashtalknyc.org', '[Podcast]'],
+    ['nonprofit', 'nonprofits@trashtalknyc.org', '[Nonprofit]'],
+  ])('routes a %s partnership to its own inbox, tagged', async (partnershipType, inbox, tag) => {
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType, organization: 'Acme Org' }), contactCtx());
 
     expect(sendBrevoEmail).toHaveBeenCalledWith('test-key', expect.objectContaining({ to: [{ email: inbox }] }));
+    expect(sendBrevoEmail.mock.calls[0][1].subject).toBe(`${tag} New collaboration inquiry — Jane Doe · Acme Org`);
+  });
+
+  it.each([
+    ['general', '[General] New contact message — Jane Doe'],
+    ['sponsor', '[Sponsorship] New sponsorship inquiry — Jane Doe · Acme Org'],
+  ])('tags a %s inquiry subject', async (inquiryType, subject) => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(contactInput({ inquiryType, organization: inquiryType === 'general' ? undefined : 'Acme Org' }), contactCtx());
+
+    expect(sendBrevoEmail.mock.calls[0][1].subject).toBe(subject);
   });
 
   it('names the partnership kind in the email and the CRM note', async () => {

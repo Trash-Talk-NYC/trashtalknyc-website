@@ -8,7 +8,7 @@ import { verifyTurnstileToken } from '../lib/server/turnstile';
 import { verifyNycAddress, type GeoVerifyResult } from '../lib/server/geosearch';
 import { MAX_PHOTOS, deleteLeadPhotos, processPhoto, storeLeadPhotos } from '../lib/server/photos';
 import { buildLeadNoteLines } from '../lib/server/leadNote';
-import { notifyRecipientVar } from '../lib/server/notifyRouting';
+import { notifyRoute } from '../lib/server/notifyRouting';
 import { PARTNERSHIP_TYPES, leadBehalfAttribute, leadOptionLabel, type PartnershipType } from '../lib/leadOptions';
 import {
   buildAttributes,
@@ -271,8 +271,9 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
  * Emails the team the moment a contact-form inquiry arrives (every tab) so a
  * new lead is seen without polling Brevo. Reply-to is the person who wrote
  * in, so a reply reaches them directly. Each kind of inquiry goes to its own
- * inbox (notifyRecipientVar: general, sponsor, lead, and the partnership
- * buckets), with no fallback between them, so a misroute is impossible.
+ * inbox with its own subject tag (notifyRoute: general, sponsor, lead, and
+ * the partnership categories), with no fallback between them, so a
+ * misroute is impossible.
  *
  * An unset inbox var is logged as an error naming it
  * (`inquiry_notify_unconfigured`), since that inquiry then reaches nobody by
@@ -290,7 +291,7 @@ async function tryNotifyInquiry(input: InquiryEmailInput & { partnershipType?: P
       log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
       return;
     }
-    const toVar = notifyRecipientVar(input.inquiryType, input.partnershipType);
+    const { tag, envVar: toVar } = notifyRoute(input.inquiryType, input.partnershipType);
     const to = getEnv(toVar);
     if (!to) {
       log('error', 'inquiry_notify_unconfigured', { form, inquiry: input.inquiryType, envVar: toVar });
@@ -309,7 +310,7 @@ async function tryNotifyInquiry(input: InquiryEmailInput & { partnershipType?: P
       return;
     }
 
-    const { subject, htmlContent } = buildInquiryEmail(input);
+    const { subject, htmlContent } = buildInquiryEmail({ ...input, tag });
 
     const result = await sendBrevoEmail(apiKey, {
       sender: { email: from, name: 'Trash Talk NYC Website' },

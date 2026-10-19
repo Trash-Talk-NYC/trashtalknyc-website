@@ -97,6 +97,16 @@ export const GALLERY = {
   label: { en: 'Gallery', es: 'Galería' },
 } as const;
 
+/**
+ * In The News (captain, 2026-10-19): press coverage, listed from
+ * src/lib/news.ts. A top-level route, but it lives under the More Media
+ * dropdown and switcher like the Gallery.
+ */
+export const IN_THE_NEWS = {
+  path: '/in-the-news',
+  label: { en: 'In The News', es: 'En las Noticias' },
+} as const;
+
 /** The captain's line for the More Media hero (2026-10-09). */
 export const moreMediaTagline: Copy = {
   en: 'Hear us talk trash across several platforms.',

@@ -5,10 +5,10 @@
  * the overview. Channel labels are brand names, identical in EN and ES;
  * Gallery translates. Channels that aren't ready are left out.
  */
-import { GALLERY, liveMediaSections, type MediaSectionId } from '../lib/media';
+import { GALLERY, IN_THE_NEWS, liveMediaSections, type MediaSectionId } from '../lib/media';
 
 interface Props {
-  current: MediaSectionId | 'gallery';
+  current: MediaSectionId | 'gallery' | 'in-the-news';
 }
 
 const { current } = Astro.props;
@@ -24,6 +24,9 @@ const { current } = Astro.props;
     ))}
     <li>
       <a href={GALLERY.path} aria-current={current === 'gallery' ? 'page' : undefined} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a>
+    </li>
+    <li>
+      <a href={IN_THE_NEWS.path} aria-current={current === 'in-the-news' ? 'page' : undefined} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a>
     </li>
   </ul>
 </nav>

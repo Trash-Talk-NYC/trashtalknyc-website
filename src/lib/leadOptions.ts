@@ -18,7 +18,7 @@ export const SUPPORT_NEEDS = [
   { value: 'supplies', en: 'Supplies', es: 'Materiales' },
   { value: 'promotion', en: 'Promotion', es: 'Difusión' },
   { value: 'facilitation', en: 'Facilitation', es: 'Facilitación' },
-  { value: 'cleanup-group', en: 'Starting a cleanup group afterwards', es: 'Formar un grupo de limpieza después' },
+  { value: 'cleanup-group', en: 'Creating a cleanup group afterward', es: 'Crear un grupo de limpieza después' },
   { value: 'other', en: 'Other', es: 'Otro' },
 ] as const satisfies readonly Option<string>[];
 

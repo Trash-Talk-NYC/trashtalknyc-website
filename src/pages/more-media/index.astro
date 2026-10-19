@@ -4,14 +4,14 @@ import wallBluePlate from '../../assets/walls/wall-blue-plate.webp';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
-import { GALLERY, liveMediaSections, moreMediaTagline, type MediaSectionId } from '../../lib/media';
+import { GALLERY, IN_THE_NEWS, liveMediaSections, moreMediaTagline, type MediaSectionId } from '../../lib/media';
 import { galleryByMonth } from '../../lib/gallery';
 import vestSticker from '../../assets/vest-sticker.png';
 
 /**
  * More Media — /more-media (captain, 2026-10-09): a title + description
  * hero ("Hear us talk trash across several platforms.") over one poster
- * per live channel, plus the Gallery. Podcast and Substack are hidden
+ * per live channel, plus the Gallery and In The News. Podcast and Substack are hidden
  * until they're ready (captain, 2026-10-15); `comingSoon` in media.ts
  * brings them back.
  */
@@ -29,7 +29,7 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
 
 <BaseLayout
   title="More Media — Trash Talk NYC"
-  description="Hear Trash Talk NYC talk trash on YouTube, and see photos from the club, month by month."
+  description="Hear Trash Talk NYC talk trash on YouTube, see photos from the club month by month, and read the press coverage."
 >
   <MediaHero
     title={[{ en: 'More', es: 'Más' }, { en: 'Media', es: 'Medios' }]}
@@ -61,6 +61,13 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
       )}
       <a class="btn btn-purple mm-btn" href={GALLERY.path}>
         <span data-en="Look →" data-es="Ver →">Look →</span>
+      </a>
+    </article>
+    <article class="mm-card paste mm-green f-staple">
+      <h2 class="mm-name" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h2>
+      <p class="mm-blurb" data-en="Articles and podcasts that feature Trash Talk NYC." data-es="Artículos y pódcasts sobre Trash Talk NYC.">Articles and podcasts that feature Trash Talk NYC.</p>
+      <a class="btn btn-primary mm-btn" href={IN_THE_NEWS.path}>
+        <span data-en="Read →" data-es="Leer →">Read →</span>
       </a>
     </article>
   </div>
@@ -135,7 +142,6 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
   @media (min-width: 761px) {
     .mm-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      max-width: 62rem;
       gap: clamp(24px, 3vw, 40px);
       padding-block: 88px 104px;
     }
@@ -148,5 +154,10 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
     .mm-name { font-size: clamp(2.8rem, 3.6vw, 3.6rem); }
     .mm-btn { align-self: flex-start; }
     .mm-thumbs :global(.mm-thumb) { width: 6.5rem; }
+  }
+
+  /* Three posters side by side once there's room for them */
+  @media (min-width: 1100px) {
+    .mm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 </style>
