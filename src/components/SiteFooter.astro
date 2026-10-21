@@ -10,7 +10,7 @@
 import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
-import { STICKERS_PATH } from '../lib/partners';
+import { WALL_PATH } from '../lib/partners';
 import { MORE_MEDIA_PATH } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
 
@@ -25,7 +25,7 @@ const year = new Date().getFullYear();
       <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
       <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
       <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
-      <li><a href={STICKERS_PATH} data-en="Stickers on the Wall" data-es="Calcomanías en la Pared">Stickers on the Wall</a></li>
+      <li><a href={WALL_PATH} data-en="The Wall" data-es="La Pared">The Wall</a></li>
       <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
       <li><a href={MORE_MEDIA_PATH} data-en="More Media" data-es="Más Medios">More Media</a></li>
       <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
@@ -33,7 +33,6 @@ const year = new Date().getFullYear();
     <div class="foot-right">
       <!-- The footer's only logo now, so it names the brand -->
       <Image src={vestSticker} alt="Trash Talk NYC" class="foot-vest" width={220} densities={[1, 2]} />
-      <div class="foot-big"><span data-en="Let's clean NYC," data-es="Limpiemos NYC,">Let's clean NYC,</span><br /><span data-en="together" data-es="juntos">together</span></div>
       <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']} />
     </div>
     <div class="copy">© {year} Trash Talk NYC</div>
@@ -91,14 +90,6 @@ const year = new Date().getFullYear();
     justify-items: start;
   }
 
-  .foot-big {
-    font-family: var(--display);
-    font-weight: 400;
-    font-size: 2.8rem;
-    line-height: 0.92;
-    text-align: left;
-  }
-
 
   .copy {
     border-top: 1px solid rgba(234, 233, 218, 0.2);
@@ -120,7 +111,6 @@ const year = new Date().getFullYear();
     }
 
     .foot-right { justify-items: end; }
-    .foot-big { text-align: right; }
     footer :global(.foot-vest) { width: 200px; }
     .copy { grid-column: 1 / -1; }
   }

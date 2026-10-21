@@ -1,5 +1,5 @@
 /**
- * Stickers on the Wall (/stickers-on-the-wall, captain 2026-10-21, mockup
+ * The Wall (/the-wall, captain 2026-10-21, renamed from Stickers on the Wall the same day; mockup
  * W1) — the single source for the partners the page thanks. Each partner
  * is a sticker bombed on the wall, and the sticker's size goes by tier:
  * City partners large, Borough partners medium, Block partners small.
@@ -23,7 +23,7 @@ type Copy = { en: string; es: string };
 /** Shows the sample partners; set to false once real partners are in. */
 export const SHOW_SAMPLE_PARTNERS = true;
 
-export const STICKERS_PATH = '/stickers-on-the-wall';
+export const WALL_PATH = '/the-wall';
 
 export type PartnerTier = 'city' | 'borough' | 'block';
 

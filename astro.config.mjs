@@ -19,6 +19,8 @@ export default defineConfig({
     // Photo Albums became the one Gallery page (captain, 2026-10-15)
     '/more-media/photo-albums': { status: 301, destination: '/more-media/gallery' },
     '/more-media/photo-albums/the-lab': { status: 301, destination: '/more-media/gallery' },
+    // Stickers on the Wall was renamed The Wall (captain, 2026-10-21)
+    '/stickers-on-the-wall': { status: 301, destination: '/the-wall' },
     // Hidden until the channels are ready (captain, 2026-10-15), so
     // temporary: these pages come back when their links exist
     '/more-media/podcast': { status: 302, destination: '/more-media' },

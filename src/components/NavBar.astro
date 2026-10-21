@@ -17,7 +17,7 @@
 import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
-import { STICKERS_PATH } from '../lib/partners';
+import { WALL_PATH } from '../lib/partners';
 import { GALLERY, IN_THE_NEWS, MORE_MEDIA_PATH, liveMediaSections } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
 
@@ -37,9 +37,9 @@ const isTeam     = !isFounder && isUnder('/about');
 const isRecruit  = isUnder('/recruit');
 // The partners page is top-level too, and sits with the club's people in
 // About (it thanks who helps the club; More Media is the club's channels)
-const isStickers = isUnder(STICKERS_PATH);
+const isWall = isUnder(WALL_PATH);
 // The About parent highlights when any of its children is current
-const isAbout    = isTeam || isFounder || isRecruit || isStickers;
+const isAbout    = isTeam || isFounder || isRecruit || isWall;
 const isContact  = isUnder('/contact');
 // More Media parent lights for the overview and every channel subpage;
 // the "All Media" child lights only on the overview itself
@@ -82,7 +82,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
         <ul class="nav-drop-menu" id="aboutDropMenu">
           <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
           <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
-          <li><a href={STICKERS_PATH} class:list={{ active: isStickers }} data-en="Stickers on the Wall" data-es="Calcomanías en la Pared">Stickers on the Wall</a></li>
+          <li><a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a></li>
           <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
         </ul>
       </li>
@@ -138,7 +138,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
         <div class="m-sub" id="mAboutSub" hidden>
           <a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a>
           <a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a>
-          <a href={STICKERS_PATH} class:list={{ active: isStickers }} data-en="Stickers on the Wall" data-es="Calcomanías en la Pared">Stickers on the Wall</a>
+          <a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a>
           <a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a>
         </div>
       </div>

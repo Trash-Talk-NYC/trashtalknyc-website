@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { STICKERS_PATH, TIER_LABEL, partners, partnersByTier, stickerLook, visiblePartners, type Partner } from '../partners';
+import { WALL_PATH, TIER_LABEL, partners, partnersByTier, stickerLook, visiblePartners, type Partner } from '../partners';
 
 const partner = (name: string, tier: Partner['tier'], sample?: true): Partner => ({
   name,
@@ -48,7 +48,7 @@ describe('partner data', () => {
     expect(stickerLook(partner('x', 'block'), 0).bg).toMatch(/^#/);
   });
 
-  it('points STICKERS_PATH at an existing page', () => {
-    expect(existsSync(join(process.cwd(), `src/pages${STICKERS_PATH}.astro`))).toBe(true);
+  it('points WALL_PATH at an existing page', () => {
+    expect(existsSync(join(process.cwd(), `src/pages${WALL_PATH}.astro`))).toBe(true);
   });
 });

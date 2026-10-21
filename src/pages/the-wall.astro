@@ -6,7 +6,7 @@ import wallStickers from '../assets/walls/wall-9574.webp';
 import { TIER_LABEL, TIER_SIZE, partnersByTier, stickerLook, visiblePartners, type PartnerTier } from '../lib/partners';
 
 /**
- * Stickers on the Wall (captain, 2026-10-21, mockup W1): the club's
+ * The Wall (captain, 2026-10-21, mockup W1; first named Stickers on the Wall): the club's
  * partners as stickers bombed over the captain's sticker-wall photo pick (2026-10-21), sized by
  * tier (City large, Borough medium, Block small). Hover lifts a corner;
  * clicking, tapping, or Enter peels the sticker and shows a note under it
@@ -64,7 +64,7 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
 ---
 
 <BaseLayout
-  title="Stickers on the Wall — Trash Talk NYC"
+  title="The Wall — Trash Talk NYC"
   description="The partners who help Trash Talk NYC clean the city, stuck up as stickers: the bigger the sticker, the bigger the support."
   stickerFonts
 >
@@ -72,7 +72,7 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
     <SectionWall kind="cleanup" src={wallStickers} dim={0} duotone={0} seed={13} />
     <div class="wrap sw-body">
       <header class="sw-head">
-        <h1 class="sw-title paste f-tape" data-en="Stickers on the Wall" data-es="Calcomanías en la Pared">Stickers on the Wall</h1>
+        <h1 class="sw-title paste f-tape" data-en="The Wall" data-es="La Pared">The Wall</h1>
         <p class="sw-intro paste" data-en="Every sticker is a partner who helps us clean NYC. The bigger the sticker, the bigger the support. Peel one to see who they are and what they did." data-es="Cada calcomanía es un socio que nos ayuda a limpiar NYC. Mientras más grande la calcomanía, mayor el apoyo. Despega una para ver quiénes son y qué hicieron.">Every sticker is a partner who helps us clean NYC. The bigger the sticker, the bigger the support. Peel one to see who they are and what they did.</p>
       </header>
 

@@ -121,8 +121,16 @@ const months = await Promise.all(
     .gl-month { padding: 40px 36px 32px; }
   }
 
+  /* Desktop (captain, 2026-10-21: "weird spacing" at 1280–1440): three
+     even columns of square crops with one gap size, so a month reads as
+     a compact contact sheet, and one margin around every sheet and
+     between months */
   @media (min-width: 1100px) {
-    .gl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .gl-body { gap: 56px; padding-block: 72px 88px; }
+    .gl-month { padding: 32px; }
+    .gl-title { margin-bottom: 24px; }
+    .gl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .gl-grid :global(.gl-pic) { aspect-ratio: 1 / 1; }
   }
 
   @media (prefers-reduced-motion: reduce) {

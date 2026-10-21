@@ -7,6 +7,7 @@ import { streetPhotos } from '../lib/streetPhotos';
 import SocialLinks from '../components/SocialLinks.astro';
 import SectionWall from '../components/SectionWall.astro';
 import wallFlyers from '../assets/walls/wall-9744.webp';
+import wallHero from '../assets/walls/walk-1724.webp';
 import { boroughCovers } from '../lib/boroughCovers';
 import vestSticker from '../assets/vest-sticker.png';
 
@@ -49,16 +50,23 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     }
   </script>
 
-  <!-- EVENTS LIST: a cleanup section on a torn purple wall (captain's A4).
-       The page opens straight on the list: no "Club Events" title hero
-       (team feedback, 2026-10-15; its next-event poster went with it,
-       since that event already leads the list) and no list heading
-       either (captain, 2026-10-15). The page name stays as a
-       screen-reader-only h1, the nav's own label. -->
+  <!-- A small hero (captain, 2026-10-21): the page title and one line on
+       the captain's photo pick, shaded 70% so both stay AA, kept short
+       (under ~160px on phones, ~220px on desktop) so the flyers still
+       lead the page -->
+  <section class="ev-hero wall">
+    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.7} duotone={0} seed={22} />
+    <div class="wrap">
+      <h1 class="ev-title" data-en="Club Events" data-es="Eventos del Club">Club Events</h1>
+      <p class="ev-line" data-en="Free community cleanups across the five boroughs." data-es="Limpiezas comunitarias gratuitas en los cinco condados.">Free community cleanups across the five boroughs.</p>
+    </div>
+  </section>
+
+  <!-- EVENTS LIST: the event flyers on the captain's wall pick, with no
+       list heading (captain, 2026-10-15) -->
   <section class="ev-section wall">
     <SectionWall kind="cleanup" src={wallFlyers} dim={0} duotone={0} seed={4} />
     <div class="wrap">
-    <h1 class="sr-only" data-en="Club Events" data-es="Eventos del Club">Club Events</h1>
     <div class="list-top"></div>
 
     <div class="dist-sort-label mono" id="distSortLabel" style="display:none">
@@ -295,6 +303,17 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
 </BaseLayout>
 
 <style>
+  /* ── HERO ── */
+  .ev-hero { padding-block: 34px 40px; }
+  .ev-title { font-size: clamp(2.6rem, 11vw, 3rem); line-height: 0.95; color: var(--beige); }
+  .ev-line { margin: 8px 0 0; font-size: 1.05rem; line-height: 1.3; color: var(--beige); }
+
+  @media (min-width: 761px) {
+    .ev-hero { padding-block: 48px 56px; }
+    .ev-title { font-size: clamp(3.4rem, 5vw, 4.6rem); }
+    .ev-line { font-size: 1.25rem; }
+  }
+
   /* ── LIST ── */
   /* Room under the torn top edge before the first card */
   .list-top { height: 48px; }
@@ -327,12 +346,12 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     white-space: nowrap;
   }
 
-  /* Flyers pasted side by side; the gap leaves room for the drawings and
-     stickers that run off each sheet */
+  /* Flyers pasted side by side; the gap leaves room for the stickers
+     that cross each sheet's edge */
   .ev-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 34rem), 1fr));
-    gap: 88px 56px;
+    gap: 56px;
     padding: 12px 0 72px;
   }
 

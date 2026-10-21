@@ -10,8 +10,8 @@ import wordmarkSticker from '../assets/wordmark-sticker.png';
  * One upcoming event as a real flyer (round 10, captain 2026-10-21),
  * modeled on the team's printed Manhattan Cleanup flyer: a flat, straight
  * cream sheet (no tape, no shadow) on the section's graffiti wall, the
- * borough as the huge purple headline, a purple line drawing running off
- * the sheet (a bin, or a glove for planting), the date and place set
+ * borough as the huge purple headline, a purple line drawing kept whole
+ * on the sheet (a bin, or a glove for planting), the date and place set
  * right, and Register. Die-cut stickers straddle the edge: the wordmark,
  * plus a host badge when the event has one.
  *
@@ -181,15 +181,13 @@ const btnId = `eb-trigger-${id}`;
     margin-top: 8px;
   }
 
-  .ev-art { position: relative; align-self: stretch; min-height: 8rem; }
+  /* The drawing stays whole inside the sheet (captain, 2026-10-21: never
+     cut off by the card edge, phones most of all) */
+  .ev-art { align-self: end; }
 
-  /* Runs off the sheet's bottom-left edge, onto the wall */
   .ev-art :global(.ev-ill) {
-    position: absolute;
-    left: -30px;
-    bottom: -64px;
-    width: 10.5rem;
-    max-width: none;
+    display: block;
+    width: 100%;
     height: auto;
     pointer-events: none;
   }
@@ -240,8 +238,6 @@ const btnId = `eb-trigger-${id}`;
     .ev-host { width: 104px; height: 104px; font-size: 1.1rem; top: -34px; left: -30px; }
     .ev-head { font-size: clamp(4rem, 6vw, 5.8rem); padding-right: 5.5rem; }
     .ev-row { grid-template-columns: 10rem minmax(0, 1fr); }
-    .ev-art { min-height: 10rem; }
-    .ev-art :global(.ev-ill) { width: 15rem; left: -64px; bottom: -88px; }
     .ev-when { font-size: 2.2rem; }
     .ev-where { font-size: 1.2rem; }
   }
