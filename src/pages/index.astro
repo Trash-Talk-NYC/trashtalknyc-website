@@ -270,14 +270,15 @@ const raised = raisedSentence();
           <!-- Required (captain). Value attributes must exactly match the
                HEAR_ABOUT_US enum options configured in Brevo; display text
                is friendlier and may change freely (team feedback,
-               2026-10-15, relabelled the first two), the values never. "Article" and "Somewhere else" are new values
+               2026-10-15, relabelled the first two), the values never.
+               "My Block Entered the Clean Zone" stays a Brevo option for
+               older signups but is no longer offered (captain, 2026-10-21). "Article" and "Somewhere else" are new values
                the signup action tolerates Brevo rejecting (see the fallback
                in src/actions/index.ts) until they exist in the dashboard. -->
           <select id="hear" name="hear" required>
             <option value="" selected disabled data-en="Select one" data-es="Selecciona una opción">Select one</option>
             <option value="Saw Tree Guard" data-en="Saw a Trash Talk NYC branded tree guard" data-es="Vi un protector de árbol con la marca Trash Talk NYC">Saw a Trash Talk NYC branded tree guard</option>
             <option value="Saw the Purple Vests" data-en="My block was cleaned by people in purple vests" data-es="Gente con chalecos morados limpió mi cuadra">My block was cleaned by people in purple vests</option>
-            <option value="My Block Entered the Clean Zone" data-en="My block entered the Clean Zone" data-es="Mi cuadra entró a la Zona Limpia">My block entered the Clean Zone</option>
             <option value="Word of Mouth" data-en="Word of mouth" data-es="De boca en boca">Word of mouth</option>
             <option value="Article" data-en="An article" data-es="Un artículo">An article</option>
             <option value="Instagram" data-en="Instagram" data-es="Instagram">Instagram</option>
@@ -1084,7 +1085,7 @@ const raised = raisedSentence();
     if (!zipInput || !zipStatus) return;
     const lang = getCurrentLang();
     const boroughText = (b: Borough | undefined) =>
-      b ? (lang === 'es' ? ` · Condado: ${BOROUGH_ES[b]}` : ` · Borough: ${b}`) : '';
+      b ? (lang === 'es' ? `Condado: ${BOROUGH_ES[b]}` : `Borough: ${b}`) : '';
     let status = '';
     let error = '';
     switch (zipState.kind) {
@@ -1092,10 +1093,12 @@ const raised = raisedSentence();
         status = ZIP_MSG.looking[lang];
         break;
       case 'found':
-        status = `${zipState.place.city}, ${zipState.place.stateCode}${boroughText(zipState.borough)}`;
+        // An NYC ZIP shows only its borough (captain, 2026-10-21); any
+        // other ZIP shows its city and state
+        status = zipState.borough ? boroughText(zipState.borough) : `${zipState.place.city}, ${zipState.place.stateCode}`;
         break;
       case 'unavailable':
-        status = boroughText(zipState.borough).replace(/^ · /, '');
+        status = boroughText(zipState.borough);
         break;
       case 'unknown':
         error = ZIP_MSG.unknown[lang];
