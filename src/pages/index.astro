@@ -18,6 +18,7 @@ import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
 import wallBubbleLetters from '../assets/walls/wall-bubble-letters.webp';
 import wallPasteUps from '../assets/walls/wall-paste-ups.webp';
 import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
+import wallPeeling from '../assets/street/peeling-wall.webp';
 import { galleryPhotos } from '../lib/gallery';
 import { featuredVideo } from '../lib/media';
 import { raisedSentence } from '../lib/contribute';
@@ -166,6 +167,23 @@ const raised = raisedSentence();
         sizes="(min-width: 761px) 30rem, 85vw"
       />
     </figure>
+  </div>
+</section>
+
+<!-- POSTER BAND (round 9, F4a; captain 2026-10-21, a trial): the same
+     poster wheatpasted four times in a row on a peeling wall, the third
+     half torn off, like scaffolding on any NYC block. Two across on
+     phones. It repeats the hero's line, so it is decoration to assistive
+     tech; the copy still carries data-en/data-es for the toggle. -->
+<section class="posters wall" aria-hidden="true">
+  <SectionWall kind="cleanup" src={wallPeeling} dim={0} duotone={0} seed={6} />
+  <div class="wrap pp-row">
+    {[0, 1, 2, 3].map((i) => (
+      <div class:list={['pp', 'f-paste', { 'pp-torn': i === 2 }]}>
+        <span class="pp-line" data-en="Let's clean NYC, together" data-es="Limpiemos NYC, juntos">Let's clean NYC, together</span>
+        <span class="pp-url mono">trashtalknyc.org</span>
+      </div>
+    ))}
   </div>
 </section>
 
@@ -576,6 +594,48 @@ const raised = raisedSentence();
     .contribute-title { font-size: clamp(5rem, 8vw, 9rem); }
     .contribute-photo { width: 100%; margin-right: 1vw; }
     .contribute-note { font-size: 1.35rem; }
+  }
+
+  /* ── POSTER BAND (F4a) ── */
+  .posters { padding-block: 64px 72px; }
+
+  .pp-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  /* Flat purple stock butted edge to edge, as a paste-up crew leaves it;
+     the f-paste glue texture rides on top of the purple */
+  .pp {
+    container-type: inline-size;
+    aspect-ratio: 3 / 4;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 6%;
+    padding: 10%;
+    background-color: var(--purple);
+    color: var(--beige);
+    text-align: center;
+  }
+
+  .pp-line {
+    font-family: var(--display);
+    font-size: 19cqi;
+    line-height: 0.92;
+  }
+
+  .pp-url { font-size: 7.5cqi; color: var(--yellow); }
+
+  /* Half of one copy torn away, down to the wall */
+  .pp-torn {
+    clip-path: polygon(0 0, 100% 0, 100% 56%, 86% 63%, 74% 54%, 61% 66%, 47% 57%, 33% 70%, 19% 60%, 8% 68%, 0 62%);
+  }
+
+  @media (min-width: 761px) {
+    .posters { padding-block: 96px 104px; }
+    .pp-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   /* ── SOCIALS ── */
