@@ -6,7 +6,8 @@ import { assignPastCovers, fetchEventsAtBuildTime, formatDate, groupPastByBoroug
 import { streetPhotos } from '../lib/streetPhotos';
 import SocialLinks from '../components/SocialLinks.astro';
 import SectionWall from '../components/SectionWall.astro';
-import wallRedTags from '../assets/walls/wall-red-tags.webp';
+import wallFlyers from '../assets/walls/wall-9744.webp';
+import { boroughCovers } from '../lib/boroughCovers';
 import vestSticker from '../assets/vest-sticker.png';
 
 const { upcoming: upcomingRaw, past } = await fetchEventsAtBuildTime();
@@ -55,7 +56,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
        either (captain, 2026-10-15). The page name stays as a
        screen-reader-only h1, the nav's own label. -->
   <section class="ev-section wall">
-    <SectionWall kind="cleanup" src={wallRedTags} dim={0} duotone={0} seed={4} />
+    <SectionWall kind="cleanup" src={wallFlyers} dim={0} duotone={0} seed={4} />
     <div class="wrap">
     <h1 class="sr-only" data-en="Club Events" data-es="Eventos del Club">Club Events</h1>
     <div class="list-top"></div>
@@ -103,6 +104,9 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
           return (
           <details class:list={['past-group', 'paste', gi % 2 ? 'f-staple' : 'f-tape']} open={gi === openGroup}>
             <summary class="past-sum">
+              {group.borough && boroughCovers[group.borough] && (
+                <Image class="past-cover" src={boroughCovers[group.borough]} alt="" width={1200} widths={[600, 1200]} sizes="(min-width: 761px) 72rem, 92vw" />
+              )}
               <span class="past-place" data-en={placeName(group.borough).en} data-es={placeName(group.borough).es}>{placeName(group.borough).en}</span>
               <span class="past-count mono" data-en={count.en} data-es={count.es}>{count.en}</span>
               <svg class="past-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -398,6 +402,20 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
   }
 
   .past-sum::-webkit-details-marker { display: none; }
+
+  /* The borough's cover photo (captain's picks, 2026-10-21) heads its
+     fold and shows even while it is closed; height auto so the <Image>
+     height attribute can't beat the crop */
+  .past-sum :global(.past-cover) {
+    flex: 1 0 100%;
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 1;
+    object-fit: cover;
+    margin-bottom: 4px;
+    border: 2.5px solid var(--black);
+  }
   .past-sum:focus-visible { outline: 3px solid var(--purple); outline-offset: 6px; }
 
   .past-place { font-family: var(--display); font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1; }

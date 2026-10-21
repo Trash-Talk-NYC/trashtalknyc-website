@@ -1,6 +1,6 @@
 ---
 import SectionWall from '../../components/SectionWall.astro';
-import wallBluePlate from '../../assets/walls/wall-blue-plate.webp';
+import wallOverview from '../../assets/walls/wall-9568.webp';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
@@ -39,7 +39,7 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
   <!-- One torn-edge wall behind the posters, in the photo's own colors
        (captain, 2026-10-15) -->
   <section class="mm-wall wall">
-  <SectionWall kind="cleanup" src={wallBluePlate} dim={0} duotone={0} seed={8} />
+  <SectionWall kind="cleanup" src={wallOverview} dim={0} duotone={0} seed={8} />
   <div class="wrap mm-grid" role="group" aria-label="More Media">
     {liveMediaSections.map((s) => (
       <article class:list={['mm-card', 'paste', look[s.id].tone, look[s.id].flyer]}>

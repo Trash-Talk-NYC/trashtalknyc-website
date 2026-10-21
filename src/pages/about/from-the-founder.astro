@@ -3,6 +3,9 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
+import SectionWall from '../../components/SectionWall.astro';
+import wallHero from '../../assets/walls/walk-1839.webp';
+import wallLetter from '../../assets/walls/walk-1836.webp';
 
 /**
  * From the Founder — /about/from-the-founder: David's first-person
@@ -112,7 +115,10 @@ const story: Block[] = [
        the captain's chosen page name (rename, 2026-08-13), split into
        two leaves so the language toggle can restructure it: EN
        "From the / Founder" becomes ES "Del / Fundador" leaf by leaf. -->
-  <section class="fd-hero frame-hero">
+  <section class="fd-hero frame-hero wall">
+    <!-- The captain's wall pick (2026-10-21), shaded 70% so the beige
+         title and yellow eyebrow stay AA -->
+    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.7} duotone={0} seed={17} />
     <div class="fd-hero-inner">
       <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="fd-title">
@@ -125,7 +131,10 @@ const story: Block[] = [
   <!-- David's letter, unchanged, as ONE wheatpasted sheet; the only
        things beside it are the margin drawings, which are decoration,
        not content. -->
-  <section class="fd-body">
+  <section class="fd-body wall">
+    <!-- The letter is pasted on the captain's photo pick (2026-10-21);
+         every word is on the sheet, so the wall shows in full color -->
+    <SectionWall kind="cleanup" src={wallLetter} tear="top" dim={0} duotone={0} seed={18} />
     <article class="story paste f-staple">
       <!-- Byline card (captain, 2026-08-13): circular photo + name +
            title, replacing the text-only byline. david-founder.jpg is a
@@ -183,7 +192,6 @@ const story: Block[] = [
     --hero-min-desktop: calc(28.93vw + 32px);
     position: relative;
     overflow: hidden;
-    border-bottom: var(--ink);
   }
 
   .fd-hero-inner {
@@ -220,7 +228,7 @@ const story: Block[] = [
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
-    padding: 30px 12px 44px;
+    padding: 52px 12px 56px;
     align-items: start;
   }
 
@@ -238,7 +246,7 @@ const story: Block[] = [
       grid-template-columns: minmax(0, 45rem);
       justify-content: center;
       gap: 28px;
-      padding: 56px clamp(16px, 4vw, 48px) 72px;
+      padding: 80px clamp(16px, 4vw, 48px) 96px;
     }
 
     .story { padding: 44px clamp(22px, 4vw, 56px) 48px; }

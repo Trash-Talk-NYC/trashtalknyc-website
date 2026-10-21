@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionWall from '../components/SectionWall.astro';
+import wallHero from '../assets/walls/wall-blue-plate.webp';
 
 /**
  * Open Roles — the recruitment page, top-level at /recruit (captain,
@@ -69,8 +71,16 @@ const roles = [
   title="Open Roles — Trash Talk NYC"
   description="Trash Talk NYC needs helping hands. Open roles in social media and long-form video. Apply by email to team@trashtalknyc.org."
 >
+  <!-- The title on the captain's hero wall pick (2026-10-21), shaded 70%
+       so the beige title stays AA over the photo -->
+  <section class="rc-hero wall">
+    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.7} duotone={0} seed={19} />
+    <div class="wrap">
+      <h1 class="rc-title"><span data-en="Open" data-es="Puestos">Open</span> <span data-en="Roles" data-es="Abiertos">Roles</span></h1>
+    </div>
+  </section>
+
   <section class="wrap rc-body">
-    <h1 class="rc-title"><span data-en="Open" data-es="Puestos">Open</span> <span data-en="Roles" data-es="Abiertos">Roles</span></h1>
     <div class="roles">
       {roles.map((r) => (
         <a class:list={['role', 'paste', r.tone, r.tone === 'r-black' ? 'f-tape' : 'f-staple']} href={mailto(r.subject.en)} data-subject-en={r.subject.en} data-subject-es={r.subject.es}>
@@ -102,7 +112,8 @@ const roles = [
     padding-block: 56px 44px;
   }
 
-  /* Purple highlights one word of a two-tone heading, never all of it */
+  .rc-hero { padding-block: 64px 72px; }
+
   .rc-title { font-size: 3.4rem; line-height: 0.95; color: var(--beige); }
 
   .roles {
@@ -173,7 +184,8 @@ const roles = [
   }
 
   @media (min-width: 761px) {
-    .rc-body { gap: 34px; padding-block: 88px 72px; }
+    .rc-hero { padding-block: 104px 112px; }
+    .rc-body { gap: 34px; padding-block: 56px 72px; }
     .rc-title { font-size: clamp(3.4rem, 6vw, 5.4rem); max-width: 57.5rem; margin-inline: auto; width: 100%; }
     /* Two posters since 2026-10; capped and centered so a pair doesn't
        stretch into billboard-wide sheets inside the 1240px wrap */

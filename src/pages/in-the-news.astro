@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import BrandSticker from '../components/BrandSticker.astro';
 import MediaSubnav from '../components/MediaSubnav.astro';
 import SectionWall from '../components/SectionWall.astro';
-import wallNycTags from '../assets/walls/wall-nyc-tags.webp';
+import wallNews from '../assets/walls/wall-paste-ups.webp';
 import frontPagePhoto from '../assets/news/front-page-sticker-pole.webp';
 import { IN_THE_NEWS } from '../lib/media';
 import { newsDate, newsKindLabel, sortedNews, visibleNews } from '../lib/news';
@@ -54,7 +54,7 @@ const items = sortedNews(visibleNews()).map((item) => ({ ...item, when: newsDate
   <MediaSubnav current="in-the-news" />
 
   <section class="nw-sec wall">
-    <SectionWall kind="cleanup" src={wallNycTags} dim={0} duotone={0} seed={11} />
+    <SectionWall kind="cleanup" src={wallNews} dim={0} duotone={0} seed={11} />
     <div class="wrap nw-body">
       <article class="np paste f-tape" aria-labelledby="npMast">
         <header class="np-head">

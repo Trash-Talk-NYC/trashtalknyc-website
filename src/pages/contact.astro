@@ -1,6 +1,9 @@
 ---
 import SectionWall from '../components/SectionWall.astro';
 import wallGreenBox from '../assets/walls/wall-green-box.webp';
+import wallHero from '../assets/walls/wall-9565.webp';
+import wallLead from '../assets/walls/walk-1830.webp';
+import wallPartner from '../assets/walls/wall-9566.webp';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
@@ -39,7 +42,10 @@ const monthOptions = rollingMonths();
   {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
   <!-- HERO -->
-  <section class="ct-hero frame-hero">
+  <section class="ct-hero frame-hero wall">
+    <!-- The captain's wall pick (2026-10-21), shaded 70% so the beige
+         title and yellow eyebrow stay AA -->
+    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.7} duotone={0} seed={20} />
     <div class="ct-hero-inner">
       <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
       <!-- The captain's headline (2026-10-15) -->
@@ -52,8 +58,14 @@ const monthOptions = rollingMonths();
        decoration beside them. -->
   <!-- A torn-edge wall behind the picker (captain, 2026-10-09), purple
        kept light like Club Events so the flyers and form stay readable -->
-  <section class="ct-wall wall">
-  <SectionWall kind="cleanup" src={wallGreenBox} dim={0} duotone={0} seed={7} outline />
+  <!-- The wall follows the picked tile (captain's picks, 2026-10-21):
+       Lead a cleanup and Partner each have their own photo, the others
+       keep the green box. The page script sets data-wall; a hidden wall
+       never loads its photo. -->
+  <section class="ct-wall wall" id="ctWall" data-wall="default">
+  <div class="ct-bg" data-for="default"><SectionWall kind="cleanup" src={wallGreenBox} dim={0} duotone={0} seed={7} outline /></div>
+  <div class="ct-bg" data-for="lead"><SectionWall kind="cleanup" src={wallLead} dim={0} duotone={0} seed={7} outline /></div>
+  <div class="ct-bg" data-for="partnership"><SectionWall kind="cleanup" src={wallPartner} dim={0} duotone={0} seed={7} outline /></div>
   <div class="wrap ct-body">
     <div class="ct-form">
       <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
@@ -288,7 +300,6 @@ const monthOptions = rollingMonths();
     --hero-min-desktop: calc(28.93vw + 32px);
     position: relative;
     overflow: hidden;
-    border-bottom: var(--ink);
   }
 
   .ct-hero-inner {
@@ -301,6 +312,11 @@ const monthOptions = rollingMonths();
   }
 
   .ct-eyebrow { color: var(--yellow); }
+
+  .ct-bg { display: none; }
+  .ct-wall[data-wall='default'] .ct-bg[data-for='default'],
+  .ct-wall[data-wall='lead'] .ct-bg[data-for='lead'],
+  .ct-wall[data-wall='partnership'] .ct-bg[data-for='partnership'] { display: contents; }
 
   .ct-title {
     font-size: 4rem;
@@ -684,6 +700,8 @@ import { BEHALF_OPTIONS, CLEANING_NEEDS, PARTNERSHIP_TYPES, SUPPORT_NEEDS } from
   function setType(type: TileType) {
     currentType = type;
     tiles.forEach((tile) => tile.setAttribute('aria-pressed', String(tile.dataset.type === type)));
+    const wall = document.getElementById('ctWall');
+    if (wall) wall.dataset.wall = type === 'lead' || type === 'partnership' ? type : 'default';
     formArea.hidden = false;
     restoreAfterSuccess();
 

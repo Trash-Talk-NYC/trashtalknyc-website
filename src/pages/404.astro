@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionWall from '../components/SectionWall.astro';
+import wall404 from '../assets/walls/wall-9572.webp';
 
 // Prerendered so URL misses (mostly bot scans) get a static, CDN-cacheable
 // body instead of a fresh SSR function render per request.
@@ -9,9 +11,12 @@ export const prerender = true;
 
 <BaseLayout title="Page Not Found — Trash Talk NYC" description="This page doesn't exist." noindex>
 
-  <!-- 404: a dead-end block. Brick wall edge to edge, a street-sign-
+  <!-- 404: a dead-end block. A street wall edge to edge, a street-sign-
        yellow Dead End diamond, and the way back. -->
-  <section class="nf frame-hero">
+  <section class="nf frame-hero wall">
+    <!-- The captain's wall pick (2026-10-21), shaded 75% so every line
+         and link stays AA over it -->
+    <SectionWall kind="cleanup" src={wall404} tear="bottom" dim={0.75} duotone={0} seed={21} />
     <div class="nf-inner">
       <div class="nf-row" aria-hidden="true">
         <div class="sign"><span data-en="DEAD END" data-es="SIN SALIDA">DEAD END</span></div>
@@ -35,7 +40,6 @@ export const prerender = true;
     --hero-min-desktop: calc(45.78vw + 32px);
     position: relative;
     overflow: hidden;
-    border-bottom: var(--ink);
   }
 
   .nf-inner {

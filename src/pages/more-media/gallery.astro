@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
 import MediaSubnav from '../../components/MediaSubnav.astro';
 import SectionWall from '../../components/SectionWall.astro';
-import wallMintPaint from '../../assets/walls/wall-mint-paint.webp';
+import wallGallery from '../../assets/walls/wall-9736.webp';
 import { GALLERY, MORE_MEDIA_PATH } from '../../lib/media';
 import { galleryByMonth } from '../../lib/gallery';
 
@@ -38,7 +38,7 @@ const months = await Promise.all(
   <MediaSubnav current="gallery" />
 
   <section class="gl-sec wall">
-    <SectionWall kind="cleanup" src={wallMintPaint} dim={0} duotone={0} seed={5} />
+    <SectionWall kind="cleanup" src={wallGallery} dim={0} duotone={0} seed={5} />
     <div class="wrap gl-body">
       {months.map((m, i) => (
         <section class:list={['gl-month', 'paste', i % 2 ? 'f-staple' : 'f-tape']} aria-labelledby={`month-${m.month}`}>

@@ -1,6 +1,6 @@
 ---
 import SectionWall from '../../components/SectionWall.astro';
-import wallRedBrickPaint from '../../assets/walls/wall-red-brick-paint.webp';
+import wallYouTube from '../../assets/walls/wall-9744.webp';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaHero from '../../components/MediaHero.astro';
@@ -33,7 +33,7 @@ const section = getMediaSection('youtube');
 
   <!-- Torn-edge wall like the other More Media pages (captain, 2026-10-09) -->
   <section class="yt-wall wall">
-  <SectionWall kind="cleanup" src={wallRedBrickPaint} dim={0} duotone={0} seed={9} />
+  <SectionWall kind="cleanup" src={wallYouTube} dim={0} duotone={0} seed={9} />
   <div class="wrap yt-body">
     <figure class="yt-frame paste f-sticker">
       <Image src={vestSticker} alt="" class="slap yt-slap" width={110} densities={[1, 2]} />

@@ -8,9 +8,6 @@
  * the originals stay out of the repo. No people, plates, phone numbers,
  * or house numbers. They are decoration beside the event's name, so the
  * cards give them empty alt text.
- *
- * peeling-wall.webp is not in this pool: it is the homepage poster band's
- * own wall (round 9, F4a), and no photo repeats across sections.
  */
 import type { ImageMetadata } from 'astro';
 import greyDoorTags from '../assets/street/grey-door-tags.webp';
@@ -21,6 +18,7 @@ import pandaMural from '../assets/street/panda-mural.webp';
 import graffitiAlley from '../assets/street/graffiti-alley.webp';
 import stayAlertStencil from '../assets/street/stay-alert-stencil.webp';
 import peelingPaintRose from '../assets/street/peeling-paint-rose.webp';
+import peelingWall from '../assets/street/peeling-wall.webp';
 import greenCharacter from '../assets/street/green-character.webp';
 import pinkCyclops from '../assets/street/pink-cyclops.webp';
 import chalkCloud from '../assets/street/chalk-cloud.webp';
@@ -42,6 +40,7 @@ export const streetPhotos: readonly ImageMetadata[] = [
   greenCharacter,
   wiresAndStickers,
   yellowDoorTag,
+  peelingWall,
   streetSignMural,
   chalkCloud,
   peelingPaintRose,

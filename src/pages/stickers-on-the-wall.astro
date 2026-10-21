@@ -2,12 +2,12 @@
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionWall from '../components/SectionWall.astro';
-import wallStickerDoor from '../assets/walls/wall-sticker-door.webp';
+import wallStickers from '../assets/walls/wall-9574.webp';
 import { TIER_LABEL, TIER_SIZE, partnersByTier, stickerLook, visiblePartners, type PartnerTier } from '../lib/partners';
 
 /**
  * Stickers on the Wall (captain, 2026-10-21, mockup W1): the club's
- * partners as stickers bombed over a real sticker-covered door, sized by
+ * partners as stickers bombed over the captain's sticker-wall photo pick (2026-10-21), sized by
  * tier (City large, Borough medium, Block small). Hover lifts a corner;
  * clicking, tapping, or Enter peels the sticker and shows a note under it
  * with the partner's name, tier, what they did, and a link to their site.
@@ -69,7 +69,7 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
   stickerFonts
 >
   <section class="sw-sec wall">
-    <SectionWall kind="cleanup" src={wallStickerDoor} dim={0} duotone={0} seed={13} />
+    <SectionWall kind="cleanup" src={wallStickers} dim={0} duotone={0} seed={13} />
     <div class="wrap sw-body">
       <header class="sw-head">
         <h1 class="sw-title paste f-tape" data-en="Stickers on the Wall" data-es="Calcomanías en la Pared">Stickers on the Wall</h1>

@@ -4,6 +4,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import vestSticker from '../assets/vest-sticker.png';
+import SectionWall from '../components/SectionWall.astro';
+import wallHero from '../assets/walls/wall-mint-paint.webp';
+import wallTeam from '../assets/walls/walk-1751.webp';
+import wallLend from '../assets/walls/walk-1752.webp';
 
 /**
  * The Team — the group photo pasted up like a poster in the hero, then the three wheatpasted bio sheets in photo order on
@@ -39,8 +43,11 @@ const bioFlyer: Record<string, string> = {
   title="About — Trash Talk NYC"
   description="Meet Trash Talk NYC, a grassroots initiative cleaning New York City through fun volunteer cleanup events, community engagement, and educational entertainment."
 >
-  <!-- HERO: the group photo, pasted up -->
-  <section class="tm-hero frame-hero">
+  <!-- HERO: the group photo, pasted up on the captain's wall pick
+     (2026-10-21), shaded 78% so the lavender title keeps 3:1 and the
+     yellow eyebrow AA over the wall's brightest paint -->
+  <section class="tm-hero frame-hero wall">
+    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.78} duotone={0} seed={14} />
     <div class="tm-hero-inner">
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->
@@ -62,7 +69,11 @@ const bioFlyer: Record<string, string> = {
     </div>
   </section>
 
-  <section class="wrap team-section">
+  <!-- The bios sit on their own wall (captain's pick, 2026-10-21); every
+       word is on a paper sheet, so the photo shows in full color -->
+  <section class="team-section wall">
+    <SectionWall kind="cleanup" src={wallTeam} dim={0} duotone={0} seed={15} />
+    <div class="wrap">
     <div class="bios">
       {team.map((p) => (
         <article class:list={['bio', 'paste', `b-${p.id}`, bioFlyer[p.id]]}>
@@ -93,13 +104,15 @@ const bioFlyer: Record<string, string> = {
         </article>
       ))}
     </div>
+    </div>
   </section>
 
   <!-- Closing hand-off to the recruitment page. Old emails linked
        /about#join-the-team; keep the anchor landing here. -->
   <!-- A short row: the heading with the roles button beside it, nothing
        else (captain, 2026-10-09) -->
-  <section class="lend" id="join-the-team">
+  <section class="lend wall" id="join-the-team">
+    <SectionWall kind="cleanup" src={wallLend} dim={0} duotone={0} seed={16} />
     <div class="wrap lend-inner">
       <h2 class="strip" data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
       <a class="btn btn-primary" href="/recruit" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
@@ -114,7 +127,6 @@ const bioFlyer: Record<string, string> = {
     --hero-min-phone: calc(28.93vw + 32px);
     position: relative;
     overflow: hidden;
-    border-bottom: var(--ink);
   }
 
   .tm-hero-inner {
@@ -186,7 +198,7 @@ const bioFlyer: Record<string, string> = {
 
   /* ── BIOS ── */
   /* Breathing room under the hero now that the bios lead the section */
-  .team-section { padding-top: 48px; }
+  .team-section { padding-block: 64px 40px; }
 
   .bios {
     display: grid;
@@ -242,15 +254,9 @@ const bioFlyer: Record<string, string> = {
   }
 
   /* ── LEND A HAND ── */
-  /* Ripped paper in and out of the band (captain, 2026-10-21): both
-     edges are torn, in px so the rip depth stays the same at any width,
-     and the padding clears the deepest notch */
-  .lend {
-    background-color: var(--green);
-    color: var(--beige);
-    padding-block: 52px;
-    clip-path: polygon(0 12px, 6% 3px, 13% 16px, 21% 5px, 29% 14px, 37% 2px, 46% 15px, 54% 4px, 62% 13px, 71% 1px, 79% 15px, 87% 5px, 94% 14px, 100% 4px, 100% calc(100% - 13px), 93% calc(100% - 3px), 85% calc(100% - 15px), 77% calc(100% - 4px), 68% calc(100% - 14px), 60% calc(100% - 2px), 51% calc(100% - 16px), 43% calc(100% - 5px), 34% calc(100% - 13px), 26% calc(100% - 1px), 18% calc(100% - 15px), 10% calc(100% - 4px), 4% calc(100% - 12px), 0 calc(100% - 3px));
-  }
+  /* The captain's photo pick (2026-10-21) with SectionWall's torn edges
+     in and out; the heading is on its yellow strip, so it stays AA */
+  .lend { padding-block: 64px; }
 
   .lend-inner {
     display: flex;
@@ -263,7 +269,7 @@ const bioFlyer: Record<string, string> = {
   .lend h2 { font-size: 2.4rem; }
 
   @media (min-width: 761px) {
-    .lend { padding-block: 64px; }
+    .lend { padding-block: 80px; }
     .lend h2 { font-size: clamp(2.6rem, 4vw, 3.6rem); }
   }
 </style>

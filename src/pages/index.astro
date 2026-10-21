@@ -14,10 +14,10 @@ import BrandSticker from '../components/BrandSticker.astro';
 import type { BrandStickerId } from '../lib/stickers';
 import YouTubeEmbed from '../components/YouTubeEmbed.astro';
 // The captain's own wall photos (2026-10-15), curated for color
-import wallBubbleLetters from '../assets/walls/wall-bubble-letters.webp';
-import wallPasteUps from '../assets/walls/wall-paste-ups.webp';
+import wallHero from '../assets/walls/wall-9562.webp';
+import wallContribute from '../assets/walls/walk-1833.webp';
+import wallSignup from '../assets/walls/wall-9563.webp';
 import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
-import wallPeeling from '../assets/street/peeling-wall.webp';
 import { galleryPhotos } from '../lib/gallery';
 import { featuredVideo } from '../lib/media';
 import { raisedSentence } from '../lib/contribute';
@@ -102,9 +102,8 @@ const raised = raisedSentence();
      .cf-turnstile div. Only loaded when a site key was set at build time. -->
 {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-<!-- HERO: the bubble-letters wall in its own colors under the sticker bomb
-     (captain, 2026-10-21; it also stays behind Contribute until that
-     section gets its own photo), shaded 65% so the beige headline and the
+<!-- HERO: the captain's pick (2026-10-21) in its own colors under the
+     sticker bomb, shaded 65% so the beige headline and the
      yellow line hold AA over its brightest paint, with the wordmark sticker slapped on
      after a sticker bomb (captain, 2026-10-15), the club's headline and
      line under it (team feedback, 2026-10-15), and one button that says
@@ -112,7 +111,7 @@ const raised = raisedSentence();
      2026-10-21: "take out the brick decal", then on every page).
      The vest moved up to the header logo. -->
 <section class="hero wall" id="top">
-  <SectionWall kind="cleanup" src={wallBubbleLetters} tear="bottom" dim={0.65} duotone={0} seed={1} />
+  <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.65} duotone={0} seed={1} />
   <div class="hero-inner">
     <div class="bomb">
       {bombStickers.map((st, i) => {
@@ -144,7 +143,7 @@ const raised = raisedSentence();
      Beside it, a photo of where the money goes. The old #donate anchor
      still lands here. -->
 <section class="contribute-sec wall" id="contribute">
-  <SectionWall kind="cleanup" src={wallBubbleLetters} dim={0} duotone={0} seed={2} />
+  <SectionWall kind="cleanup" src={wallContribute} dim={0} duotone={0} seed={2} />
   <span id="donate" class="anchor-alias" aria-hidden="true"></span>
   <div class="wrap contribute">
     <div class="contribute-main paste f-paste">
@@ -172,27 +171,10 @@ const raised = raisedSentence();
   </div>
 </section>
 
-<!-- POSTER BAND (round 9, F4a; captain 2026-10-21, a trial): the same
-     poster wheatpasted four times in a row on a peeling wall, the third
-     half torn off, like scaffolding on any NYC block. Two across on
-     phones. It repeats the hero's line, so it is decoration to assistive
-     tech; the copy still carries data-en/data-es for the toggle. -->
-<section class="posters wall" aria-hidden="true">
-  <SectionWall kind="cleanup" src={wallPeeling} dim={0} duotone={0} seed={6} />
-  <div class="wrap pp-row">
-    {[0, 1, 2, 3].map((i) => (
-      <div class:list={['pp', 'f-paste', { 'pp-torn': i === 2 }]}>
-        <span class="pp-line" data-en="Let's clean NYC, together" data-es="Limpiemos NYC, juntos">Let's clean NYC, together</span>
-        <span class="pp-url mono">trashtalknyc.org</span>
-      </div>
-    ))}
-  </div>
-</section>
-
 <!-- NEWSLETTER SIGNUP: above the socials (team feedback, 2026-10-15) -->
 <!-- A cleanup section: the newsletter signs people up for cleanups -->
 <section class="signup wall" id="signup">
-  <SectionWall kind="cleanup" src={wallPasteUps} dim={0} duotone={0} seed={3} />
+  <SectionWall kind="cleanup" src={wallSignup} dim={0} duotone={0} seed={3} />
   <div class="wrap signup-grid">
     <div class="sign-head">
       <!-- On a pasted paper flyer, so the copy holds AA on the full-color wall -->
@@ -598,48 +580,6 @@ const raised = raisedSentence();
     .contribute-title { font-size: clamp(5rem, 8vw, 9rem); }
     .contribute-photo { width: 100%; margin-right: 1vw; }
     .contribute-note { font-size: 1.35rem; }
-  }
-
-  /* ── POSTER BAND (F4a) ── */
-  .posters { padding-block: 64px 72px; }
-
-  .pp-row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
-  }
-
-  /* Flat purple stock butted edge to edge, as a paste-up crew leaves it;
-     the f-paste glue texture rides on top of the purple */
-  .pp {
-    container-type: inline-size;
-    aspect-ratio: 3 / 4;
-    display: grid;
-    align-content: center;
-    justify-items: center;
-    gap: 6%;
-    padding: 10%;
-    background-color: var(--purple);
-    color: var(--beige);
-    text-align: center;
-  }
-
-  .pp-line {
-    font-family: var(--display);
-    font-size: 19cqi;
-    line-height: 0.92;
-  }
-
-  .pp-url { font-size: 7.5cqi; color: var(--yellow); }
-
-  /* Half of one copy torn away, down to the wall */
-  .pp-torn {
-    clip-path: polygon(0 0, 100% 0, 100% 56%, 86% 63%, 74% 54%, 61% 66%, 47% 57%, 33% 70%, 19% 60%, 8% 68%, 0 62%);
-  }
-
-  @media (min-width: 761px) {
-    .posters { padding-block: 96px 104px; }
-    .pp-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   /* ── SOCIALS ── */
