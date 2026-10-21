@@ -42,7 +42,7 @@ const months = await Promise.all(
     <div class="wrap gl-body">
       {months.map((m, i) => (
         <section class:list={['gl-month', 'paste', i % 2 ? 'f-staple' : 'f-tape']} aria-labelledby={`month-${m.month}`}>
-          <h2 class="gl-title" id={`month-${m.month}`} data-en={m.label.en} data-es={m.label.es}>{m.label.en}</h2>
+          <h2 class="gl-title strip" id={`month-${m.month}`} data-en={m.label.en} data-es={m.label.es}>{m.label.en}</h2>
           <ul class="gl-grid">
             {m.photos.map((p) => (
               <li>

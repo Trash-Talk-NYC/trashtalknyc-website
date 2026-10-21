@@ -69,7 +69,7 @@ const upcoming = upcomingRaw.map(ev => ({
          not naked text on the photo). With no events posted it also says
          so; otherwise it closes the list. -->
     <section class="hear paste f-tape" aria-labelledby="hearHeading">
-      <h2 id="hearHeading" class="hear-title"><span data-en="The best way to" data-es="La mejor manera de">The best way to</span> <span data-en="hear about events" data-es="enterarte de los eventos">hear about events</span></h2>
+      <h2 id="hearHeading" class="hear-title strip"><span data-en="The best way to" data-es="La mejor manera de">The best way to</span> <span data-en="hear about events" data-es="enterarte de los eventos">hear about events</span></h2>
       {upcoming.length > 0 ? (
         <p class="hear-line" data-en="Join the newsletter and hear about every cleanup, including the ones near you." data-es="Únete al boletín y entérate de cada limpieza, incluidas las que estén cerca de ti.">Join the newsletter and hear about every cleanup, including the ones near you.</p>
       ) : (
@@ -89,7 +89,7 @@ const upcoming = upcomingRaw.map(ev => ({
 
     {pastGroups.length > 0 && (
       <section class="past" aria-labelledby="pastHeading">
-        <h2 id="pastHeading" class="past-title paste f-tape" data-en="Past events" data-es="Eventos pasados">Past events</h2>
+        <h2 id="pastHeading" class="past-title strip" data-en="Past events" data-es="Eventos pasados">Past events</h2>
         {pastGroups.map((group, gi) => (
           <section class:list={['past-group', 'paste', gi % 2 ? 'f-staple' : 'f-tape']} aria-labelledby={`past-${gi}`}>
             <h3 id={`past-${gi}`} class="past-place" data-en={placeName(group.borough).en} data-es={placeName(group.borough).es}>{placeName(group.borough).en}</h3>
@@ -353,14 +353,12 @@ const upcoming = upcomingRaw.map(ev => ({
   /* ── PAST EVENTS ── */
   .past { display: grid; gap: 40px; padding-bottom: 72px; }
 
-  /* A cream strip of its own, so it reads on the full-color wall */
+  /* A torn yellow strip of its own (round 9, F10c), so it reads on the
+     full-color wall */
   .past-title {
-    --flyer-bg: var(--paper);
     justify-self: start;
-    color: var(--black);
     font-size: clamp(2.6rem, 6vw, 4.4rem);
     line-height: 0.95;
-    padding: 20px 24px 14px;
   }
 
   .past-group {

@@ -376,6 +376,20 @@ form .btn-primary {
     linear-gradient(12deg, transparent 58%, rgba(29, 29, 35, 0.05) 59%, transparent 61%);
 }
 
+/* F10c: a section heading on a torn strip of Street Sign Yellow paper,
+   ripped at both ends and slightly tilted. The tear is in px so a
+   two-line heading's notches never reach its letters. */
+.strip {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--yellow);
+  color: var(--black);
+  padding: 0.32em 0.8em 0.26em;
+  transform: rotate(-1.5deg);
+  clip-path: polygon(0 7px, 10% 0, 22% 6px, 36% 1px, 50% 6px, 64% 0, 78% 6px, 90% 1px, 100% 7px, calc(100% - 5px) 30%, 100% 55%, calc(100% - 4px) 78%, 100% calc(100% - 7px), 88% 100%, 74% calc(100% - 6px), 60% 100%, 46% calc(100% - 7px), 32% calc(100% - 1px), 18% calc(100% - 6px), 6% calc(100% - 1px), 0 calc(100% - 6px), 5px 72%, 0 46%, 4px 24%);
+}
+
 /* A section with a WallPhoto behind it: the photo layer sits at
    z-index -1 inside this section's own stacking context */
 .wall {

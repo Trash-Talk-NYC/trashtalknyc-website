@@ -330,7 +330,7 @@ const raised = raisedSentence();
 <section class="socials wall">
   <SectionWall kind="cleanup" src={wallStickerPole} tear="top" dim={0} duotone={0} seed={8} />
   <div class="wrap">
-    <h2 class="soc-title paste f-tape" data-en="Follow us on socials!" data-es="¡Síguenos en redes!">Follow us on socials!</h2>
+    <h2 class="soc-title strip" data-en="Follow us on socials!" data-es="¡Síguenos en redes!">Follow us on socials!</h2>
     <div class="soc-grid">
       {socialTiles.map((c, i) => (
         <a class:list={['soc-tile', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
@@ -581,13 +581,10 @@ const raised = raisedSentence();
   /* ── SOCIALS ── */
   .socials { padding-block: 44px 48px; }
 
-  /* The heading is its own cream strip, so it reads on the full-color wall */
+  /* The heading sits on a torn yellow strip (round 9, F10c), so it
+     reads on the full-color wall */
   .soc-title {
-    --flyer-bg: var(--paper);
-    display: inline-block;
-    color: var(--black);
     font-size: clamp(2.4rem, 5vw, 4rem);
-    padding: 18px 22px 12px;
     margin-bottom: 32px;
   }
 
