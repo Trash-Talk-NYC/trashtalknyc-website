@@ -358,6 +358,24 @@ form .btn-primary {
     linear-gradient(315deg, transparent 50%, #c9c6b4 50%, #f2efe1 100%) right bottom / 34px 34px no-repeat;
 }
 
+/* Round 9 (captain, 2026-10-21, a trial: "yes try them on the
+   preview"). F4b: a single wheatpasted flyer, pasted flat on the wall
+   with no tape and no tilt, its bright paper showing the glue's faint
+   wrinkles and trapped bubbles. Consumers still pick the stock with
+   --flyer-bg; the texture is low-alpha, so ink on it keeps AA. */
+.f-paste {
+  transform: none;
+  box-shadow: 0 1px 0 rgba(20, 20, 24, 0.2), 2px 5px 12px rgba(20, 20, 24, 0.35);
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.5) 0 2px, rgba(29, 29, 35, 0.12) 3px 4px, transparent 5px),
+    radial-gradient(circle at 81% 9%, rgba(255, 255, 255, 0.5) 0 3px, rgba(29, 29, 35, 0.1) 4px 5px, transparent 6px),
+    radial-gradient(circle at 63% 47%, rgba(255, 255, 255, 0.45) 0 2px, rgba(29, 29, 35, 0.1) 3px 4px, transparent 5px),
+    radial-gradient(circle at 27% 78%, rgba(255, 255, 255, 0.45) 0 3px, rgba(29, 29, 35, 0.1) 4px 5px, transparent 6px),
+    radial-gradient(circle at 90% 86%, rgba(255, 255, 255, 0.5) 0 2px, rgba(29, 29, 35, 0.12) 3px 4px, transparent 5px),
+    linear-gradient(100deg, transparent 20%, rgba(29, 29, 35, 0.06) 21%, transparent 23%, transparent 48%, rgba(255, 255, 255, 0.38) 50%, transparent 52%, transparent 70%, rgba(29, 29, 35, 0.07) 71%, transparent 73%),
+    linear-gradient(12deg, transparent 58%, rgba(29, 29, 35, 0.05) 59%, transparent 61%);
+}
+
 /* A section with a WallPhoto behind it: the photo layer sits at
    z-index -1 inside this section's own stacking context */
 .wall {

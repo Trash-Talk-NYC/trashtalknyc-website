@@ -136,7 +136,7 @@ const raised = raisedSentence();
      the headline, with no eyebrow and no "Because of you" (captain,
      2026-10-21), and never "Donate" (Trash Talk NYC is an LLC, team
      feedback 2026-10-15). The notes and the GoFundMe widget sit on one
-     cream flyer taped to a vivid graffiti wall (captain, 2026-10-15), made
+     flyer wheatpasted to a vivid graffiti wall (round 9, F4b), made
      big and prominent (captain, 2026-10-21: "have contribute bigger").
      Beside it, a photo of where the money goes. The old #donate anchor
      still lands here. -->
@@ -144,7 +144,7 @@ const raised = raisedSentence();
   <SectionWall kind="cleanup" src={wallBubbleLetters} dim={0} duotone={0} seed={2} />
   <span id="donate" class="anchor-alias" aria-hidden="true"></span>
   <div class="wrap contribute">
-    <div class="contribute-main paste f-tape">
+    <div class="contribute-main paste f-paste">
       <h2 class="contribute-title" data-en="Contribute" data-es="Contribuye">Contribute</h2>
       <!-- The captain's lines (2026-10-15/19); the amount raised appears
            once it is set in src/lib/contribute.ts -->
@@ -175,8 +175,8 @@ const raised = raisedSentence();
   <SectionWall kind="cleanup" src={wallPasteUps} dim={0} duotone={0} seed={3} />
   <div class="wrap signup-grid">
     <div class="sign-head">
-      <!-- On a cream flyer, so the copy holds AA on the full-color wall -->
-      <div class="sign-text paste f-staple">
+      <!-- On a pasted paper flyer, so the copy holds AA on the full-color wall -->
+      <div class="sign-text paste f-paste">
         <h2 class="sign-plate"><span data-en="Stay in the" data-es="Mantente al">Stay in the</span> <span data-en="loop" data-es="día">loop</span></h2>
         <p class="sign-blurb" data-en="See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more." data-es="Mira en qué anda Trash Talk NYC y cómo puedes participar suscribiéndote a nuestro boletín semanal. Recibirás los próximos eventos, lo más destacado de la comunidad, noticias sobre la basura y el cuidado urbano, y más.">See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more.</p>
       </div>
@@ -517,8 +517,9 @@ const raised = raisedSentence();
     align-items: center;
   }
 
+  /* A single wheatpasted flyer on bright yellow stock (round 9, F4b) */
   .contribute-main {
-    --flyer-bg: var(--paper);
+    --flyer-bg: var(--yellow);
     color: var(--black);
     display: grid;
     justify-items: start;
@@ -740,8 +741,9 @@ const raised = raisedSentence();
     gap: 8px;
   }
 
+  /* A single wheatpasted flyer on bright yellow stock (round 9, F4b) */
   .sign-text {
-    --flyer-bg: var(--paper);
+    --flyer-bg: var(--yellow);
     color: var(--black);
     display: grid;
     gap: 12px;
