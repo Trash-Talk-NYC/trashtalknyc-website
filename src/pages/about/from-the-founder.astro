@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
 import SectionWall from '../../components/SectionWall.astro';
+import WallHero from '../../components/WallHero.astro';
 import wallHero from '../../assets/walls/walk-1839.webp';
 import wallLetter from '../../assets/walls/walk-1836.webp';
 
@@ -110,23 +111,17 @@ const story: Block[] = [
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
-  <!-- Brick-framed title with just "About" above it, slightly larger
-       than the usual accent line (captain, 2026-10 redesign). The h1 is
-       the captain's chosen page name (rename, 2026-08-13), split into
-       two leaves so the language toggle can restructure it: EN
-       "From the / Founder" becomes ES "Del / Fundador" leaf by leaf. -->
-  <section class="fd-hero frame-hero wall">
-    <!-- The captain's wall pick (2026-10-21), shaded 70% so the beige
-         title and yellow eyebrow stay AA -->
-    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.7} duotone={0} seed={17} />
-    <div class="fd-hero-inner">
-      <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
-      <h1 class="fd-title">
-        <span data-en="From the" data-es="Del">From the</span><br />
-        <span data-en="Founder" data-es="Fundador">Founder</span>
-      </h1>
-    </div>
-  </section>
+  <!-- The shared left-aligned hero on the captain's wall pick
+       (2026-10-21), "About" as its eyebrow. The h1 is the captain's
+       chosen page name (rename, 2026-08-13), split into two leaves so the
+       language toggle can restructure it: EN "From the / Founder" becomes
+       ES "Del / Fundador" leaf by leaf. -->
+  <WallHero
+    src={wallHero}
+    eyebrow={{ en: 'About', es: 'Nosotros' }}
+    title={[{ en: 'From the', es: 'Del' }, { en: 'Founder', es: 'Fundador' }]}
+    seed={17}
+  />
 
   <!-- David's letter, unchanged, as ONE wheatpasted sheet; the only
        things beside it are the margin drawings, which are decoration,
@@ -184,45 +179,6 @@ const story: Block[] = [
 
 <style>
   /* ── HERO ── */
-  /* No brick drawing since 2026-10-21 (captain): the vw-proportional
-     padding and min-height keep the proportions it gave the hero. */
-  .fd-hero {
-    /* The height its brick halves needed (see .frame-hero) */
-    --hero-min-phone: calc(54.08vw + 32px);
-    --hero-min-desktop: calc(28.93vw + 32px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .fd-hero-inner {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    justify-items: center;
-    gap: 10px;
-    padding: calc(100vw * 0.17) 22px calc(100vw * 0.17);
-  }
-
-  /* "Just About above it, slightly larger" — the captain's call: the
-     accent line runs a step bigger than the usual mono voice. */
-  .fd-eyebrow {
-    color: var(--yellow);
-    font-size: 1.02rem;
-  }
-
-  .fd-title {
-    font-size: 2.9rem;
-    line-height: 0.92;
-    color: var(--beige);
-    text-align: center;
-  }
-
-
-  @media (min-width: 761px) {
-    .fd-hero-inner { padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
-    .fd-title { font-size: clamp(3.2rem, 6vw, 5.4rem); }
-  }
-
   /* ── BODY ── */
   .fd-body {
     display: grid;

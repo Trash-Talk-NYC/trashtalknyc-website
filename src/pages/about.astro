@@ -5,6 +5,7 @@ import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import vestSticker from '../assets/vest-sticker.png';
 import SectionWall from '../components/SectionWall.astro';
+import WallHero from '../components/WallHero.astro';
 import wallHero from '../assets/walls/wall-mint-paint.webp';
 import wallTeam from '../assets/walls/walk-1751.webp';
 import wallLend from '../assets/walls/walk-1752.webp';
@@ -43,37 +44,34 @@ const bioFlyer: Record<string, string> = {
   title="About — Trash Talk NYC"
   description="Meet Trash Talk NYC, a grassroots initiative cleaning New York City through fun volunteer cleanup events, community engagement, and educational entertainment."
 >
-  <!-- HERO: the group photo, pasted up on the captain's wall pick
-     (2026-10-21), shaded 78% so the lavender title keeps 3:1 and the
-     yellow eyebrow AA over the wall's brightest paint -->
-  <section class="tm-hero frame-hero wall">
-    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.78} duotone={0} seed={14} />
-    <div class="tm-hero-inner">
-      <!-- "About" is an eyebrow over the page name, the same pattern as
-           From the Founder (captain, 2026-10-09) -->
-      <div class="mono tm-eyebrow" data-en="About" data-es="Nosotros">About</div>
-      <h1 class="tm-title" data-en="The Team" data-es="El Equipo">The Team</h1>
-      <figure class="tm-photo paste f-sticker">
-        <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
-        <Image
-          src={groupPhoto}
-          alt="Nandi, David, and Fabiola sitting together on a rock in a park"
-          class="pic"
-          width={1280}
-          widths={[640, 960, 1280]}
-          sizes="(min-width: 761px) 640px, 100vw"
-          loading="eager"
-        />
-        <figcaption><span>Nandi</span><span>David</span><span>Fabiola</span></figcaption>
-      </figure>
-    </div>
-  </section>
+  <!-- The shared left-aligned hero on the captain's wall pick
+       (2026-10-21), "About" as its eyebrow like From the Founder -->
+  <WallHero
+    src={wallHero}
+    eyebrow={{ en: 'About', es: 'Nosotros' }}
+    title={[{ en: 'The Team', es: 'El Equipo' }]}
+    seed={14}
+  />
 
-  <!-- The bios sit on their own wall (captain's pick, 2026-10-21); every
-       word is on a paper sheet, so the photo shows in full color -->
+  <!-- The group photo and the bios sit on their own wall (captain's pick,
+       2026-10-21); every word is on paper, so the photo shows in full
+       color -->
   <section class="team-section wall">
     <SectionWall kind="cleanup" src={wallTeam} dim={0} duotone={0} seed={15} />
-    <div class="wrap">
+    <div class="wrap team-inner">
+    <figure class="tm-photo paste f-sticker">
+      <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
+      <Image
+        src={groupPhoto}
+        alt="Nandi, David, and Fabiola sitting together on a rock in a park"
+        class="pic"
+        width={1280}
+        widths={[640, 960, 1280]}
+        sizes="(min-width: 761px) 640px, 100vw"
+        loading="eager"
+      />
+      <figcaption><span>Nandi</span><span>David</span><span>Fabiola</span></figcaption>
+    </figure>
     <div class="bios">
       {team.map((p) => (
         <article class:list={['bio', 'paste', `b-${p.id}`, bioFlyer[p.id]]}>
@@ -121,29 +119,8 @@ const bioFlyer: Record<string, string> = {
 </BaseLayout>
 
 <style>
-  /* ── HERO ── */
-  .tm-hero {
-    /* The height its brick halves needed (see .frame-hero) */
-    --hero-min-phone: calc(28.93vw + 32px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .tm-hero-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 51.25rem;
-    margin-inline: auto;
-    display: grid;
-    gap: 16px;
-    justify-items: center;
-    padding: calc(100vw * 0.15) 22px calc(100vw * 0.15);
-  }
-
-  /* Same eyebrow voice as the founder page's */
-  .tm-eyebrow { color: var(--yellow); font-size: 1.02rem; margin-bottom: -6px; }
-
-  .tm-title { font-size: 3.4rem; line-height: 0.92; color: var(--lavender); }
+  /* ── GROUP PHOTO ── */
+  .team-inner { display: grid; justify-items: center; gap: 56px; }
 
   .tm-photo {
     position: relative;
@@ -182,10 +159,8 @@ const bioFlyer: Record<string, string> = {
   }
 
   @media (min-width: 761px) {
-    .tm-hero-inner { gap: 22px; padding: calc(100vw * 0.08) 16px calc(100vw * 0.08); }
-    .tm-title { font-size: clamp(3.4rem, 6.4vw, 5.8rem); }
+    .team-inner { gap: 72px; }
     /* The photo scales with the viewport (captain, 2026-10-09) */
-    .tm-hero-inner { max-width: none; width: 100%; }
     .tm-photo { width: min(46vw, 100%); padding: 14px 14px 18px; }
     .tm-photo figcaption { font-size: 0.72rem; }
 
@@ -201,6 +176,7 @@ const bioFlyer: Record<string, string> = {
   .team-section { padding-block: 64px 40px; }
 
   .bios {
+    justify-self: stretch;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;

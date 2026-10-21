@@ -1,0 +1,129 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import WallHero from '../../../components/WallHero.astro';
+import MediaSubnav from '../../../components/MediaSubnav.astro';
+import SectionWall from '../../../components/SectionWall.astro';
+import wallGallery from '../../../assets/walls/wall-9736.webp';
+import { GALLERY, MORE_MEDIA_PATH } from '../../../lib/media';
+import { galleryByMonth, galleryMonthPath } from '../../../lib/gallery';
+
+/**
+ * More Media → Gallery (captain, 2026-10-15: "general gallery -> by
+ * month"). The index is one card per month, newest first, with a few of
+ * its photos and a count; the whole card opens that month's own page
+ * (captain, 2026-10-21: "separate page per month year, because some could
+ * get pretty full"). Curated "Get Inspired" collections tied to past
+ * events are a later release.
+ */
+const months = galleryByMonth().map((m) => ({
+  ...m,
+  path: galleryMonthPath(m.month),
+  preview: m.photos.slice(0, 3),
+  count: { en: `${m.photos.length} ${m.photos.length === 1 ? 'photo' : 'photos'}`, es: `${m.photos.length} ${m.photos.length === 1 ? 'foto' : 'fotos'}` },
+}));
+---
+
+<BaseLayout
+  title="Gallery — Trash Talk NYC"
+  description="Photos from Trash Talk NYC, month by month: the cleanups, the plantings, and the lab."
+>
+  <WallHero
+    src={wallGallery}
+    eyebrow={{ en: 'More Media', es: 'Más Medios' }}
+    eyebrowHref={MORE_MEDIA_PATH}
+    title={[GALLERY.label]}
+    line={{ en: 'Photos from Trash Talk NYC, month by month.', es: 'Fotos de Trash Talk NYC, mes a mes.' }}
+    seed={24}
+  >
+    <MediaSubnav current="gallery" />
+  </WallHero>
+
+  <section class="gi-sec wall">
+    <SectionWall kind="cleanup" src={wallGallery} dim={0} duotone={0} seed={5} />
+    <ul class="wrap gi-grid">
+      {months.map((m, i) => (
+        <li>
+          <a class:list={['gi-card', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={m.path}>
+            <span class="gi-thumbs" aria-hidden="true">
+              {m.preview.map((p) => (
+                <Image src={p.src} alt="" class="gi-thumb" width={400} widths={[200, 400]} sizes="(min-width: 761px) 10rem, 30vw" />
+              ))}
+            </span>
+            <span class="gi-name" data-en={m.label.en} data-es={m.label.es}>{m.label.en}</span>
+            <span class="gi-count mono" data-en={m.count.en} data-es={m.count.es}>{m.count.en}</span>
+            <span class="gi-go mono" aria-hidden="true">→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .gi-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    padding-block: 64px 80px;
+  }
+
+  .gi-card {
+    --flyer-bg: var(--paper);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding: 18px 18px 22px;
+    color: var(--black);
+    text-decoration: none;
+  }
+
+  .gi-thumbs {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* height auto so the <Image> height attribute can't beat the crop */
+  .gi-thumbs :global(.gi-thumb) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border: 2.5px solid var(--black);
+  }
+
+  .gi-name {
+    font-family: var(--display);
+    font-size: clamp(2rem, 8vw, 2.6rem);
+    line-height: 1;
+    color: var(--purple);
+  }
+
+  .gi-count { grid-column: 1; font-size: 0.8rem; color: var(--green); }
+
+  .gi-go { grid-column: 2; grid-row: 2 / span 2; align-self: center; font-size: 1.4rem; color: var(--purple); }
+
+  .gi-card:hover .gi-name,
+  .gi-card:focus-visible .gi-name { text-decoration: underline; text-underline-offset: 6px; }
+  .gi-card:focus-visible { outline: 3px solid var(--yellow); outline-offset: 6px; }
+
+  @media (min-width: 761px) {
+    .gi-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 56px 48px;
+      padding-block: 88px 104px;
+    }
+
+    .gi-card { padding: 22px 24px 26px; }
+  }
+
+  @media (min-width: 1100px) {
+    .gi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

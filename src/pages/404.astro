@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SectionWall from '../components/SectionWall.astro';
+import WallHero from '../components/WallHero.astro';
 import wall404 from '../assets/walls/wall-9572.webp';
 
 // Prerendered so URL misses (mostly bot scans) get a static, CDN-cacheable
@@ -13,52 +13,23 @@ export const prerender = true;
 
   <!-- 404: a dead-end block. A street wall edge to edge, a street-sign-
        yellow Dead End diamond, and the way back. -->
-  <section class="nf frame-hero wall">
-    <!-- The captain's wall pick (2026-10-21), shaded 75% so every line
-         and link stays AA over it -->
-    <SectionWall kind="cleanup" src={wall404} tear="bottom" dim={0.75} duotone={0} seed={21} />
-    <div class="nf-inner">
-      <div class="nf-row" aria-hidden="true">
-        <div class="sign"><span data-en="DEAD END" data-es="SIN SALIDA">DEAD END</span></div>
-      </div>
-      <div class="mono nf-code" data-en="Error 404 — Wrong Block" data-es="Error 404 — Cuadra Equivocada">Error 404 — Wrong Block</div>
-      <h1 data-en="This page got picked up with the trash." data-es="Esta página se fue con la basura.">This page got picked up with the trash.</h1>
-      <div class="nf-actions">
-        <a href="/" class="btn btn-primary" data-en="Back to Home →" data-es="Volver al Inicio →">Back to Home →</a>
-        <a href="/events" class="plain" data-en="See Club Events →" data-es="Ver Eventos del Club →">See Club Events →</a>
-      </div>
+  <!-- The shared left-aligned hero on the captain's wall pick
+       (2026-10-21), the yellow DEAD END sign above it -->
+  <WallHero
+    src={wall404}
+    eyebrow={{ en: 'Error 404 — Wrong Block', es: 'Error 404 — Cuadra Equivocada' }}
+    title={[{ en: 'This page got picked up with the trash.', es: 'Esta página se fue con la basura.' }]}
+    seed={21}
+  >
+    <div class="sign" slot="before" aria-hidden="true"><span data-en="DEAD END" data-es="SIN SALIDA">DEAD END</span></div>
+    <div class="nf-actions">
+      <a href="/" class="btn btn-primary" data-en="Back to Home →" data-es="Volver al Inicio →">Back to Home →</a>
+      <a href="/events" class="plain" data-en="See Club Events →" data-es="Ver Eventos del Club →">See Club Events →</a>
     </div>
-  </section>
+  </WallHero>
 </BaseLayout>
 
 <style>
-  /* No brick drawing since 2026-10-21 (captain): the vw-proportional
-     padding and min-height keep the proportions it gave the hero. */
-  .nf {
-    /* The height its brick halves needed (see .frame-hero) */
-    --hero-min-phone: calc(69.62vw + 32px);
-    --hero-min-desktop: calc(45.78vw + 32px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .nf-inner {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    justify-items: center;
-    gap: 16px;
-    padding: calc(100vw * 0.17) 34px calc(100vw * 0.16);
-    text-align: center;
-  }
-
-  .nf-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 18px;
-  }
-
-
   /* Street-sign-yellow diamond */
   .sign {
     width: clamp(70px, 8vw, 100px);
@@ -69,7 +40,7 @@ export const prerender = true;
     transform: rotate(45deg);
     display: grid;
     place-items: center;
-    margin-bottom: 24px;
+    margin: 14px 0 28px 14px;
   }
 
   .sign span {
@@ -82,38 +53,27 @@ export const prerender = true;
     max-width: 5ch;
   }
 
-  .nf-code { color: var(--yellow); }
-
-  .nf h1 {
-    font-size: 2rem;
-    max-width: 15ch;
-    color: var(--beige);
-  }
-
   /* Phones stack the link under the button */
   .nf-actions {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    justify-content: center;
-    align-items: center;
-    margin-top: 6px;
+    align-items: flex-start;
+    margin-top: 10px;
   }
 
-  /* The vw term only bites below ~370px, so "Ver Eventos de Limpieza"
-     stays on one line */
+  /* Beige and underlined, so it stays AA on the shaded photo */
   .nf-actions .plain {
-    font-size: min(1em, 4.6vw);
     font-weight: 700;
-    color: var(--lavender);
+    color: var(--beige);
+    text-decoration: underline;
+    text-underline-offset: 4px;
     display: inline-flex;
     align-items: center;
     min-height: var(--tap);
   }
 
   @media (min-width: 761px) {
-    .nf-inner { padding: calc(100vw * 0.09) 30px calc(100vw * 0.085); }
-    .nf h1 { font-size: clamp(2.2rem, 4.4vw, 3.8rem); }
-    .nf-actions { flex-direction: row; flex-wrap: wrap; }
+    .nf-actions { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
   }
 </style>

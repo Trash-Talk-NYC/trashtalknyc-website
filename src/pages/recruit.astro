@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SectionWall from '../components/SectionWall.astro';
+import WallHero from '../components/WallHero.astro';
 import wallHero from '../assets/walls/wall-blue-plate.webp';
 
 /**
@@ -71,14 +71,9 @@ const roles = [
   title="Open Roles — Trash Talk NYC"
   description="Trash Talk NYC needs helping hands. Open roles in social media and long-form video. Apply by email to team@trashtalknyc.org."
 >
-  <!-- The title on the captain's hero wall pick (2026-10-21), shaded 70%
-       so the beige title stays AA over the photo -->
-  <section class="rc-hero wall">
-    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.7} duotone={0} seed={19} />
-    <div class="wrap">
-      <h1 class="rc-title"><span data-en="Open" data-es="Puestos">Open</span> <span data-en="Roles" data-es="Abiertos">Roles</span></h1>
-    </div>
-  </section>
+  <!-- The shared left-aligned hero on the captain's wall pick
+       (2026-10-21) -->
+  <WallHero src={wallHero} title={[{ en: 'Open Roles', es: 'Puestos Abiertos' }]} seed={19} />
 
   <section class="wrap rc-body">
     <div class="roles">
@@ -96,14 +91,17 @@ const roles = [
          long-pressed. -->
     <div class="email">
       <a class="btn btn-primary" href={mailto(baseSubject.en)} data-subject-en={baseSubject.en} data-subject-es={baseSubject.es}>
-        <span data-en="✉ Email" data-es="✉ Escribe a">✉ Email</span> <span class="email-addr">{TEAM_EMAIL}</span> <span aria-hidden="true">→</span>
+        <span class="email-label" data-en="✉ Email" data-es="✉ Escribe a">✉ Email</span> <span class="email-addr">{TEAM_EMAIL} <span aria-hidden="true">→</span></span>
       </a>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .email-addr { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  /* The address never breaks mid-word: on phones the label and the
+     address stack as two clean lines (captain, 2026-10-21: "the spacing
+     is really messed up here"), on desktop they share one */
+  .email-addr { white-space: nowrap; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 
   /* ── ROLES ── */
   .rc-body {
@@ -112,9 +110,6 @@ const roles = [
     padding-block: 56px 44px;
   }
 
-  .rc-hero { padding-block: 64px 72px; }
-
-  .rc-title { font-size: 3.4rem; line-height: 0.95; color: var(--beige); }
 
   .roles {
     display: grid;
@@ -176,23 +171,23 @@ const roles = [
      pronounced") */
   .email .btn {
     width: 100%;
+    flex-direction: column;
+    gap: 6px;
     font-size: 1rem;
+    line-height: 1.2;
     padding: 18px 22px;
     letter-spacing: 0.02em;
-    overflow-wrap: anywhere;
     box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.4);
   }
 
   @media (min-width: 761px) {
-    .rc-hero { padding-block: 104px 112px; }
     .rc-body { gap: 34px; padding-block: 56px 72px; }
-    .rc-title { font-size: clamp(3.4rem, 6vw, 5.4rem); max-width: 57.5rem; margin-inline: auto; width: 100%; }
     /* Two posters since 2026-10; capped and centered so a pair doesn't
        stretch into billboard-wide sheets inside the 1240px wrap */
     .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 57.5rem; margin-inline: auto; width: 100%; }
     .role { padding: 26px 24px 22px; }
     .role-t { font-size: 2.2rem; }
-    .email .btn { width: auto; font-size: clamp(1.15rem, 1.6vw, 1.4rem); padding: 22px 36px; }
+    .email .btn { width: auto; flex-direction: row; gap: 0.5em; font-size: clamp(1.15rem, 1.6vw, 1.4rem); padding: 22px 36px; }
   }
 
   @media (prefers-reduced-motion: reduce) {

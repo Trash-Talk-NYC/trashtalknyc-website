@@ -98,15 +98,17 @@ const btnId = `eb-trigger-${id}`;
 </article>
 
 <style>
-  /* Flat and straight on purpose: no tape, no shadow, so it reads as the
-     printed sheet itself, and the stickers crossing its edge tie it to
-     the wall (the flyer kit's recipe) */
+  /* Flat and straight on purpose: no tape, no shadow, so it reads as a
+     printed flyer, and the stickers crossing its edge tie it down. Bright
+     white stock so it shows against the cream sheet it sits on (EL3);
+     the lighter purple below still holds AA on it (5.5:1) */
   .ev-card {
     position: relative;
+    container-type: inline-size;
     display: grid;
     gap: 8px;
     align-content: start;
-    background: var(--beige);
+    background: var(--paper-bright);
     color: var(--purple);
     padding: 30px 22px 24px;
   }
@@ -163,11 +165,12 @@ const btnId = `eb-trigger-${id}`;
   .ev-head {
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(3rem, 13vw, 4.4rem);
+    /* Sized to the card, so the longest borough ("Staten Island") breaks
+       between words, never inside one */
+    font-size: clamp(2.4rem, 12.5cqi, 5.4rem);
     line-height: 0.86;
     color: var(--purple);
     padding-right: 4.5rem;
-    overflow-wrap: anywhere;
   }
 
   .ev-name { margin: 2px 0 0; font-weight: 500; font-size: 1.05rem; color: var(--black); }
@@ -207,7 +210,7 @@ const btnId = `eb-trigger-${id}`;
     line-height: 1;
   }
 
-  /* A lighter purple that still holds AA on the beige (4.7:1) */
+  /* A lighter purple that still holds AA on the white stock */
   .ev-where {
     display: grid;
     margin: 0;
@@ -236,7 +239,7 @@ const btnId = `eb-trigger-${id}`;
     .ev-card.has-host { padding-top: 64px; }
     .ev-card :global(.ev-stk) { width: 132px; top: -28px; right: -30px; }
     .ev-host { width: 104px; height: 104px; font-size: 1.1rem; top: -34px; left: -30px; }
-    .ev-head { font-size: clamp(4rem, 6vw, 5.8rem); padding-right: 5.5rem; }
+    .ev-head { padding-right: 5.5rem; }
     .ev-row { grid-template-columns: 10rem minmax(0, 1fr); }
     .ev-when { font-size: 2.2rem; }
     .ev-where { font-size: 1.2rem; }

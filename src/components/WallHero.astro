@@ -1,0 +1,116 @@
+---
+/**
+ * The one page hero every inner page shares (captain, 2026-10-21: "what
+ * if we tried left aligned heroes?"): the page's own wall photo under a
+ * flat dark shade, then, left-aligned, an optional accent line, the title
+ * in Londrina Solid (no outline stroke, no shadow), and an optional short
+ * line. The homepage keeps its own sticker-bomb hero.
+ *
+ * The shade is flat on purpose: at 70% Roadtop Black even the photo's
+ * brightest paint leaves the beige title and line above 5:1 and the
+ * yellow accent line AA.
+ *
+ * Titles are passed as leaves (one per line) so the language toggle can
+ * restructure them leaf by leaf — setLang swaps leaves, never reorders.
+ * Anything a page needs under the line (the 404's links) goes in the
+ * default slot, and above the accent line (the 404's sign) in "before".
+ */
+import type { ImageMetadata } from 'astro';
+import SectionWall from './SectionWall.astro';
+
+type Copy = { en: string; es: string };
+
+interface Props {
+  /** The page's wall photo (the captain's hero pick). */
+  src: ImageMetadata;
+  /** Accent line above the title; a back link when `eyebrowHref` is set. */
+  eyebrow?: Copy;
+  eyebrowHref?: string;
+  /** One entry per line, all one color (no accent words, captain 2026-10-15). */
+  title: Copy[];
+  /** The optional short line under the title. */
+  line?: Copy;
+  /** Varies the torn bottom edge between pages. */
+  seed?: number;
+}
+
+const { src, eyebrow, eyebrowHref, title, line, seed = 1 } = Astro.props;
+---
+
+<section class="wh wall">
+  <SectionWall kind="cleanup" src={src} tear="bottom" dim={0.7} duotone={0} seed={seed} />
+  <div class="wrap wh-inner">
+    <slot name="before" />
+    {eyebrow && (
+      eyebrowHref ? (
+        <a class="mono wh-eyebrow" href={eyebrowHref}>
+          <span aria-hidden="true">←</span><span data-en={eyebrow.en} data-es={eyebrow.es}>{eyebrow.en}</span>
+        </a>
+      ) : (
+        <div class="mono wh-eyebrow" data-en={eyebrow.en} data-es={eyebrow.es}>{eyebrow.en}</div>
+      )
+    )}
+    <h1 class="wh-title">
+      {title.map((part, i) => (
+        <>
+          {i > 0 && <br />}
+          <span data-en={part.en} data-es={part.es}>{part.en}</span>
+        </>
+      ))}
+    </h1>
+    {line && <p class="wh-line" data-en={line.en} data-es={line.es}>{line.en}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .wh { padding-block: 44px 56px; }
+
+  .wh-inner {
+    display: grid;
+    justify-items: start;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .wh-eyebrow {
+    color: var(--yellow);
+    font-size: 1rem;
+    text-decoration: none;
+  }
+
+  a.wh-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: var(--tap);
+    margin-block: -10px -6px;
+  }
+
+  a.wh-eyebrow:hover span:last-child { text-decoration: underline; text-underline-offset: 4px; }
+
+  .wh-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.8rem, 12vw, 3.6rem);
+    line-height: 0.92;
+    max-width: 18ch;
+    color: var(--beige);
+  }
+
+  .wh-line {
+    max-width: 40ch;
+    margin: 2px 0 0;
+    color: var(--beige);
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  @media (min-width: 761px) {
+    .wh { padding-block: 72px 88px; }
+    .wh-inner { gap: 12px; }
+    .wh-title { font-size: clamp(3.8rem, 6vw, 5.6rem); }
+    .wh-line { font-size: clamp(1.2rem, 1.6vw, 1.45rem); }
+  }
+</style>

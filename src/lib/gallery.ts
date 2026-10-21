@@ -141,6 +141,11 @@ export function monthLabel(month: string): Copy {
 }
 
 /** Photos grouped by capture month, newest month first; photo order kept inside a month. */
+/** A month's own page (captain, 2026-10-21: one page per month, "because some could get pretty full"). */
+export function galleryMonthPath(month: string): string {
+  return `/more-media/gallery/${month}`;
+}
+
 export function galleryByMonth(photos: GalleryPhoto[] = galleryPhotos): GalleryMonth[] {
   const months = new Map<string, GalleryPhoto[]>();
   for (const photo of photos) {

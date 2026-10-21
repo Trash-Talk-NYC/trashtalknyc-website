@@ -154,6 +154,32 @@ export function flyerWhen(iso: string, lang: Lang): { date: string; time: string
 }
 
 /**
+ * The Club Events hero's short line, kept as a placeholder (captain,
+ * 2026-10-21: "take out cleanups across all 5 boroughs. i like that text
+ * though, can we have that be like placeholder text for now"). Hidden
+ * while SHOW_EVENTS_HERO_LINE is false.
+ */
+export const EVENTS_HERO_LINE: Copy = {
+  en: 'Free community cleanups across the five boroughs.',
+  es: 'Limpiezas comunitarias gratuitas en los cinco condados.',
+};
+export const SHOW_EVENTS_HERO_LINE = false;
+
+/**
+ * The photos a folded borough previews (captain's P1/P4, 2026-10-21):
+ * the events' own Eventbrite covers, each once, newest first. Events
+ * without a cover are skipped; no event ever needs a photo.
+ */
+export function boroughPreviewCovers(group: PastEventGroup, max = 4): string[] {
+  const urls: string[] = [];
+  for (const ev of group.events) {
+    if (ev.imageUrl && !urls.includes(ev.imageUrl)) urls.push(ev.imageUrl);
+    if (urls.length === max) break;
+  }
+  return urls;
+}
+
+/**
  * Shows the sample flyers on Club Events while there are no real upcoming
  * events (round 10, captain 2026-10-21: "we can put a dummy one or two
  * there"). Real Eventbrite events always win. Set to false to show the

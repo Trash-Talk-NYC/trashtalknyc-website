@@ -3,25 +3,20 @@ import SectionWall from '../../components/SectionWall.astro';
 import wallOverview from '../../assets/walls/wall-9568.webp';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import MediaHero from '../../components/MediaHero.astro';
-import { GALLERY, IN_THE_NEWS, liveMediaSections, moreMediaTagline, type MediaSectionId } from '../../lib/media';
+import WallHero from '../../components/WallHero.astro';
+import MediaSubnav from '../../components/MediaSubnav.astro';
+import { GALLERY, IN_THE_NEWS, liveMediaSections, moreMediaTagline } from '../../lib/media';
 import { galleryByMonth } from '../../lib/gallery';
-import vestSticker from '../../assets/vest-sticker.png';
+import wordmarkSticker from '../../assets/wordmark-sticker.png';
 
 /**
- * More Media — /more-media (captain, 2026-10-09): a title + description
- * hero ("Hear us talk trash across several platforms.") over one poster
- * per live channel, plus the Gallery and In The News. Podcast and Substack are hidden
- * until they're ready (captain, 2026-10-15); `comingSoon` in media.ts
- * brings them back.
+ * More Media — /more-media (captain, 2026-10-09): the shared hero with
+ * "Hear us talk trash across several platforms.", then one flyer per
+ * channel on the wall (captain's M1, 2026-10-21): each a flat cream
+ * sheet with a big purple title, a small preview, and one button, like
+ * the event flyers. Podcast and Substack are hidden until they're ready
+ * (captain, 2026-10-15); `comingSoon` in media.ts brings them back.
  */
-
-// Per-channel poster stock and how the poster is stuck up
-const look: Record<MediaSectionId, { tone: string; flyer: string; sticker: boolean }> = {
-  youtube: { tone: 'mm-purple', flyer: 'f-sticker', sticker: true },
-  podcast: { tone: 'mm-green', flyer: 'f-staple', sticker: false },
-  substack: { tone: 'mm-paper', flyer: 'f-tape f-torn', sticker: false },
-};
 
 // The newest month's first photos preview the Gallery
 const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
@@ -30,43 +25,49 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
 <BaseLayout
   title="More Media — Trash Talk NYC"
   description="Hear Trash Talk NYC talk trash on YouTube, see photos from the club month by month, and read the press coverage."
+  stickerFonts
 >
-  <MediaHero
+  <WallHero
+    src={wallOverview}
     title={[{ en: 'More', es: 'Más' }, { en: 'Media', es: 'Medios' }]}
-    description={moreMediaTagline}
-  />
+    line={moreMediaTagline}
+    seed={25}
+  >
+    <MediaSubnav />
+  </WallHero>
 
-  <!-- One torn-edge wall behind the posters, in the photo's own colors
-       (captain, 2026-10-15) -->
   <section class="mm-wall wall">
   <SectionWall kind="cleanup" src={wallOverview} dim={0} duotone={0} seed={8} />
   <div class="wrap mm-grid" role="group" aria-label="More Media">
     {liveMediaSections.map((s) => (
-      <article class:list={['mm-card', 'paste', look[s.id].tone, look[s.id].flyer]}>
-        {look[s.id].sticker && <Image src={vestSticker} alt="" class="slap mm-slap" width={96} densities={[1, 2]} />}
+      <article class="mm-fly">
+        <Image src={wordmarkSticker} alt="" class="mm-stk" width={120} densities={[1, 2]} />
         <h2 class="mm-name">{s.label}</h2>
+        <div class="mm-play" aria-hidden="true"><span></span></div>
         <p class="mm-blurb" data-en={s.blurb.en} data-es={s.blurb.es}>{s.blurb.en}</p>
-        <a class="btn btn-primary mm-btn" href={s.path}>
+        <a class="btn btn-purple mm-btn" href={s.path}>
           <span data-en={`${s.action.en} →`} data-es={`${s.action.es} →`}>{s.action.en} →</span>
         </a>
       </article>
     ))}
-    <article class="mm-card paste mm-paper f-tape">
+    <article class="mm-fly">
       <h2 class="mm-name" data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</h2>
-      <p class="mm-blurb" data-en="Photos from Trash Talk NYC, month by month." data-es="Fotos de Trash Talk NYC, mes a mes.">Photos from Trash Talk NYC, month by month.</p>
       {preview.length > 0 && (
         <div class="mm-thumbs" aria-hidden="true">
           {preview.map((p) => <Image src={p.src} alt="" class="mm-thumb" width={240} widths={[120, 240]} sizes="7rem" />)}
         </div>
       )}
+      <p class="mm-blurb" data-en="Photos from Trash Talk NYC, month by month." data-es="Fotos de Trash Talk NYC, mes a mes.">Photos from Trash Talk NYC, month by month.</p>
       <a class="btn btn-purple mm-btn" href={GALLERY.path}>
-        <span data-en="Look →" data-es="Ver →">Look →</span>
+        <span data-en="See photos →" data-es="Ver fotos →">See photos →</span>
       </a>
     </article>
-    <article class="mm-card paste mm-green f-staple">
+    <article class="mm-fly">
+      <span class="mm-badge" aria-hidden="true" data-en="Extra!" data-es="¡Extra!">Extra!</span>
       <h2 class="mm-name" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h2>
+      <p class="mm-mast" aria-hidden="true">The Trash Talk Times</p>
       <p class="mm-blurb" data-en="Articles and podcasts that feature Trash Talk NYC." data-es="Artículos y pódcasts sobre Trash Talk NYC.">Articles and podcasts that feature Trash Talk NYC.</p>
-      <a class="btn btn-primary mm-btn" href={IN_THE_NEWS.path}>
+      <a class="btn btn-purple mm-btn" href={IN_THE_NEWS.path}>
         <span data-en="Read →" data-es="Leer →">Read →</span>
       </a>
     </article>
@@ -78,85 +79,120 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
   .mm-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 52px;
+    gap: 48px;
     padding-block: 64px 72px;
   }
 
-  .mm-card {
+  /* A flat, straight cream flyer like the event flyers: no tape, no
+     shadow; the stickers crossing its edge tie it to the wall */
+  .mm-fly {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
     padding: 30px 22px 26px;
+    background: var(--beige);
+    color: var(--purple);
   }
-
-  .mm-purple { --flyer-bg: var(--purple); color: var(--beige); }
-  .mm-green { --flyer-bg: var(--green); color: var(--beige); }
-  .mm-paper { --flyer-bg: var(--paper); color: var(--black); }
-
-  .mm-card :global(.mm-slap) {
-    top: -34px;
-    width: 76px;
-    height: auto;
-  }
-
-  .mm-card :global(.mm-slap) { right: -8px; transform: rotate(9deg); }
-
 
   .mm-name {
-    font-size: 2.8rem;
-    line-height: 0.95;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(3rem, 13vw, 3.6rem);
+    line-height: 0.9;
+    color: var(--purple);
+    padding-right: 4rem;
   }
 
-  /* Yellow on purple, white on the green poster, ink on paper (captain,
-     2026-10-09) */
-  .mm-purple .mm-name { color: var(--yellow); }
-  .mm-green .mm-name { color: var(--beige); }
-  .mm-paper .mm-name { color: var(--black); }
+  .mm-blurb { margin: 0; font-size: 1.1rem; line-height: 1.4; color: var(--black); }
 
-  .mm-blurb {
-    margin: 0;
-    font-size: 1.12rem;
-    line-height: 1.45;
+  .mm-fly :global(.mm-stk) {
+    position: absolute;
+    top: -22px;
+    right: -12px;
+    width: 100px;
+    height: auto;
+    transform: rotate(8deg);
+    filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+    pointer-events: none;
   }
 
-  /* A few of the newest photos, so the Gallery poster shows what's inside */
-  .mm-thumbs { display: flex; gap: 8px; }
+  /* YouTube's preview: a play button on a purple screen */
+  .mm-play {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    background: var(--purple);
+  }
+
+  .mm-play span {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 18px 0 18px 30px;
+    border-color: transparent transparent transparent var(--beige);
+    margin-left: 6px;
+  }
+
+  .mm-thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
 
   .mm-thumbs :global(.mm-thumb) {
-    width: 5.5rem;
+    display: block;
+    width: 100%;
     height: auto;
     aspect-ratio: 1;
     object-fit: cover;
     border: 2.5px solid var(--black);
   }
 
-  /* The action sits on the card's bottom edge so the posters line up
-     their buttons on desktop */
-  .mm-btn { margin-top: auto; align-self: stretch; }
+  /* In The News' preview: the paper's masthead */
+  .mm-mast {
+    width: 100%;
+    margin: 0;
+    padding: 10px 0 8px;
+    border-block: 4px double var(--black);
+    font-family: 'UnifrakturMaguntia', Georgia, serif;
+    font-size: clamp(1.4rem, 6vw, 1.8rem);
+    line-height: 1;
+    text-align: center;
+    color: var(--black);
+  }
 
-  /* Square-cornered buttons across More Media (captain, 2026-10-09) */
-  .mm-btn { border-radius: 0; }
+  .mm-badge {
+    position: absolute;
+    left: -14px;
+    bottom: -18px;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--purple);
+    font-family: var(--display);
+    font-size: 1rem;
+    transform: rotate(-10deg);
+    filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+  }
+
+  /* The buttons line up along the flyers' bottom edges on desktop;
+     square-cornered across More Media (captain, 2026-10-09) */
+  .mm-btn { margin-top: auto; border-radius: 0; }
 
   @media (min-width: 761px) {
     .mm-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: clamp(24px, 3vw, 40px);
+      gap: 56px clamp(32px, 3.5vw, 48px);
       padding-block: 88px 104px;
     }
 
-    .mm-card {
-      padding: 36px clamp(20px, 2.4vw, 32px) 30px;
-    }
-
-    .mm-card :global(.mm-slap) { top: -40px; width: 92px; }
-    .mm-name { font-size: clamp(2.8rem, 3.6vw, 3.6rem); }
-    .mm-btn { align-self: flex-start; }
-    .mm-thumbs :global(.mm-thumb) { width: 6.5rem; }
+    .mm-fly { padding: 38px clamp(22px, 2.6vw, 34px) 32px; }
+    .mm-name { font-size: clamp(3.2rem, 4vw, 4.2rem); }
+    .mm-fly :global(.mm-stk) { width: 118px; top: -28px; right: -24px; }
   }
 
-  /* Three posters side by side once there's room for them */
   @media (min-width: 1100px) {
     .mm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }

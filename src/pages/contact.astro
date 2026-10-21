@@ -1,5 +1,6 @@
 ---
 import SectionWall from '../components/SectionWall.astro';
+import WallHero from '../components/WallHero.astro';
 import wallGreenBox from '../assets/walls/wall-green-box.webp';
 import wallHero from '../assets/walls/wall-9565.webp';
 import wallLead from '../assets/walls/walk-1830.webp';
@@ -41,17 +42,14 @@ const monthOptions = rollingMonths();
        .cf-turnstile divs. Only loaded when a site key was set at build time. -->
   {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-  <!-- HERO -->
-  <section class="ct-hero frame-hero wall">
-    <!-- The captain's wall pick (2026-10-21), shaded 70% so the beige
-         title and yellow eyebrow stay AA -->
-    <SectionWall kind="cleanup" src={wallHero} tear="bottom" dim={0.7} duotone={0} seed={20} />
-    <div class="ct-hero-inner">
-      <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
-      <!-- The captain's headline (2026-10-15) -->
-      <h1 class="ct-title"><span data-en="Let's Talk" data-es="Hablemos">Let's Talk</span><br /><span data-en="Trash" data-es="de Basura">Trash</span></h1>
-    </div>
-  </section>
+  <!-- The shared left-aligned hero on the captain's wall pick
+       (2026-10-21), with the captain's headline (2026-10-15) -->
+  <WallHero
+    src={wallHero}
+    eyebrow={{ en: 'Contact', es: 'Contacto' }}
+    title={[{ en: "Let's Talk", es: 'Hablemos' }, { en: 'Trash', es: 'de Basura' }]}
+    seed={20}
+  />
 
   <!-- The form is its own section and "Help out behind the scenes" is
        the next one (captain, 2026-10-09) — no side column, no loose
@@ -68,7 +66,7 @@ const monthOptions = rollingMonths();
   <div class="ct-bg" data-for="partnership"><SectionWall kind="cleanup" src={wallPartner} dim={0} duotone={0} seed={7} outline /></div>
   <div class="wrap ct-body">
     <div class="ct-form">
-      <div class="pick-label mono" id="pickLabel" data-en="Choose one to start" data-es="Elige una opción para empezar">Choose one to start</div>
+      <div class="pick-label mono" id="pickLabel" data-en="What brings you here?" data-es="¿Qué te trae por aquí?">What brings you here?</div>
       <div class="tiles" role="group" aria-labelledby="pickLabel">
         <!-- Four large taped flyers in a 2 × 2 grid (captain's H1 pick,
              2026-10-09); the chosen form opens below as its own sheet -->
@@ -282,7 +280,7 @@ const monthOptions = rollingMonths();
   <section class="ct-join" aria-labelledby="joinBannerHeading">
     <div class="wrap ct-join-grid">
       <div>
-        <h2 id="joinBannerHeading" class="strip" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
+        <h2 id="joinBannerHeading" data-en="Help out behind the scenes" data-es="Ayuda detrás de cámaras">Help out behind the scenes</h2>
         <p data-en="There are open roles, but if there's something or someone we're missing, our inbox is open." data-es="Hay puestos abiertos, pero si falta algo o alguien que no hemos visto, nuestro correo está abierto.">There are open roles, but if there's something or someone we're missing, our inbox is open.</p>
         <a class="btn btn-primary" href="/recruit" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
       </div>
@@ -291,45 +289,11 @@ const monthOptions = rollingMonths();
 </BaseLayout>
 
 <style>
-  /* ── HERO ── */
-  /* No brick drawing since 2026-10-21 (captain): the vw-proportional
-     padding and min-height keep the proportions it gave the hero. */
-  .ct-hero {
-    /* The height its brick halves needed (see .frame-hero) */
-    --hero-min-phone: calc(54.08vw + 32px);
-    --hero-min-desktop: calc(28.93vw + 32px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ct-hero-inner {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    justify-items: center;
-    gap: 10px;
-    padding: calc(100vw * 0.17) 22px calc(100vw * 0.17);
-  }
-
-  .ct-eyebrow { color: var(--yellow); }
-
+  /* ── FORM WALL (follows the picked tile) ── */
   .ct-bg { display: none; }
   .ct-wall[data-wall='default'] .ct-bg[data-for='default'],
   .ct-wall[data-wall='lead'] .ct-bg[data-for='lead'],
   .ct-wall[data-wall='partnership'] .ct-bg[data-for='partnership'] { display: contents; }
-
-  .ct-title {
-    font-size: 4rem;
-    color: var(--beige);
-    text-align: center;
-    line-height: 0.92;
-  }
-
-
-  @media (min-width: 761px) {
-    .ct-hero-inner { padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
-    .ct-title { font-size: clamp(4.6rem, 9.5vw, 8rem); }
-  }
 
   /* ── BODY ── */
   .ct-body {
@@ -448,32 +412,29 @@ const monthOptions = rollingMonths();
   .form-area .pair { grid-column: 1 / -1; }
 
   /* Support choices: checkbox chips that wrap */
-  .checks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  /* Plain checkboxes, no pill buttons (captain, 2026-10-21: "let's just
+     do checkboxes") */
+  .checks { display: flex; flex-wrap: wrap; align-items: center; gap: 0 22px; }
 
   .check-chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     min-height: var(--tap);
-    padding: 6px 14px 6px 10px;
-    border: 2.5px solid var(--black);
-    border-radius: 999px;
-    background: var(--paper-bright);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
   }
 
-  .check-chip:has(input:checked) { background: var(--purple); color: var(--beige); }
   .check-chip:has(input:focus-visible) { outline: 3px solid var(--purple); outline-offset: 2px; }
 
   .check-chip input {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     min-height: 0;
     margin: 0;
     padding: 0;
-    accent-color: var(--yellow);
+    accent-color: var(--purple);
   }
 
   /* ── PHOTO DROP ZONE ── */
@@ -595,7 +556,6 @@ const monthOptions = rollingMonths();
   import { getCurrentLang, onLanguageChange, submitErrorText, type Lang } from '../lib/language';
   import { attachFieldValidation, setFieldError } from '../lib/clientValidation';
   import { rollingMonths } from '../lib/months';
-import { BEHALF_OPTIONS, CLEANING_NEEDS, PARTNERSHIP_TYPES, SUPPORT_NEEDS } from '../lib/leadOptions';
   import { attachCombobox, fetchJson, type BilingualText, type ComboOption, type Combobox } from '../lib/combobox';
   import { ADDRESS_UNAVAILABLE } from '../lib/addressErrors';
 

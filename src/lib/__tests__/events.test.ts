@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls, groupPastByBorough, assignPastCovers, mapEventbriteEvent, flyerHeadline, flyerKind, flyerWhen, newestGroupIndex, sampleEvents, toEventCardProps } from '../events';
+import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls, groupPastByBorough, assignPastCovers, mapEventbriteEvent, flyerHeadline, flyerKind, flyerWhen, newestGroupIndex, sampleEvents, toEventCardProps, boroughPreviewCovers } from '../events';
 import type { EventData } from '../events';
 
 // ── formatDate ──────────────────────────────────────────────────────────────
@@ -426,5 +426,14 @@ describe('flyer card helpers', () => {
     const groups = [{ borough: 'Bronx' as const, events: [b] }, { borough: 'Queens' as const, events: [a] }];
     expect(newestGroupIndex(groups as never, a)).toBe(1);
     expect(newestGroupIndex(groups as never, undefined)).toBe(-1);
+  });
+});
+
+describe('boroughPreviewCovers', () => {
+  const ev = (id: string, imageUrl: string | null) => ({ id, imageUrl }) as EventData;
+  it('takes each cover once, skips photo-less events, and caps the strip', () => {
+    const group = { borough: 'Queens' as const, events: [ev('1', 'a'), ev('2', null), ev('3', 'a'), ev('4', 'b'), ev('5', 'c')] };
+    expect(boroughPreviewCovers(group, 4)).toEqual(['a', 'b', 'c']);
+    expect(boroughPreviewCovers(group, 2)).toEqual(['a', 'b']);
   });
 });

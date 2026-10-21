@@ -3,7 +3,7 @@ import SectionWall from '../../components/SectionWall.astro';
 import wallYouTube from '../../assets/walls/wall-9744.webp';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import MediaHero from '../../components/MediaHero.astro';
+import WallHero from '../../components/WallHero.astro';
 import MediaSubnav from '../../components/MediaSubnav.astro';
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import { MORE_MEDIA_PATH, featuredVideo, getMediaSection } from '../../lib/media';
@@ -22,14 +22,16 @@ const section = getMediaSection('youtube');
   title="YouTube — Trash Talk NYC"
   description="Watch Trash Talk NYC on YouTube: longer videos from the cleanups, the crew, and everything around them."
 >
-  <MediaHero
+  <WallHero
+    src={wallYouTube}
     eyebrow={{ en: 'More Media', es: 'Más Medios' }}
     eyebrowHref={MORE_MEDIA_PATH}
     title={[{ en: section.label, es: section.label }]}
-    description={section.blurb}
-  />
-
-  <MediaSubnav current="youtube" />
+    line={section.blurb}
+    seed={23}
+  >
+    <MediaSubnav current="youtube" />
+  </WallHero>
 
   <!-- Torn-edge wall like the other More Media pages (captain, 2026-10-09) -->
   <section class="yt-wall wall">

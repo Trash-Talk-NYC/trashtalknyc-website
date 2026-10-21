@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionWall from '../components/SectionWall.astro';
+import WallHero from '../components/WallHero.astro';
 import wallStickers from '../assets/walls/wall-9574.webp';
 import { TIER_LABEL, TIER_SIZE, partnersByTier, stickerLook, visiblePartners, type PartnerTier } from '../lib/partners';
 
@@ -68,13 +69,32 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
   description="The partners who help Trash Talk NYC clean the city, stuck up as stickers: the bigger the sticker, the bigger the support."
   stickerFonts
 >
+  <!-- The intro, the size legend, and the reset sit in the shared hero,
+       so nothing on the wall below is a paper box: the stickers stick
+       straight onto the photo (captain, 2026-10-21: no "patchwork
+       disjoint containers taped up") -->
+  <WallHero
+    src={wallStickers}
+    title={[{ en: 'The Wall', es: 'La Pared' }]}
+    line={{
+      en: 'Every sticker is a partner who helps us clean NYC. The bigger the sticker, the bigger the support. Peel one to see who they are and what they did.',
+      es: 'Cada calcomanía es un socio que nos ayuda a limpiar NYC. Mientras más grande la calcomanía, mayor el apoyo. Despega una para ver quiénes son y qué hicieron.',
+    }}
+    seed={27}
+  >
+    <div class="sw-foot">
+      <ul class="legend mono">
+        {tiers.map((t) => (
+          <li><i class={`dot dot-${t}`} aria-hidden="true"></i><span data-en={TIER_LABEL[t].en} data-es={TIER_LABEL[t].es}>{TIER_LABEL[t].en}</span></li>
+        ))}
+      </ul>
+      <button type="button" class="btn btn-primary" id="stickAll" data-en="Stick them all back ↺" data-es="Pégalas todas de nuevo ↺">Stick them all back ↺</button>
+    </div>
+  </WallHero>
+
   <section class="sw-sec wall">
     <SectionWall kind="cleanup" src={wallStickers} dim={0} duotone={0} seed={13} />
     <div class="wrap sw-body">
-      <header class="sw-head">
-        <h1 class="sw-title paste f-tape" data-en="The Wall" data-es="La Pared">The Wall</h1>
-        <p class="sw-intro paste" data-en="Every sticker is a partner who helps us clean NYC. The bigger the sticker, the bigger the support. Peel one to see who they are and what they did." data-es="Cada calcomanía es un socio que nos ayuda a limpiar NYC. Mientras más grande la calcomanía, mayor el apoyo. Despega una para ver quiénes son y qué hicieron.">Every sticker is a partner who helps us clean NYC. The bigger the sticker, the bigger the support. Peel one to see who they are and what they did.</p>
-      </header>
 
       <div class="stage" id="stage">
         {hasSamples && <span class="sample-mark mono" data-en="Sample partners" data-es="Socios de muestra">Sample partners</span>}
@@ -120,14 +140,6 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
         ))}
       </div>
 
-      <div class="sw-foot">
-        <ul class="legend mono">
-          {tiers.map((t) => (
-            <li><i class={`dot dot-${t}`} aria-hidden="true"></i><span data-en={TIER_LABEL[t].en} data-es={TIER_LABEL[t].es}>{TIER_LABEL[t].en}</span></li>
-          ))}
-        </ul>
-        <button type="button" class="btn btn-primary" id="stickAll" data-en="Stick them all back ↺" data-es="Pégalas todas de nuevo ↺">Stick them all back ↺</button>
-      </div>
     </div>
   </section>
 </BaseLayout>
@@ -171,36 +183,12 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
 <style>
   .sw-body { display: grid; gap: 22px; padding-block: 48px 64px; }
 
-  .sw-head { display: grid; gap: 14px; justify-items: start; }
-
-  .sw-title {
-    --flyer-bg: var(--paper);
-    display: inline-block;
-    color: var(--black);
-    font-size: clamp(2.6rem, 9vw, 4.6rem);
-    line-height: 0.95;
-    padding: 14px 20px 10px;
-  }
-
-  .sw-intro {
-    --flyer-bg: var(--paper);
-    max-width: 40rem;
-    margin: 0;
-    padding: 14px 18px;
-    color: var(--black);
-    font-size: 1.15rem;
-    line-height: 1.45;
-  }
-
   /* ── THE WALL ── */
   /* Phones get a taller stage and their own slots (--px/--py) at 70% of
      the tier sizes, so a City sticker still fits beside a Borough one */
   .stage {
     position: relative;
     min-height: 760px;
-    border: var(--ink);
-    border-radius: 8px;
-    background: rgba(29, 29, 35, 0.25);
   }
 
   .sample-mark {
@@ -365,7 +353,7 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
 
   .note-back:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
 
-  .sw-foot { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between; }
+  .sw-foot { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; margin-top: 10px; }
 
   .legend {
     list-style: none;
@@ -373,22 +361,19 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
     flex-wrap: wrap;
     gap: 8px 16px;
     margin: 0;
-    padding: 8px 12px;
-    background: var(--paper);
-    color: var(--black);
-    border-radius: 6px;
+    padding: 0;
+    color: var(--beige);
     font-size: 0.8rem;
   }
 
   .legend li { display: flex; align-items: center; gap: 6px; }
-  .dot { display: inline-block; border-radius: 4px; background: var(--black); }
+  .dot { display: inline-block; border-radius: 4px; background: var(--beige); }
   .dot-city { width: 22px; height: 22px; }
   .dot-borough { width: 16px; height: 16px; }
   .dot-block { width: 10px; height: 10px; }
 
   @media (min-width: 761px) {
     .sw-body { gap: 28px; padding-block: 72px 88px; }
-    .sw-intro { font-size: 1.3rem; }
     .stage { min-height: 680px; }
     .ps-spot { --size: var(--s); left: var(--x); top: var(--y); }
     .note-left-p { left: 0; right: auto; }
