@@ -13,7 +13,6 @@ import SectionWall from '../components/SectionWall.astro';
 import BrandSticker from '../components/BrandSticker.astro';
 import type { BrandStickerId } from '../lib/stickers';
 import YouTubeEmbed from '../components/YouTubeEmbed.astro';
-import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
 // The captain's own wall photos (2026-10-15), curated for color
 import wallBubbleLetters from '../assets/walls/wall-bubble-letters.webp';
 import wallPasteUps from '../assets/walls/wall-paste-ups.webp';
@@ -103,14 +102,17 @@ const raised = raisedSentence();
      .cf-turnstile div. Only loaded when a site key was set at build time. -->
 {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-<!-- HERO: the shaded red-brick photo with the wordmark sticker slapped on
+<!-- HERO: the bubble-letters wall in its own colors under the sticker bomb
+     (captain, 2026-10-21; it also stays behind Contribute until that
+     section gets its own photo), shaded 65% so the beige headline and the
+     yellow line hold AA over its brightest paint, with the wordmark sticker slapped on
      after a sticker bomb (captain, 2026-10-15), the club's headline and
      line under it (team feedback, 2026-10-15), and one button that says
      "Events" (captain). The purple brick drawing over it is gone (captain,
      2026-10-21: "take out the brick decal", then on every page).
      The vest moved up to the header logo. -->
 <section class="hero wall" id="top">
-  <SectionWall kind="cleanup" src={wallRedBrick} tear="bottom" dim={0.5} duotone={0.2} seed={1} />
+  <SectionWall kind="cleanup" src={wallBubbleLetters} tear="bottom" dim={0.65} duotone={0} seed={1} />
   <div class="hero-inner">
     <div class="bomb">
       {bombStickers.map((st, i) => {
