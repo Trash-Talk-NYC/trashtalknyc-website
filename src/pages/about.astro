@@ -242,10 +242,14 @@ const bioFlyer: Record<string, string> = {
   }
 
   /* ── LEND A HAND ── */
+  /* Ripped paper in and out of the band (captain, 2026-10-21): both
+     edges are torn, in px so the rip depth stays the same at any width,
+     and the padding clears the deepest notch */
   .lend {
     background-color: var(--green);
     color: var(--beige);
-    padding-block: 32px;
+    padding-block: 52px;
+    clip-path: polygon(0 12px, 6% 3px, 13% 16px, 21% 5px, 29% 14px, 37% 2px, 46% 15px, 54% 4px, 62% 13px, 71% 1px, 79% 15px, 87% 5px, 94% 14px, 100% 4px, 100% calc(100% - 13px), 93% calc(100% - 3px), 85% calc(100% - 15px), 77% calc(100% - 4px), 68% calc(100% - 14px), 60% calc(100% - 2px), 51% calc(100% - 16px), 43% calc(100% - 5px), 34% calc(100% - 13px), 26% calc(100% - 1px), 18% calc(100% - 15px), 10% calc(100% - 4px), 4% calc(100% - 12px), 0 calc(100% - 3px));
   }
 
   .lend-inner {
@@ -259,7 +263,7 @@ const bioFlyer: Record<string, string> = {
   .lend h2 { font-size: 2.4rem; }
 
   @media (min-width: 761px) {
-    .lend { padding-block: 40px; }
+    .lend { padding-block: 64px; }
     .lend h2 { font-size: clamp(2.6rem, 4vw, 3.6rem); }
   }
 </style>
