@@ -10,6 +10,7 @@
 import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
+import { STICKERS_PATH } from '../lib/partners';
 import { MORE_MEDIA_PATH } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
 
@@ -24,6 +25,7 @@ const year = new Date().getFullYear();
       <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
       <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
       <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
+      <li><a href={STICKERS_PATH} data-en="Stickers on the Wall" data-es="Calcomanías en la Pared">Stickers on the Wall</a></li>
       <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
       <li><a href={MORE_MEDIA_PATH} data-en="More Media" data-es="Más Medios">More Media</a></li>
       <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>

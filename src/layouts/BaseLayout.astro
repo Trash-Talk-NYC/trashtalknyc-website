@@ -11,9 +11,23 @@ interface Props {
   ogTitle?: string;
   /** Set on pages that must not be indexed (404). */
   noindex?: boolean;
+  /** Loads the printed stickers' faces (BrandSticker, partner stickers,
+      the Trash Talk Times masthead) on the pages that show them. */
+  stickerFonts?: boolean;
 }
 
-const { title, description, ogTitle = title, noindex = false } = Astro.props;
+const { title, description, ogTitle = title, noindex = false, stickerFonts = false } = Astro.props;
+
+// Oswald (tab labels), Permanent Marker (handwriting), and UnifrakturMaguntia
+// (newspaper blackletter) are sticker print faces from the captain's picked
+// mockup (2026-10-21), never body type
+const fontFamilies = [
+  'Londrina+Solid:wght@400;900',
+  'Barlow+Semi+Condensed:wght@400;500;700',
+  'Space+Mono:wght@700',
+  ...(stickerFonts ? ['Oswald:wght@700', 'Permanent+Marker', 'UnifrakturMaguntia'] : []),
+];
+const fontsHref = `https://fonts.googleapis.com/css2?${fontFamilies.map((f) => `family=${f}`).join('&')}&display=swap`;
 
 // Astro.site comes from astro.config.mjs, so canonical/og URLs are absolute
 // production URLs even on previews and local builds — which is what social
@@ -80,13 +94,10 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
   <!-- Type per the TTNYC Style Guide: Londrina Solid Regular (display),
        Barlow Semi Condensed (body, at the guide's Regular / Medium /
        Bold only), Space Mono Bold (accents). Londrina Black (900) is
-       loaded for one thing only, the header's "Trash Talk NYC" name
-       (captain's N1, 2026-10-15). Load nothing else: an unloaded weight
-       gets faux-bolded by the browser. -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Barlow+Semi+Condensed:wght@400;500;700&family=Space+Mono:wght@700&display=swap"
-    rel="stylesheet"
-  />
+       loaded for the header's "Trash Talk NYC" name (captain's N1,
+       2026-10-15) and the printed stickers. Load nothing else: an unloaded
+       weight gets faux-bolded by the browser. -->
+  <link href={fontsHref} rel="stylesheet" />
 </head>
 <body>
 

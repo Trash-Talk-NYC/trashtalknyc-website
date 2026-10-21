@@ -1,0 +1,168 @@
+---
+/**
+ * The brand's printed stickers (captain's picks, 2026-10-21, from the
+ * heroes2 mockup: S3–S5 and S7–S14; S6 was not picked). Each one is drawn
+ * in HTML/SVG so its words translate, and scales to whatever width its
+ * box is given: the box is a size container, and inside it 1em is one
+ * pixel of the mockup's design, so every size below is the mockup's own
+ * pixel value in em.
+ *
+ * Purely decorative (aria-hidden): the words are a sticker's slogan, not
+ * content. The white die-cut edge is the `.die-cut` filter in global.css,
+ * applied by whoever places the sticker so they can pick its shadow.
+ *
+ * Fonts: the tab, hand, and blackletter faces are loaded only on pages
+ * that pass `stickerFonts` to BaseLayout; elsewhere the fallbacks show.
+ * The red is sticker print ink from the approved mockup, used nowhere
+ * else on the site.
+ */
+import { Image } from 'astro:assets';
+// The beige tree bed: the green drawing would vanish on the green sticker
+import treeBed from '../assets/ill-treebed-beige.svg';
+import gloveShovel from '../assets/ill-glove-shovel.svg';
+import trashBag from '../assets/ill-trash-purple.svg';
+import glovePlant from '../assets/ill-glove-plant.svg';
+import type { BrandStickerId } from '../lib/stickers';
+
+interface Props {
+  id: BrandStickerId;
+}
+
+const { id } = Astro.props;
+
+// Each design's width in mockup pixels: the em scale inside its box
+const designWidth: Record<BrandStickerId, number> = {
+  hello: 120,
+  'pick-it-up': 128,
+  'club-badge': 104,
+  'talk-trash': 124,
+  'tree-bed': 118,
+  'glove-shovel': 96,
+  'trash-bag': 96,
+  'swipe-card': 130,
+  caution: 148,
+  'five-boroughs': 108,
+  'glove-plant': 96,
+};
+
+const drawings = { 'tree-bed': treeBed, 'glove-shovel': gloveShovel, 'trash-bag': trashBag, 'glove-plant': glovePlant } as const;
+const badgeRing = `bs-ring-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<span class="bs-box" aria-hidden="true">
+  <span class={`bs bs-${id}`} style={`--bw:${designWidth[id]}`}>
+    {id === 'hello' && (
+      <>
+        <span class="t"><span data-en="HELLO" data-es="HOLA">HELLO</span><small data-en="my block is" data-es="mi cuadra está">my block is</small></span>
+        <span class="n" data-en="CLEAN" data-es="LIMPIA">CLEAN</span>
+      </>
+    )}
+    {id === 'pick-it-up' && (
+      <>
+        <span class="bar1"></span>
+        <span class="big" data-en="PRIORITY: PICK IT UP" data-es="PRIORIDAD: RECÓGELO">PRIORITY: PICK IT UP</span>
+        <span class="tag">TTNYC</span>
+      </>
+    )}
+    {id === 'club-badge' && (
+      <svg viewBox="0 0 104 104">
+        <circle cx="52" cy="52" r="50" fill="#65409A" />
+        <circle cx="52" cy="52" r="33" fill="#F3CF02" />
+        <defs><path id={badgeRing} d="M52,52 m-41,0 a41,41 0 1,1 82,0 a41,41 0 1,1 -82,0" /></defs>
+        <text font-family="Space Mono, Courier New, monospace" font-size="10.5" font-weight="700" fill="#F1F0E4" letter-spacing="1.5">
+          <textPath href={`#${badgeRing}`} data-en="CLEANUP CLUB · NEW YORK CITY ·" data-es="CLUB DE LIMPIEZA · NUEVA YORK ·">CLEANUP CLUB · NEW YORK CITY ·</textPath>
+        </text>
+        <text x="52" y="62" text-anchor="middle" font-family="Londrina Solid, Impact, sans-serif" font-weight="900" font-size="30" fill="#1D1D23">TT</text>
+      </svg>
+    )}
+    {id === 'talk-trash' && <span class="say" data-en="Talk trash to me" data-es="Háblame de basura">Talk trash to me</span>}
+    {id === 'tree-bed' && (
+      <>
+        <Image src={drawings['tree-bed']} alt="" class="bs-ill" />
+        <span data-en="Love your tree bed" data-es="Cuida tu cantero">Love your tree bed</span>
+      </>
+    )}
+    {(id === 'glove-shovel' || id === 'trash-bag' || id === 'glove-plant') && (
+      <Image src={drawings[id]} alt="" class="bs-ill" />
+    )}
+    {id === 'swipe-card' && (
+      <>
+        <span class="say" data-en="SWIPE FOR CLEAN STREETS" data-es="DESLIZA POR CALLES LIMPIAS">SWIPE FOR CLEAN STREETS</span>
+        <small data-en="TTNYC · 5 BORO" data-es="TTNYC · 5 CONDADOS">TTNYC · 5 BORO</small>
+      </>
+    )}
+    {id === 'caution' && <span class="say" data-en="CAUTION: CLEAN BLOCK" data-es="CUIDADO: CUADRA LIMPIA">CAUTION: CLEAN BLOCK</span>}
+    {id === 'five-boroughs' && (
+      <span class="say"><span data-en="5 BOROUGHS" data-es="5 CONDADOS">5 BOROUGHS</span><br /><span data-en="1 CLUB" data-es="1 CLUB">1 CLUB</span></span>
+    )}
+  </span>
+</span>
+
+<style>
+  .bs-box {
+    display: block;
+    width: 100%;
+    container-type: inline-size;
+  }
+
+  .bs {
+    --tab: 'Oswald', Impact, 'Arial Narrow Bold', sans-serif;
+    --hand: 'Permanent Marker', 'Comic Sans MS', cursive;
+    --sticker-red: #D8372B;
+    position: relative;
+    display: block;
+    width: calc(var(--bw) * 1em);
+    font-size: calc(100cqi / var(--bw));
+    line-height: 1;
+    color: var(--black);
+    text-align: center;
+  }
+
+  .bs :global(.bs-ill) { display: block; width: 100%; height: auto; }
+
+  /* S3 · Hello, my block is clean */
+  .bs-hello { background: #fff; border-radius: 8em; overflow: hidden; }
+  .bs-hello .t { display: block; background: var(--sticker-red); color: #fff; font-family: var(--tab); font-weight: 700; font-size: 22em; padding: 0.23em 0 0.09em; }
+  .bs-hello .t small { display: block; font-family: var(--body); font-size: 0.41em; padding-bottom: 0.33em; }
+  .bs-hello .n { display: block; font-family: var(--hand); font-size: 26em; padding: 0.3em 0 0.38em; color: var(--purple); }
+
+  /* S4 · Pick-it-up label */
+  .bs-pick-it-up { background: #fff; border-radius: 4em; padding-bottom: 6em; text-align: left; font-family: var(--mono); font-weight: 700; }
+  .bs-pick-it-up .bar1 { display: block; height: 12em; background: repeating-linear-gradient(90deg, var(--purple) 0 14em, #fff 14em 18em, var(--yellow) 18em 32em, #fff 32em 36em); }
+  .bs-pick-it-up .big { display: block; font-family: var(--tab); font-size: 18em; padding: 0.22em 0.44em 0; }
+  .bs-pick-it-up .tag { display: block; font-family: var(--hand); font-size: 20em; color: var(--purple); padding: 0.1em 0.4em; }
+
+  /* S5 · Cleanup Club round badge */
+  .bs-club-badge svg { display: block; width: 100%; height: auto; }
+
+  /* S7 · "Talk trash to me" bubble */
+  .bs-talk-trash { background: var(--yellow); border-radius: 40em; padding: 12em 14em; }
+  .bs-talk-trash .say { font-family: var(--display); font-weight: 900; font-size: 22em; display: block; }
+  .bs-talk-trash::after { content: ''; position: absolute; left: 22em; bottom: -12em; border: 9em solid transparent; border-top: 14em solid var(--yellow); border-bottom: 0; }
+
+  /* S8 · Love your tree bed */
+  .bs-tree-bed { background: var(--green); color: #fff; border-radius: 16em; padding: 8em 10em; }
+  .bs-tree-bed > span { display: block; font-family: var(--display); font-size: 20em; }
+  .bs-tree-bed :global(.bs-ill) { width: 60em; margin: 0 auto 2em; }
+
+  /* S11 · Transit-card style */
+  .bs-swipe-card { height: 82em; background: var(--yellow); border-radius: 8em; padding: 8em; text-align: left; overflow: hidden; }
+  .bs-swipe-card::before { content: ''; position: absolute; left: 0; right: 0; bottom: 12em; height: 10em; background: var(--black); }
+  .bs-swipe-card .say { display: block; font-family: var(--tab); font-weight: 700; font-size: 15em; line-height: 1.05; max-width: 7.5em; }
+  /* Offsets in the small print's own em (8 design px): 8px right, 24px up */
+  .bs-swipe-card small { position: absolute; right: 1em; bottom: 3em; font-family: var(--mono); font-weight: 700; font-size: 8em; }
+
+  /* S12 · Caution tape */
+  .bs-caution { background: repeating-linear-gradient(-45deg, var(--yellow) 0 12em, var(--black) 12em 24em); padding: 6em; transform: rotate(-4deg); }
+  .bs-caution .say { display: block; background: var(--yellow); font-family: var(--tab); font-weight: 700; font-size: 14em; padding: 0.29em 0.14em; }
+
+  /* S13 · 5 boroughs, 1 club starburst */
+  .bs-five-boroughs {
+    height: 108em;
+    background: var(--lavender);
+    clip-path: polygon(50% 0, 61% 18%, 82% 8%, 80% 30%, 100% 36%, 85% 52%, 100% 68%, 79% 72%, 82% 94%, 61% 84%, 50% 100%, 39% 84%, 18% 94%, 21% 72%, 0 68%, 15% 52%, 0 36%, 20% 30%, 18% 8%, 39% 18%);
+    display: grid;
+    place-items: center;
+  }
+  .bs-five-boroughs .say { font-family: var(--display); font-weight: 900; font-size: 17em; line-height: 0.9; }
+</style>

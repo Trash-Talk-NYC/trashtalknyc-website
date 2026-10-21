@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { getSocials } from '../lib/socials';
@@ -9,6 +10,8 @@ import wordmarkStickerLg from '../assets/stickers/wordmark-sticker-lg.png';
 import wordmarkSticker from '../assets/wordmark-sticker.png';
 import plainVestSticker from '../assets/stickers/plain-vest-sticker.png';
 import SectionWall from '../components/SectionWall.astro';
+import BrandSticker from '../components/BrandSticker.astro';
+import type { BrandStickerId } from '../lib/stickers';
 import YouTubeEmbed from '../components/YouTubeEmbed.astro';
 import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
 // The captain's own wall photos (2026-10-15), curated for color
@@ -46,23 +49,37 @@ const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
 // Beside it, the YouTube video instead of a second short-form clip, to show
 // a different format (team feedback, 2026-10-15; replaced the TikTok)
 
-// The hero's sticker bomb (captain, 2026-10-15; mockup G4): small brand
+// The hero's sticker bomb (captain, 2026-10-15; mockup G4): brand
 // stickers slap on around the logo one after another, then the wordmark
 // sticker slaps on last and stays. x/y are the sticker's center as a
 // share of the logo's box, w its width as a share of the logo's width,
-// r0 → r its spin as it lands. They stay inside the logo's box vertically,
-// so the headline under it is never covered. `wide` ones only show on
-// desktop, where the hero has room beside the logo. Four on phones, six on
-// desktop: enough to read as a sticker bomb without crowding the headline
-// (captain, 2026-10-15: "use the space efficiently without it being too
-// busy").
-const bombStickers = [
+// r0 → r its spin as it lands. Round 8 (captain, 2026-10-21) adds the
+// printed stickers (BrandSticker: S3–S5, S7–S14). The headline is never
+// covered: below the logo's box they sit only beyond the headline's ends,
+// and that only on desktop. `wide` ones only show on desktop; phones get
+// the first seven, so they come first and land first.
+type BombSticker = { x: number; y: number; w: number; r: number; r0: number; wide?: true } & (
+  | { src: ImageMetadata; brand?: never }
+  | { brand: BrandStickerId; src?: never }
+);
+const bombStickers: BombSticker[] = [
   { src: vestSticker, x: -30, y: 26, w: 36, r: -16, r0: -40 },
   { src: wordmarkSticker, x: 130, y: 30, w: 44, r: 14, r0: 36 },
   { src: plainVestSticker, x: -20, y: 76, w: 30, r: 12, r0: 30 },
   { src: vestSticker, x: 124, y: 76, w: 32, r: -10, r0: -34 },
+  { brand: 'talk-trash', x: -22, y: -26, w: 40, r: -8, r0: -30 },
+  { brand: 'club-badge', x: 126, y: -24, w: 30, r: 10, r0: 32 },
+  { brand: 'caution', x: 52, y: -40, w: 44, r: 3, r0: 20 },
   { src: wordmarkSticker, x: -68, y: 52, w: 34, r: 8, r0: 28, wide: true },
   { src: plainVestSticker, x: 168, y: 50, w: 28, r: -14, r0: -36, wide: true },
+  { brand: 'hello', x: -108, y: 10, w: 36, r: -8, r0: -28, wide: true },
+  { brand: 'pick-it-up', x: 214, y: 14, w: 38, r: 6, r0: 26, wide: true },
+  { brand: 'tree-bed', x: -150, y: 60, w: 34, r: 9, r0: 30, wide: true },
+  { brand: 'five-boroughs', x: 240, y: 66, w: 30, r: -10, r0: -32, wide: true },
+  { brand: 'swipe-card', x: 196, y: -30, w: 38, r: -5, r0: -24, wide: true },
+  { brand: 'glove-plant', x: -98, y: -30, w: 32, r: 8, r0: 28, wide: true },
+  { brand: 'trash-bag', x: -150, y: 112, w: 30, r: -6, r0: -26, wide: true },
+  { brand: 'glove-shovel', x: 240, y: 114, w: 32, r: 7, r0: 27, wide: true },
 ];
 
 // Where contributions go: planting and tools (team feedback, 2026-10-15,
@@ -75,6 +92,7 @@ const raised = raisedSentence();
 
 <BaseLayout
   title="Trash Talk NYC"
+  stickerFonts
   description="Trash Talk NYC is New York City's cleanup club. Find upcoming community cleanup events, sign up for the newsletter. Let's clean NYC, together."
 >
 
@@ -88,23 +106,22 @@ const raised = raisedSentence();
      after a sticker bomb (captain, 2026-10-15), the club's headline and
      line under it (team feedback, 2026-10-15), and one button that says
      "Events" (captain). The purple brick drawing over it is gone (captain,
-     2026-10-21: "take out the brick decal"); other heroes keep theirs.
+     2026-10-21: "take out the brick decal", then on every page).
      The vest moved up to the header logo. -->
 <section class="hero wall" id="top">
   <SectionWall kind="cleanup" src={wallRedBrick} tear="bottom" dim={0.5} duotone={0.2} seed={1} />
   <div class="hero-inner">
     <div class="bomb">
-      {bombStickers.map((st, i) => (
-        <Image
-          src={st.src}
-          alt=""
-          class:list={['bomb-stk', { 'bomb-wide': st.wide }]}
-          style={`--x:${st.x}%;--y:${st.y}%;--w:${st.w}%;--r:${st.r}deg;--r0:${st.r0}deg;--i:${i}`}
-          width={180}
-          densities={[1, 2]}
-          loading="eager"
-        />
-      ))}
+      {bombStickers.map((st, i) => {
+        const style = `--x:${st.x}%;--y:${st.y}%;--w:${st.w}%;--r:${st.r}deg;--r0:${st.r0}deg;--i:${i}`;
+        return st.brand ? (
+          <span class:list={['bomb-stk', 'bomb-brand', 'die-cut', { 'bomb-wide': st.wide }]} style={style}>
+            <BrandSticker id={st.brand} />
+          </span>
+        ) : (
+          <Image src={st.src} alt="" class:list={['bomb-stk', { 'bomb-wide': st.wide }]} style={style} width={180} densities={[1, 2]} loading="eager" />
+        );
+      })}
       <Image src={wordmarkStickerLg} alt="Trash Talk NYC" class="hero-logo" width={420} densities={[1, 2]} loading="eager" fetchpriority="high" />
     </div>
     <h1 class="hero-title"><span data-en="New York City's" data-es="El club de limpieza">New York City's</span> <span data-en="Cleanup Club" data-es="de Nueva York">Cleanup Club</span></h1>
@@ -313,7 +330,7 @@ const raised = raisedSentence();
 <section class="socials wall">
   <SectionWall kind="cleanup" src={wallStickerPole} tear="top" dim={0} duotone={0} seed={8} />
   <div class="wrap">
-    <h2 class="soc-title paste f-tape" data-en="Follow us on social" data-es="Síguenos en redes">Follow us on social</h2>
+    <h2 class="soc-title paste f-tape" data-en="Follow us on socials!" data-es="¡Síguenos en redes!">Follow us on socials!</h2>
     <div class="soc-grid">
       {socialTiles.map((c, i) => (
         <a class:list={['soc-tile', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
@@ -400,8 +417,9 @@ const raised = raisedSentence();
     height: auto;
     transform: rotate(-3deg);
     filter: drop-shadow(5px 6px 0 rgba(0, 0, 0, 0.45));
-    /* Lands after the last small sticker: ~1.4s in all */
-    animation: logo-slap 0.5s cubic-bezier(0.2, 0.7, 0.3, 1.25) 0.85s both;
+    /* Lands after the last small sticker: the seven phone ones by 0.8s,
+       all seventeen by 1.3s on desktop (below) */
+    animation: logo-slap 0.5s cubic-bezier(0.2, 0.7, 0.3, 1.25) 0.8s both;
   }
 
   .bomb :global(.bomb-stk) {
@@ -411,9 +429,14 @@ const raised = raisedSentence();
     width: var(--w);
     height: auto;
     transform: translate(-50%, -50%) rotate(var(--r));
-    filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.45));
-    animation: sticker-slap 0.4s cubic-bezier(0.2, 0.7, 0.3, 1.25) calc(var(--i) * 0.1s) both;
+    animation: sticker-slap 0.4s cubic-bezier(0.2, 0.7, 0.3, 1.25) calc(var(--i) * 0.06s) both;
   }
+
+  /* The logo-cut PNGs carry their own white edge; they only cast a shadow */
+  .bomb :global(.bomb-stk:not(.die-cut)) { filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.45)); }
+
+  /* Printed stickers trace their own die-cut edge (.die-cut) */
+  .bomb :global(.bomb-brand) { display: block; }
 
   .bomb :global(.bomb-wide) { display: none; }
 
@@ -468,6 +491,7 @@ const raised = raisedSentence();
     .hero-inner { gap: 18px; padding: calc(100vw * 0.1 + 16px) 16px calc(100vw * 0.1 + 20px); }
     .bomb { width: min(20rem, 22vw); margin-block: 0; }
     .bomb :global(.bomb-wide) { display: block; }
+    .hero :global(.hero-logo) { animation-delay: 1.3s; }
     .hero-title { max-width: none; font-size: clamp(3rem, 5.4vw, 6rem); }
     .hero-sub { font-size: clamp(1.1rem, 1.6vw, 1.6rem); }
     /* A real destination button at desktop scale — the mobile-sized one

@@ -25,7 +25,7 @@ Pages:
 - About -> (The Team; From the Founder -> `/about/from-the-founder`, a first-person account of how Trash Talk NYC started, English verbatim, attributed to David via a photo byline card and the meta description composed in `src/lib/founder.ts` (captain confirmed 2026-08-13), closing with his "Sincerely, David" sign-off — see AGENTS.md, "From the Founder")
 - Open Roles -> (`/recruit`; a top-level route listed under About in the nav; recruitment page, email-only intake — see AGENTS.md, "Open Roles")
 - Contact
-- 404 -> (Not Found; prerendered dead-end block — the split brick frame, a yellow "Dead End" sign beside the trash can illustration — bilingual, links to Home and Events)
+- 404 -> (Not Found; prerendered dead-end block — a yellow "Dead End" sign beside the trash can illustration — bilingual, links to Home and Events)
 
 SEO & share metadata (2026-07 overhaul):
 - `src/layouts/BaseLayout.astro` owns the head: per-page title + required description feed the meta description, canonical URL, and full Open Graph/Twitter tags; the homepage adds JSON-LD Organization schema via `slot="head"`

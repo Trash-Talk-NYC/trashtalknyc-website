@@ -365,40 +365,22 @@ form .btn-primary {
   isolation: isolate;
 }
 
-/* ── BRICK FRAME & ILLUSTRATIONS ── */
-/* The bricks drawing split into its two halves, stretched edge to
-   edge across a hero section (position: relative + overflow: hidden
-   on the section). Pages size/position the opening between them. */
-.bricks {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: auto;
-  pointer-events: none;
-}
-
-.bricks-top { top: 10px; }
-.bricks-bottom { bottom: 10px; }
-
-/* A hero framed by <Bricks>: tall enough for its whole-row halves at
-   every width (brickHeroStyle in src/lib/bricks.ts sets the values), so
-   the halves never overlap and no brick is ever sliced */
-.brick-hero {
+/* ── HERO FRAME & ILLUSTRATIONS ── */
+/* A page hero that keeps the proportions the purple brick drawing once
+   gave it (the drawing came off every page, captain 2026-10-21): each
+   hero sets --hero-min-phone / --hero-min-desktop to the height its two
+   brick halves needed, so no hero collapsed when they went */
+.frame-hero {
   position: relative;
   overflow: hidden;
-  min-height: var(--brick-min-phone);
-  /* When the min-height wins, keep the content centered in the opening */
+  min-height: var(--hero-min-phone, 0);
+  /* When the min-height wins, keep the content centered */
   display: grid;
   align-content: center;
 }
 
-/* <Bricks> renders a phone and a desktop pair; only one pair shows */
-.bricks-desktop { display: none; }
-
 @media (min-width: 761px) {
-  .brick-hero { min-height: var(--brick-min-desktop); }
-  .bricks-phone { display: none; }
-  .bricks-desktop { display: block; }
+  .frame-hero { min-height: var(--hero-min-desktop, 0); }
 }
 
 /* Official line drawings ship pre-colored per section as plain <img>
@@ -412,6 +394,16 @@ img.ill { height: auto; display: block; }
   width: 118px;
   filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.35));
   pointer-events: none;
+}
+
+/* A printed sticker's white die-cut edge plus its drop shadow, traced
+   around whatever shape the sticker has (BrandSticker, the heroes2
+   mockup's .dc) */
+.die-cut {
+  filter:
+    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+    drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.55));
 }
 
 /* ── FORM KIT (newsletter + contact forms) ── */

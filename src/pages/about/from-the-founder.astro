@@ -1,6 +1,4 @@
 ---
-import Bricks from '../../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../../lib/bricks';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
@@ -106,8 +104,6 @@ const story: Block[] = [
   },
 ];
 
-// Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
@@ -116,8 +112,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
        the captain's chosen page name (rename, 2026-08-13), split into
        two leaves so the language toggle can restructure it: EN
        "From the / Founder" becomes ES "Del / Fundador" leaf by leaf. -->
-  <section class="fd-hero brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} />
+  <section class="fd-hero frame-hero">
     <div class="fd-hero-inner">
       <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
       <h1 class="fd-title">
@@ -180,10 +175,12 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
 
 <style>
   /* ── HERO ── */
-  /* One brick-frame behavior site-wide (captain): edge-to-edge halves
-     scaling with the viewport, content kept inside the opening by the
-     vw-proportional padding — same pattern as the homepage hero. */
+  /* No brick drawing since 2026-10-21 (captain): the vw-proportional
+     padding and min-height keep the proportions it gave the hero. */
   .fd-hero {
+    /* The height its brick halves needed (see .frame-hero) */
+    --hero-min-phone: calc(54.08vw + 32px);
+    --hero-min-desktop: calc(28.93vw + 32px);
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);

@@ -1,8 +1,6 @@
 ---
 import SectionWall from '../components/SectionWall.astro';
 import wallGreenBox from '../assets/walls/wall-green-box.webp';
-import Bricks from '../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
@@ -29,8 +27,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 // them on load so a stale build can never offer a month already past.
 const monthOptions = rollingMonths();
 
-// Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout
@@ -43,8 +39,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
   {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
   <!-- HERO -->
-  <section class="ct-hero brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} />
+  <section class="ct-hero frame-hero">
     <div class="ct-hero-inner">
       <div class="mono ct-eyebrow" data-en="Contact" data-es="Contacto">Contact</div>
       <!-- The captain's headline (2026-10-15) -->
@@ -285,11 +280,12 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
 
 <style>
   /* ── HERO ── */
-  /* One brick-frame behavior site-wide (captain): the two halves run
-     edge to edge and scale with the viewport, and the vw-proportional
-     padding keeps the content inside the opening between them — same
-     pattern as the homepage and Club Events heroes. */
+  /* No brick drawing since 2026-10-21 (captain): the vw-proportional
+     padding and min-height keep the proportions it gave the hero. */
   .ct-hero {
+    /* The height its brick halves needed (see .frame-hero) */
+    --hero-min-phone: calc(54.08vw + 32px);
+    --hero-min-desktop: calc(28.93vw + 32px);
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);

@@ -1,22 +1,17 @@
 ---
-import Bricks from '../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 // Prerendered so URL misses (mostly bot scans) get a static, CDN-cacheable
 // body instead of a fresh SSR function render per request.
 export const prerender = true;
 
-// Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 8, desktop: 5 };
 ---
 
 <BaseLayout title="Page Not Found — Trash Talk NYC" description="This page doesn't exist." noindex>
 
   <!-- 404: a dead-end block. Brick wall edge to edge, a street-sign-
        yellow Dead End diamond, and the way back. -->
-  <section class="nf brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} />
+  <section class="nf frame-hero">
     <div class="nf-inner">
       <div class="nf-row" aria-hidden="true">
         <div class="sign"><span data-en="DEAD END" data-es="SIN SALIDA">DEAD END</span></div>
@@ -32,10 +27,12 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
 </BaseLayout>
 
 <style>
-  /* One brick-frame behavior site-wide (captain): edge-to-edge halves
-     scaling with the viewport, content kept inside the opening by the
-     vw-proportional padding — same pattern as the homepage hero. */
+  /* No brick drawing since 2026-10-21 (captain): the vw-proportional
+     padding and min-height keep the proportions it gave the hero. */
   .nf {
+    /* The height its brick halves needed (see .frame-hero) */
+    --hero-min-phone: calc(69.62vw + 32px);
+    --hero-min-desktop: calc(45.78vw + 32px);
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);
@@ -89,8 +86,7 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
     color: var(--beige);
   }
 
-  /* Phones stack the link under the button so it stays inside the
-     opening between the side bricks instead of running into them. */
+  /* Phones stack the link under the button */
   .nf-actions {
     display: flex;
     flex-direction: column;
@@ -100,8 +96,8 @@ const bricks: BrickRows = { phone: 8, desktop: 5 };
     margin-top: 6px;
   }
 
-  /* The vw term only bites below ~370px, where the bottom bricks close
-     in on "Ver Eventos de Limpieza". */
+  /* The vw term only bites below ~370px, so "Ver Eventos de Limpieza"
+     stays on one line */
   .nf-actions .plain {
     font-size: min(1em, 4.6vw);
     font-weight: 700;
