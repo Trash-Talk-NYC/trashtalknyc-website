@@ -1,13 +1,23 @@
 ---
+import { Image } from 'astro:assets';
 import type { EventCardProps } from '../lib/events';
-import { formatDate, formatTime } from '../lib/events';
+import { formatDate, formatTime, flyerWhen } from '../lib/events';
+import binDrawing from '../assets/ill-trash-purple.svg';
+import gloveDrawing from '../assets/ill-glove-plant-purple.svg';
+import wordmarkSticker from '../assets/wordmark-sticker.png';
 
 /**
- * One upcoming event as a wheatpasted date strip: purple date stub,
- * body-type event name (the style guide sets event names in Barlow,
- * not display type), time/place rows, map links, RSVP. The `.past`
- * class is only ever added client-side by the staleness check on the
- * events page — the page no longer renders a past-events section.
+ * One upcoming event as a real flyer (round 10, captain 2026-10-21),
+ * modeled on the team's printed Manhattan Cleanup flyer: a flat, straight
+ * cream sheet (no tape, no shadow) on the section's graffiti wall, the
+ * borough as the huge purple headline, a purple line drawing running off
+ * the sheet (a bin, or a glove for planting), the date and place set
+ * right, and Register. Die-cut stickers straddle the edge: the wordmark,
+ * plus a host badge when the event has one.
+ *
+ * The `.past` class is only ever added client-side by the staleness check
+ * on the events page. A sample flyer links nowhere and wears a "Sample"
+ * mark.
  */
 interface Props extends EventCardProps {
   latLng?: { lat: number; lng: number } | null;
@@ -15,142 +25,200 @@ interface Props extends EventCardProps {
 
 const {
   id, name, url, startIso, endIso, location, mapUrls,
+  headline, kind, venueLines, host, sample,
   latLng = null,
 } = Astro.props;
 
-const start = new Date(startIso);
-const monthEN = start.toLocaleDateString('en-US', { month: 'short' });
-const monthES = start.toLocaleDateString('es-419', { month: 'short' });
-const dowEN   = start.toLocaleDateString('en-US', { weekday: 'short' });
-const dowES   = start.toLocaleDateString('es-419', { weekday: 'short' });
-const day     = start.getDate();
+const whenEN = flyerWhen(startIso, 'en');
+const whenES = flyerWhen(startIso, 'es');
 
 const dateStr = formatDate(startIso, 'en');
 const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
+
+// The Eventbrite name stays visible when the headline was rebuilt from the
+// borough, so nothing the organizer wrote is lost
+const showName = name !== headline.en;
 
 const btnId = `eb-trigger-${id}`;
 ---
 
 <article
-  class="ev-card paste f-staple upcoming"
-  data-event-id={id}
-  data-end={endIso}
+  class:list={['ev-card', { upcoming: !sample, 'has-host': host }]}
+  data-end={sample ? undefined : endIso}
   data-lat={latLng?.lat ?? undefined}
   data-lng={latLng?.lng ?? undefined}
 >
-  <div class="date">
-    <span class="m" data-en={monthEN} data-es={monthES}>{monthEN}</span>
-    <span class="d">{day}</span>
-    <span class="w" data-en={dowEN} data-es={dowES}>{dowEN}</span>
-  </div>
+  <Image src={wordmarkSticker} alt="" class="ev-stk" width={140} densities={[1, 2]} />
+  {host && <span class="ev-host" aria-hidden="true">{host}</span>}
 
-  <div class="ev-info">
-    <div class="ev-name">{name}</div>
-    <div class="ev-details">
-      <span>
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
-        {timeStr}
-      </span>
-      {location && (
-        <span>
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-          {location}
-        </span>
+  {sample && <span class="ev-sample mono" data-en="Sample" data-es="Muestra">Sample</span>}
+  <h2 class="ev-head" data-en={headline.en} data-es={headline.es}>{headline.en}</h2>
+  {showName && <p class="ev-name">{name}</p>}
+  {host && <p class="sr-only"><span data-en="Hosted with" data-es="Organizado con">Hosted with</span> {host}</p>}
+
+  <div class="ev-row">
+    <div class="ev-art">
+      <Image src={kind === 'planting' ? gloveDrawing : binDrawing} alt="" class="ev-ill" width={240} />
+    </div>
+
+    <div class="ev-meta">
+      <p class="ev-when">
+        <span data-en={whenEN.date} data-es={whenES.date}>{whenEN.date}</span>
+        <span data-en={whenEN.time} data-es={whenES.time}>{whenEN.time}</span>
+      </p>
+      {venueLines.length > 0 && (
+        <p class="ev-where">{venueLines.map((line) => <span>{line}</span>)}</p>
+      )}
+      {mapUrls && (
+        <p class="maps">
+          <a href={mapUrls.google} target="_blank" rel="noopener">Google Maps</a>
+          <a href={mapUrls.apple} target="_blank" rel="noopener">Apple Maps</a>
+        </p>
+      )}
+      {sample ? (
+        <span class="btn btn-purple ev-rsvp" aria-disabled="true" data-en="Register →" data-es="Regístrate →">Register &rarr;</span>
+      ) : (
+        <button
+          class="btn btn-purple ev-rsvp"
+          id={btnId}
+          data-event-id={id}
+          data-url={url}
+          data-name={name}
+          data-date={dateStr}
+          data-time={timeStr}
+          data-loc={location}
+          data-en="Register →"
+          data-es="Regístrate →"
+        >
+          Register &rarr;
+        </button>
       )}
     </div>
-    {mapUrls && (
-      <div class="maps">
-        <a href={mapUrls.google} target="_blank" rel="noopener">Google Maps</a>
-        <a href={mapUrls.apple} target="_blank" rel="noopener">Apple Maps</a>
-      </div>
-    )}
   </div>
-
-  <button
-    class="btn btn-purple ev-rsvp"
-    id={btnId}
-    data-event-id={id}
-    data-url={url}
-    data-name={name}
-    data-date={dateStr}
-    data-time={timeStr}
-    data-loc={location}
-    data-en="RSVP →"
-    data-es="Regístrate →"
-  >
-    RSVP &rarr;
-  </button>
 </article>
 
 <style>
+  /* Flat and straight on purpose: no tape, no shadow, so it reads as the
+     printed sheet itself, and the stickers crossing its edge tie it to
+     the wall (the flyer kit's recipe) */
   .ev-card {
+    position: relative;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 14px;
-    align-items: center;
-    --flyer-bg: var(--paper);
-    color: var(--black);
-    padding: 16px 14px;
+    gap: 8px;
+    align-content: start;
+    background: var(--beige);
+    color: var(--purple);
+    padding: 30px 22px 24px;
   }
 
-  .ev-card.past { opacity: 0.6; }
-  .ev-card.past .date { background: var(--black); }
+  .ev-card.has-host { padding-top: 56px; }
 
-  .date {
+  .ev-card.past { opacity: 0.6; }
+  .ev-card.past .ev-rsvp { display: none; }
+
+  /* The wordmark sticker slapped across the top-right corner; the
+     headline keeps clear of it */
+  .ev-card :global(.ev-stk) {
+    position: absolute;
+    z-index: 2;
+    top: -22px;
+    right: -12px;
+    width: 104px;
+    height: auto;
+    transform: rotate(8deg);
+    filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+    pointer-events: none;
+  }
+
+  /* A round die-cut partner badge across the top-left corner */
+  .ev-host {
+    position: absolute;
+    z-index: 2;
+    top: -26px;
+    left: -12px;
     display: grid;
-    justify-items: center;
-    width: 66px;
-    padding: 10px 0;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    padding: 10px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--purple);
+    font-family: var(--display);
+    font-size: 0.95rem;
+    line-height: 0.9;
+    text-align: center;
+    transform: rotate(-14deg);
+    filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+  }
+
+  .ev-sample {
+    justify-self: start;
+    padding: 3px 8px;
     background: var(--purple);
     color: var(--beige);
-    border-radius: 4px;
+    font-size: 0.72rem;
+  }
+
+  .ev-head {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(3rem, 13vw, 4.4rem);
+    line-height: 0.86;
+    color: var(--purple);
+    padding-right: 4.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  .ev-name { margin: 2px 0 0; font-weight: 500; font-size: 1.05rem; color: var(--black); }
+
+  /* The drawing's column on the left, the date block set right */
+  .ev-row {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    align-items: end;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .ev-art { position: relative; align-self: stretch; min-height: 8rem; }
+
+  /* Runs off the sheet's bottom-left edge, onto the wall */
+  .ev-art :global(.ev-ill) {
+    position: absolute;
+    left: -34px;
+    bottom: -44px;
+    width: 9.5rem;
+    max-width: none;
+    height: auto;
+    pointer-events: none;
+  }
+
+  .ev-meta {
+    display: grid;
+    justify-items: end;
+    gap: 6px;
+    text-align: right;
+  }
+
+  .ev-when {
+    display: grid;
+    margin: 0;
+    font-family: var(--display);
+    font-size: 1.7rem;
     line-height: 1;
   }
 
-  .date .m {
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
+  /* A lighter purple that still holds AA on the beige (4.7:1) */
+  .ev-where {
+    display: grid;
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.25;
+    color: #7655ab;
   }
 
-  .date .d {
-    font-family: var(--display);
-    font-weight: 400;
-    font-size: 2.2rem;
-    margin: 2px 0;
-  }
-
-  .date .w {
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
-    color: var(--yellow);
-  }
-
-  .ev-info { min-width: 0; }
-
-  .ev-name {
-    font-family: var(--body);
-    font-weight: 500;
-    font-size: 1.5rem;
-    line-height: 1.05;
-  }
-
-  .ev-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 18px;
-    margin-top: 10px;
-    font-weight: 500;
-    font-size: 0.92rem;
-  }
-
-  .ev-details span { display: inline-flex; align-items: center; gap: 7px; }
-  .ev-details svg { width: 17px; height: 17px; stroke: var(--purple); fill: none; flex: none; }
-
-  .maps { display: flex; gap: 14px; margin-top: 8px; font-size: 0.92rem; }
+  .maps { display: flex; gap: 14px; margin: 0; font-size: 0.92rem; }
   .maps a {
     color: var(--purple);
     font-weight: 500;
@@ -159,21 +227,23 @@ const btnId = `eb-trigger-${id}`;
     min-height: 24px;
   }
 
-  .ev-rsvp { grid-column: 1 / -1; width: 100%; padding: 11px 18px; }
-  .ev-card.past .ev-rsvp { display: none; }
+  .ev-card :global(.dist-badge) { align-self: center; }
+
+  .ev-rsvp { margin-top: 8px; padding: 11px 18px; }
+  .ev-rsvp[aria-disabled='true'] { cursor: default; }
+  .ev-rsvp[aria-disabled='true']:hover { background: var(--purple); color: var(--beige); }
 
   @media (min-width: 761px) {
-    .ev-card {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 24px;
-      padding: 20px 24px;
-    }
-
-    .date { width: 86px; }
-    .date .d { font-size: 2.8rem; }
-    .ev-name { font-size: 1.75rem; }
-    .ev-details { font-size: 1rem; }
-    .ev-rsvp { grid-column: auto; width: auto; }
+    .ev-card { padding: 42px 40px 34px; gap: 10px; }
+    .ev-card.has-host { padding-top: 64px; }
+    .ev-card :global(.ev-stk) { width: 132px; top: -28px; right: -30px; }
+    .ev-host { width: 104px; height: 104px; font-size: 1.1rem; top: -34px; left: -30px; }
+    .ev-head { font-size: clamp(4rem, 6vw, 5.8rem); padding-right: 5.5rem; }
+    .ev-row { grid-template-columns: 10rem minmax(0, 1fr); }
+    .ev-art { min-height: 10rem; }
+    .ev-art :global(.ev-ill) { width: 13rem; left: -56px; bottom: -52px; }
+    .ev-when { font-size: 2.2rem; }
+    .ev-where { font-size: 1.2rem; }
   }
 
   @media (pointer: coarse) {

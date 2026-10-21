@@ -21,6 +21,11 @@ export type EventData = {
   imageUrl: string | null;
 };
 
+type Copy = { en: string; es: string };
+
+/** Which line drawing an event flyer carries: a bin, or a glove for planting. */
+export type FlyerKind = 'cleanup' | 'planting';
+
 export type EventCardProps = {
   id: string;
   name: string;
@@ -29,6 +34,15 @@ export type EventCardProps = {
   endIso: string;
   location: string;
   mapUrls: { google: string; apple: string } | null;
+  /** The flyer's huge headline, from the borough when the venue has one. */
+  headline: Copy;
+  kind: FlyerKind;
+  /** The venue as the flyer prints it: name, then address. */
+  venueLines: string[];
+  /** A partner or host, printed as a badge sticker on the flyer. */
+  host?: string;
+  /** A made-up event that shows the layout; never a real one. */
+  sample?: true;
 };
 
 // Shape returned by the Eventbrite API itself — distinct from EventData
@@ -90,12 +104,93 @@ export interface PastEventGroup {
  */
 export function groupPastByBorough(events: EventData[]): PastEventGroup[] {
   const groups = new Map<EventPlace, EventData[]>([...BOROUGHS, null].map((b) => [b, []]));
-  for (const ev of events) {
-    const zip = ev.venue?.postalCode?.trim().slice(0, 5) ?? '';
-    groups.get(boroughForZip(zip) ?? null)!.push(ev);
-  }
+  for (const ev of events) groups.get(eventBorough(ev))!.push(ev);
   return [...groups].filter(([, list]) => list.length > 0).map(([borough, list]) => ({ borough, events: list }));
 }
+
+/** The event's borough from its venue ZIP, or null outside NYC or with no ZIP. */
+export function eventBorough(ev: EventData): EventPlace {
+  const zip = ev.venue?.postalCode?.trim().slice(0, 5) ?? '';
+  return boroughForZip(zip) ?? null;
+}
+
+/**
+ * The index of the past-events group holding the most recent event, the
+ * one borough the page opens (round 10: start collapsed except that one).
+ * `newest` is the first event of the newest-first past list.
+ */
+export function newestGroupIndex(groups: PastEventGroup[], newest: EventData | undefined): number {
+  if (!newest) return -1;
+  return groups.findIndex((g) => g.events.some((ev) => ev.id === newest.id));
+}
+
+/** A planting event carries the glove drawing instead of the bin. */
+export function flyerKind(name: string): FlyerKind {
+  return /plant/i.test(name) ? 'planting' : 'cleanup';
+}
+
+/**
+ * The flyer headline, modeled on the team's printed flyers ("Manhattan
+ * Cleanup", "Queens Clean & Plant"): the borough plus what happens there.
+ * Outside the boroughs, or with no ZIP, the event's own name.
+ */
+export function flyerHeadline(name: string, borough: EventPlace): Copy {
+  if (!borough) return { en: name, es: name };
+  const en = borough.replace(/^The /, '');
+  const es = borough === 'The Bronx' ? 'el Bronx' : borough;
+  return flyerKind(name) === 'planting'
+    ? { en: `${en} Clean & Plant`, es: `Limpieza y siembra en ${es}` }
+    : { en: `${en} Cleanup`, es: `Limpieza en ${es}` };
+}
+
+/** The flyer's date block: "October 18" over "at 10 AM", minutes only when not on the hour. */
+export function flyerWhen(iso: string, lang: Lang): { date: string; time: string } {
+  const locale = lang === 'es' ? 'es-419' : 'en-US';
+  const d = new Date(iso);
+  const date = d.toLocaleDateString(locale, { month: 'long', day: 'numeric' });
+  const clock = d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true }).replace(/:00(?=\D)/, '');
+  const at = lang === 'es' ? (d.getHours() % 12 === 1 ? 'a la' : 'a las') : 'at';
+  return { date, time: `${at} ${clock}` };
+}
+
+/**
+ * Shows the sample flyers on Club Events while there are no real upcoming
+ * events (round 10, captain 2026-10-21: "we can put a dummy one or two
+ * there"). Real Eventbrite events always win. Set to false to show the
+ * empty list instead.
+ */
+export const SHOW_SAMPLE_EVENTS = true;
+
+// Modeled on the team's printed Manhattan Cleanup and Queens Clean & Plant
+// flyers. They link nowhere and carry a "Sample" mark.
+export const sampleEvents: EventCardProps[] = [
+  {
+    id: 'sample-manhattan',
+    name: 'Manhattan Cleanup',
+    url: '',
+    startIso: '2026-10-18T10:00:00',
+    endIso: '2026-10-18T12:00:00',
+    location: 'Inwood Hill Park',
+    mapUrls: null,
+    headline: { en: 'Manhattan Cleanup', es: 'Limpieza en Manhattan' },
+    kind: 'cleanup',
+    venueLines: ['Inwood Hill Park'],
+    sample: true,
+  },
+  {
+    id: 'sample-queens',
+    name: 'Queens Clean & Plant',
+    url: '',
+    startIso: '2026-10-10T10:00:00',
+    endIso: '2026-10-10T12:00:00',
+    location: '42-14 Greenpoint Ave, Sunnyside',
+    mapUrls: null,
+    headline: { en: 'Queens Clean & Plant', es: 'Limpieza y siembra en Queens' },
+    kind: 'planting',
+    venueLines: ['42-14 Greenpoint Ave', 'Sunnyside'],
+    sample: true,
+  },
+];
 
 /** What a past event's card shows: its own cover, a stand-in photo, or nothing. */
 export type PastCover<P> =
@@ -134,6 +229,7 @@ export function toEventCardProps(ev: EventData): EventCardProps {
   const endIso = ev.end.local || ev.end.utc;
   const v = ev.venue;
   const location = v ? (v.name || '') + (v.city ? `, ${v.city}` : '') : '';
+  const venueLines = [v?.name, v?.address].filter((line, i, all): line is string => !!line && all.indexOf(line) === i);
   return {
     id: ev.id,
     name: ev.name,
@@ -142,6 +238,9 @@ export function toEventCardProps(ev: EventData): EventCardProps {
     endIso,
     location,
     mapUrls: getMapUrls(ev),
+    headline: flyerHeadline(ev.name, eventBorough(ev)),
+    kind: flyerKind(ev.name),
+    venueLines,
   };
 }
 

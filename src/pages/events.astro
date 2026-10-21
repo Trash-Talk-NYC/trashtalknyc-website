@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import { Image } from 'astro:assets';
-import { assignPastCovers, fetchEventsAtBuildTime, formatDate, groupPastByBorough, toEventCardProps, type EventPlace } from '../lib/events';
+import { assignPastCovers, fetchEventsAtBuildTime, formatDate, groupPastByBorough, newestGroupIndex, sampleEvents, SHOW_SAMPLE_EVENTS, toEventCardProps, type EventPlace } from '../lib/events';
 import { streetPhotos } from '../lib/streetPhotos';
 import SocialLinks from '../components/SocialLinks.astro';
 import SectionWall from '../components/SectionWall.astro';
@@ -27,6 +27,14 @@ const upcoming = upcomingRaw.map(ev => ({
   props: toEventCardProps(ev),
   latLng: ev.venue?.lat != null ? { lat: ev.venue.lat, lng: ev.venue.lng! } : null,
 }));
+// Sample flyers fill an empty list until real events are posted (round 10);
+// a real Eventbrite event always replaces them
+const flyers = upcoming.length > 0
+  ? upcoming
+  : SHOW_SAMPLE_EVENTS ? sampleEvents.map((props) => ({ props, latLng: null })) : [];
+// Each borough folds; only the one with the most recent event starts open
+const openGroup = newestGroupIndex(pastGroups, past[0]);
+const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`, es: `${n} ${n === 1 ? 'evento' : 'eventos'}` });
 ---
 
 <BaseLayout title="Events — Trash Talk NYC" description="Find and join upcoming Trash Talk NYC cleanup events across all five boroughs.">
@@ -57,9 +65,9 @@ const upcoming = upcomingRaw.map(ev => ({
       <span data-en="Sorted nearest to farthest" data-es="Ordenado del más cercano al más lejano">Sorted nearest to farthest</span>
     </div>
 
-    {upcoming.length > 0 && (
+    {flyers.length > 0 && (
       <div class="ev-list" id="eventsListInner">
-        {upcoming.map(({ props, latLng }) => (
+        {flyers.map(({ props, latLng }) => (
           <EventCard {...props} latLng={latLng} />
         ))}
       </div>
@@ -90,9 +98,15 @@ const upcoming = upcomingRaw.map(ev => ({
     {pastGroups.length > 0 && (
       <section class="past" aria-labelledby="pastHeading">
         <h2 id="pastHeading" class="past-title strip" data-en="Past events" data-es="Eventos pasados">Past events</h2>
-        {pastGroups.map((group, gi) => (
-          <section class:list={['past-group', 'paste', gi % 2 ? 'f-staple' : 'f-tape']} aria-labelledby={`past-${gi}`}>
-            <h3 id={`past-${gi}`} class="past-place" data-en={placeName(group.borough).en} data-es={placeName(group.borough).es}>{placeName(group.borough).en}</h3>
+        {pastGroups.map((group, gi) => {
+          const count = eventCount(group.events.length);
+          return (
+          <details class:list={['past-group', 'paste', gi % 2 ? 'f-staple' : 'f-tape']} open={gi === openGroup}>
+            <summary class="past-sum">
+              <span class="past-place" data-en={placeName(group.borough).en} data-es={placeName(group.borough).es}>{placeName(group.borough).en}</span>
+              <span class="past-count mono" data-en={count.en} data-es={count.es}>{count.en}</span>
+              <svg class="past-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </summary>
             <ul class="past-list">
               {group.events.map((ev) => {
                 const date = pastDate(ev.start.local || ev.start.utc);
@@ -114,8 +128,9 @@ const upcoming = upcomingRaw.map(ev => ({
                 );
               })}
             </ul>
-          </section>
-        ))}
+          </details>
+          );
+        })}
       </section>
     )}
     </div>
@@ -308,10 +323,13 @@ const upcoming = upcomingRaw.map(ev => ({
     white-space: nowrap;
   }
 
+  /* Flyers pasted side by side; the gap leaves room for the drawings and
+     stickers that run off each sheet */
   .ev-list {
     display: grid;
-    gap: 18px;
-    padding-bottom: 40px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 34rem), 1fr));
+    gap: 72px 56px;
+    padding: 12px 0 72px;
   }
 
   @media (min-width: 761px) {
@@ -364,10 +382,41 @@ const upcoming = upcomingRaw.map(ev => ({
   .past-group {
     --flyer-bg: var(--paper);
     color: var(--black);
-    padding: 30px 18px 22px;
+    padding: 20px 18px;
   }
 
-  .past-place { font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1; margin-bottom: 16px; }
+  /* Each borough folds open from its name (round 10); the whole row is
+     the toggle */
+  .past-sum {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    min-height: var(--tap);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .past-sum::-webkit-details-marker { display: none; }
+  .past-sum:focus-visible { outline: 3px solid var(--purple); outline-offset: 6px; }
+
+  .past-place { font-family: var(--display); font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1; }
+  .past-count { font-size: 0.8rem; color: var(--green); }
+
+  .past-chev {
+    width: 28px;
+    height: 28px;
+    margin-left: auto;
+    color: var(--purple);
+    transition: transform 150ms ease;
+  }
+
+  .past-group[open] .past-chev { transform: rotate(180deg); }
+  .past-group[open] .past-sum { margin-bottom: 18px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .past-chev { transition: none; }
+  }
 
   .past-list {
     list-style: none;
@@ -408,7 +457,7 @@ const upcoming = upcomingRaw.map(ev => ({
 
   @media (min-width: 761px) {
     .past { gap: 52px; padding-bottom: 104px; }
-    .past-group { padding: 40px 36px 34px; }
+    .past-group { padding: 30px 36px 28px; }
   }
 
   @media (min-width: 1100px) {

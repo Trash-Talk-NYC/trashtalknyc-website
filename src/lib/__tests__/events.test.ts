@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls, groupPastByBorough, assignPastCovers, mapEventbriteEvent } from '../events';
+import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls, groupPastByBorough, assignPastCovers, mapEventbriteEvent, flyerHeadline, flyerKind, flyerWhen, newestGroupIndex, sampleEvents, toEventCardProps } from '../events';
 import type { EventData } from '../events';
 
 // ── formatDate ──────────────────────────────────────────────────────────────
@@ -375,5 +375,56 @@ describe('assignPastCovers', () => {
     const covers = assignPastCovers(groups, ['p1']);
     expect(covers.get('d')).toEqual({ kind: 'eventbrite', url: 'shared.jpg' });
     expect(covers.get('e')).toEqual({ kind: 'none' });
+  });
+});
+
+// ── flyer card (round 10) ───────────────────────────────────────────────────
+
+describe('flyer card helpers', () => {
+  it('builds the headline from the borough, planting events included', () => {
+    expect(flyerHeadline('Inwood sweep', 'Manhattan')).toEqual({ en: 'Manhattan Cleanup', es: 'Limpieza en Manhattan' });
+    expect(flyerHeadline('Sunnyside tree planting', 'Queens').en).toBe('Queens Clean & Plant');
+    expect(flyerHeadline('Grand Concourse', 'The Bronx')).toEqual({ en: 'Bronx Cleanup', es: 'Limpieza en el Bronx' });
+  });
+
+  it('falls back to the event name outside the boroughs', () => {
+    expect(flyerHeadline('Hoboken pier day', null)).toEqual({ en: 'Hoboken pier day', es: 'Hoboken pier day' });
+  });
+
+  it('picks the glove for planting events', () => {
+    expect(flyerKind('Clean & Plant')).toBe('planting');
+    expect(flyerKind('Cleanup')).toBe('cleanup');
+  });
+
+  it('drops the minutes on the hour, keeps them otherwise', () => {
+    expect(flyerWhen('2026-10-18T10:00:00', 'en')).toEqual({ date: 'October 18', time: 'at 10 AM' });
+    expect(flyerWhen('2026-10-18T10:30:00', 'en').time).toBe('at 10:30 AM');
+    expect(flyerWhen('2026-10-18T13:00:00', 'es').time.startsWith('a la ')).toBe(true);
+  });
+
+  it('places a real event by its venue ZIP and lists name then address', () => {
+    const props = toEventCardProps({
+      id: '1', name: 'Saturday sweep', url: 'u', status: 'live',
+      start: { local: '2026-11-01T10:00:00', utc: '2026-11-01T14:00:00Z' },
+      end: { local: '2026-11-01T12:00:00', utc: '2026-11-01T16:00:00Z' },
+      venue: { name: 'Inwood Hill Park', address: 'Isham St, New York, NY 10034', city: 'New York', postalCode: '10034', lat: null, lng: null },
+      imageUrl: null,
+    });
+    expect(props.headline.en).toBe('Manhattan Cleanup');
+    expect(props.venueLines).toEqual(['Inwood Hill Park', 'Isham St, New York, NY 10034']);
+    expect(props.sample).toBeUndefined();
+  });
+
+  it('marks every sample flyer as a sample', () => {
+    expect(sampleEvents.length).toBeGreaterThan(0);
+    expect(sampleEvents.every((e) => e.sample === true)).toBe(true);
+  });
+
+  it('opens the borough holding the most recent past event', () => {
+    const a = { id: 'a' } as EventData;
+    const b = { id: 'b' } as EventData;
+    const groups = [{ borough: 'Bronx' as const, events: [b] }, { borough: 'Queens' as const, events: [a] }];
+    expect(newestGroupIndex(groups as never, a)).toBe(1);
+    expect(newestGroupIndex(groups as never, undefined)).toBe(-1);
   });
 });
