@@ -97,6 +97,38 @@ export function groupPastByBorough(events: EventData[]): PastEventGroup[] {
   return [...groups].filter(([, list]) => list.length > 0).map(([borough, list]) => ({ borough, events: list }));
 }
 
+/** What a past event's card shows: its own cover, a stand-in photo, or nothing. */
+export type PastCover<P> =
+  | { kind: 'eventbrite'; url: string }
+  | { kind: 'photo'; photo: P }
+  | { kind: 'none' };
+
+/**
+ * Picks each past card's picture so no picture repeats (captain,
+ * 2026-10-21: "diversify images"). Many Eventbrite events reuse one
+ * cover, so in display order the first event keeps a cover and later
+ * repeats (and events with no cover) take the next unused stand-in
+ * photo. Once the stand-ins run out, a repeat keeps its own cover:
+ * a repeated picture beats a blank card.
+ */
+export function assignPastCovers<P>(groups: PastEventGroup[], photos: readonly P[]): Map<string, PastCover<P>> {
+  const covers = new Map<string, PastCover<P>>();
+  const seen = new Set<string>();
+  let next = 0;
+  for (const ev of groups.flatMap((g) => g.events)) {
+    const url = ev.imageUrl;
+    if (url && !seen.has(url)) {
+      seen.add(url);
+      covers.set(ev.id, { kind: 'eventbrite', url });
+    } else if (next < photos.length) {
+      covers.set(ev.id, { kind: 'photo', photo: photos[next++] });
+    } else {
+      covers.set(ev.id, url ? { kind: 'eventbrite', url } : { kind: 'none' });
+    }
+  }
+  return covers;
+}
+
 export function toEventCardProps(ev: EventData): EventCardProps {
   const startIso = ev.start.local || ev.start.utc;
   const endIso = ev.end.local || ev.end.utc;

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { newsDate, newsItems, sortedNews, type NewsItem } from '../news';
+import { newsDate, newsItems, newsKindLabel, sortedNews, visibleNews, type NewsItem } from '../news';
 
 const item = (title: string, date: string, link = 'https://example.com/story'): NewsItem => ({
+  kind: 'article',
   title,
   outlet: 'The Outlet',
   date,
@@ -19,8 +20,29 @@ describe('sortedNews', () => {
     expect(() => sortedNews([item('a', '2026-10-01', '/story')])).toThrow(/full URL/);
   });
 
-  it('ships with real entries only, all of them valid', () => {
+  it('ships only valid entries', () => {
     expect(() => sortedNews(newsItems)).not.toThrow();
+  });
+});
+
+describe('visibleNews', () => {
+  const real = item('real', '2026-10-01');
+  const sample: NewsItem = { ...item('sample', '2026-09-01'), sample: true };
+
+  it('shows samples only while the flag is on, and real coverage always', () => {
+    expect(visibleNews([real, sample], true)).toEqual([real, sample]);
+    expect(visibleNews([real, sample], false)).toEqual([real]);
+  });
+
+  it('keeps every shipped sample on a reserved example domain, so none can pass for real coverage', () => {
+    for (const n of newsItems.filter((n) => n.sample)) expect(new URL(n.link).hostname).toBe('example.com');
+  });
+});
+
+describe('newsKindLabel', () => {
+  it('names both kinds in both languages', () => {
+    expect(newsKindLabel('article')).toEqual({ en: 'Article', es: 'Artículo' });
+    expect(newsKindLabel('podcast')).toEqual({ en: 'Podcast', es: 'Pódcast' });
   });
 });
 

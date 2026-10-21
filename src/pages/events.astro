@@ -2,7 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import { Image } from 'astro:assets';
-import { fetchEventsAtBuildTime, formatDate, groupPastByBorough, toEventCardProps, type EventPlace } from '../lib/events';
+import { assignPastCovers, fetchEventsAtBuildTime, formatDate, groupPastByBorough, toEventCardProps, type EventPlace } from '../lib/events';
+import { streetPhotos } from '../lib/streetPhotos';
 import SocialLinks from '../components/SocialLinks.astro';
 import SectionWall from '../components/SectionWall.astro';
 import wallRedTags from '../assets/walls/wall-red-tags.webp';
@@ -12,8 +13,11 @@ const { upcoming: upcomingRaw, past } = await fetchEventsAtBuildTime();
 
 // Past events by borough, each with its own Eventbrite cover image
 // (captain, 2026-10-15: "Reinstate! By borough. Add pictures"). Only real
-// Eventbrite events appear; one without a cover shows the vest sticker.
+// Eventbrite events appear. A cover another card already shows gives way
+// to a street photo from the captain's photo walk (2026-10-21: "diversify
+// images"), so no picture repeats down the page.
 const pastGroups = groupPastByBorough(past);
+const pastCovers = assignPastCovers(pastGroups, streetPhotos);
 const placeName = (b: EventPlace) =>
   b === null
     ? { en: 'Outside the five boroughs', es: 'Fuera de los cinco condados' }
@@ -92,11 +96,14 @@ const upcoming = upcomingRaw.map(ev => ({
             <ul class="past-list">
               {group.events.map((ev) => {
                 const date = pastDate(ev.start.local || ev.start.utc);
+                const cover = pastCovers.get(ev.id) ?? { kind: 'none' };
                 return (
                   <li>
                     <a class="past-card" href={ev.url} target="_blank" rel="noopener">
-                      {ev.imageUrl ? (
-                        <img class="past-pic" src={ev.imageUrl} alt="" loading="lazy" decoding="async" />
+                      {cover.kind === 'eventbrite' ? (
+                        <img class="past-pic" src={cover.url} alt="" loading="lazy" decoding="async" />
+                      ) : cover.kind === 'photo' ? (
+                        <Image class="past-pic" src={cover.photo} alt="" width={600} widths={[300, 600]} sizes="(min-width: 761px) 18rem, 45vw" />
                       ) : (
                         <span class="past-pic past-pic-none"><Image src={vestSticker} alt="" width={72} densities={[1, 2]} /></span>
                       )}
@@ -378,16 +385,19 @@ const upcoming = upcomingRaw.map(ev => ({
     text-decoration: none;
   }
 
-  .past-pic {
+  /* :global so the street photos' <Image> output matches too; height
+     auto so its height attribute can't beat the crop */
+  .past-card :global(.past-pic) {
     display: block;
     width: 100%;
+    height: auto;
     aspect-ratio: 2 / 1;
     object-fit: cover;
     background: var(--black);
     border: 2.5px solid var(--black);
   }
 
-  .past-pic-none { display: grid; place-items: center; background: var(--green); }
+  .past-card .past-pic-none { display: grid; place-items: center; background: var(--green); }
 
   .past-name { font-weight: 700; font-size: 1.15rem; line-height: 1.2; }
   .past-card:hover .past-name,

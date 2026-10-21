@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls, groupPastByBorough, mapEventbriteEvent } from '../events';
+import { fetchEventsAtBuildTime, formatDate, formatTime, getMapUrls, groupPastByBorough, assignPastCovers, mapEventbriteEvent } from '../events';
 import type { EventData } from '../events';
 
 // ── formatDate ──────────────────────────────────────────────────────────────
@@ -350,5 +350,30 @@ describe('groupPastByBorough', () => {
 
   it('returns no groups for no events', () => {
     expect(groupPastByBorough([])).toEqual([]);
+  });
+});
+
+// ── assignPastCovers ────────────────────────────────────────────────────────
+
+describe('assignPastCovers', () => {
+  const ev = (id: string, imageUrl: string | null) => ({ id, imageUrl }) as EventData;
+  const groups = [
+    { borough: 'Manhattan' as const, events: [ev('a', 'shared.jpg'), ev('b', 'shared.jpg'), ev('c', 'own.jpg')] },
+    { borough: 'Brooklyn' as const, events: [ev('d', 'shared.jpg'), ev('e', null)] },
+  ];
+
+  it('keeps the first use of each cover and gives repeats and coverless events the next stand-in', () => {
+    const covers = assignPastCovers(groups, ['p1', 'p2', 'p3']);
+    expect(covers.get('a')).toEqual({ kind: 'eventbrite', url: 'shared.jpg' });
+    expect(covers.get('b')).toEqual({ kind: 'photo', photo: 'p1' });
+    expect(covers.get('c')).toEqual({ kind: 'eventbrite', url: 'own.jpg' });
+    expect(covers.get('d')).toEqual({ kind: 'photo', photo: 'p2' });
+    expect(covers.get('e')).toEqual({ kind: 'photo', photo: 'p3' });
+  });
+
+  it('falls back to the repeated cover, or none, once the stand-ins run out', () => {
+    const covers = assignPastCovers(groups, ['p1']);
+    expect(covers.get('d')).toEqual({ kind: 'eventbrite', url: 'shared.jpg' });
+    expect(covers.get('e')).toEqual({ kind: 'none' });
   });
 });
