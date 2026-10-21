@@ -49,8 +49,10 @@ interface Props {
 const { kind, src, tear = 'both', dim = 0.35, duotone = 1, seed = 1, outline = false } = Astro.props;
 if (kind === 'cleanup' && !src) throw new Error('SectionWall: a cleanup wall needs a photo (src)');
 
-// 2400 is the chalk original's full width, so zoomed framings stay sharp
-const photo = await getImage({ src: kind === 'planting' ? chalkPhoto : src!, width: kind === 'planting' ? 2400 : 1600, format: 'webp' });
+// 2400 is the chalk original's full width, so zoomed framings stay sharp;
+// cleanup walls now span the full section width unzoomed (Z2), so they get
+// their full 2000px derivative
+const photo = await getImage({ src: kind === 'planting' ? chalkPhoto : src!, width: kind === 'planting' ? 2400 : 2000, format: 'webp' });
 
 /** A ragged edge: deterministic jitter so builds are stable. */
 function edge(fromTop: boolean): string[] {
@@ -134,6 +136,17 @@ const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 16
     background-size: var(--sw-size, cover);
     background-position: var(--sw-pos, center);
     background-repeat: no-repeat;
+  }
+
+  /* Z2 (captain, 2026-10-21: the backgrounds were "really zoomed in"): a
+     cleanup wall keeps its real aspect ratio at the full section width
+     and repeats down a tall section, so the whole wall shows edge to edge
+     instead of a cover-zoomed crop, most of all on phones. Planting keeps
+     cover so its chalk mask stays registered. */
+  .sw-cleanup .sw-photo {
+    background-size: var(--sw-size, 100% auto);
+    background-position: var(--sw-pos, center top);
+    background-repeat: repeat-y;
   }
 
   /* Purple duotone: the photo's luminance over Deep Purple */
