@@ -145,10 +145,18 @@ describe('contactSchema', () => {
   });
 
   it.each(['partnership', 'sponsor'])('requires organization for %s inquiries', (inquiryType) => {
-    const orgBacked = { ...validContact, inquiryType };
+    const orgBacked = { ...validContact, inquiryType, partnershipType: 'podcast' };
     expect(contactSchema.safeParse(orgBacked).success).toBe(false);
     expect(contactSchema.safeParse({ ...orgBacked, organization: '  ' }).success).toBe(false);
     expect(contactSchema.safeParse({ ...orgBacked, organization: 'Acme Co' }).success).toBe(true);
+  });
+
+  it('requires the kind of partnership for partner inquiries only', () => {
+    const partner = { ...validContact, inquiryType: 'partnership', organization: 'Acme Co' };
+    expect(contactSchema.safeParse(partner).success).toBe(false);
+    expect(contactSchema.safeParse({ ...partner, partnershipType: 'influencer' }).success).toBe(true);
+    expect(contactSchema.safeParse({ ...partner, partnershipType: 'merch' }).success).toBe(false);
+    expect(contactSchema.safeParse(validContact).success).toBe(true);
   });
 
   it('accepts a complete sponsor inquiry', () => {

@@ -1,6 +1,4 @@
 ---
-import Bricks from '../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { team } from '../lib/team';
@@ -8,8 +6,7 @@ import groupPhoto from '../assets/film-group-pic-1.jpg';
 import vestSticker from '../assets/vest-sticker.png';
 
 /**
- * The Team — the group photo pasted up like a poster inside the brick
- * frame, then the three wheatpasted bio sheets in photo order on
+ * The Team — the group photo pasted up like a poster in the hero, then the three wheatpasted bio sheets in photo order on
  * desktop (Nandi, David, Fabiola) and David-first on phones (CSS
  * order), each with a round face chip cropped from the group photo.
  * Bios come verbatim from src/lib/team.ts — never edit them here.
@@ -36,19 +33,14 @@ const bioFlyer: Record<string, string> = {
   fabiola: 'f-tape f-torn',
 };
 
-// Whole brick rows per half: as many as this hero's height fits
-// Phones: a short wall above and below the full-width photo. Desktop:
-// the continuous wall (Bricks `continuous`); 8 is its no-JS fallback.
-const bricks: BrickRows = { phone: 3, desktop: 8 };
 ---
 
 <BaseLayout
   title="About — Trash Talk NYC"
   description="Meet Trash Talk NYC, a grassroots initiative cleaning New York City through fun volunteer cleanup events, community engagement, and educational entertainment."
 >
-  <!-- HERO: group photo in the brick frame -->
-  <section class="tm-hero brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} continuous />
+  <!-- HERO: the group photo, pasted up -->
+  <section class="tm-hero frame-hero">
     <div class="tm-hero-inner">
       <!-- "About" is an eyebrow over the page name, the same pattern as
            From the Founder (captain, 2026-10-09) -->
@@ -109,7 +101,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
        else (captain, 2026-10-09) -->
   <section class="lend" id="join-the-team">
     <div class="wrap lend-inner">
-      <h2 data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
+      <h2 class="strip" data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
       <a class="btn btn-primary" href="/recruit" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
     </div>
   </section>
@@ -118,6 +110,8 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
 <style>
   /* ── HERO ── */
   .tm-hero {
+    /* The height its brick halves needed (see .frame-hero) */
+    --hero-min-phone: calc(28.93vw + 32px);
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);
@@ -178,9 +172,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   @media (min-width: 761px) {
     .tm-hero-inner { gap: 22px; padding: calc(100vw * 0.08) 16px calc(100vw * 0.08); }
     .tm-title { font-size: clamp(3.4rem, 6.4vw, 5.8rem); }
-    /* The hero always shows the full brick drawing on desktop, whose height
-       scales with the viewport, so the photo scales with it too and the
-       side columns stay one connected wall (captain, 2026-10-09) */
+    /* The photo scales with the viewport (captain, 2026-10-09) */
     .tm-hero-inner { max-width: none; width: 100%; }
     .tm-photo { width: min(46vw, 100%); padding: 14px 14px 18px; }
     .tm-photo figcaption { font-size: 0.72rem; }
@@ -250,10 +242,14 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   }
 
   /* ── LEND A HAND ── */
+  /* Ripped paper in and out of the band (captain, 2026-10-21): both
+     edges are torn, in px so the rip depth stays the same at any width,
+     and the padding clears the deepest notch */
   .lend {
     background-color: var(--green);
     color: var(--beige);
-    padding-block: 32px;
+    padding-block: 52px;
+    clip-path: polygon(0 12px, 6% 3px, 13% 16px, 21% 5px, 29% 14px, 37% 2px, 46% 15px, 54% 4px, 62% 13px, 71% 1px, 79% 15px, 87% 5px, 94% 14px, 100% 4px, 100% calc(100% - 13px), 93% calc(100% - 3px), 85% calc(100% - 15px), 77% calc(100% - 4px), 68% calc(100% - 14px), 60% calc(100% - 2px), 51% calc(100% - 16px), 43% calc(100% - 5px), 34% calc(100% - 13px), 26% calc(100% - 1px), 18% calc(100% - 15px), 10% calc(100% - 4px), 4% calc(100% - 12px), 0 calc(100% - 3px));
   }
 
   .lend-inner {
@@ -267,7 +263,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   .lend h2 { font-size: 2.4rem; }
 
   @media (min-width: 761px) {
-    .lend { padding-block: 40px; }
+    .lend { padding-block: 64px; }
     .lend h2 { font-size: clamp(2.6rem, 4vw, 3.6rem); }
   }
 </style>

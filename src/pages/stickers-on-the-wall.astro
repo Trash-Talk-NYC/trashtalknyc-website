@@ -1,0 +1,403 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionWall from '../components/SectionWall.astro';
+import wallStickerDoor from '../assets/walls/wall-sticker-door.webp';
+import { TIER_LABEL, TIER_SIZE, partnersByTier, stickerLook, visiblePartners, type PartnerTier } from '../lib/partners';
+
+/**
+ * Stickers on the Wall (captain, 2026-10-21, mockup W1): the club's
+ * partners as stickers bombed over a real sticker-covered door, sized by
+ * tier (City large, Borough medium, Block small). Hover lifts a corner;
+ * clicking, tapping, or Enter peels the sticker and shows a note under it
+ * with the partner's name, tier, what they did, and a link to their site.
+ * Partners live in src/lib/partners.ts.
+ *
+ * Each sticker is a real <button> (aria-expanded, controlling its note),
+ * and the note is a sibling, not a child, so its link is never nested in
+ * a button.
+ */
+const list = partnersByTier(visiblePartners());
+const hasSamples = list.some((p) => p.sample);
+
+// Where each tier's stickers go, biggest support in the middle (the
+// mockup's W1 layout): left/top % of the wall and a tilt, per breakpoint.
+type Slot = [number, number, number];
+const SLOTS: Record<PartnerTier, { desktop: Slot[]; phone: Slot[] }> = {
+  city: { desktop: [[30, 16, -8], [52, 40, 7]], phone: [[6, 4, -8], [44, 24, 7]] },
+  borough: { desktop: [[6, 8, 10], [74, 10, -6], [70, 58, 9]], phone: [[54, 2, 10], [4, 40, -6], [56, 50, 9]] },
+  block: {
+    desktop: [[8, 60, -12], [38, 70, -5], [86, 76, 12], [20, 40, 6], [58, 6, -10]],
+    phone: [[8, 62, -12], [38, 70, -5], [68, 70, 12], [14, 86, 6], [54, 88, -10]],
+  },
+};
+
+// Past the hand-placed slots, spread the rest evenly (golden-ratio steps)
+// so a growing partner list still lands somewhere sensible
+function fallbackSlot(n: number): Slot {
+  const x = ((n * 0.618034) % 1) * 78 + 4;
+  const y = ((n * 0.381966 + 0.5) % 1) * 78 + 6;
+  return [Math.round(x), Math.round(y), n % 2 ? 7 : -7];
+}
+
+const used: Record<PartnerTier, number> = { city: 0, borough: 0, block: 0 };
+const stickers = list.map((p, i) => {
+  const k = used[p.tier]++;
+  const d = SLOTS[p.tier].desktop[k] ?? fallbackSlot(i);
+  const ph = SLOTS[p.tier].phone[k] ?? fallbackSlot(i + 3);
+  const look = stickerLook(p, i);
+  const size = TIER_SIZE[p.tier];
+  const tall = look.shape === 'oval' || look.shape === 'rect' ? 0.66 : 1;
+  return {
+    p,
+    id: `partner-${i}`,
+    look,
+    tier: TIER_LABEL[p.tier],
+    words: p.name.replace(/ Co\.$/, '').split(' '),
+    // Notes near the right edge open leftward so they stay on the wall
+    style: `--x:${d[0]}%;--y:${d[1]}%;--r:${d[2]}deg;--px:${ph[0]}%;--py:${ph[1]}%;--s:${size}px;--h:${tall}`,
+    noteClass: [d[0] > 55 ? 'note-left-d' : '', ph[0] > 45 ? 'note-left-p' : ''].join(' '),
+  };
+});
+
+const tiers: PartnerTier[] = ['city', 'borough', 'block'];
+---
+
+<BaseLayout
+  title="Stickers on the Wall — Trash Talk NYC"
+  description="The partners who help Trash Talk NYC clean the city, stuck up as stickers: the bigger the sticker, the bigger the support."
+  stickerFonts
+>
+  <section class="sw-sec wall">
+    <SectionWall kind="cleanup" src={wallStickerDoor} dim={0} duotone={0} seed={13} />
+    <div class="wrap sw-body">
+      <header class="sw-head">
+        <h1 class="sw-title paste f-tape" data-en="Stickers on the Wall" data-es="Calcomanías en la Pared">Stickers on the Wall</h1>
+        <p class="sw-intro paste" data-en="Every sticker is a partner who helps us clean NYC. The bigger the sticker, the bigger the support. Peel one to see who they are and what they did." data-es="Cada calcomanía es un socio que nos ayuda a limpiar NYC. Mientras más grande la calcomanía, mayor el apoyo. Despega una para ver quiénes son y qué hicieron.">Every sticker is a partner who helps us clean NYC. The bigger the sticker, the bigger the support. Peel one to see who they are and what they did.</p>
+      </header>
+
+      <div class="stage" id="stage">
+        {hasSamples && <span class="sample-mark mono" data-en="Sample partners" data-es="Socios de muestra">Sample partners</span>}
+        {stickers.map((s) => (
+          <div class={`ps-spot tier-${s.p.tier}`} style={s.style}>
+            <button
+              type="button"
+              class={`ps shape-${s.look.shape}`}
+              aria-expanded="false"
+              aria-controls={`${s.id}-note`}
+              style={`--bg:${s.look.bg};--fg:${s.look.fg}`}
+            >
+              <span class="flip">
+                <span class={`face font-${s.look.font}`}>
+                  {s.p.logo ? (
+                    <Image src={s.p.logo.src} alt="" class="face-logo" width={360} />
+                  ) : (
+                    s.words.map((w, i) => <>{i > 0 && <br />}{w}</>)
+                  )}
+                </span>
+                <span class="back"></span>
+              </span>
+              <span class="sr-only">
+                <span>{s.p.name}</span>, <span data-en={s.tier.en} data-es={s.tier.es}>{s.tier.en}</span>.
+                <span data-en="Peel to read more." data-es="Despega para leer más.">Peel to read more.</span>
+              </span>
+            </button>
+            <div class={`note ${s.noteClass}`} id={`${s.id}-note`} hidden>
+              <b class="note-name">{s.p.name}</b>
+              <span class="note-tier mono" data-en={s.tier.en} data-es={s.tier.es}>{s.tier.en}</span>
+              <p class="note-blurb" data-en={s.p.blurb.en} data-es={s.p.blurb.es}>{s.p.blurb.en}</p>
+              {s.p.sample ? (
+                <span class="note-link note-link-sample mono" data-en="Sample partner, no site" data-es="Socio de muestra, sin sitio">Sample partner, no site</span>
+              ) : (
+                <a class="note-link" href={s.p.url} target="_blank" rel="noopener">
+                  <span data-en="Visit their site →" data-es="Visita su sitio →">Visit their site →</span>
+                  <span class="sr-only">{s.p.name}</span>
+                </a>
+              )}
+              <button type="button" class="note-back mono" data-stick-back data-en="Stick it back ↺" data-es="Pégala de nuevo ↺">Stick it back ↺</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div class="sw-foot">
+        <ul class="legend mono">
+          {tiers.map((t) => (
+            <li><i class={`dot dot-${t}`} aria-hidden="true"></i><span data-en={TIER_LABEL[t].en} data-es={TIER_LABEL[t].es}>{TIER_LABEL[t].en}</span></li>
+          ))}
+        </ul>
+        <button type="button" class="btn btn-primary" id="stickAll" data-en="Stick them all back ↺" data-es="Pégalas todas de nuevo ↺">Stick them all back ↺</button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const stage = document.getElementById('stage');
+  const spots = Array.from(stage?.querySelectorAll<HTMLElement>('.ps-spot') ?? []);
+
+  function setPeeled(spot: HTMLElement, peeled: boolean) {
+    const button = spot.querySelector<HTMLButtonElement>('.ps');
+    const note = spot.querySelector<HTMLElement>('.note');
+    if (!button || !note) return;
+    spot.classList.toggle('peeled', peeled);
+    button.setAttribute('aria-expanded', String(peeled));
+    note.hidden = !peeled;
+  }
+
+  spots.forEach((spot) => {
+    const button = spot.querySelector<HTMLButtonElement>('.ps');
+    button?.addEventListener('click', () => setPeeled(spot, !spot.classList.contains('peeled')));
+    spot.querySelector('[data-stick-back]')?.addEventListener('click', () => {
+      setPeeled(spot, false);
+      // Back to the sticker, so keyboard users keep their place
+      button?.focus();
+    });
+  });
+
+  document.getElementById('stickAll')?.addEventListener('click', () => spots.forEach((s) => setPeeled(s, false)));
+
+  // Escape sticks the sticker you're on back
+  stage?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const spot = (e.target as HTMLElement).closest<HTMLElement>('.ps-spot');
+    if (spot?.classList.contains('peeled')) {
+      setPeeled(spot, false);
+      spot.querySelector<HTMLButtonElement>('.ps')?.focus();
+    }
+  });
+</script>
+
+<style>
+  .sw-body { display: grid; gap: 22px; padding-block: 48px 64px; }
+
+  .sw-head { display: grid; gap: 14px; justify-items: start; }
+
+  .sw-title {
+    --flyer-bg: var(--paper);
+    display: inline-block;
+    color: var(--black);
+    font-size: clamp(2.6rem, 9vw, 4.6rem);
+    line-height: 0.95;
+    padding: 14px 20px 10px;
+  }
+
+  .sw-intro {
+    --flyer-bg: var(--paper);
+    max-width: 40rem;
+    margin: 0;
+    padding: 14px 18px;
+    color: var(--black);
+    font-size: 1.15rem;
+    line-height: 1.45;
+  }
+
+  /* ── THE WALL ── */
+  /* Phones get a taller stage and their own slots (--px/--py) at 70% of
+     the tier sizes, so a City sticker still fits beside a Borough one */
+  .stage {
+    position: relative;
+    min-height: 760px;
+    border: var(--ink);
+    border-radius: 8px;
+    background: rgba(29, 29, 35, 0.25);
+  }
+
+  .sample-mark {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 30;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--black);
+    color: var(--yellow);
+    font-size: 0.75rem;
+  }
+
+  .ps-spot {
+    --size: calc(var(--s) * 0.7);
+    position: absolute;
+    left: var(--px);
+    top: var(--py);
+    width: var(--size);
+    height: calc(var(--size) * var(--h));
+    transform: rotate(var(--r));
+    z-index: 1;
+  }
+
+  .ps-spot.tier-city { z-index: 3; }
+  .ps-spot.tier-borough { z-index: 2; }
+  .ps-spot.peeled { z-index: 20; }
+
+  /* A peelable sticker (the mockup's .ps): the face flips away from its
+     top-left corner to show the paper back */
+  .ps {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    perspective: 700px;
+    border-radius: var(--radius);
+  }
+
+  .ps:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; }
+
+  .shape-circle { --radius: 50%; }
+  .shape-oval { --radius: 50% / 40%; }
+  .shape-round { --radius: 22px; }
+  .shape-rect { --radius: 6px; }
+  .shape-star {
+    --radius: 0;
+    --clip: polygon(50% 0, 61% 18%, 82% 8%, 80% 30%, 100% 36%, 85% 52%, 100% 68%, 79% 72%, 82% 94%, 61% 84%, 50% 100%, 39% 84%, 18% 94%, 21% 72%, 0 68%, 15% 52%, 0 36%, 20% 30%, 18% 8%, 39% 18%);
+  }
+
+  .flip {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform-origin: 0 0;
+    transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.3, 1);
+  }
+
+  .face,
+  .back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: var(--radius);
+    clip-path: var(--clip, none);
+  }
+
+  .face {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    padding: 6px;
+    background: var(--bg);
+    color: var(--fg);
+    border: 3px solid #fff;
+    box-shadow: 3px 4px 0 rgba(0, 0, 0, 0.5);
+    font-size: max(11px, calc(var(--size) / 7));
+    line-height: 0.95;
+    text-align: center;
+  }
+
+  .tier-city .face { border-width: 4px; }
+
+  .face :global(.face-logo) { width: 80%; height: auto; }
+
+  .font-tab { font-family: 'Oswald', Impact, sans-serif; font-weight: 700; }
+  .font-display { font-family: var(--display); }
+  .font-mono { font-family: var(--mono); font-weight: 700; }
+  .font-hand { font-family: 'Permanent Marker', 'Comic Sans MS', cursive; }
+  .font-blackletter { font-family: 'UnifrakturMaguntia', 'Old English Text MT', serif; }
+
+  .back {
+    transform: rotate3d(1, 1, 0, 180deg);
+    background: linear-gradient(135deg, #fff, #e8e4d6);
+  }
+
+  /* Hover lifts the corner; a curl shows at the opposite corner */
+  .face::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    background: linear-gradient(135deg, transparent 50%, #fff 50%);
+    transition: width 0.2s, height 0.2s;
+  }
+
+  .ps:hover .flip,
+  .ps:focus-visible .flip { transform: rotate3d(1, 1, 0, -28deg); }
+  .ps:hover .face::after,
+  .ps:focus-visible .face::after { width: 18px; height: 18px; }
+
+  .peeled .ps .flip { transform: rotate3d(1, 1, 0, -172deg); }
+
+  /* The note under a peeled sticker: wider than a Block sticker, so it
+     opens from the sticker's corner and stays readable */
+  .note {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: max(100%, 13rem);
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+    padding: 10px 12px 12px;
+    background: var(--paper);
+    color: var(--black);
+    border: 2px dashed #8a8a80;
+    border-radius: 8px;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.55);
+    transform: rotate(calc(var(--r) * -1));
+    animation: note-in 0.25s 0.2s both;
+  }
+
+  .note[hidden] { display: none; }
+  .note-left-p { left: auto; right: 0; }
+
+  @keyframes note-in { from { opacity: 0; } }
+
+  .note-name { font-family: var(--display); font-weight: 400; font-size: 1.35rem; line-height: 1; }
+  .note-tier { font-size: 0.75rem; color: var(--purple); }
+  .note-blurb { margin: 2px 0 4px; font-size: 1rem; line-height: 1.3; }
+  .note-link { font-weight: 700; color: var(--purple); text-underline-offset: 3px; }
+  .note-link-sample { font-size: 0.75rem; color: var(--green); }
+
+  .note-back {
+    margin-top: 4px;
+    padding: 4px 10px;
+    border: 2px solid var(--black);
+    border-radius: 6px;
+    background: var(--yellow);
+    color: var(--black);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .note-back:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+
+  .sw-foot { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between; }
+
+  .legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--paper);
+    color: var(--black);
+    border-radius: 6px;
+    font-size: 0.8rem;
+  }
+
+  .legend li { display: flex; align-items: center; gap: 6px; }
+  .dot { display: inline-block; border-radius: 4px; background: var(--black); }
+  .dot-city { width: 22px; height: 22px; }
+  .dot-borough { width: 16px; height: 16px; }
+  .dot-block { width: 10px; height: 10px; }
+
+  @media (min-width: 761px) {
+    .sw-body { gap: 28px; padding-block: 72px 88px; }
+    .sw-intro { font-size: 1.3rem; }
+    .stage { min-height: 680px; }
+    .ps-spot { --size: var(--s); left: var(--x); top: var(--y); }
+    .note-left-p { left: 0; right: auto; }
+    .note-left-d { left: auto; right: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flip,
+    .face::after { transition: none; }
+    .note { animation: none; }
+  }
+</style>

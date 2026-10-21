@@ -1,0 +1,320 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BrandSticker from '../components/BrandSticker.astro';
+import MediaSubnav from '../components/MediaSubnav.astro';
+import SectionWall from '../components/SectionWall.astro';
+import wallNycTags from '../assets/walls/wall-nyc-tags.webp';
+import frontPagePhoto from '../assets/news/front-page-sticker-pole.webp';
+import { IN_THE_NEWS } from '../lib/media';
+import { newsDate, newsKindLabel, sortedNews, visibleNews } from '../lib/news';
+
+/**
+ * In The News (captain, 2026-10-19: "Format a trash newspaper, soiled
+ * newspaper"): the press coverage from src/lib/news.ts, set as one
+ * crumpled, stained broadsheet pasted on the wall. Stains, creases, and the
+ * torn edge are drawn with the site's own ink and paper tokens, all faint
+ * enough that the text keeps AA contrast. No invented coverage beyond the
+ * flagged samples (src/lib/news.ts), which wear a "Sample" mark and link
+ * nowhere; with no entries the paper says so.
+ */
+const items = sortedNews(visibleNews()).map((item) => ({ ...item, when: newsDate(item.date), kindLabel: newsKindLabel(item.kind) }));
+---
+
+<BaseLayout
+  title="In The News — Trash Talk NYC"
+  description="Press coverage of Trash Talk NYC: articles and podcasts that feature the club."
+  stickerFonts
+>
+  <!-- HERO: N6, a sticker-bombed front page on the dark ground (captain's
+       pick, 2026-10-21, heroes2 mockup). The masthead is the paper's
+       name, so it reads the same in both languages. The photo is a
+       sticker-bombed signal box from the captain's photo walk, printed
+       in newsprint grey. -->
+  <section class="nh">
+    <div class="nh-page">
+      <p class="nh-mast" data-en="The Trash Talk Times" data-es="The Trash Talk Times">The Trash Talk Times</p>
+      <h1 class="nh-head" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h1>
+      <Image
+        src={frontPagePhoto}
+        alt="A signal box covered in stickers on a Lower East Side street corner"
+        data-alt-en="A signal box covered in stickers on a Lower East Side street corner"
+        data-alt-es="Una caja de señales cubierta de calcomanías en una esquina del Lower East Side"
+        class="nh-pic"
+        width={1400}
+        widths={[700, 1400]}
+        sizes="(min-width: 761px) 42rem, 90vw"
+        loading="eager"
+      />
+      <span class="nh-stk nh-stk-badge die-cut"><BrandSticker id="club-badge" /></span>
+      <span class="nh-stk nh-stk-hello die-cut"><BrandSticker id="hello" /></span>
+    </div>
+  </section>
+
+  <MediaSubnav current="in-the-news" />
+
+  <section class="nw-sec wall">
+    <SectionWall kind="cleanup" src={wallNycTags} dim={0} duotone={0} seed={11} />
+    <div class="wrap nw-body">
+      <article class="np paste f-tape" aria-labelledby="npMast">
+        <header class="np-head">
+          <p class="np-rule mono">
+            <span>Trash Talk NYC</span>
+            <span data-en="Press & podcasts" data-es="Prensa y pódcasts">Press &amp; podcasts</span>
+          </p>
+          <h2 class="np-mast" id="npMast" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h2>
+        </header>
+
+        {items.length > 0 ? (
+          <ul class="np-cols">
+            {items.map((item) => (
+              <li class="np-item">
+                {item.sample && <span class="np-stamp mono" data-en="Sample" data-es="Muestra">Sample</span>}
+                {item.image && (
+                  <Image
+                    src={item.image.src}
+                    alt={item.image.alt.en}
+                    data-alt-en={item.image.alt.en}
+                    data-alt-es={item.image.alt.es}
+                    class="np-pic"
+                    width={720}
+                    widths={[360, 720]}
+                    sizes="(min-width: 1100px) 22rem, (min-width: 761px) 40vw, 90vw"
+                  />
+                )}
+                <h3 class="np-title">{item.title}</h3>
+                <p class="np-by mono">
+                  <span data-en={item.kindLabel.en} data-es={item.kindLabel.es}>{item.kindLabel.en}</span> · <span>{item.outlet}</span> · <time datetime={item.date} data-en={item.when.en} data-es={item.when.es}>{item.when.en}</time>
+                </p>
+                {!item.sample && (
+                  <a class="np-link" href={item.link} target="_blank" rel="noopener">
+                    <span data-en="See the story →" data-es="Ver la nota →">See the story →</span>
+                    <span class="sr-only">{item.title}</span>
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="np-empty">
+            <h3 class="np-title np-empty-title" data-en="No clippings yet" data-es="Aún no hay recortes">No clippings yet</h3>
+            <p data-en="When an article or a podcast features Trash Talk NYC, it gets clipped and pinned here." data-es="Cuando un artículo o un pódcast hable de Trash Talk NYC, lo recortaremos y lo pondremos aquí.">When an article or a podcast features Trash Talk NYC, it gets clipped and pinned here.</p>
+            <!-- Mixed content: each text run is its own leaf so the toggle can
+                 translate it around the link -->
+            <p><span data-en="Covered us somewhere? Tell us through the" data-es="¿Hablaste de nosotros en algún lugar? Cuéntanos por el">Covered us somewhere? Tell us through the</span> <a href="/contact" data-en="contact form" data-es="formulario de contacto">contact form</a>.</p>
+          </div>
+        )}
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { getCurrentLang, onLanguageChange, type Lang } from '../lib/language';
+
+  // setLang never translates attributes, so each picture's alt follows the
+  // language from its data-alt-* pair
+  const pics = Array.from(document.querySelectorAll<HTMLImageElement>('img[data-alt-en]'));
+  const applyAlts = (lang: Lang) => pics.forEach((img) => (img.alt = img.getAttribute(`data-alt-${lang}`) ?? img.alt));
+  applyAlts(getCurrentLang());
+  onLanguageChange(applyAlts);
+</script>
+
+<style>
+  /* ── N6 FRONT PAGE HERO ── */
+  /* Newsprint (a shade off the poster paper, as in the mockup) with a
+     fine halftone dot, tilted a little like a page stuck to the wall */
+  .nh {
+    display: grid;
+    place-items: center;
+    padding: 52px 16px 56px;
+    background: var(--black);
+    border-bottom: var(--ink);
+    overflow: hidden;
+  }
+
+  .nh-page {
+    position: relative;
+    width: min(100%, 20rem);
+    padding: 14px;
+    color: #222;
+    background: #efeadb radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1.4px) 0 0 / 5px 5px;
+    transform: rotate(1.5deg);
+  }
+
+  .nh-mast {
+    margin: 0;
+    font-family: 'UnifrakturMaguntia', 'Old English Text MT', serif;
+    /* One line at any phone width, as on the mockup's front page */
+    font-size: clamp(1.3rem, 6vw, 2.125rem);
+    line-height: 1.15;
+    white-space: nowrap;
+    text-align: center;
+    border-bottom: 4px double #222;
+  }
+
+  .nh-head {
+    margin: 8px 0;
+    font-family: 'Oswald', Impact, 'Arial Narrow Bold', sans-serif;
+    font-weight: 700;
+    font-size: 2.125rem;
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: #222;
+  }
+
+  .nh-page :global(.nh-pic) {
+    display: block;
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.4);
+  }
+
+  .nh-stk { position: absolute; display: block; }
+  .nh-stk-badge { right: -14px; top: -16px; width: 73px; transform: rotate(12deg); animation: nh-slap 0.5s cubic-bezier(0.2, 1.7, 0.5, 1) both; }
+  .nh-stk-hello { left: -16px; bottom: -18px; width: 84px; transform: rotate(-10deg); animation: nh-slap 0.5s cubic-bezier(0.2, 1.7, 0.5, 1) 0.15s both; }
+
+  @keyframes nh-slap { from { opacity: 0; transform: scale(2.2) rotate(14deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nh-stk { animation: none; }
+  }
+
+  @media (min-width: 761px) {
+    .nh { padding: 88px 16px 96px; }
+    .nh-page { width: min(100%, 45rem); padding: 24px 30px; }
+    .nh-mast { font-size: clamp(3rem, 4.6vw, 4.125rem); }
+    .nh-head { font-size: clamp(2.8rem, 4.3vw, 3.875rem); }
+    .nh-page :global(.nh-pic) { height: 200px; }
+    .nh-stk-badge { width: 104px; right: -24px; top: -26px; }
+    .nh-stk-hello { width: 120px; left: -26px; bottom: -28px; }
+  }
+
+  .nw-body { padding-block: 64px 80px; }
+
+  /* ── THE SOILED BROADSHEET ── */
+  /* Newsprint is the paper token, crumpled and stained with the ink token
+     at low opacity: soft grime blotches, a coffee ring, and crease lines
+     where it was balled up and flattened again. Every layer stays faint so
+     ink text keeps well over 4.5:1 on it. */
+  .np {
+    --flyer-bg: var(--paper);
+    --stain: rgba(29, 29, 35, 0.07);
+    --crease: rgba(29, 29, 35, 0.09);
+    max-width: 62rem;
+    margin-inline: auto;
+    padding: 30px 18px 34px;
+    color: var(--black);
+  }
+
+  .np::before {
+    background-color: var(--paper);
+    background-image:
+      /* grime */
+      radial-gradient(ellipse 34% 22% at 82% 12%, var(--stain), transparent 70%),
+      radial-gradient(ellipse 28% 36% at 8% 78%, var(--stain), transparent 72%),
+      radial-gradient(ellipse 22% 16% at 60% 92%, rgba(29, 29, 35, 0.05), transparent 70%),
+      /* a coffee ring */
+      radial-gradient(circle at 90% 94%, transparent 46px, rgba(29, 29, 35, 0.1) 48px, transparent 54px),
+      /* creases from being crumpled */
+      linear-gradient(103deg, transparent 31%, var(--crease) 31.2%, rgba(255, 255, 255, 0.5) 31.6%, transparent 32%),
+      linear-gradient(77deg, transparent 63%, var(--crease) 63.2%, rgba(255, 255, 255, 0.5) 63.6%, transparent 64%),
+      linear-gradient(168deg, transparent 44%, var(--crease) 44.2%, rgba(255, 255, 255, 0.45) 44.6%, transparent 45%),
+      linear-gradient(12deg, transparent 72%, var(--crease) 72.2%, rgba(255, 255, 255, 0.45) 72.6%, transparent 73%),
+      /* uneven yellowing toward the edges */
+      radial-gradient(ellipse at center, transparent 55%, rgba(29, 29, 35, 0.06) 100%);
+  }
+
+  .np-head { text-align: center; margin-bottom: 22px; }
+
+  /* The masthead's rule lines, newspaper style: thick then thin */
+  .np-rule {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 0 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--black);
+    font-size: 0.75rem;
+  }
+
+  .np-mast {
+    font-size: clamp(3rem, 11vw, 6.6rem);
+    line-height: 0.9;
+    padding-bottom: 12px;
+    border-bottom: 5px double var(--black);
+  }
+
+  .np-cols {
+    list-style: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .np-item {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    padding-top: 14px;
+    border-top: 1px solid var(--black);
+  }
+
+  /* Newsprint photos print in grey */
+  .np-item :global(.np-pic) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.1);
+    border: 1px solid var(--black);
+  }
+
+  /* The sample mark: a small rubber stamp above the headline */
+  .np-stamp {
+    justify-self: start;
+    padding: 2px 8px;
+    border: 2px solid var(--purple);
+    color: var(--purple);
+    font-size: 0.75rem;
+    transform: rotate(4deg);
+  }
+
+  .np-title { font-size: clamp(1.7rem, 3vw, 2.2rem); line-height: 1; }
+
+  .np-by { margin: 0; font-size: 0.8rem; color: var(--black); }
+
+  .np-link {
+    justify-self: start;
+    font-weight: 700;
+    color: var(--purple);
+    text-underline-offset: 3px;
+  }
+
+  .np-empty {
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+    text-align: center;
+    max-width: 38rem;
+    margin-inline: auto;
+    padding-block: 18px 8px;
+  }
+
+  .np-empty p { margin: 0; font-size: 1.15rem; line-height: 1.5; }
+  .np-empty a { color: var(--purple); font-weight: 700; }
+
+  @media (min-width: 761px) {
+    .nw-body { padding-block: 88px 104px; }
+    .np { padding: 40px clamp(28px, 4vw, 56px) 48px; transform: rotate(-0.6deg); }
+    .np-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 40px; }
+    .np-rule { font-size: 0.85rem; }
+  }
+
+  @media (min-width: 1100px) {
+    .np-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

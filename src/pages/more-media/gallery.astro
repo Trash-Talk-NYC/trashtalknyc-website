@@ -1,0 +1,131 @@
+---
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediaHero from '../../components/MediaHero.astro';
+import MediaSubnav from '../../components/MediaSubnav.astro';
+import SectionWall from '../../components/SectionWall.astro';
+import wallMintPaint from '../../assets/walls/wall-mint-paint.webp';
+import { GALLERY, MORE_MEDIA_PATH } from '../../lib/media';
+import { galleryByMonth } from '../../lib/gallery';
+
+/**
+ * More Media → Gallery (captain, 2026-10-15: "general gallery -> by
+ * month"), replacing the Photo Albums pages. One cream flyer per month,
+ * newest first, each photo opening a large copy of itself. Curated
+ * "Get Inspired" collections tied to past events are a later release.
+ */
+const months = await Promise.all(
+  galleryByMonth().map(async (m) => ({
+    ...m,
+    photos: await Promise.all(
+      m.photos.map(async (p) => ({ ...p, large: (await getImage({ src: p.src, width: 1800, format: 'webp' })).src })),
+    ),
+  })),
+);
+---
+
+<BaseLayout
+  title="Gallery — Trash Talk NYC"
+  description="Photos from Trash Talk NYC, month by month: the cleanups, the plantings, and the lab."
+>
+  <MediaHero
+    eyebrow={{ en: 'More Media', es: 'Más Medios' }}
+    eyebrowHref={MORE_MEDIA_PATH}
+    title={[GALLERY.label]}
+    description={{ en: 'Photos from Trash Talk NYC, month by month.', es: 'Fotos de Trash Talk NYC, mes a mes.' }}
+  />
+
+  <MediaSubnav current="gallery" />
+
+  <section class="gl-sec wall">
+    <SectionWall kind="cleanup" src={wallMintPaint} dim={0} duotone={0} seed={5} />
+    <div class="wrap gl-body">
+      {months.map((m, i) => (
+        <section class:list={['gl-month', 'paste', i % 2 ? 'f-staple' : 'f-tape']} aria-labelledby={`month-${m.month}`}>
+          <h2 class="gl-title strip" id={`month-${m.month}`} data-en={m.label.en} data-es={m.label.es}>{m.label.en}</h2>
+          <ul class="gl-grid">
+            {m.photos.map((p) => (
+              <li>
+                <a href={p.large} target="_blank" rel="noopener" class="gl-link">
+                  <Image
+                    src={p.src}
+                    alt={p.alt.en}
+                    data-alt-en={p.alt.en}
+                    data-alt-es={p.alt.es}
+                    class="gl-pic"
+                    width={720}
+                    widths={[360, 540, 720]}
+                    sizes="(min-width: 1100px) 22vw, (min-width: 600px) 44vw, 90vw"
+                  />
+                  <span class="sr-only" data-en="(opens a large copy)" data-es="(abre una copia grande)">(opens a large copy)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { getCurrentLang, onLanguageChange, type Lang } from '../../lib/language';
+
+  // setLang never translates attributes, so each photo's alt follows the
+  // language from its data-alt-* pair
+  const pics = Array.from(document.querySelectorAll<HTMLImageElement>('img[data-alt-en]'));
+  const applyAlts = (lang: Lang) => pics.forEach((img) => (img.alt = img.getAttribute(`data-alt-${lang}`) ?? img.alt));
+  applyAlts(getCurrentLang());
+  onLanguageChange(applyAlts);
+</script>
+
+<style>
+  .gl-body { display: grid; gap: 52px; padding-block: 64px 80px; }
+
+  .gl-month {
+    --flyer-bg: var(--paper);
+    color: var(--black);
+    padding: 30px 16px 20px;
+  }
+
+  .gl-title { font-size: clamp(2.2rem, 4vw, 3.2rem); line-height: 1; margin-bottom: 18px; }
+
+  .gl-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .gl-link { display: block; }
+  .gl-link:focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
+
+  .gl-grid :global(.gl-pic) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border: 2.5px solid var(--black);
+    transition: transform 0.15s;
+  }
+
+  .gl-link:hover :global(.gl-pic) { transform: rotate(-0.8deg) scale(1.01); }
+
+  @media (min-width: 600px) {
+    .gl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 761px) {
+    .gl-body { gap: 64px; padding-block: 88px 104px; }
+    .gl-month { padding: 40px 36px 32px; }
+  }
+
+  @media (min-width: 1100px) {
+    .gl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gl-grid :global(.gl-pic) { transition: none; }
+  }
+</style>

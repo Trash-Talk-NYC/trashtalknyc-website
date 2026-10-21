@@ -131,8 +131,13 @@ export interface InquiryEmailInput {
   message: string;
   phone?: string;
   organization?: string;
-  /** Extra label/value rows (the lead application's route details). */
+  /** Extra label/value rows (the lead request's preferred month). */
   extraRows?: Array<[label: string, value: string | undefined]>;
+  /**
+   * The category's bracket tag ("[Podcast]"), put first in the subject so
+   * each owner can filter their inbox (see docs/inbox-routing.md).
+   */
+  tag?: string;
 }
 
 /**
@@ -155,7 +160,8 @@ export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; 
   const label = labels[input.inquiryType];
   const name = `${input.fname} ${input.lname}`.trim();
   const org = input.organization?.trim();
-  const subject = input.inquiryType !== 'general' && org ? `${label} — ${name} · ${org}` : `${label} — ${name}`;
+  const base = input.inquiryType !== 'general' && org ? `${label} — ${name} · ${org}` : `${label} — ${name}`;
+  const subject = input.tag ? `${input.tag} ${base}` : base;
 
   const rows: Array<[string, string | undefined]> = [
     ['Name', name],

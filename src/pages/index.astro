@@ -1,17 +1,26 @@
 ---
 import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { getSocials } from '../lib/socials';
 import { countries } from '../lib/countries';
 import vestSticker from '../assets/vest-sticker.png';
-import bricksTop from '../assets/bricks-top-lav.svg';
-import bricksBottom from '../assets/bricks-bottom-lav.svg';
-// Colored variant: the donate flyer is poster paper now, where the
-// beige line drawing would disappear.
+import wordmarkStickerLg from '../assets/stickers/wordmark-sticker-lg.png';
+import wordmarkSticker from '../assets/wordmark-sticker.png';
+import plainVestSticker from '../assets/stickers/plain-vest-sticker.png';
 import SectionWall from '../components/SectionWall.astro';
-import wallRedBrick from '../assets/walls/wall-red-brick.jpg';
-import wallMetalShutter from '../assets/walls/wall-metal-shutter.jpg';
+import BrandSticker from '../components/BrandSticker.astro';
+import type { BrandStickerId } from '../lib/stickers';
+import YouTubeEmbed from '../components/YouTubeEmbed.astro';
+// The captain's own wall photos (2026-10-15), curated for color
+import wallBubbleLetters from '../assets/walls/wall-bubble-letters.webp';
+import wallPasteUps from '../assets/walls/wall-paste-ups.webp';
+import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
+import wallPeeling from '../assets/street/peeling-wall.webp';
+import { galleryPhotos } from '../lib/gallery';
+import { featuredVideo } from '../lib/media';
+import { raisedSentence } from '../lib/contribute';
 
 const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
 
@@ -37,16 +46,54 @@ const orgSchema = {
 
 // The reel the captain asked to feature by the Socials section (2026-10-09)
 const FEATURED_REEL = 'https://www.instagram.com/reel/DeO_cj8it4m/';
-// …and the TikTok beside it (captain, 2026-10-09)
-const FEATURED_TIKTOK = {
-  url: 'https://www.tiktok.com/@trashtalk_nyc/video/7692418087739526431',
-  id: '7692418087739526431',
-};
+// Beside it, the YouTube video instead of a second short-form clip, to show
+// a different format (team feedback, 2026-10-15; replaced the TikTok)
+
+// The hero's sticker bomb (captain, 2026-10-15; mockup G4): brand
+// stickers slap on around the logo one after another, then the wordmark
+// sticker slaps on last and stays. x/y are the sticker's center as a
+// share of the logo's box, w its width as a share of the logo's width,
+// r0 → r its spin as it lands. Round 8 (captain, 2026-10-21) adds the
+// printed stickers (BrandSticker: S3–S5, S7–S14). The headline is never
+// covered: below the logo's box they sit only beyond the headline's ends,
+// and that only on desktop. `wide` ones only show on desktop; phones get
+// the first seven, so they come first and land first.
+type BombSticker = { x: number; y: number; w: number; r: number; r0: number; wide?: true } & (
+  | { src: ImageMetadata; brand?: never }
+  | { brand: BrandStickerId; src?: never }
+);
+const bombStickers: BombSticker[] = [
+  { src: vestSticker, x: -30, y: 26, w: 36, r: -16, r0: -40 },
+  { src: wordmarkSticker, x: 130, y: 30, w: 44, r: 14, r0: 36 },
+  { src: plainVestSticker, x: -20, y: 76, w: 30, r: 12, r0: 30 },
+  { src: vestSticker, x: 124, y: 76, w: 32, r: -10, r0: -34 },
+  { brand: 'talk-trash', x: -22, y: -26, w: 40, r: -8, r0: -30 },
+  { brand: 'club-badge', x: 126, y: -24, w: 30, r: 10, r0: 32 },
+  { brand: 'caution', x: 52, y: -40, w: 44, r: 3, r0: 20 },
+  { src: wordmarkSticker, x: -68, y: 52, w: 34, r: 8, r0: 28, wide: true },
+  { src: plainVestSticker, x: 168, y: 50, w: 28, r: -14, r0: -36, wide: true },
+  { brand: 'hello', x: -108, y: 10, w: 36, r: -8, r0: -28, wide: true },
+  { brand: 'pick-it-up', x: 214, y: 14, w: 38, r: 6, r0: 26, wide: true },
+  { brand: 'tree-bed', x: -150, y: 60, w: 34, r: 9, r0: 30, wide: true },
+  { brand: 'five-boroughs', x: 240, y: 66, w: 30, r: -10, r0: -32, wide: true },
+  { brand: 'swipe-card', x: 196, y: -30, w: 38, r: -5, r0: -24, wide: true },
+  { brand: 'glove-plant', x: -98, y: -30, w: 32, r: 8, r0: 28, wide: true },
+  { brand: 'trash-bag', x: -150, y: 112, w: 30, r: -6, r0: -26, wide: true },
+  { brand: 'glove-shovel', x: 240, y: 114, w: 32, r: 7, r0: 27, wide: true },
+];
+
+// Where contributions go: planting and tools (team feedback, 2026-10-15,
+// replacing the chalk wall). From the gallery, so its alt text is shared.
+const contributePhoto = galleryPhotos[0];
+
+// Shown only once the captain fills in the amount (src/lib/contribute.ts)
+const raised = raisedSentence();
 ---
 
 <BaseLayout
   title="Trash Talk NYC"
-  description="Trash Talk NYC is New York City's cleanup club. Find upcoming community cleanup events, sign up for the newsletter, and help keep NYC clean."
+  stickerFonts
+  description="Trash Talk NYC is New York City's cleanup club. Find upcoming community cleanup events, sign up for the newsletter. Let's clean NYC, together."
 >
 
 <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(orgSchema)} />
@@ -55,113 +102,103 @@ const FEATURED_TIKTOK = {
      .cf-turnstile div. Only loaded when a site key was set at build time. -->
 {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-<!-- HERO: the brick drawing split into its two halves, stretched edge to
-     edge, with the vest sticker logo centered in the opening and one
-     button that says "Events" (captain). -->
-<!-- Section backgrounds are the captain's A4 (2026-10-09): torn wall
-     photos, purple duotone for cleanup sections, green chalk for
-     planting ones. The hero's brick is shaded deep so the lavender
-     brick drawing on top stays the star. -->
+<!-- HERO: the bubble-letters wall in its own colors under the sticker bomb
+     (captain, 2026-10-21; it also stays behind Contribute until that
+     section gets its own photo), shaded 65% so the beige headline and the
+     yellow line hold AA over its brightest paint, with the wordmark sticker slapped on
+     after a sticker bomb (captain, 2026-10-15), the club's headline and
+     line under it (team feedback, 2026-10-15), and one button that says
+     "Events" (captain). The purple brick drawing over it is gone (captain,
+     2026-10-21: "take out the brick decal", then on every page).
+     The vest moved up to the header logo. -->
 <section class="hero wall" id="top">
-  <SectionWall kind="cleanup" src={wallRedBrick} tear="bottom" dim={0.8} seed={1} />
-  <img class="bricks bricks-top" src={bricksTop.src} alt="" />
-  <img class="bricks bricks-bottom" src={bricksBottom.src} alt="" />
+  <SectionWall kind="cleanup" src={wallBubbleLetters} tear="bottom" dim={0.65} duotone={0} seed={1} />
   <div class="hero-inner">
-    <h1 class="sr-only">Trash Talk NYC</h1>
-    <!-- eager: the vest sticker is the homepage LCP element -->
-    <Image src={vestSticker} alt="Trash Talk NYC" class="hero-logo" width={440} densities={[1, 2]} loading="eager" fetchpriority="high" />
+    <div class="bomb">
+      {bombStickers.map((st, i) => {
+        const style = `--x:${st.x}%;--y:${st.y}%;--w:${st.w}%;--r:${st.r}deg;--r0:${st.r0}deg;--i:${i}`;
+        return st.brand ? (
+          <span class:list={['bomb-stk', 'bomb-brand', 'die-cut', { 'bomb-wide': st.wide }]} style={style}>
+            <BrandSticker id={st.brand} />
+          </span>
+        ) : (
+          <Image src={st.src} alt="" class:list={['bomb-stk', { 'bomb-wide': st.wide }]} style={style} width={180} densities={[1, 2]} loading="eager" />
+        );
+      })}
+      <Image src={wordmarkStickerLg} alt="Trash Talk NYC" class="hero-logo" width={420} densities={[1, 2]} loading="eager" fetchpriority="high" />
+    </div>
+    <h1 class="hero-title"><span data-en="New York City's" data-es="El club de limpieza">New York City's</span> <span data-en="Cleanup Club" data-es="de Nueva York">Cleanup Club</span></h1>
+    <p class="hero-sub" data-en="Let's clean NYC, together" data-es="Limpiemos NYC, juntos">Let's clean NYC, together</p>
     <div class="hero-btns">
       <a href="/events" class="btn btn-primary" data-en="Events" data-es="Eventos">Events</a>
     </div>
   </div>
 </section>
 
-<!-- DONATE (captain's B5, left-aligned, 2026-10-09): "Because of you" is
-     the headline with "Donate" as a small eyebrow, the note below it,
-     and the GoFundMe widget sitting plain — no flyer card. A planting
-     section, since the funds go to flower-planting and builds. -->
-<section class="donate-sec wall" id="donate">
-  <SectionWall kind="planting" dim={0.45} seed={2} keepClear=".donate" />
-  <div class="wrap donate">
-    <div class="mono donate-eyebrow" data-en="Donate" data-es="Dona">Donate</div>
-    <h2 class="donate-title" data-en="Because of you" data-es="Gracias a ti">Because of you</h2>
-    <p class="donate-note" data-en="Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds." data-es="Trash Talk NYC empezó en mayo de 2026. Los fondos ayudan a escalar las limpiezas, la plantación de flores y las construcciones.">Trash Talk NYC started in May 2026. Funds help scale cleanups, flower-planting, and builds.</p>
-    <div class="gfm">
-      <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
+<!-- CONTRIBUTE (captain's B5, left-aligned, 2026-10-09): "Contribute" is
+     the headline, with no eyebrow and no "Because of you" (captain,
+     2026-10-21), and never "Donate" (Trash Talk NYC is an LLC, team
+     feedback 2026-10-15). The notes and the GoFundMe widget sit on one
+     flyer wheatpasted to a vivid graffiti wall (round 9, F4b), made
+     big and prominent (captain, 2026-10-21: "have contribute bigger").
+     Beside it, a photo of where the money goes. The old #donate anchor
+     still lands here. -->
+<section class="contribute-sec wall" id="contribute">
+  <SectionWall kind="cleanup" src={wallBubbleLetters} dim={0} duotone={0} seed={2} />
+  <span id="donate" class="anchor-alias" aria-hidden="true"></span>
+  <div class="wrap contribute">
+    <div class="contribute-main paste f-paste">
+      <h2 class="contribute-title" data-en="Contribute" data-es="Contribuye">Contribute</h2>
+      <!-- The captain's lines (2026-10-15/19); the amount raised appears
+           once it is set in src/lib/contribute.ts -->
+      {raised && <p class="contribute-note contribute-raised" data-en={raised.en} data-es={raised.es}>{raised.en}</p>}
+      <p class="contribute-note" data-en="This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City." data-es="Este fondo nos ha permitido construir más de 15 protectores de árboles, comprar equipo para producción y organizar más de dos docenas de eventos gratuitos en la ciudad de Nueva York.">This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City.</p>
+      <div class="gfm">
+        <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
+      </div>
     </div>
+    <figure class="contribute-photo paste f-tape">
+      <Image
+        src={contributePhoto.src}
+        alt={contributePhoto.alt.en}
+        data-alt-en={contributePhoto.alt.en}
+        data-alt-es={contributePhoto.alt.es}
+        class="contribute-pic"
+        width={1000}
+        widths={[480, 720, 1000]}
+        sizes="(min-width: 761px) 30rem, 85vw"
+      />
+    </figure>
   </div>
 </section>
 
-<!-- SOCIALS -->
-<!-- Plain ground between the two photo sections -->
-<section class="socials">
-  <div class="wrap">
-    <h2 data-en="Socials" data-es="Redes">Socials</h2>
-    <div class="soc-grid">
-      {socialTiles.map((c, i) => (
-        <a class:list={['soc-tile', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
-          <span class="soc-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={c.path} /></svg></span>
-          <b>{c.label}</b>
-          <small>{c.handle}</small>
-        </a>
-      ))}
-    </div>
-
-    <!-- Featured posts (captain, 2026-10-09): Instagram's and TikTok's
-         official embeds, side by side on desktop and stacked on phones.
-         Each blockquote IS its fallback: until the platform script swaps
-         it for the player (or if it never loads) it's a plain link to
-         the post. The scripts are only fetched when this row nears the
-         viewport (script below), so neither platform is contacted by
-         visitors who never scroll this far. -->
-    <div class="feeds">
-      <figure class="feed paste f-sticker">
-        <Image src={vestSticker} alt="" class="slap feed-slap" width={96} densities={[1, 2]} />
-        <figcaption class="mono feed-cap" data-en="From our Instagram" data-es="De nuestro Instagram">From our Instagram</figcaption>
-        <blockquote class="instagram-media feed-embed" data-instgrm-permalink={`${FEATURED_REEL}?utm_source=ig_embed`} data-instgrm-version="14">
-          <a href={FEATURED_REEL} target="_blank" rel="noopener" data-en="Watch this reel on Instagram →" data-es="Mira este reel en Instagram →">Watch this reel on Instagram →</a>
-        </blockquote>
-      </figure>
-      <figure class="feed paste f-tape">
-        <figcaption class="mono feed-cap" data-en="From our TikTok" data-es="De nuestro TikTok">From our TikTok</figcaption>
-        <blockquote class="tiktok-embed feed-embed" cite={FEATURED_TIKTOK.url} data-video-id={FEATURED_TIKTOK.id}>
-          <section>
-            <a href={FEATURED_TIKTOK.url} target="_blank" rel="noopener" data-en="Watch this video on TikTok →" data-es="Mira este video en TikTok →">Watch this video on TikTok →</a>
-          </section>
-        </blockquote>
-      </figure>
-    </div>
+<!-- POSTER BAND (round 9, F4a; captain 2026-10-21, a trial): the same
+     poster wheatpasted four times in a row on a peeling wall, the third
+     half torn off, like scaffolding on any NYC block. Two across on
+     phones. It repeats the hero's line, so it is decoration to assistive
+     tech; the copy still carries data-en/data-es for the toggle. -->
+<section class="posters wall" aria-hidden="true">
+  <SectionWall kind="cleanup" src={wallPeeling} dim={0} duotone={0} seed={6} />
+  <div class="wrap pp-row">
+    {[0, 1, 2, 3].map((i) => (
+      <div class:list={['pp', 'f-paste', { 'pp-torn': i === 2 }]}>
+        <span class="pp-line" data-en="Let's clean NYC, together" data-es="Limpiemos NYC, juntos">Let's clean NYC, together</span>
+        <span class="pp-url mono">trashtalknyc.org</span>
+      </div>
+    ))}
   </div>
 </section>
 
-<script>
-  // Load the Instagram and TikTok embed scripts only when the featured
-  // posts are about to be seen
-  const feeds = document.querySelector('.feeds');
-  if (feeds && 'IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      io.disconnect();
-      for (const src of ['https://www.instagram.com/embed.js', 'https://www.tiktok.com/embed.js']) {
-        const s = document.createElement('script');
-        s.src = src;
-        s.async = true;
-        document.body.appendChild(s);
-      }
-    }, { rootMargin: '600px 0px' });
-    io.observe(feeds);
-  }
-</script>
-
-<!-- NEWSLETTER SIGNUP -->
+<!-- NEWSLETTER SIGNUP: above the socials (team feedback, 2026-10-15) -->
 <!-- A cleanup section: the newsletter signs people up for cleanups -->
 <section class="signup wall" id="signup">
-  <SectionWall kind="cleanup" src={wallMetalShutter} dim={0.5} seed={3} />
+  <SectionWall kind="cleanup" src={wallPasteUps} dim={0} duotone={0} seed={3} />
   <div class="wrap signup-grid">
     <div class="sign-head">
-      <div class="sign-text">
-        <h2 class="sign-plate"><span data-en="Trash Talk NYC" data-es="Trash Talk NYC">Trash Talk NYC</span> <span class="accent" data-en="Newsletter" data-es="Boletín">Newsletter</span></h2>
-        <p class="sign-blurb" data-en="News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club." data-es="Noticias de la basura, más historias de Trash Talk NYC: no solo eventos, sino también información interna y artículos del club.">News in trash, plus stories from Trash Talk NYC: not just events, but also inside information and articles from the club.</p>
+      <!-- On a pasted paper flyer, so the copy holds AA on the full-color wall -->
+      <div class="sign-text paste f-paste">
+        <h2 class="sign-plate"><span data-en="Stay in the" data-es="Mantente al">Stay in the</span> <span data-en="loop" data-es="día">loop</span></h2>
+        <p class="sign-blurb" data-en="See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more." data-es="Mira en qué anda Trash Talk NYC y cómo puedes participar suscribiéndote a nuestro boletín semanal. Recibirás los próximos eventos, lo más destacado de la comunidad, noticias sobre la basura y el cuidado urbano, y más.">See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more.</p>
       </div>
     </div>
 
@@ -234,17 +271,19 @@ const FEATURED_TIKTOK = {
           <label for="hear" data-en="How'd you hear about us? *" data-es="¿Cómo nos conociste? *">How'd you hear about us? *</label>
           <!-- Required (captain). Value attributes must exactly match the
                HEAR_ABOUT_US enum options configured in Brevo; display text
-               is friendlier. "Article" and "Somewhere else" are new values
+               is friendlier and may change freely (team feedback,
+               2026-10-15, relabelled the first two), the values never.
+               "My Block Entered the Clean Zone" stays a Brevo option for
+               older signups but is no longer offered (captain, 2026-10-21). "Article" and "Somewhere else" are new values
                the signup action tolerates Brevo rejecting (see the fallback
                in src/actions/index.ts) until they exist in the dashboard. -->
           <select id="hear" name="hear" required>
             <option value="" selected disabled data-en="Select one" data-es="Selecciona una opción">Select one</option>
-            <option value="Saw Tree Guard" data-en="Saw a Tree Guard" data-es="Vi un Tree Guard">Saw a Tree Guard</option>
-            <option value="Saw the Purple Vests" data-en="Saw the Purple Vests" data-es="Vi los chalecos morados">Saw the Purple Vests</option>
-            <option value="My Block Entered the Clean Zone" data-en="My block entered the Clean Zone" data-es="Mi cuadra entró a la Zona Limpia">My block entered the Clean Zone</option>
+            <option value="Saw Tree Guard" data-en="Saw a Trash Talk NYC branded tree guard" data-es="Vi un protector de árbol con la marca Trash Talk NYC">Saw a Trash Talk NYC branded tree guard</option>
+            <option value="Saw the Purple Vests" data-en="My block was cleaned by people in purple vests" data-es="Gente con chalecos morados limpió mi cuadra">My block was cleaned by people in purple vests</option>
             <option value="Word of Mouth" data-en="Word of mouth" data-es="De boca en boca">Word of mouth</option>
             <option value="Article" data-en="An article" data-es="Un artículo">An article</option>
-            <option value="Instagram" data-en="Instagram @trashtalk_nyc" data-es="Instagram @trashtalk_nyc">Instagram @trashtalk_nyc</option>
+            <option value="Instagram" data-en="Instagram" data-es="Instagram">Instagram</option>
             <option value="TikTok" data-en="TikTok" data-es="TikTok">TikTok</option>
             <option value="LinkedIn" data-en="LinkedIn" data-es="LinkedIn">LinkedIn</option>
             <option value="Facebook" data-en="Facebook" data-es="Facebook">Facebook</option>
@@ -306,52 +345,157 @@ const FEATURED_TIKTOK = {
   </div>
 </section>
 
-<!-- BEHIND-THE-SCENES CREW CALLOUT: the signup above is the mailing list
-     and is for everyone; this is the pitch for people who want to WORK on
-     Trash Talk NYC (roles live at /recruit). -->
-<!-- Post No Bills green, not a wall (captain, 2026-10-09) -->
-<section class="crew">
-  <div class="wrap crew-grid">
-    <div>
-      <h2 data-en="Help Trash Talk NYC behind the scenes" data-es="Ayuda a Trash Talk NYC detrás de cámaras">Help Trash Talk NYC behind the scenes</h2>
-      <p data-en="Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you." data-es="Detrás de cada limpieza hay un equipo: gente que filma, edita y maneja nuestras redes sociales. Si eso es lo tuyo, queremos conocerte.">Every cleanup has a crew behind it: people filming, editing, and running our social media. If that's your kind of work, we'd love to meet you.</p>
-      <a href="/recruit" class="btn btn-ghost-light" data-en="Introduce yourself" data-es="Preséntate">Introduce yourself</a>
+<!-- SOCIALS -->
+<!-- The homepage ends here (team feedback, 2026-10-15), on a sticker-
+     covered wall behind the cream tiles -->
+<section class="socials wall">
+  <SectionWall kind="cleanup" src={wallStickerPole} tear="top" dim={0} duotone={0} seed={8} />
+  <div class="wrap">
+    <h2 class="soc-title strip" data-en="Follow us on socials!" data-es="¡Síguenos en redes!">Follow us on socials!</h2>
+    <div class="soc-grid">
+      {socialTiles.map((c, i) => (
+        <a class:list={['soc-tile', 'paste', i % 2 ? 'f-staple' : 'f-tape']} href={c.href} {...(c.placeholder ? {} : { target: '_blank', rel: 'noopener' })}>
+          <span class="soc-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={c.path} /></svg></span>
+          <b>{c.label}</b>
+          <small>{c.handle}</small>
+        </a>
+      ))}
+    </div>
+
+    <!-- Featured posts (captain, 2026-10-09): Instagram's official embed
+         and the YouTube video, side by side on desktop and stacked on
+         phones. The Instagram blockquote IS its fallback: until the
+         script swaps it for the player (or if it never loads) it's a
+         plain link to the reel. That script is only fetched when this row
+         nears the viewport (script below), and YouTube's lazy
+         youtube-nocookie iframe sets no cookies before playback. -->
+    <div class="feeds">
+      <figure class="feed paste f-sticker">
+        <Image src={vestSticker} alt="" class="slap feed-slap" width={96} densities={[1, 2]} />
+        <figcaption class="mono feed-cap" data-en="From our Instagram" data-es="De nuestro Instagram">From our Instagram</figcaption>
+        <blockquote class="instagram-media feed-embed" data-instgrm-permalink={`${FEATURED_REEL}?utm_source=ig_embed`} data-instgrm-version="14">
+          <a href={FEATURED_REEL} target="_blank" rel="noopener" data-en="Watch this reel on Instagram →" data-es="Mira este reel en Instagram →">Watch this reel on Instagram →</a>
+        </blockquote>
+      </figure>
+      <figure class="feed feed-yt paste f-tape">
+        <figcaption class="mono feed-cap" data-en="From our YouTube" data-es="De nuestro YouTube">From our YouTube</figcaption>
+        <YouTubeEmbed videoId={featuredVideo.id} title={featuredVideo.title} />
+      </figure>
     </div>
   </div>
 </section>
+
+<script>
+  // Load the Instagram embed script only when the featured posts are
+  // about to be seen
+  const feeds = document.querySelector('.feeds');
+  if (feeds && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      const s = document.createElement('script');
+      s.src = 'https://www.instagram.com/embed.js';
+      s.async = true;
+      document.body.appendChild(s);
+    }, { rootMargin: '600px 0px' });
+    io.observe(feeds);
+  }
+</script>
 
 <script is:inline defer src="https://www.gofundme.com/static/js/embed.js"></script>
 </BaseLayout>
 
 <style>
   /* ── HERO ── */
-  /* Hero min-height keeps the two brick halves from colliding at any
-     width; the inner padding tracks the bricks' own height. */
-  .hero {
-    position: relative;
-    overflow: hidden;
-    min-height: calc(100vw * 1.12);
-    border-bottom: var(--ink);
-  }
+  /* The sticker bomb's entrances start oversized, so the hero clips them */
+  .hero { position: relative; overflow: hidden; border-bottom: var(--ink); }
 
-  .hero .bricks-top { top: 6px; }
-  .hero .bricks-bottom { bottom: 6px; }
-
+  /* The padding the brick drawing once needed, kept so the hero keeps its
+     proportions without it (captain, 2026-10-21: "i like the hero") */
   .hero-inner {
     position: relative;
     z-index: 1;
     display: grid;
     justify-items: center;
-    gap: 16px;
-    padding: calc(100vw * 0.13) 16px calc(100vw * 0.14);
+    gap: 12px;
+    padding: calc(100vw * 0.15 + 22px) 16px calc(100vw * 0.15 + 26px);
+  }
+
+  /* ── STICKER BOMB ── */
+  /* The logo's box: every small sticker is placed relative to it */
+  .bomb {
+    position: relative;
+    width: 46%;
+    max-width: 26rem;
+    margin-block: 4% 2px;
   }
 
   .hero :global(.hero-logo) {
-    width: 64%;
-    max-width: 27.5rem;
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
     height: auto;
     transform: rotate(-3deg);
-    filter: drop-shadow(6px 6px 0 rgba(234, 233, 218, 0.25));
+    filter: drop-shadow(5px 6px 0 rgba(0, 0, 0, 0.45));
+    /* Lands after the last small sticker: the seven phone ones by 0.8s,
+       all seventeen by 1.3s on desktop (below) */
+    animation: logo-slap 0.5s cubic-bezier(0.2, 0.7, 0.3, 1.25) 0.8s both;
+  }
+
+  .bomb :global(.bomb-stk) {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: auto;
+    transform: translate(-50%, -50%) rotate(var(--r));
+    animation: sticker-slap 0.4s cubic-bezier(0.2, 0.7, 0.3, 1.25) calc(var(--i) * 0.06s) both;
+  }
+
+  /* The logo-cut PNGs carry their own white edge; they only cast a shadow */
+  .bomb :global(.bomb-stk:not(.die-cut)) { filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.45)); }
+
+  /* Printed stickers trace their own die-cut edge (.die-cut) */
+  .bomb :global(.bomb-brand) { display: block; }
+
+  .bomb :global(.bomb-wide) { display: none; }
+
+  @keyframes sticker-slap {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(2.2) rotate(var(--r0)); }
+    60% { opacity: 1; transform: translate(-50%, -50%) scale(0.92) rotate(var(--r)); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--r)); }
+  }
+
+  @keyframes logo-slap {
+    0% { opacity: 0; transform: scale(1.9) rotate(-22deg); }
+    60% { opacity: 1; transform: scale(0.95) rotate(-3deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-3deg); }
+  }
+
+  /* Reduced motion: the finished wall, no slaps */
+  @media (prefers-reduced-motion: reduce) {
+    .hero :global(.hero-logo),
+    .bomb :global(.bomb-stk) { animation: none; }
+  }
+
+  /* Purple highlights one phrase of a two-tone heading, never all of it */
+  .hero-title {
+    max-width: 16ch;
+    font-size: clamp(2.2rem, 8.4vw, 3rem);
+    line-height: 0.95;
+    text-align: center;
+    color: var(--beige);
+  }
+
+
+  .hero-sub {
+    margin: -4px 0 6px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--yellow);
+    text-align: center;
   }
 
   .hero-btns {
@@ -365,42 +509,59 @@ const FEATURED_TIKTOK = {
   .hero-btns .btn { padding: 16px 44px; font-size: 1.05rem; border-width: 3px; }
 
   @media (min-width: 761px) {
-    /* Both full brick halves (69.62vw, see brick-rows.generated.ts) plus
-       their 10px insets and a 12px gap — 0.7vw alone let them touch */
-    .hero { min-height: calc(69.62vw + 32px); }
-    .hero .bricks-top { top: 10px; }
-    .hero .bricks-bottom { bottom: 10px; }
-    .hero-inner { gap: 26px; padding: calc(100vw * 0.075) 16px calc(100vw * 0.08); }
-    .hero :global(.hero-logo) { width: min(27.5rem, 52%); }
+    .hero-inner { gap: 18px; padding: calc(100vw * 0.1 + 16px) 16px calc(100vw * 0.1 + 20px); }
+    .bomb { width: min(20rem, 22vw); margin-block: 0; }
+    .bomb :global(.bomb-wide) { display: block; }
+    .hero :global(.hero-logo) { animation-delay: 1.3s; }
+    .hero-title { max-width: none; font-size: clamp(3rem, 5.4vw, 6rem); }
+    .hero-sub { font-size: clamp(1.1rem, 1.6vw, 1.6rem); }
     /* A real destination button at desktop scale — the mobile-sized one
        read "unbelievably small" against the full-width hero (captain) */
     .hero-btns .btn { padding: 1.4rem 4.5rem; font-size: 1.45rem; box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.35); }
   }
 
-  /* ── DONATE ── */
-  .donate-sec { padding-block: 56px 64px; }
+  /* ── CONTRIBUTE ── */
+  /* Big and prominent (captain, 2026-10-21): more wall around it, a
+     headline at poster scale, and a larger photo */
+  .contribute-sec {
+    position: relative;
+    padding-block: 80px 92px;
+  }
 
-  .donate {
+  /* Old links to #donate land at the section top, clear of the nav */
+  .anchor-alias { position: absolute; top: 0; }
+
+  .contribute {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 52px;
+    align-items: center;
+  }
+
+  /* A single wheatpasted flyer on bright yellow stock (round 9, F4b) */
+  .contribute-main {
+    --flyer-bg: var(--yellow);
+    color: var(--black);
     display: grid;
     justify-items: start;
-    gap: 10px;
+    gap: 12px;
+    padding: 34px 20px 26px;
   }
 
-  .donate-eyebrow { color: var(--yellow); font-size: 0.9rem; }
-
-  .donate-title {
-    font-size: clamp(3rem, 6vw, 5rem);
-    line-height: 0.95;
-    color: var(--beige);
+  .contribute-title {
+    font-size: clamp(3.2rem, 15vw, 7.5rem);
+    line-height: 0.9;
   }
 
-  .donate-note {
+  .contribute-note {
     margin: 4px 0 18px;
     max-width: 46ch;
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     line-height: 1.5;
-    color: var(--beige);
   }
+
+  /* The raised line leads the fund line, so the pair reads as one block */
+  .contribute-raised { margin-bottom: 6px; font-weight: 700; }
 
   /* The live widget sits straight on the section; its internals are an
      iframe and stay GoFundMe's. Their card stretches to the iframe up to
@@ -412,19 +573,82 @@ const FEATURED_TIKTOK = {
   .gfm :global(.gfm-embed) { min-height: 180px; }
   .gfm :global(.gfm-embed-iframe) { display: block; }
 
+  .contribute-photo {
+    justify-self: center;
+    width: min(88%, 26rem);
+    margin: 0;
+    padding: 12px 12px 16px;
+    --flyer-bg: var(--paper);
+    transform: rotate(2deg);
+  }
+
+  .contribute-photo :global(.contribute-pic) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
   @media (min-width: 761px) {
-    .donate-sec { padding-block: 88px 96px; }
-    .donate-eyebrow { font-size: 1rem; }
-    .donate-note { font-size: 1.25rem; }
+    .contribute-sec { padding-block: 128px 140px; }
+    .contribute { grid-template-columns: minmax(0, 1fr) clamp(18rem, 30vw, 30rem); gap: clamp(48px, 6vw, 88px); }
+    .contribute-main { gap: 16px; padding: 52px clamp(36px, 4vw, 60px) 46px; }
+    .contribute-title { font-size: clamp(5rem, 8vw, 9rem); }
+    .contribute-photo { width: 100%; margin-right: 1vw; }
+    .contribute-note { font-size: 1.35rem; }
+  }
+
+  /* ── POSTER BAND (F4a) ── */
+  .posters { padding-block: 64px 72px; }
+
+  .pp-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  /* Flat purple stock butted edge to edge, as a paste-up crew leaves it;
+     the f-paste glue texture rides on top of the purple */
+  .pp {
+    container-type: inline-size;
+    aspect-ratio: 3 / 4;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 6%;
+    padding: 10%;
+    background-color: var(--purple);
+    color: var(--beige);
+    text-align: center;
+  }
+
+  .pp-line {
+    font-family: var(--display);
+    font-size: 19cqi;
+    line-height: 0.92;
+  }
+
+  .pp-url { font-size: 7.5cqi; color: var(--yellow); }
+
+  /* Half of one copy torn away, down to the wall */
+  .pp-torn {
+    clip-path: polygon(0 0, 100% 0, 100% 56%, 86% 63%, 74% 54%, 61% 66%, 47% 57%, 33% 70%, 19% 60%, 8% 68%, 0 62%);
+  }
+
+  @media (min-width: 761px) {
+    .posters { padding-block: 96px 104px; }
+    .pp-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   /* ── SOCIALS ── */
   .socials { padding-block: 44px 48px; }
 
-  .socials h2 {
-    font-size: clamp(2.6rem, 5vw, 4rem);
-    color: var(--beige);
-    margin-bottom: 24px;
+  /* The heading sits on a torn yellow strip (round 9, F10c), so it
+     reads on the full-color wall */
+  .soc-title {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    margin-bottom: 32px;
   }
 
   .soc-grid {
@@ -491,9 +715,12 @@ const FEATURED_TIKTOK = {
     color: var(--black);
   }
 
+  /* Flush with the corner on phones: the loaded reel makes the tilted
+     card tall enough that its top corner swings right, and a sticker
+     hanging past it pushed the page 3px wider than the screen */
   .feed :global(.feed-slap) {
     top: -30px;
-    right: -10px;
+    right: 0;
     width: 64px;
     height: auto;
     transform: rotate(9deg);
@@ -507,8 +734,7 @@ const FEATURED_TIKTOK = {
   /* Overrides for the platforms' own inline styles, so each player and
      its link fallback fill the frame instead of floating with margins */
   .feed :global(.instagram-media),
-  .feed :global(iframe.instagram-media),
-  .feed :global(.tiktok-embed) {
+  .feed :global(iframe.instagram-media) {
     width: 100% !important;
     min-width: 0 !important;
     max-width: none !important;
@@ -517,10 +743,9 @@ const FEATURED_TIKTOK = {
 
   .feed-embed { margin: 0; }
 
-  /* The dashed link box is the fallback look only: TikTok keeps its
-     blockquote around the player it injects, so drop the box once an
-     iframe is inside (Instagram replaces its blockquote outright) */
-  .feed-embed:not(:has(iframe)) {
+  /* The dashed link box is the fallback look only (Instagram replaces its
+     blockquote with the player outright) */
+  .feed-embed {
     padding: 28px 16px;
     background: var(--paper-bright);
     border: 2px dashed rgba(29, 29, 35, 0.3);
@@ -536,13 +761,12 @@ const FEATURED_TIKTOK = {
 
   @media (min-width: 761px) {
     .socials { padding-block: 64px 70px; }
-    /* Similar lengths side by side (captain, 2026-10-09): Instagram's
-       player grows taller with its width while TikTok's stays ~745px,
-       so Instagram gets the wider column (px, because both players size
-       in px) and the paper frames stretch to the taller one */
+    /* The tall reel beside the wide video: Instagram's player sizes in
+       px and grows taller with its width, so its column is capped near
+       the player's 540px and the video takes the rest, both hung from
+       the top of the row */
     .feeds {
-      grid-template-columns: minmax(0, 560px) minmax(0, 360px);
-      align-items: stretch;
+      grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
       gap: clamp(32px, 4vw, 64px);
       margin-top: 60px;
     }
@@ -577,22 +801,29 @@ const FEATURED_TIKTOK = {
     gap: 8px;
   }
 
-  .sign-text { display: grid; gap: 12px; min-width: 0; flex: 1; }
+  /* A single wheatpasted flyer on bright yellow stock (round 9, F4b) */
+  .sign-text {
+    --flyer-bg: var(--yellow);
+    color: var(--black);
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+    padding: 26px 20px 30px;
+  }
 
   .sign-plate {
     font-size: clamp(3.2rem, 8vw, 5rem);
-    color: var(--beige);
     overflow-wrap: anywhere;
   }
 
-  .sign-plate .accent { color: var(--yellow); }
 
-  .sign-blurb { font-size: 1.2rem; max-width: 32ch; margin: 0; }
+  .sign-blurb { font-size: 1.2rem; max-width: 40ch; margin: 0; }
 
   @media (min-width: 761px) {
     .signup { padding-block: 56px 88px; }
     .sign-head { gap: 16px; }
-    .sign-text { gap: 16px; }
+    .sign-text { gap: 16px; padding: 34px 32px 38px; }
   }
 
   @media (min-width: 1101px) {
@@ -732,7 +963,7 @@ const FEATURED_TIKTOK = {
   }
 
   .form-success svg { width: 3rem; height: 3rem; color: var(--purple); margin-bottom: 1rem; }
-  .form-success h3 { font-size: 2.4rem; color: var(--purple); margin-bottom: 0.5rem; }
+  .form-success h3 { font-size: 2.4rem; margin-bottom: 0.5rem; }
   .form-success p { font-weight: 500; }
 
   @media (min-width: 761px) {
@@ -750,39 +981,6 @@ const FEATURED_TIKTOK = {
     #volunteerForm textarea { font-size: 1.05rem; padding: 9px 12px; }
 
     .loc-row .loc-wide { grid-column: auto; }
-  }
-
-  /* ── CREW CALLOUT ── */
-  .crew {
-    background-color: var(--green);
-    color: var(--beige);
-    padding-block: 26px 52px;
-  }
-
-  .crew-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-    align-items: center;
-  }
-
-  .crew h2 { font-size: 2.8rem; margin-bottom: 16px; }
-
-  .crew p {
-    font-size: 1.18rem;
-    line-height: 1.62;
-    max-width: 52ch;
-    /* Same paragraph-to-button rhythm as the rest of the site */
-    margin: 0 0 22px;
-  }
-
-  .crew .btn { width: 100%; }
-
-  @media (min-width: 761px) {
-    .crew { padding-block: 44px 80px; }
-    .crew h2 { font-size: clamp(2.8rem, 5vw, 4.4rem); margin-bottom: 18px; }
-    .crew p { margin: 0 0 26px; }
-    .crew .btn { width: auto; }
   }
 </style>
 
@@ -814,6 +1012,14 @@ const FEATURED_TIKTOK = {
     const wt = document.getElementById('waiverText');
     if (wt) wt.innerHTML = waiverES;
   }
+
+  // ── PHOTO ALT TEXT ──
+  // setLang never translates attributes, so the Contribute photo's alt
+  // follows the language from its data-alt-* pair
+  const altImages = Array.from(document.querySelectorAll<HTMLImageElement>('img[data-alt-en]'));
+  const applyAlts = (lang: Lang) => altImages.forEach((img) => (img.alt = img.getAttribute(`data-alt-${lang}`) ?? img.alt));
+  applyAlts(getCurrentLang());
+  onLanguageChange(applyAlts);
 
   // ── SPAM-TIMING FIELD ──
   const startedAtInput = document.getElementById('signupStartedAt') as HTMLInputElement | null;
@@ -881,7 +1087,7 @@ const FEATURED_TIKTOK = {
     if (!zipInput || !zipStatus) return;
     const lang = getCurrentLang();
     const boroughText = (b: Borough | undefined) =>
-      b ? (lang === 'es' ? ` · Condado: ${BOROUGH_ES[b]}` : ` · Borough: ${b}`) : '';
+      b ? (lang === 'es' ? `Condado: ${BOROUGH_ES[b]}` : `Borough: ${b}`) : '';
     let status = '';
     let error = '';
     switch (zipState.kind) {
@@ -889,10 +1095,12 @@ const FEATURED_TIKTOK = {
         status = ZIP_MSG.looking[lang];
         break;
       case 'found':
-        status = `${zipState.place.city}, ${zipState.place.stateCode}${boroughText(zipState.borough)}`;
+        // An NYC ZIP shows only its borough (captain, 2026-10-21); any
+        // other ZIP shows its city and state
+        status = zipState.borough ? boroughText(zipState.borough) : `${zipState.place.city}, ${zipState.place.stateCode}`;
         break;
       case 'unavailable':
-        status = boroughText(zipState.borough).replace(/^ · /, '');
+        status = boroughText(zipState.borough);
         break;
       case 'unknown':
         error = ZIP_MSG.unknown[lang];

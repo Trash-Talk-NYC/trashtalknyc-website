@@ -1,13 +1,10 @@
 ---
-import Bricks from './Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 /**
- * Brick-framed hero shared by the More Media overview and its three
- * subpages: an optional accent line, a title, and a description — the
- * captain wanted this hero to be "less so of a title but more of a
- * title + description" (2026-10-09). Same brick behavior as every
- * other page: edge-to-edge halves scaling with the viewport, content
- * kept inside the opening by vw-proportional padding.
+ * Hero shared by the More Media overview and its subpages: an optional
+ * accent line, a title, and a description — the captain wanted this hero
+ * to be "less so of a title but more of a title + description"
+ * (2026-10-09). Its brick drawing came off on 2026-10-21 (captain); the
+ * vw-proportional padding keeps the proportions it had.
  *
  * Titles are passed as leaves (one per line) so the language toggle can
  * restructure them leaf by leaf — setLang swaps leaves, never reorders.
@@ -19,19 +16,16 @@ interface Props {
   /** Accent line above the title; rendered as a link when `eyebrowHref` is set. */
   eyebrow?: Copy;
   eyebrowHref?: string;
-  /** One entry per line; the last line takes the accent color. */
+  /** One entry per line, all one color (no accent words in headings, captain 2026-10-15). */
   title: Copy[];
   description?: Copy;
 }
 
 const { eyebrow, eyebrowHref, title, description } = Astro.props;
 
-// Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
-<section class="mh-hero brick-hero" style={brickHeroStyle(bricks)}>
-  <Bricks rows={bricks} />
+<section class="mh-hero frame-hero">
   <div class="mh-inner">
     {eyebrow && (
       eyebrowHref ? (
@@ -46,7 +40,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
       {title.map((line, i) => (
         <>
           {i > 0 && <br />}
-          <span class:list={{ accent: i === title.length - 1 && title.length > 1 }} data-en={line.en} data-es={line.es}>{line.en}</span>
+          <span data-en={line.en} data-es={line.es}>{line.en}</span>
         </>
       ))}
     </h1>
@@ -56,6 +50,9 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
 
 <style>
   .mh-hero {
+    /* The height its brick halves needed (see .frame-hero) */
+    --hero-min-phone: calc(54.08vw + 32px);
+    --hero-min-desktop: calc(28.93vw + 32px);
     position: relative;
     overflow: hidden;
     border-bottom: var(--ink);
@@ -92,10 +89,9 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     color: var(--beige);
   }
 
-  .mh-title .accent { color: var(--lavender); }
 
-  /* On phones the opening between the brick halves is roughly half the
-     viewport, so the description wraps to stay inside it */
+  /* A short measure on phones, as when the description sat between the
+     brick halves */
   .mh-desc {
     max-width: 50vw;
     margin: 4px 0 0;
