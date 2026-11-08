@@ -303,10 +303,10 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
     filter: drop-shadow(2px 2px 0 var(--black));
   }
 
-  /* The one Londrina Black (900) use on the site: purple with a thin
-     ink outline painted under the fill (captain's N1), flat, with no
-     drop shadow (team round 3, captain 2026-11-08: "Remove"). One line at every width: the name shrinks on narrow phones
-     rather than wrapping. */
+  /* The one Londrina Black (900) use on the site (captain's N1): flat
+     purple, with no drop shadow (team round 3) and no ink outline (the
+     captain's W1), both 2026-11-08. One line at every width: the name
+     shrinks on narrow phones rather than wrapping. */
   .nav-name {
     font-family: var(--display);
     font-weight: 900;
@@ -315,8 +315,6 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
     letter-spacing: 0.01em;
     white-space: nowrap;
     color: var(--purple);
-    -webkit-text-stroke: 1.5px var(--black);
-    paint-order: stroke fill;
   }
 
   .nav-links {

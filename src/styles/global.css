@@ -225,6 +225,16 @@ body::after {
 
 .btn:hover { transform: translate(-2px, -2px); }
 
+/* The big destination button: the homepage hero's "Events" (captain,
+   2026-10-09: the small one read "unbelievably small") and Club Events'
+   "Get them in your inbox" (captain's I1, 2026-11-08), one size so the
+   two always match. rem-based, so it grows with the fluid root size. */
+.btn-lg { padding: 16px 44px; font-size: 1.05rem; border-width: 3px; }
+
+@media (min-width: 761px) {
+  .btn-lg { padding: 1.4rem 4.5rem; font-size: 1.45rem; }
+}
+
 /* On the dark ground a black offset shadow vanishes, so the default
    button shadow is translucent beige; buttons sitting on paper
    (.paste surfaces, forms) override it back to black below. */

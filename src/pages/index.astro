@@ -18,9 +18,9 @@ import wallHero from '../assets/walls/wall-9562.webp';
 // A plain textured wall behind Contribute, for visual relief between the
 // busy graffiti walls (team round 3, captain 2026-11-08)
 import wallContribute from '../assets/walls/wall-9733.webp';
-// Where contributions go: a cleanup crew after an event (team round 3,
-// captain 2026-11-08, replacing the plant-and-tools shot)
-import contributePhoto from '../assets/cleanups/group-1625.webp';
+// Where contributions go: the whole cleanup crew after an event (the
+// captain's P2, 2026-11-08; the About hero shares it on purpose)
+import contributePhoto from '../assets/cleanups/group-1628.webp';
 import wallSignup from '../assets/walls/wall-9563.webp';
 import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
 import { featuredVideo } from '../lib/media';
@@ -87,8 +87,8 @@ const bombStickers: BombSticker[] = [
 ];
 
 const contributeAlt = {
-  en: 'Eight volunteers lined up on a sidewalk after a cleanup, holding grabbers, tote bags, and a full pink trash bag',
-  es: 'Ocho voluntarios en fila en una acera después de una limpieza, con pinzas, bolsas y una bolsa de basura rosada llena',
+  en: 'Eleven volunteers lined up on a sidewalk after a cleanup, holding grabbers, tote bags, and full pink trash bags',
+  es: 'Once voluntarios en fila en una acera después de una limpieza, con pinzas, bolsas y bolsas de basura rosadas llenas',
 };
 
 // Shown only once the captain fills in the amount (src/lib/contribute.ts)
@@ -134,7 +134,7 @@ const raised = raisedSentence();
     <h1 class="hero-title"><span data-en="New York City's" data-es="El club de limpieza">New York City's</span> <span data-en="Cleanup Club" data-es="de Nueva York">Cleanup Club</span></h1>
     <p class="hero-sub" data-en="Let's clean NYC, together" data-es="Limpiemos NYC, juntos">Let's clean NYC, together</p>
     <div class="hero-btns">
-      <a href="/events" class="btn btn-primary" data-en="Events" data-es="Eventos">Events</a>
+      <a href="/events" class="btn btn-primary btn-lg" data-en="Events" data-es="Eventos">Events</a>
     </div>
   </div>
 </section>
@@ -464,10 +464,6 @@ const raised = raisedSentence();
     margin: 0;
   }
 
-  /* Big on purpose (captain, 2026-10-09); rem-based, so it grows with
-     the fluid root size on wide screens */
-  .hero-btns .btn { padding: 16px 44px; font-size: 1.05rem; border-width: 3px; }
-
   @media (min-width: 761px) {
     .hero-inner { gap: 18px; padding: calc(100vw * 0.1 + 16px) 16px calc(100vw * 0.1 + 20px); }
     .bomb { width: min(20rem, 22vw); margin-block: 0; }
@@ -475,9 +471,8 @@ const raised = raisedSentence();
     .hero :global(.hero-logo) { animation-delay: 1.3s; }
     .hero-title { max-width: none; font-size: clamp(3rem, 5.4vw, 6rem); }
     .hero-sub { font-size: clamp(1.1rem, 1.6vw, 1.6rem); }
-    /* A real destination button at desktop scale — the mobile-sized one
-       read "unbelievably small" against the full-width hero (captain) */
-    .hero-btns .btn { padding: 1.4rem 4.5rem; font-size: 1.45rem; box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.35); }
+    /* Sized by .btn-lg (global.css); the deeper shadow is the hero's own */
+    .hero-btns .btn { box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.35); }
   }
 
   /* ── CONTRIBUTE ── */

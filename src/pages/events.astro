@@ -72,7 +72,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
            old "best way to hear about events" box -->
       <div class="ev-head">
         <h2 id="upcomingHeading" class="ev-h" data-en="Upcoming" data-es="Próximos">Upcoming</h2>
-        <a class="ev-inbox mono" href="/#signup" data-en="Get them in your inbox →" data-es="Recíbelos en tu correo →">Get them in your inbox →</a>
+        <a class="ev-inbox btn btn-primary btn-lg" href="/#signup" data-en="Get them in your inbox →" data-es="Recíbelos en tu correo →">Get them in your inbox →</a>
       </div>
 
       <div class="dist-sort-label mono" id="distSortLabel" style="display:none">
@@ -331,17 +331,18 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     color: var(--purple);
   }
 
-  .ev-inbox {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-    font-size: 0.85rem;
-    color: var(--purple);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
+  /* The captain's I1 (2026-11-08): the homepage "Events" button's exact
+     size (.btn-lg), with the ink shadow buttons wear on paper */
+  .ev-head { align-items: center; }
+  .ev-inbox { box-shadow: 4px 4px 0 var(--black); }
 
-  .ev-inbox:hover { color: var(--black); }
+  /* On phones the label (24 characters in both languages) only fits the
+     sheet on one line with narrower sides; font, size, and height stay
+     the Events button's */
+  @media (max-width: 760px) {
+    .ev-inbox { padding-inline: 28px; }
+  }
+  .ev-inbox:hover { box-shadow: 6px 6px 0 var(--black); }
 
   .ev-none { margin: 0; font-size: 1.15rem; color: var(--black); }
 
@@ -356,7 +357,6 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     .ev-section { padding-block: 64px 88px; }
     .ev-sheet { padding: 44px clamp(28px, 4vw, 56px) 52px; }
     .ev-h { font-size: clamp(3.4rem, 5vw, 4.4rem); }
-    .ev-inbox { font-size: 0.95rem; }
     .ev-cut { margin: 52px 0 40px; }
   }
 
