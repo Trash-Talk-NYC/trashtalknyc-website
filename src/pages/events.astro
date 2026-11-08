@@ -9,6 +9,7 @@ import SectionWall from '../components/SectionWall.astro';
 import wallFlyers from '../assets/walls/wall-9744.webp';
 import wallHero from '../assets/walls/walk-1724.webp';
 import { boroughCovers } from '../lib/boroughCovers';
+import { GUIDE_PATH } from '../lib/guide';
 import vestSticker from '../assets/vest-sticker.png';
 
 const { upcoming: upcomingRaw, past } = await fetchEventsAtBuildTime();
@@ -89,6 +90,9 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
       ) : (
         <p class="ev-none" data-en="No dates are posted yet. New cleanups get posted here." data-es="Aún no hay fechas publicadas. Las nuevas limpiezas se publican aquí.">No dates are posted yet. New cleanups get posted here.</p>
       )}
+
+      <!-- The trash club guide, for anyone who wants to host (2026-11-08) -->
+      <p class="ev-guide"><span data-en="Want to host your own cleanup? " data-es="¿Quieres organizar tu propia limpieza? ">Want to host your own cleanup? </span><a href={GUIDE_PATH} data-en="Read How to Start a Trash Club →" data-es="Lee Cómo empezar un trash club →">Read How to Start a Trash Club →</a></p>
     </section>
 
     {pastGroups.length > 0 && (
@@ -337,6 +341,9 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
      size (.btn-lg), with the ink shadow buttons wear on paper */
   .ev-head { align-items: center; }
   .ev-inbox { box-shadow: 4px 4px 0 var(--black); }
+
+  .ev-guide { margin: 36px 0 0; font-size: 1.15rem; font-weight: 500; color: var(--black); }
+  .ev-guide a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
   /* On phones the label (24 characters in both languages) only fits the
      sheet on one line with narrower sides; font, size, and height stay

@@ -9,6 +9,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { actions } from 'astro:actions';
 import { rollingMonths } from '../lib/months';
 import { BEHALF_OPTIONS, CLEANING_NEEDS, PARTNERSHIP_TYPES, SUPPORT_NEEDS } from '../lib/leadOptions';
+import { GUIDE_PATH } from '../lib/guide';
 
 /**
  * Contact — Talk Trash (sentence case, captain 2026-10-09). The choices are poster tiles in the captain's
@@ -159,6 +160,9 @@ const monthOptions = rollingMonths();
         <form id="leadForm" method="POST" action={actions.leadCleanup} hidden>
           <input type="hidden" name="botcheck" value="" />
           <input type="hidden" name="startedAt" data-started-at value="" />
+
+          <!-- The trash club guide, for anyone about to host (2026-11-08) -->
+          <p class="lead-guide full"><span data-en="New to hosting? " data-es="¿Primera vez organizando? ">New to hosting? </span><a href={GUIDE_PATH} data-en="Read How to Start a Trash Club →" data-es="Lee Cómo empezar un trash club →">Read How to Start a Trash Club →</a></p>
 
           <!-- Check all that apply (captain, 2026-10-15); at least one is
                required, which the submit handler checks (HTML can't) -->
@@ -399,6 +403,9 @@ const monthOptions = rollingMonths();
 
   .bare-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   .bare-fieldset legend { padding: 0; margin-bottom: 6px; }
+
+  .lead-guide { margin: 0; font-size: 1.05rem; font-weight: 500; }
+  .lead-guide a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
   .route-note {
     margin: -2px 0 0;

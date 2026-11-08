@@ -11,6 +11,7 @@ import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
 import { ABOUT_TTNYC_PATH } from '../lib/aboutTtnyc';
+import { GUIDE_PATH } from '../lib/guide';
 import { WALL_PATH } from '../lib/partners';
 import { MORE_MEDIA_PATH } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
@@ -29,6 +30,7 @@ const year = new Date().getFullYear();
       <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
       <li><a href={WALL_PATH} data-en="The Wall" data-es="La Pared">The Wall</a></li>
       <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
+      <li><a href={GUIDE_PATH} data-en="Start a Trash Club" data-es="Crea un trash club">Start a Trash Club</a></li>
       <li><a href={MORE_MEDIA_PATH} data-en="More Media" data-es="Más Medios">More Media</a></li>
       <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
     </ul>

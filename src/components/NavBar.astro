@@ -18,6 +18,7 @@ import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
 import { ABOUT_TTNYC_PATH } from '../lib/aboutTtnyc';
+import { GUIDE_PATH } from '../lib/guide';
 import { WALL_PATH } from '../lib/partners';
 import { GALLERY, IN_THE_NEWS, MORE_MEDIA_PATH, liveMediaSections } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
@@ -42,7 +43,9 @@ const isRecruit  = isUnder('/recruit');
 // 2026-11-08: "pretty important page", so not hidden inside About)
 const isWall = isUnder(WALL_PATH);
 // The About parent highlights when any of its children is current
-const isAbout    = isAboutTtnyc || isTeam || isFounder || isRecruit;
+// The trash club guide is top-level too, and sits with how the club works
+const isGuide    = isUnder(GUIDE_PATH);
+const isAbout    = isAboutTtnyc || isTeam || isFounder || isRecruit || isGuide;
 const isContact  = isUnder('/contact');
 // More Media parent lights for the overview and every channel subpage;
 // the "All Media" child lights only on the overview itself
@@ -87,6 +90,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
           <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
           <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
+          <li><a href={GUIDE_PATH} class:list={{ active: isGuide }} data-en="Start a Trash Club" data-es="Crea un trash club">Start a Trash Club</a></li>
         </ul>
       </li>
       <li><a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a></li>
@@ -144,6 +148,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           <a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a>
           <a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a>
           <a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a>
+          <a href={GUIDE_PATH} class:list={{ active: isGuide }} data-en="Start a Trash Club" data-es="Crea un trash club">Start a Trash Club</a>
         </div>
       </div>
       <a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a>

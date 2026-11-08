@@ -1,0 +1,260 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WallHero from '../components/WallHero.astro';
+import SectionWall from '../components/SectionWall.astro';
+import Segments from '../components/Segments.astro';
+import wallHero from '../assets/walls/wall-9731.webp';
+import wallGuide from '../assets/walls/wall-9734.webp';
+import { cleanupDay, equipment, guideAuthors, hostHeading, intro, preparation, safety, whyWeClean } from '../lib/guide';
+
+/**
+ * How to Start a Trash Club (captain, 2026-11-08): the team's guide by
+ * David Clarke and Tom Aulenback, word for word from its slides (all copy
+ * lives in src/lib/guide.ts). The shared hero, then one flyer per slide
+ * stuck on a single wall, in the guide's order.
+ */
+---
+
+<BaseLayout
+  title="How to Start a Trash Club — Trash Talk NYC"
+  description="So, you want to clean NYC? A guide by David Clarke and Tom Aulenback to NYC's cleanup community and to safely hosting your own cleanups."
+>
+  <WallHero
+    src={wallHero}
+    eyebrow={{ en: 'Guide', es: 'Guía' }}
+    title={[
+      { en: 'How to Start', es: 'Cómo empezar' },
+      { en: 'a Trash Club', es: 'un trash club' },
+    ]}
+    line={intro.lead}
+    seed={33}
+  >
+    <p class="tg-by">
+      {guideAuthors.map((a) => <span data-en={a.en} data-es={a.es}>{a.en}</span>)}
+    </p>
+  </WallHero>
+
+  <section class="tg-sec wall">
+    <SectionWall kind="cleanup" src={wallGuide} tear="bottom" dim={0} duotone={0} seed={34} />
+    <div class="wrap tg-flow">
+      <article class="tg-card tg-intro paste f-tape">
+        {intro.paragraphs.map((p) => <p class="tg-p" data-en={p.en} data-es={p.es}>{p.en}</p>)}
+        <ul class="tg-creed">
+          {intro.creed.map((c) => <li data-en={c.en} data-es={c.es}>{c.en}</li>)}
+        </ul>
+      </article>
+
+      <h2 class="tg-host strip" data-en={hostHeading.en} data-es={hostHeading.es}>{hostHeading.en}</h2>
+
+      <article class="tg-card tg-wide paste f-staple" aria-labelledby="tgEquipment">
+        <h3 class="tg-h" id="tgEquipment" data-en={equipment.title.en} data-es={equipment.title.es}>{equipment.title.en}</h3>
+        <ul class="tg-kit">
+          {equipment.items.map((i) => (
+            <li>
+              <span class="tg-kit-name" data-en={i.en} data-es={i.es}>{i.en}</span>
+              {i.note && <span class="tg-kit-note" data-en={i.note.en} data-es={i.note.es}>{i.note.en}</span>}
+            </li>
+          ))}
+        </ul>
+        <p class="tg-p tg-strong" data-en={equipment.cheap.en} data-es={equipment.cheap.es}>{equipment.cheap.en}</p>
+        <p class="tg-p"><Segments segments={equipment.resources} /></p>
+        <ul class="tg-grants">
+          {equipment.grants.map((g) => <li><Segments segments={[g]} /></li>)}
+        </ul>
+      </article>
+
+      <article class="tg-card paste f-tape" aria-labelledby="tgPrep">
+        <h3 class="tg-h" id="tgPrep" data-en={preparation.title.en} data-es={preparation.title.es}>{preparation.title.en}</h3>
+        <ol class="tg-steps">
+          {preparation.steps.map((step) => <li><span><Segments segments={step} /></span></li>)}
+        </ol>
+      </article>
+
+      <article class="tg-card tg-wide paste f-tape" aria-labelledby="tgDay">
+        <h3 class="tg-h" id="tgDay" data-en={cleanupDay.title.en} data-es={cleanupDay.title.es}>{cleanupDay.title.en}</h3>
+        <ol class="tg-steps tg-day">
+          {cleanupDay.steps.map((s) => <li><span data-en={s.en} data-es={s.es}>{s.en}</span></li>)}
+        </ol>
+      </article>
+
+      <article class="tg-card paste f-staple" aria-labelledby="tgSafety">
+        <h3 class="tg-h" id="tgSafety" data-en={safety.title.en} data-es={safety.title.es}>{safety.title.en}</h3>
+        <ul class="tg-safety">
+          {safety.items.map((s) => <li data-en={s.en} data-es={s.es}>{s.en}</li>)}
+        </ul>
+      </article>
+
+      <article class="tg-card tg-wide tg-letter paste f-staple f-torn" aria-labelledby="tgWhy">
+        <h2 class="tg-h" id="tgWhy" data-en={whyWeClean.title.en} data-es={whyWeClean.title.es}>{whyWeClean.title.en}</h2>
+        {whyWeClean.paragraphs.map((p) => <p class="tg-p"><Segments segments={p} /></p>)}
+        <div class="tg-closing">
+          {whyWeClean.closing.map((c) => <p data-en={c.en} data-es={c.es}>{c.en}</p>)}
+        </div>
+        <p class="tg-sign"><Segments segments={whyWeClean.signature} /></p>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tg-by {
+    display: grid;
+    gap: 2px;
+    margin: 6px 0 0;
+    color: var(--beige);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .tg-sec { padding-block: 48px 84px; }
+
+  /* One column on phones; on desktop the narrow cards pair up and the
+     wide ones span the row */
+  .tg-flow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+  }
+
+  .tg-card {
+    --flyer-bg: var(--beige);
+    color: var(--black);
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    padding: 28px 22px 30px;
+  }
+
+  .tg-h {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.3rem, 10vw, 3rem);
+    line-height: 0.95;
+    color: var(--purple);
+  }
+
+  .tg-host {
+    justify-self: start;
+    font-size: clamp(2rem, 9vw, 2.8rem);
+    margin-top: 8px;
+  }
+
+  .tg-p { margin: 0; font-size: 1.12rem; line-height: 1.5; }
+  .tg-intro .tg-p:first-child { font-size: 1.3rem; font-weight: 500; }
+  .tg-strong { font-weight: 700; color: var(--purple); }
+
+  .tg-card a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+  .tg-card a:hover { color: var(--black); }
+
+  .tg-creed {
+    list-style: none;
+    display: grid;
+    gap: 2px;
+    margin-top: 6px;
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 7vw, 2rem);
+    line-height: 1.1;
+    color: var(--purple);
+  }
+
+  /* The kit as a checklist of tags in columns */
+  .tg-kit {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+  }
+
+  .tg-kit li {
+    display: grid;
+    align-content: start;
+    padding: 10px 12px;
+    border: 2.5px solid var(--purple);
+    border-radius: 8px;
+    background: var(--paper-bright);
+  }
+
+  .tg-kit-name { font-weight: 700; color: var(--purple); line-height: 1.2; }
+  .tg-kit-note { font-size: 0.9rem; line-height: 1.3; }
+
+  .tg-grants { display: grid; gap: 6px; padding-left: 1.2em; font-size: 1.1rem; }
+
+  /* Numbered steps: big purple numbers in the display face */
+  .tg-steps {
+    list-style: none;
+    counter-reset: step;
+    display: grid;
+    gap: 14px;
+    font-size: 1.1rem;
+    line-height: 1.45;
+  }
+
+  .tg-steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .tg-steps li::before {
+    content: counter(step);
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--purple);
+    color: var(--beige);
+    font-family: var(--display);
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  /* The day's list reads in order in a single column of rows, then in
+     three columns on desktop */
+  .tg-steps.tg-day li { align-items: center; }
+
+  .tg-safety {
+    display: grid;
+    gap: 12px;
+    padding-left: 1.2em;
+    font-size: 1.1rem;
+    line-height: 1.45;
+  }
+
+  .tg-safety li::marker { color: var(--purple); }
+
+  .tg-letter { --flyer-bg: var(--paper); }
+  .tg-letter .tg-p { max-width: 64ch; }
+
+  .tg-closing {
+    display: grid;
+    gap: 2px;
+    margin-top: 6px;
+    font-family: var(--display);
+    font-size: clamp(1.5rem, 6.5vw, 1.9rem);
+    line-height: 1.15;
+    color: var(--purple);
+  }
+
+  .tg-closing p { margin: 0; }
+  .tg-sign { margin: 4px 0 0; font-weight: 500; }
+
+  @media (min-width: 761px) {
+    .tg-by { font-size: 1.15rem; }
+    .tg-sec { padding-block: 80px 120px; }
+    /* Dense packing lets Safety fill the slot beside Preparation while the
+       markup (and phones, and screen readers) keep the guide's order */
+    .tg-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 52px 44px; }
+    .tg-intro, .tg-host, .tg-wide { grid-column: 1 / -1; }
+    .tg-intro { max-width: 52rem; }
+    .tg-card { padding: 40px 40px 42px; gap: 18px; }
+    .tg-h { font-size: clamp(2.8rem, 4vw, 3.6rem); }
+    .tg-host { font-size: clamp(2.6rem, 4vw, 3.4rem); }
+    .tg-p { font-size: clamp(1.15rem, 1.4vw, 1.3rem); }
+    .tg-kit { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .tg-steps.tg-day { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 32px; }
+  }
+</style>
