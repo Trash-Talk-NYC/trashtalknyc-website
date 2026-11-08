@@ -69,7 +69,7 @@ export const equipment = {
     { en: 'Wagon or cart', es: 'Carrito o carretilla' },
     { en: 'Garbage bags', es: 'Bolsas de basura', note: { en: 'household / contractor', es: 'de uso doméstico / de construcción' } },
     { en: 'Gloves', es: 'Guantes', note: { en: 'latex or washable', es: 'de látex o lavables' } },
-    { en: 'Pickup device', es: 'Recogedor', note: { en: 'grabber or tongs', es: 'pinza o tenazas' } },
+    { en: 'Pickup device', es: 'Dispositivo para recoger', note: { en: 'grabber or tongs', es: 'pinza o tenazas' } },
     { en: 'Extra totes', es: 'Bolsas de tela extra' },
     { en: 'Portable speaker', es: 'Bocina portátil' },
     { en: 'Hand sanitizer', es: 'Desinfectante de manos' },
