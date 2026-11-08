@@ -10,6 +10,7 @@
 import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
+import { ABOUT_TTNYC_PATH } from '../lib/aboutTtnyc';
 import { WALL_PATH } from '../lib/partners';
 import { MORE_MEDIA_PATH } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
@@ -21,7 +22,8 @@ const year = new Date().getFullYear();
   <div class="wrap foot-grid">
     <ul class="foot-links">
       <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
-      <li><a href="/about" data-en="About" data-es="Nosotros">About</a></li>
+      <li><a href={ABOUT_TTNYC_PATH} data-en="About TTNYC" data-es="Sobre TTNYC">About TTNYC</a></li>
+      <li><a href="/about" data-en="The Team" data-es="El Equipo">The Team</a></li>
       <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
       <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
       <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>

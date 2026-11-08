@@ -32,8 +32,6 @@ function signupInput(overrides: Record<string, unknown> = {}) {
     country: 'United States',
     zip: '10033',
     hear: 'Word of Mouth',
-    waiverCheck: 'on',
-    ageCheck: 'on',
     ...overrides,
   };
 }
@@ -57,18 +55,22 @@ describe('signup Brevo payload', () => {
     delete process.env.BREVO_LIST_ID_SIGNUP;
   });
 
-  // Brevo drops string values for boolean attributes without an error,
-  // which is how WAIVER_ACCEPTED went unrecorded — these must be booleans
-  it('sends WAIVER_ACCEPTED and PHOTO_CONSENT as real JSON booleans', async () => {
-    const attrs = await sentAttributes({ photoConsent: 'on' });
-    expect(attrs.WAIVER_ACCEPTED).toBe(true);
-    expect(attrs.PHOTO_CONSENT).toBe(true);
+  // The waiver, 18+, photo-consent, and "Anything we should know?" fields
+  // came off the newsletter (team round 3, captain 2026-11-08). Leaving the
+  // attributes out keeps older signups' Brevo values; sending false would
+  // overwrite them.
+  it('no longer sends WAIVER_ACCEPTED, PHOTO_CONSENT, or MESSAGE', async () => {
+    const attrs = await sentAttributes();
+    expect(attrs).not.toHaveProperty('WAIVER_ACCEPTED');
+    expect(attrs).not.toHaveProperty('PHOTO_CONSENT');
+    expect(attrs).not.toHaveProperty('MESSAGE');
   });
 
-  it('sends PHOTO_CONSENT false (still a boolean) when the box is unchecked', async () => {
-    const attrs = await sentAttributes();
-    expect(attrs.PHOTO_CONSENT).toBe(false);
-    expect(typeof attrs.WAIVER_ACCEPTED).toBe('boolean');
+  it('ignores the old fields when a cached page still posts them', async () => {
+    const attrs = await sentAttributes({ waiverCheck: 'on', ageCheck: 'on', photoConsent: 'on', experience: 'Hi' });
+    expect(attrs).not.toHaveProperty('WAIVER_ACCEPTED');
+    expect(attrs).not.toHaveProperty('PHOTO_CONSENT');
+    expect(attrs).not.toHaveProperty('MESSAGE');
   });
 
   it('keeps the text attributes as strings', async () => {

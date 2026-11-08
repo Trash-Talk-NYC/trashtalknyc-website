@@ -8,16 +8,19 @@ import type { LeadInput } from './schemas';
  * this is the record the team reads.
  */
 export function buildLeadNoteLines(
-  input: Pick<LeadInput, 'behalf' | 'behalfOther' | 'cleaningNeed' | 'support' | 'participants' | 'preferredMonth'>,
+  input: Pick<LeadInput, 'behalf' | 'behalfOther' | 'cleaningNeed' | 'cleaningOther' | 'support' | 'participants' | 'preferredMonth'>,
   startLabel: string,
 ): string[] {
   const behalf = input.behalf
     .map((b) => (b === 'other' ? `Other: ${input.behalfOther?.trim() ?? ''}` : leadOptionLabel(BEHALF_OPTIONS, b)))
     .join(', ');
+  const needs = input.cleaningNeed
+    .map((n) => (n === 'other' ? `Other: ${input.cleaningOther?.trim() ?? ''}` : leadOptionLabel(CLEANING_NEEDS, n)))
+    .join(', ');
   return [
     `Requesting on behalf of: ${behalf}`,
     `Starting address: ${startLabel}`,
-    `What needs cleaning: ${leadOptionLabel(CLEANING_NEEDS, input.cleaningNeed)}`,
+    `What needs cleaning: ${needs}`,
     `Support needed: ${input.support.map((s) => leadOptionLabel(SUPPORT_NEEDS, s)).join(', ')}`,
     `Number of participants: ${input.participants || 'not given'}`,
     `Preferred month: ${input.preferredMonth}`,

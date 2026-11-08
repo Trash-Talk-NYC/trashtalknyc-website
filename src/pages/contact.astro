@@ -209,14 +209,24 @@ const monthOptions = rollingMonths();
           <!-- Captain's note, verbatim -->
           <p class="route-note full" data-en="We recommend 4 blocks max. Beauty is about the detail, not necessarily scale." data-es="Recomendamos 4 cuadras como máximo. La belleza está en el detalle, no necesariamente en la escala.">We recommend 4 blocks max. Beauty is about the detail, not necessarily scale.</p>
 
-          <div class="field pair">
-            <label for="l-need" data-en="What needs cleaning? *" data-es="¿Qué hay que limpiar? *">What needs cleaning? *</label>
-            <select id="l-need" name="cleaningNeed" required>
-              <option value="" selected disabled data-en="Select one" data-es="Selecciona una opción">Select one</option>
+          <!-- Several answers allowed, and "Other" asks what (team round 3,
+               captain 2026-11-08); at least one is required, which the
+               submit handler checks (HTML can't) -->
+          <fieldset class="field full bare-fieldset" id="needGroup" aria-describedby="needErr">
+            <legend class="lbl" data-en="What needs cleaning? (check all that apply) *" data-es="¿Qué hay que limpiar? (marca todo lo que corresponda) *">What needs cleaning? (check all that apply) *</legend>
+            <div class="checks">
               {CLEANING_NEEDS.map((n) => (
-                <option value={n.value} data-en={n.en} data-es={n.es}>{n.en}</option>
+                <label class="check-chip">
+                  <input type="checkbox" name="cleaningNeed" value={n.value} />
+                  <span data-en={n.en} data-es={n.es}>{n.en}</span>
+                </label>
               ))}
-            </select>
+            </div>
+            <p class="f-err" id="needErr" aria-live="polite" hidden></p>
+          </fieldset>
+          <div class="field full" id="needOtherGroup" hidden>
+            <label for="l-need-other" data-en="What else needs cleaning? *" data-es="¿Qué más hay que limpiar? *">What else needs cleaning? *</label>
+            <input type="text" id="l-need-other" name="cleaningOther" maxlength="200" />
           </div>
           <div class="field pair">
             <label for="l-people"><span data-en="Number of participants" data-es="Número de participantes">Number of participants</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
@@ -688,6 +698,7 @@ const monthOptions = rollingMonths();
     leadErrorEl.textContent = '';
     showSupportError(false);
     showBehalfError(false);
+    showNeedError(false);
     applyCopy();
   }
 
@@ -701,6 +712,7 @@ const monthOptions = rollingMonths();
     if (leadErrorEl.textContent) leadErrorEl.textContent = submitErrorText(lang);
     if (!supportErr.hidden) showSupportError(true);
     if (!behalfErr.hidden) showBehalfError(true);
+    if (!needErr.hidden) showNeedError(true);
   });
 
   // ── SUPPORT NEEDED (at least one) ──
@@ -741,6 +753,31 @@ const monthOptions = rollingMonths();
   behalfBoxes.forEach((box) => box.addEventListener('change', () => {
     syncBehalfOther();
     if (behalfBoxes.some((b) => b.checked)) showBehalfError(false);
+  }));
+
+  // ── WHAT NEEDS CLEANING (check all that apply, at least one) ──
+  const needBoxes = Array.from(document.querySelectorAll<HTMLInputElement>('#needGroup input[name="cleaningNeed"]'));
+  const needErr = document.getElementById('needErr') as HTMLParagraphElement;
+  const needOtherGroup = document.getElementById('needOtherGroup') as HTMLElement;
+  const needOtherInput = document.getElementById('l-need-other') as HTMLInputElement;
+  const NEED_MSG = { en: 'Check at least one.', es: 'Marca al menos una opción.' };
+
+  function showNeedError(show: boolean) {
+    needErr.hidden = !show;
+    needErr.textContent = show ? NEED_MSG[getCurrentLang()] : '';
+  }
+
+  function syncNeedOther() {
+    const other = needBoxes.some((b) => b.value === 'other' && b.checked);
+    needOtherGroup.hidden = !other;
+    needOtherInput.required = other;
+    // A hidden field must never submit a stale value
+    if (!other) needOtherInput.value = '';
+  }
+
+  needBoxes.forEach((box) => box.addEventListener('change', () => {
+    syncNeedOther();
+    if (needBoxes.some((b) => b.checked)) showNeedError(false);
   }));
 
   // ── NYC ADDRESS PICKER (GeoSearch autocomplete) ──
@@ -970,7 +1007,9 @@ const monthOptions = rollingMonths();
   function resetLeadForm() {
     leadForm.reset();
     syncBehalfOther();
+    syncNeedOther();
     showBehalfError(false);
+    showNeedError(false);
     showSupportError(false);
     addressPickers.forEach((picker) => picker.combo.reset());
     monthSelect.selectedIndex = 0;
@@ -1018,11 +1057,13 @@ const monthOptions = rollingMonths();
       e.preventDefault();
       if (form === leadForm) {
         const noBehalf = !behalfBoxes.some((b) => b.checked);
+        const noNeed = !needBoxes.some((b) => b.checked);
         const noSupport = !supportBoxes.some((b) => b.checked);
         showBehalfError(noBehalf);
+        showNeedError(noNeed);
         showSupportError(noSupport);
-        if (noBehalf || noSupport) {
-          (noBehalf ? behalfBoxes[0] : supportBoxes[0])?.focus();
+        if (noBehalf || noNeed || noSupport) {
+          (noBehalf ? behalfBoxes[0] : noNeed ? needBoxes[0] : supportBoxes[0])?.focus();
           return;
         }
       }

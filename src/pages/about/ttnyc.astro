@@ -1,0 +1,194 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionWall from '../../components/SectionWall.astro';
+import groupPhoto from '../../assets/cleanups/group-1628.webp';
+import wallValues from '../../assets/walls/wall-9726.webp';
+import { mission, values, vision } from '../../lib/aboutTtnyc';
+
+/**
+ * About TTNYC (team round 3, captain 2026-11-08): a cleanup group photo
+ * as the hero, then the club's vision, mission, and values in the team's
+ * words (src/lib/aboutTtnyc.ts).
+ *
+ * The hero is the one inner page that doesn't use WallHero: the photo is
+ * people, not a wall, and WallHero's 70% shade would bury their faces.
+ * So the photo shows in full color and the title sits on a solid Roadtop
+ * Black plate, which keeps it AA without shading anyone.
+ */
+const groupAlt = {
+  en: 'A group of volunteers with grabbers and pink trash bags lined up on a city sidewalk after a Trash Talk NYC cleanup',
+  es: 'Un grupo de voluntarios con pinzas y bolsas de basura rosadas en fila en una acera de la ciudad después de una limpieza de Trash Talk NYC',
+};
+---
+
+<BaseLayout
+  title="About TTNYC — Trash Talk NYC"
+  description="Trash Talk NYC's vision, mission, and values: New Yorkers leading the way in keeping the city's public spaces clean."
+>
+  <section class="at-hero">
+    <Image
+      src={groupPhoto}
+      alt={groupAlt.en}
+      data-alt-en={groupAlt.en}
+      data-alt-es={groupAlt.es}
+      class="at-hero-pic"
+      width={2400}
+      widths={[800, 1280, 1920, 2400]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="wrap at-hero-inner">
+      <div class="at-plate">
+        <div class="mono at-eyebrow" data-en="About" data-es="Nosotros">About</div>
+        <h1 class="at-title" data-en="About TTNYC" data-es="Sobre TTNYC">About TTNYC</h1>
+      </div>
+    </div>
+  </section>
+
+  <section class="at-sec wall">
+    <SectionWall kind="cleanup" src={wallValues} tear="bottom" dim={0} duotone={0} seed={31} />
+    <div class="wrap at-grid">
+      <article class="at-card paste f-tape">
+        <h2 class="at-h" data-en="Vision" data-es="Visión">Vision</h2>
+        <p class="at-text" data-en={vision.en} data-es={vision.es}>{vision.en}</p>
+      </article>
+      <article class="at-card paste f-staple">
+        <h2 class="at-h" data-en="Mission" data-es="Misión">Mission</h2>
+        <p class="at-text" data-en={mission.en} data-es={mission.es}>{mission.en}</p>
+      </article>
+      <article class="at-card at-values paste f-tape">
+        <h2 class="at-h" data-en="Values" data-es="Valores">Values</h2>
+        <ul class="at-list">
+          {values.map((v) => (
+            <li data-en={v.en} data-es={v.es}>{v.en}</li>
+          ))}
+        </ul>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { getCurrentLang, onLanguageChange, type Lang } from '../../lib/language';
+
+  // setLang never translates attributes, so the hero photo's alt follows
+  // the language from its data-alt-* pair
+  const img = document.querySelector<HTMLImageElement>('.at-hero-pic');
+  const applyAlt = (lang: Lang) => {
+    if (img) img.alt = img.getAttribute(`data-alt-${lang}`) ?? img.alt;
+  };
+  applyAlt(getCurrentLang());
+  onLanguageChange(applyAlt);
+</script>
+
+<style>
+  /* Phones: the photo, then the plate under it, so no face is covered.
+     Desktop: the plate overlaps the photo's bottom-left corner. */
+  /* Block, not grid: a grid would shrink the auto-margined .wrap to its
+     content and center the plate */
+  .at-hero {
+    background: var(--black);
+    border-bottom: 3px solid var(--beige);
+  }
+
+  .at-hero :global(.at-hero-pic) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    object-position: 50% 60%;
+  }
+
+  .at-hero-inner { padding-block: 24px 36px; }
+
+  .at-plate {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+    color: var(--beige);
+  }
+
+  .at-eyebrow { color: var(--yellow); font-size: 1rem; }
+
+  .at-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.8rem, 12vw, 3.6rem);
+    line-height: 0.92;
+  }
+
+  .at-sec { padding-block: 56px 80px; }
+
+  .at-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 44px;
+  }
+
+  .at-card {
+    --flyer-bg: var(--beige);
+    color: var(--purple);
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 28px 22px 30px;
+  }
+
+  .at-h {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.4rem, 10vw, 3.2rem);
+    line-height: 0.95;
+  }
+
+  .at-text {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--black);
+  }
+
+  /* The values as a printed list, one per line on phones and in two
+     columns on desktop; no chips (tilted label chips stay banned) */
+  .at-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px 32px;
+  }
+
+  .at-list li {
+    font-family: var(--display);
+    font-size: clamp(1.7rem, 7vw, 2.1rem);
+    line-height: 1.05;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed currentColor;
+  }
+
+  @media (min-width: 761px) {
+    .at-hero :global(.at-hero-pic) { aspect-ratio: auto; height: clamp(26rem, 46vw, 44rem); }
+    /* Overlap: the plate rides up onto the photo's bottom-left */
+    .at-hero-inner { padding-block: 0 48px; }
+    .at-plate {
+      width: fit-content;
+      margin-top: -96px;
+      position: relative;
+      padding: 24px 36px 28px;
+      background: var(--black);
+      box-shadow: 6px 6px 0 rgba(234, 233, 218, 0.22);
+    }
+    .at-title { font-size: clamp(3.8rem, 6vw, 5.6rem); }
+
+    .at-sec { padding-block: 88px 120px; }
+    .at-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 48px; }
+    .at-card { padding: 40px 40px 42px; gap: 16px; }
+    .at-text { font-size: clamp(1.35rem, 1.7vw, 1.6rem); }
+    .at-values { grid-column: 1 / -1; }
+    .at-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .at-list li { font-size: clamp(1.8rem, 2.4vw, 2.4rem); }
+  }
+</style>

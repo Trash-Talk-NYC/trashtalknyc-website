@@ -46,11 +46,6 @@ const requiredPhone = z
   .max(50)
   .refine((v) => isValidPhone(v), 'Please enter a valid phone number');
 
-// Checkboxes submit the string 'on' when checked and are omitted entirely
-// from form data when unchecked, so a literal match both requires the box
-// to be present and rejects any other value.
-const waiverAccepted = z.literal('on', { errorMap: () => ({ message: 'You must accept the liability waiver to sign up' }) });
-
 export const signupSchema = z
   .object({
     ...baseFields,
@@ -64,14 +59,12 @@ export const signupSchema = z
     region: z.string().trim().max(120).optional(),
     postal: z.string().trim().max(20).optional(),
     phone: optionalPhone,
-    experience: z.string().trim().max(2000).optional(),
     hear: z.string().trim().min(1, 'Please tell us how you heard about us').max(200),
     // Free-text "where was that?" companion to the "Somewhere else" choice
     hearOther: z.string().trim().max(200).optional(),
-    waiverCheck: waiverAccepted,
-    ageCheck: waiverAccepted,
-    // Optional photo/video consent: 'on' when checked, absent otherwise
-    photoConsent: z.literal('on').optional(),
+    // No waiver, 18+, or photo-consent boxes and no free-text note: the
+    // newsletter has no tie to events (team round 3, captain 2026-11-08).
+    // Zod strips unknown keys, so a cached old page posting them still lands.
   })
   .superRefine((data, ctx) => {
     if (!COUNTRY_VALUES.includes(data.country)) {
@@ -132,7 +125,13 @@ export const leadSchema = z
     startAddress: z.string().trim().min(1, 'Starting address is required').max(300),
     startAddressId: z.string().trim().min(1, 'Pick a starting address from the list').max(120),
     startAddressPoint: z.string().trim().min(1, 'Pick a starting address from the list').max(60),
-    cleaningNeed: z.enum(CLEANING_NEED_VALUES, { errorMap: () => ({ message: 'Please choose what needs cleaning' }) }),
+    // Check all that apply, at least one (team round 3, captain 2026-11-08)
+    cleaningNeed: z
+      .array(z.enum(CLEANING_NEED_VALUES))
+      .min(1, 'Please choose what needs cleaning')
+      .max(CLEANING_NEED_VALUES.length),
+    // What "Other" needs cleaning, when they checked it
+    cleaningOther: z.string().trim().max(200).optional(),
     support: z
       .array(z.enum(SUPPORT_NEED_VALUES))
       .min(1, 'Please choose at least one kind of support')
@@ -153,6 +152,10 @@ export const leadSchema = z
   .refine((data) => !data.behalf.includes('other') || !!data.behalfOther?.trim(), {
     message: 'Please tell us who the request is on behalf of',
     path: ['behalfOther'],
+  })
+  .refine((data) => !data.cleaningNeed.includes('other') || !!data.cleaningOther?.trim(), {
+    message: 'Please tell us what needs cleaning',
+    path: ['cleaningOther'],
   });
 
 export type SignupInput = z.infer<typeof signupSchema>;

@@ -15,7 +15,7 @@ const validLead = {
   startAddress: '708 WEST 171 STREET, New York, NY, USA',
   startAddressId: 'nycpad:venue:337433',
   startAddressPoint: '-73.938,40.843',
-  cleaningNeed: 'tree-beds',
+  cleaningNeed: ['tree-beds'],
   support: ['supplies'],
   preferredMonth: currentMonth,
 };
@@ -61,11 +61,20 @@ describe('leadSchema', () => {
     expect(parsed.success && 'routeType' in parsed.data).toBe(false);
   });
 
-  it('takes one of the offered cleaning needs only', () => {
-    for (const need of ['tree-beds', 'streets', 'needles', 'other']) {
-      expect(leadSchema.safeParse({ ...validLead, cleaningNeed: need }).success).toBe(true);
+  it('takes the offered cleaning needs only, several at once, at least one', () => {
+    for (const need of ['tree-beds', 'streets', 'needles']) {
+      expect(leadSchema.safeParse({ ...validLead, cleaningNeed: [need] }).success).toBe(true);
     }
-    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: 'graffiti' }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: ['tree-beds', 'streets', 'needles'] }).success).toBe(true);
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: ['graffiti'] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: [] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: undefined }).success).toBe(false);
+  });
+
+  it('needs to know what else when "Other" needs cleaning', () => {
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: ['other'] }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: ['streets', 'other'], cleaningOther: '  ' }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, cleaningNeed: ['streets', 'other'], cleaningOther: 'Vacant lot' }).success).toBe(true);
   });
 
   it('needs at least one offered kind of support, and accepts several', () => {
@@ -99,7 +108,7 @@ describe('leadSchema', () => {
 describe('buildLeadNoteLines', () => {
   it('writes the choices out in plain English for the team', () => {
     const lines = buildLeadNoteLines(
-      { behalf: ['nonprofit', 'religious'], cleaningNeed: 'needles', support: ['supplies', 'cleanup-group'], participants: '8', preferredMonth: 'May 2027' },
+      { behalf: ['nonprofit', 'religious'], cleaningNeed: ['needles'], support: ['supplies', 'cleanup-group'], participants: '8', preferredMonth: 'May 2027' },
       '708 WEST 171 STREET, New York, NY, USA',
     );
     expect(lines).toEqual([
@@ -114,7 +123,7 @@ describe('buildLeadNoteLines', () => {
 
   it('writes out what "Other" means', () => {
     const lines = buildLeadNoteLines(
-      { behalf: ['other'], behalfOther: 'Our block association', cleaningNeed: 'streets', support: ['promotion'], participants: '', preferredMonth: 'May 2027' },
+      { behalf: ['other'], behalfOther: 'Our block association', cleaningNeed: ['streets'], support: ['promotion'], participants: '', preferredMonth: 'May 2027' },
       'x',
     );
     expect(lines[0]).toBe('Requesting on behalf of: Other: Our block association');
@@ -122,10 +131,18 @@ describe('buildLeadNoteLines', () => {
 
   it('says when no group size was given', () => {
     const lines = buildLeadNoteLines(
-      { behalf: ['individual'], cleaningNeed: 'other', support: ['other'], participants: undefined, preferredMonth: 'May 2027' },
+      { behalf: ['individual'], cleaningNeed: ['other'], cleaningOther: 'A vacant lot', support: ['other'], participants: undefined, preferredMonth: 'May 2027' },
       'x',
     );
     expect(lines).toContain('Number of participants: not given');
+  });
+
+  it('lists every cleaning need and carries the Other text through', () => {
+    const lines = buildLeadNoteLines(
+      { behalf: ['individual'], cleaningNeed: ['tree-beds', 'other'], cleaningOther: 'A vacant lot', support: ['supplies'], participants: '', preferredMonth: 'May 2027' },
+      'x',
+    );
+    expect(lines).toContain('What needs cleaning: Littered tree beds, Other: A vacant lot');
   });
 });
 

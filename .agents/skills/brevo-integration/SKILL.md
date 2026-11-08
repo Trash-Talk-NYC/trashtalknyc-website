@@ -50,11 +50,10 @@ Empty-string fields are dropped before upsert (`buildAttributes`) so updates nev
 | `COUNTRY` | ✓ always (country-first location, 2026-10-09) | — | — |
 | `CITY` / `STATE_REGION` / `ZIP_CODE` | ✓ US: ZIP typed, city + full state name from the server's ZIP re-lookup; elsewhere: picked city, optional region, optional free-format postal code | — | — |
 | `BOROUGH` | ✓ only for NYC ZIPs (from the ZIP-range table in `src/lib/zip.ts`, never the lookup service) | — | — |
-| `MESSAGE` | ✓ (experience text) | ✓ (message text) | — |
+| `MESSAGE` | — (signup stopped sending it 2026-11-08; older values stay) | ✓ (message text) | — |
 | `HEAR_ABOUT_US` | ✓ required (values must match the Brevo enum exactly; "Article" and "Somewhere else" are pending dashboard options — the action retries the upsert without the hear attributes when Brevo rejects them and notes the answer instead, `brevo_hear_attrs_rejected`) | — | — |
 | `HEAR_ABOUT_US_OTHER` | ✓ free text behind "Somewhere else" (pending dashboard creation, same fallback) | — | — |
-| `WAIVER_ACCEPTED` (boolean) | ✓ JSON `true` only when both waiver and age checkboxes validated, else `false` — never the strings `'true'`/`'false'`, which Brevo silently drops for boolean attributes (the 2026-07 → 2026-10 bug) | — | — |
-| `PHOTO_CONSENT` (boolean) | ✓ JSON `true`/`false` from the optional photo-consent checkbox | — | — |
+| `WAIVER_ACCEPTED`, `PHOTO_CONSENT` (boolean) | — no longer sent since 2026-11-08 (the newsletter dropped its waiver, 18+, and photo-consent boxes); the attributes keep older signups' values, add-only. If a boolean is ever sent again it must be a JSON boolean, never `'true'`/`'false'`, which Brevo silently drops (the 2026-07 → 2026-10 bug) | — | — |
 | `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership` \| `sponsor`; plain text attribute — verified via the attributes API 2026-08, so new values need no dashboard work) | ✓ (`lead`) |
 | `ORGANIZATION` | — | ✓ (partnership + sponsor tabs, required there) | — |
 | `LEAD_BEHALF`, `ROUTE_START`, `PREFERRED_MONTH` | — | — | ✓ (`ROUTE_START` is the GeoSearch-verified starting address) |

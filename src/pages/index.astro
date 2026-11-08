@@ -15,11 +15,14 @@ import type { BrandStickerId } from '../lib/stickers';
 import YouTubeEmbed from '../components/YouTubeEmbed.astro';
 // The captain's own wall photos (2026-10-15), curated for color
 import wallHero from '../assets/walls/wall-9562.webp';
-// The captain's nasturtium leaves (2026-10-21) behind Contribute
-import wallContribute from '../assets/walls/nature-4916.webp';
+// A plain textured wall behind Contribute, for visual relief between the
+// busy graffiti walls (team round 3, captain 2026-11-08)
+import wallContribute from '../assets/walls/wall-9733.webp';
+// Where contributions go: a cleanup crew after an event (team round 3,
+// captain 2026-11-08, replacing the plant-and-tools shot)
+import contributePhoto from '../assets/cleanups/group-1625.webp';
 import wallSignup from '../assets/walls/wall-9563.webp';
 import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
-import { galleryPhotos } from '../lib/gallery';
 import { featuredVideo } from '../lib/media';
 import { raisedSentence } from '../lib/contribute';
 
@@ -83,9 +86,10 @@ const bombStickers: BombSticker[] = [
   { brand: 'glove-shovel', x: 240, y: 114, w: 32, r: 7, r0: 27, wide: true },
 ];
 
-// Where contributions go: planting and tools (team feedback, 2026-10-15,
-// replacing the chalk wall). From the gallery, so its alt text is shared.
-const contributePhoto = galleryPhotos[0];
+const contributeAlt = {
+  en: 'Eight volunteers lined up on a sidewalk after a cleanup, holding grabbers, tote bags, and a full pink trash bag',
+  es: 'Ocho voluntarios en fila en una acera después de una limpieza, con pinzas, bolsas y una bolsa de basura rosada llena',
+};
 
 // Shown only once the captain fills in the amount (src/lib/contribute.ts)
 const raised = raisedSentence();
@@ -140,8 +144,9 @@ const raised = raisedSentence();
      2026-10-21), and never "Donate" (Trash Talk NYC is an LLC, team
      feedback 2026-10-15). The notes and the GoFundMe widget sit on one
      flyer wheatpasted to a vivid graffiti wall (round 9, F4b), made
-     big and prominent (captain, 2026-10-21: "have contribute bigger").
-     Beside it, a photo of where the money goes. The old #donate anchor
+     big and prominent (captain, 2026-10-21: "have contribute bigger"), on a
+     plain textured wall and with the team's copy (round 3, 2026-11-08).
+     Beside it, a photo of a cleanup crew: where the money goes. The old #donate anchor
      still lands here. -->
 <section class="contribute-sec wall" id="contribute">
   <SectionWall kind="cleanup" src={wallContribute} dim={0} duotone={0} seed={2} />
@@ -149,20 +154,20 @@ const raised = raisedSentence();
   <div class="wrap contribute">
     <div class="contribute-main paste f-paste">
       <h2 class="contribute-title" data-en="Contribute" data-es="Contribuye">Contribute</h2>
-      <!-- The captain's lines (2026-10-15/19); the amount raised appears
-           once it is set in src/lib/contribute.ts -->
+      <!-- The amount raised appears once it is set in src/lib/contribute.ts -->
       {raised && <p class="contribute-note contribute-raised" data-en={raised.en} data-es={raised.es}>{raised.en}</p>}
-      <p class="contribute-note" data-en="This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City." data-es="Este fondo nos ha permitido construir más de 15 protectores de árboles, comprar equipo para producción y organizar más de dos docenas de eventos gratuitos en la ciudad de Nueva York.">This fund has allowed us to construct over 15 tree guards, purchase equipment for production, and host more than two dozen free events in New York City.</p>
+      <!-- The team's own words (round 3, 2026-11-08) -->
+      <p class="contribute-note" data-en="This fund has allowed us to host over 25 free beautification &amp; cleanup events in New York City, construct over 15 tree guards, and develop content that inspires and empowers urban stewardship." data-es="Este fondo nos ha permitido organizar más de 25 eventos gratuitos de embellecimiento y limpieza en la ciudad de Nueva York, construir más de 15 protectores de árboles y crear contenido que inspira y empodera el cuidado urbano.">This fund has allowed us to host over 25 free beautification &amp; cleanup events in New York City, construct over 15 tree guards, and develop content that inspires and empowers urban stewardship.</p>
       <div class="gfm">
         <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
       </div>
     </div>
     <figure class="contribute-photo paste f-tape">
       <Image
-        src={contributePhoto.src}
-        alt={contributePhoto.alt.en}
-        data-alt-en={contributePhoto.alt.en}
-        data-alt-es={contributePhoto.alt.es}
+        src={contributePhoto}
+        alt={contributeAlt.en}
+        data-alt-en={contributeAlt.en}
+        data-alt-es={contributeAlt.es}
         class="contribute-pic"
         width={1000}
         widths={[480, 720, 1000]}
@@ -181,7 +186,7 @@ const raised = raisedSentence();
       <!-- On a pasted paper flyer, so the copy holds AA on the full-color wall -->
       <div class="sign-text paste f-paste">
         <h2 class="sign-plate"><span data-en="Stay in the" data-es="Mantente al">Stay in the</span> <span data-en="loop" data-es="día">loop</span></h2>
-        <p class="sign-blurb" data-en="See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more." data-es="Mira en qué anda Trash Talk NYC y cómo puedes participar suscribiéndote a nuestro boletín semanal. Recibirás los próximos eventos, lo más destacado de la comunidad, noticias sobre la basura y el cuidado urbano, y más.">See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive upcoming events, community highlights, trash and urban stewardship news, and more.</p>
+        <p class="sign-blurb" data-en="See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive information about upcoming events, community highlights, trash and urban stewardship news, and more." data-es="Mira en qué anda Trash Talk NYC y cómo puedes participar suscribiéndote a nuestro boletín semanal. Recibirás información sobre los próximos eventos, lo más destacado de la comunidad, noticias sobre la basura y el cuidado urbano, y más.">See what Trash Talk NYC is up to and how you can get involved by signing up for our weekly newsletter. You'll receive information about upcoming events, community highlights, trash and urban stewardship news, and more.</p>
       </div>
     </div>
 
@@ -246,11 +251,6 @@ const raised = raisedSentence();
         </div>
 
         <div class="field full">
-          <label for="experience"><span data-en="Anything we should know?" data-es="¿Algo que debamos saber?">Anything we should know?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
-          <textarea id="experience" name="experience" placeholder="e.g. I've done this before, I have mobility limitations, I'm bringing a friend…" data-placeholder-en="e.g. I've done this before, I have mobility limitations, I'm bringing a friend…" data-placeholder-es="p.ej. Ya he participado antes, tengo limitaciones de movilidad, voy con un amigo…"></textarea>
-        </div>
-
-        <div class="field full">
           <label for="hear" data-en="How'd you hear about us? *" data-es="¿Cómo nos conociste? *">How'd you hear about us? *</label>
           <!-- Required (captain). Value attributes must exactly match the
                HEAR_ABOUT_US enum options configured in Brevo; display text
@@ -282,29 +282,6 @@ const raised = raisedSentence();
           <label for="hearOther"><span data-en="Where was that?" data-es="¿Dónde fue?">Where was that?</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
           <input type="text" id="hearOther" name="hearOther" maxlength="200" placeholder="e.g. a podcast, a newsletter, my block's group chat" data-placeholder-en="e.g. a podcast, a newsletter, my block's group chat" data-placeholder-es="p.ej. un pódcast, un boletín, el chat de mi cuadra" />
         </div>
-
-        <!-- WAIVER -->
-        <div class="field full waiver">
-          <div class="waiver-head mono" data-en="Release &amp; Waiver of Liability" data-es="Liberación y Exención de Responsabilidad">Release &amp; Waiver of Liability</div>
-          <div class="waiver-body" id="waiverText">
-            By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br /><br />
-            To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br /><br />
-            I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.
-          </div>
-        </div>
-        <label class="check full">
-          <input type="checkbox" id="waiverCheck" name="waiverCheck" required />
-          <span data-en="I've read and agree to the Release &amp; Waiver of Liability above, and I'm signing it voluntarily. *" data-es="He leído y acepto la Liberación y Exención de Responsabilidad anterior, y la firmo voluntariamente. *">I've read and agree to the Release &amp; Waiver of Liability above, and I'm signing it voluntarily. *</span>
-        </label>
-        <label class="check full">
-          <input type="checkbox" id="ageCheck" name="ageCheck" required />
-          <span data-en="I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *" data-es="Confirmo que tengo 18 años o más, O que un padre o tutor firmará una exención física por mí en el evento. *">I confirm I am 18 years of age or older, OR that a parent or guardian will sign a physical waiver for me at the event. *</span>
-        </label>
-        <!-- Optional photo consent (captain, 2026-10-09): not required to sign up -->
-        <label class="check full">
-          <input type="checkbox" id="photoConsent" name="photoConsent" />
-          <span><span data-en="Trash Talk NYC may use photos and videos of me taken at events." data-es="Trash Talk NYC puede usar fotos y videos míos tomados en los eventos.">Trash Talk NYC may use photos and videos of me taken at events.</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></span>
-        </label>
 
         {turnstileSiteKey && (
           <div class="field full turnstile-group">
@@ -570,8 +547,9 @@ const raised = raisedSentence();
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
+    object-position: 50% 60%;
   }
 
   @media (min-width: 761px) {
@@ -725,8 +703,13 @@ const raised = raisedSentence();
 
   /* ── NEWSLETTER ── */
   /* No border lines: the torn wall edges separate it now */
+  /* Zoomed in on the stickered forklift so the photo reads as a texture
+     behind the flyers, not a picture of a forklift (team round 3,
+     captain 2026-11-08). The floor in px keeps phones zoomed too. */
   .signup {
     padding-block: 36px 52px;
+    --sw-size: max(240%, 1500px) auto;
+    --sw-pos: 18% 46%;
   }
 
   .signup-grid {
@@ -822,62 +805,6 @@ const raised = raisedSentence();
 
   .zip-status:empty { display: none; }
 
-  .waiver {
-    border: 2.5px dashed var(--black);
-    border-radius: 8px;
-    overflow: hidden;
-    gap: 0;
-  }
-
-  .waiver-head {
-    background: var(--black);
-    color: var(--beige);
-    padding: 10px 14px;
-  }
-
-  .waiver-body {
-    max-height: 92px;
-    overflow: auto;
-    padding: 12px 14px;
-    font-size: 0.92rem;
-    line-height: 1.4;
-  }
-
-  .check {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    font-size: 0.95rem;
-    line-height: 1.35;
-    cursor: pointer;
-  }
-
-  .check input {
-    appearance: none;
-    flex: none;
-    width: 24px;
-    height: 24px;
-    min-height: 0;
-    padding: 0;
-    border: var(--ink);
-    border-radius: 5px;
-    background: var(--paper-bright);
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-  }
-
-  .check input:checked { background: var(--yellow); }
-
-  .check input:checked::after {
-    content: '';
-    width: 6px;
-    height: 12px;
-    border: solid var(--black);
-    border-width: 0 3px 3px 0;
-    transform: rotate(45deg) translate(-1px, -1px);
-  }
-
   /* Reserve the widget's rendered height (normal size is 65px) so the
      submit button doesn't jump when the Turnstile iframe loads in */
   .turnstile-group { min-height: 65px; }
@@ -937,24 +864,11 @@ const raised = raisedSentence();
 
   attachFieldValidation();
 
-  // ── WAIVER TEXT (bilingual) ──
-  const waiverEN = 'By participating in a Trash Talk NYC community cleanup event, I acknowledge that outdoor cleanup activities involve inherent risks including — but not limited to — slipping or falling on uneven surfaces, cuts or punctures from sharp objects or broken glass, exposure to hazardous materials, traffic hazards near roadways, physical strain from lifting, and adverse weather conditions. I voluntarily assume all such risks.<br><br>To the fullest extent permitted by law, I release and discharge Trash Talk NYC, its organizers, coordinators, volunteers, and affiliated individuals from any and all liability, claims, or causes of action arising from injury, loss, or damage sustained during my participation — whether caused by negligence of the Released Parties or otherwise.<br><br>I confirm I am in adequate physical condition to participate. I agree to follow all safety instructions provided on the day of the event. I understand that <strong>participants under 18 must be accompanied by a parent or guardian</strong> who has signed a physical waiver at the event.';
-
-  const waiverES = 'Al participar en un evento de limpieza comunitaria de Trash Talk NYC, reconozco que las actividades de limpieza al aire libre conllevan riesgos inherentes que incluyen — pero no se limitan a — resbalones o caídas en superficies irregulares, cortes o pinchazos de objetos afilados o vidrios rotos, exposición a materiales peligrosos, peligros de tráfico cerca de carreteras, esfuerzo físico al levantar objetos y condiciones climáticas adversas. Asumo voluntariamente todos estos riesgos.<br><br>En la máxima medida permitida por la ley, libero y descargo a Trash Talk NYC, sus organizadores, coordinadores, voluntarios e individuos afiliados de toda responsabilidad, reclamación o causa de acción derivada de lesiones, pérdidas o daños sufridos durante mi participación — ya sea causada por negligencia de las Partes Liberadas o de otro modo.<br><br>Confirmo que estoy en condiciones físicas adecuadas para participar. Acepto seguir todas las instrucciones de seguridad proporcionadas el día del evento. Entiendo que <strong>los participantes menores de 18 años deben estar acompañados por un padre o tutor</strong> que haya firmado una exención física en el evento.';
-
   const signupErrorEl = document.getElementById('signupFormError');
 
   onLanguageChange((lang) => {
-    const wt = document.getElementById('waiverText');
-    if (wt) wt.innerHTML = lang === 'es' ? waiverES : waiverEN;
     if (signupErrorEl?.textContent) signupErrorEl.textContent = submitErrorText(lang);
   });
-
-  // Apply saved language to waiver on load
-  if (getCurrentLang() !== 'en') {
-    const wt = document.getElementById('waiverText');
-    if (wt) wt.innerHTML = waiverES;
-  }
 
   // ── PHOTO ALT TEXT ──
   // setLang never translates attributes, so the Contribute photo's alt

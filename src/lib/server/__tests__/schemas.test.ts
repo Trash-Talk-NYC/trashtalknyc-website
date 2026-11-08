@@ -8,8 +8,6 @@ const validSignup = {
   country: 'United States',
   zip: '11211',
   hear: 'Word of Mouth',
-  waiverCheck: 'on',
-  ageCheck: 'on',
 };
 
 const validAbroad = {
@@ -33,7 +31,7 @@ describe('signupSchema', () => {
   });
 
   it('accepts optional fields as empty strings (how empty inputs submit)', () => {
-    const result = signupSchema.safeParse({ ...validSignup, phone: '', experience: '', hearOther: '', region: '', postal: '', city: '', botcheck: '' });
+    const result = signupSchema.safeParse({ ...validSignup, phone: '', hearOther: '', region: '', postal: '', city: '', botcheck: '' });
     expect(result.success).toBe(true);
   });
 
@@ -61,24 +59,12 @@ describe('signupSchema', () => {
     expect(signupSchema.safeParse({ ...validSignup, fname: '   ' }).success).toBe(false);
   });
 
-  it.each(['waiverCheck', 'ageCheck'])('rejects a submission missing %s (checkbox unchecked)', (field) => {
-    const { [field]: _omitted, ...rest } = validSignup as Record<string, string>;
-    expect(signupSchema.safeParse(rest).success).toBe(false);
-  });
-
-  it.each(['waiverCheck', 'ageCheck'])('rejects a non-"on" value for %s', (field) => {
-    expect(signupSchema.safeParse({ ...validSignup, [field]: 'true' }).success).toBe(false);
-  });
-
-  it('requires both waiver checkboxes to be accepted', () => {
+  // The newsletter has no tie to events (team round 3, captain 2026-11-08)
+  it('needs no waiver, 18+, or photo-consent box, and drops them if posted', () => {
     expect(signupSchema.safeParse(validSignup).success).toBe(true);
-  });
-
-  it('photo consent is optional and only accepts a checked box', () => {
-    expect(signupSchema.safeParse(validSignup).success).toBe(true);
-    const checked = signupSchema.safeParse({ ...validSignup, photoConsent: 'on' });
-    expect(checked.success && checked.data.photoConsent).toBe('on');
-    expect(signupSchema.safeParse({ ...validSignup, photoConsent: 'yes' }).success).toBe(false);
+    const old = signupSchema.safeParse({ ...validSignup, waiverCheck: 'on', ageCheck: 'on', photoConsent: 'on', experience: 'Hi' });
+    expect(old.success).toBe(true);
+    expect(old.success && Object.keys(old.data)).not.toContain('waiverCheck');
   });
 
   it('passes the Turnstile token through and tolerates its absence', () => {

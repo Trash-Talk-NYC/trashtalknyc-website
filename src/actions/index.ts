@@ -31,13 +31,6 @@ import {
  */
 const PENDING_HEAR_VALUES = ['Article', 'Somewhere else'];
 
-/**
- * Brevo boolean attribute for the signup's optional photo/video consent
- * checkbox (created and approved by the captain, 2026-10-09). Sent as a
- * JSON boolean on every signup: true when checked, false otherwise.
- */
-const PHOTO_CONSENT_ATTRIBUTE = 'PHOTO_CONSENT';
-
 /** The HEAR_ABOUT_US choice that carries the free-text companion. */
 const HEAR_SOMEWHERE_ELSE = 'Somewhere else';
 
@@ -348,7 +341,8 @@ export const server = {
       const dropped = await shouldSilentlyDrop('signup', ctx, {
         botcheck: input.botcheck,
         startedAt: input.startedAt,
-        text: input.experience,
+        // The form's one free-text field left
+        text: input.hearOther,
       });
       if (dropped) return { ok: true };
 
@@ -382,20 +376,19 @@ export const server = {
             ZIP_CODE: location.ZIP_CODE,
             BOROUGH: location.BOROUGH,
             PHONE: input.phone,
-            MESSAGE: input.experience,
             HEAR_ABOUT_US: input.hear,
             HEAR_ABOUT_US_OTHER: hearOther,
           }),
-          // Both are Brevo BOOLEAN attributes, so they must be JSON booleans:
-          // Brevo silently drops a 'true'/'false' string for a boolean field
-          // (WAIVER_ACCEPTED went unrecorded that way until 2026-10-10)
-          WAIVER_ACCEPTED: input.waiverCheck === 'on' && input.ageCheck === 'on',
-          [PHOTO_CONSENT_ATTRIBUTE]: input.photoConsent === 'on',
+          // No WAIVER_ACCEPTED, PHOTO_CONSENT, or MESSAGE any more: the
+          // newsletter has no tie to events, so the waiver, the 18+ box,
+          // the photo consent, and "Anything we should know?" came off the
+          // form (team round 3, captain 2026-11-08). The attributes stay in
+          // Brevo with older signups' values (add-only, never deleted), and
+          // leaving them out of the payload never blanks those values.
         },
         requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
       );
 
-      await tryCreateNote('signup', input.email, input.experience);
       if (hearNoteNeeded) {
         const hearAnswer = hearOther ? `${input.hear} — ${hearOther}` : input.hear;
         await tryCreateNote('signup', input.email, hearAnswer, 'hear');
