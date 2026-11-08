@@ -320,7 +320,9 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     align-items: baseline;
     justify-content: space-between;
     gap: 6px 18px;
-    margin-bottom: 18px;
+    /* Clears the wordmark sticker that rides ~30px above the first flyer,
+       so it never touches the inbox button (2026-11-08) */
+    margin-bottom: 48px;
   }
 
   .ev-h {
