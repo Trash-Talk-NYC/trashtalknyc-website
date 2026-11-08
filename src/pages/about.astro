@@ -1,15 +1,17 @@
 ---
-import Bricks from '../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../lib/bricks';
 import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
 import vestSticker from '../assets/vest-sticker.png';
+import SectionWall from '../components/SectionWall.astro';
+import WallHero from '../components/WallHero.astro';
+import wallHero from '../assets/walls/wall-mint-paint.webp';
+import wallTeam from '../assets/walls/walk-1751.webp';
+import wallLend from '../assets/walls/walk-1752.webp';
 
 /**
- * The Team — the group photo pasted up like a poster inside the brick
- * frame, then the three wheatpasted bio sheets in photo order on
+ * The Team — the group photo pasted up like a poster in the hero, then the three wheatpasted bio sheets in photo order on
  * desktop (Nandi, David, Fabiola) and David-first on phones (CSS
  * order), each with a round face chip cropped from the group photo.
  * Bios come verbatim from src/lib/team.ts — never edit them here.
@@ -36,41 +38,40 @@ const bioFlyer: Record<string, string> = {
   fabiola: 'f-tape f-torn',
 };
 
-// Whole brick rows per half: as many as this hero's height fits
-// Phones: a short wall above and below the full-width photo. Desktop:
-// the continuous wall (Bricks `continuous`); 8 is its no-JS fallback.
-const bricks: BrickRows = { phone: 3, desktop: 8 };
 ---
 
 <BaseLayout
-  title="About — Trash Talk NYC"
+  title="The Team — Trash Talk NYC"
   description="Meet Trash Talk NYC, a grassroots initiative cleaning New York City through fun volunteer cleanup events, community engagement, and educational entertainment."
 >
-  <!-- HERO: group photo in the brick frame -->
-  <section class="tm-hero brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} continuous />
-    <div class="tm-hero-inner">
-      <!-- "About" is an eyebrow over the page name, the same pattern as
-           From the Founder (captain, 2026-10-09) -->
-      <div class="mono tm-eyebrow" data-en="About" data-es="Nosotros">About</div>
-      <h1 class="tm-title" data-en="The Team" data-es="El Equipo">The Team</h1>
-      <figure class="tm-photo paste f-sticker">
-        <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
-        <Image
-          src={groupPhoto}
-          alt="Nandi, David, and Fabiola sitting together on a rock in a park"
-          class="pic"
-          width={1280}
-          widths={[640, 960, 1280]}
-          sizes="(min-width: 761px) 640px, 100vw"
-          loading="eager"
-        />
-        <figcaption><span>Nandi</span><span>David</span><span>Fabiola</span></figcaption>
-      </figure>
-    </div>
-  </section>
+  <!-- The shared left-aligned hero on the captain's wall pick
+       (2026-10-21), "About" as its eyebrow like From the Founder -->
+  <WallHero
+    src={wallHero}
+    eyebrow={{ en: 'About', es: 'Nosotros' }}
+    title={[{ en: 'The Team', es: 'El Equipo' }]}
+    seed={14}
+  />
 
-  <section class="wrap team-section">
+  <!-- The group photo and the bios sit on their own wall (captain's pick,
+       2026-10-21); every word is on paper, so the photo shows in full
+       color -->
+  <section class="team-section wall">
+    <SectionWall kind="cleanup" src={wallTeam} dim={0} duotone={0} seed={15} />
+    <div class="wrap team-inner">
+    <figure class="tm-photo paste f-sticker">
+      <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
+      <Image
+        src={groupPhoto}
+        alt="Nandi, David, and Fabiola sitting together on a rock in a park"
+        class="pic"
+        width={1280}
+        widths={[640, 960, 1280]}
+        sizes="(min-width: 761px) 640px, 100vw"
+        loading="eager"
+      />
+      <figcaption><span>Nandi</span><span>David</span><span>Fabiola</span></figcaption>
+    </figure>
     <div class="bios">
       {team.map((p) => (
         <article class:list={['bio', 'paste', `b-${p.id}`, bioFlyer[p.id]]}>
@@ -101,43 +102,25 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
         </article>
       ))}
     </div>
+    </div>
   </section>
 
   <!-- Closing hand-off to the recruitment page. Old emails linked
        /about#join-the-team; keep the anchor landing here. -->
   <!-- A short row: the heading with the roles button beside it, nothing
        else (captain, 2026-10-09) -->
-  <section class="lend" id="join-the-team">
+  <section class="lend wall" id="join-the-team">
+    <SectionWall kind="cleanup" src={wallLend} dim={0} duotone={0} seed={16} />
     <div class="wrap lend-inner">
-      <h2 data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
+      <h2 class="strip" data-en="Want to lend a hand?" data-es="¿Quieres echar una mano?">Want to lend a hand?</h2>
       <a class="btn btn-primary" href="/recruit" data-en="See open roles →" data-es="Ver puestos abiertos →">See open roles →</a>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  /* ── HERO ── */
-  .tm-hero {
-    position: relative;
-    overflow: hidden;
-    border-bottom: var(--ink);
-  }
-
-  .tm-hero-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 51.25rem;
-    margin-inline: auto;
-    display: grid;
-    gap: 16px;
-    justify-items: center;
-    padding: calc(100vw * 0.15) 22px calc(100vw * 0.15);
-  }
-
-  /* Same eyebrow voice as the founder page's */
-  .tm-eyebrow { color: var(--yellow); font-size: 1.02rem; margin-bottom: -6px; }
-
-  .tm-title { font-size: 3.4rem; line-height: 0.92; color: var(--lavender); }
+  /* ── GROUP PHOTO ── */
+  .team-inner { display: grid; justify-items: center; gap: 56px; }
 
   .tm-photo {
     position: relative;
@@ -176,12 +159,8 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   }
 
   @media (min-width: 761px) {
-    .tm-hero-inner { gap: 22px; padding: calc(100vw * 0.08) 16px calc(100vw * 0.08); }
-    .tm-title { font-size: clamp(3.4rem, 6.4vw, 5.8rem); }
-    /* The hero always shows the full brick drawing on desktop, whose height
-       scales with the viewport, so the photo scales with it too and the
-       side columns stay one connected wall (captain, 2026-10-09) */
-    .tm-hero-inner { max-width: none; width: 100%; }
+    .team-inner { gap: 72px; }
+    /* The photo scales with the viewport (captain, 2026-10-09) */
     .tm-photo { width: min(46vw, 100%); padding: 14px 14px 18px; }
     .tm-photo figcaption { font-size: 0.72rem; }
 
@@ -194,9 +173,10 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
 
   /* ── BIOS ── */
   /* Breathing room under the hero now that the bios lead the section */
-  .team-section { padding-top: 48px; }
+  .team-section { padding-block: 64px 40px; }
 
   .bios {
+    justify-self: stretch;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
@@ -250,11 +230,9 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   }
 
   /* ── LEND A HAND ── */
-  .lend {
-    background-color: var(--green);
-    color: var(--beige);
-    padding-block: 32px;
-  }
+  /* The captain's photo pick (2026-10-21) with SectionWall's torn edges
+     in and out; the heading is on its yellow strip, so it stays AA */
+  .lend { padding-block: 64px; }
 
   .lend-inner {
     display: flex;
@@ -267,7 +245,7 @@ const bricks: BrickRows = { phone: 3, desktop: 8 };
   .lend h2 { font-size: 2.4rem; }
 
   @media (min-width: 761px) {
-    .lend { padding-block: 40px; }
+    .lend { padding-block: 80px; }
     .lend h2 { font-size: clamp(2.6rem, 4vw, 3.6rem); }
   }
 </style>

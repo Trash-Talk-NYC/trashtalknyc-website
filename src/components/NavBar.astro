@@ -1,6 +1,7 @@
 ---
 /**
- * Sticky top navigation: the wordmark sticker, page links, About
+ * Sticky top navigation: the vest sticker and the "Trash Talk NYC" name
+ * (captain's N1, 2026-10-15), page links, About
  * dropdown, EN/ES toggle, Join CTA, and the phone menu (a beige sheet
  * that expands inside the sticky nav, under the bar). Owns active-page
  * detection. Deliberately a PLAIN sticky header — see the header
@@ -16,8 +17,10 @@
 import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
-import { MORE_MEDIA_PATH, PHOTO_ALBUMS, mediaSections } from '../lib/media';
-import wordmarkSticker from '../assets/wordmark-sticker.png';
+import { ABOUT_TTNYC_PATH } from '../lib/aboutTtnyc';
+import { WALL_PATH } from '../lib/partners';
+import { GALLERY, IN_THE_NEWS, MORE_MEDIA_PATH, liveMediaSections } from '../lib/media';
+import vestSticker from '../assets/vest-sticker.png';
 
 const pathname = Astro.url.pathname;
 
@@ -30,22 +33,30 @@ const isFounder  = isUnder(FOUNDER_PATH);
 // The founder page lives under /about/, which isTeam's prefix also matches, so
 // the `!isFounder` guard below is what stops "The Team" double-lighting on
 // the founder page. Keep the guard — declaration order alone does nothing.
-const isTeam     = !isFounder && isUnder('/about');
+// The About page (/about/ttnyc) sits under /about/ too, so it needs the same guard.
+const isAboutTtnyc = isUnder(ABOUT_TTNYC_PATH);
+const isTeam     = !isFounder && !isAboutTtnyc && isUnder('/about');
 // The recruitment page is top-level at /recruit but belongs to the About menu
 const isRecruit  = isUnder('/recruit');
+// The partners page is its own top-level link (team round 3, captain
+// 2026-11-08: "pretty important page", so not hidden inside About)
+const isWall = isUnder(WALL_PATH);
 // The About parent highlights when any of its children is current
-const isAbout    = isTeam || isFounder || isRecruit;
+const isAbout    = isAboutTtnyc || isTeam || isFounder || isRecruit;
 const isContact  = isUnder('/contact');
 // More Media parent lights for the overview and every channel subpage;
 // the "All Media" child lights only on the overview itself
-const isMedia    = isUnder(MORE_MEDIA_PATH);
+// In The News is a top-level route but a More Media page, so it lights
+// the More Media parent too
+const isMedia    = isUnder(MORE_MEDIA_PATH) || isUnder(IN_THE_NEWS.path);
 const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH + '/';
 ---
 
 <nav aria-label="Main">
   <div class="nav-bar">
     <a class="nav-logo-link" href="/" aria-label="Trash Talk NYC home">
-      <Image src={wordmarkSticker} alt="" class="nav-logo" width={184} densities={[1, 2]} loading="eager" />
+      <Image src={vestSticker} alt="" class="nav-logo" width={64} densities={[1, 2]} loading="eager" />
+      <span class="nav-name" aria-hidden="true">Trash Talk NYC</span>
     </a>
 
     <ul class="nav-links">
@@ -72,11 +83,13 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           </svg>
         </button>
         <ul class="nav-drop-menu" id="aboutDropMenu">
+          <li><a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About" data-es="Nosotros">About</a></li>
           <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
           <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
           <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
         </ul>
       </li>
+      <li><a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a></li>
       <!-- More Media (captain, 2026-10-09): same disclosure pattern as
            About — the overview is the first child, then one link per
            channel subpage, all from media.ts. -->
@@ -94,10 +107,11 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
         </button>
         <ul class="nav-drop-menu" id="mediaDropMenu">
           <li><a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a></li>
-          {mediaSections.map((m) => (
+          {liveMediaSections.map((m) => (
             <li><a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a></li>
           ))}
-          <li><a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a></li>
+          <li><a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a></li>
+          <li><a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a></li>
         </ul>
       </li>
       <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
@@ -126,11 +140,13 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           <span class="chev" aria-hidden="true">▾</span>
         </button>
         <div class="m-sub" id="mAboutSub" hidden>
+          <a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About" data-es="Nosotros">About</a>
           <a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a>
           <a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a>
           <a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a>
         </div>
       </div>
+      <a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a>
       <div class="m-group">
         <button type="button" class:list={['m-drop', { active: isMedia }]} aria-expanded="false" aria-controls="mMediaSub">
           <span data-en="More Media" data-es="Más Medios">More Media</span>
@@ -138,10 +154,11 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
         </button>
         <div class="m-sub" id="mMediaSub" hidden>
           <a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a>
-          {mediaSections.map((m) => (
+          {liveMediaSections.map((m) => (
             <a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a>
           ))}
-          <a href={PHOTO_ALBUMS.path} class:list={{ active: isUnder(PHOTO_ALBUMS.path) }} data-en={PHOTO_ALBUMS.label.en} data-es={PHOTO_ALBUMS.label.es}>{PHOTO_ALBUMS.label.en}</a>
+          <a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a>
+          <a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a>
         </div>
       </div>
       <a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a>
@@ -270,19 +287,36 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
   }
 
   .nav-logo-link {
-    display: block;
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
     margin-right: auto;
+    text-decoration: none;
   }
 
-  /* The wordmark sticker hangs slightly below the bar like a slapped-on
-     sticker; the nav deliberately doesn't clip it. */
   nav :global(.nav-logo) {
-    width: 70px;
+    flex: none;
+    width: 40px;
     height: auto;
-    margin-top: 20px;
-    transform: rotate(-5deg);
-    filter: drop-shadow(3px 3px 0 var(--black));
+    transform: rotate(-4deg);
+    filter: drop-shadow(2px 2px 0 var(--black));
+  }
+
+  /* The one Londrina Black (900) use on the site: purple with a thin
+     ink outline painted under the fill (captain's N1), flat, with no
+     drop shadow (team round 3, captain 2026-11-08: "Remove"). One line at every width: the name shrinks on narrow phones
+     rather than wrapping. */
+  .nav-name {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(1.15rem, 5.4vw, 1.5rem);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    color: var(--purple);
+    -webkit-text-stroke: 1.5px var(--black);
+    paint-order: stroke fill;
   }
 
   .nav-links {
@@ -496,13 +530,11 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
   @media (min-width: 761px) {
     .nav-bar { height: 74px; gap: 28px; }
 
-    nav :global(.nav-logo) {
-      width: 92px;
-      margin-top: 26px;
-    }
+    nav :global(.nav-logo) { width: 50px; }
+    .nav-name { font-size: 1.6rem; }
 
     .nav-links { display: flex; margin-left: auto; }
-    .nav-logo-link { margin-right: 0; }
+    .nav-logo-link { margin-right: 0; flex: none; }
     .nav-lang { display: block; }
     .burger { display: none; }
     .m-menu { display: none !important; }
@@ -512,12 +544,23 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
     .nav-drop-toggle { white-space: nowrap; }
   }
 
-  /* Five top-level items (More Media joined in 2026-10) only fit the
+  /* Six top-level items (More Media 2026-10, The Wall 2026-11) only fit the
      narrow end of desktop with tighter spacing and type */
   @media (min-width: 761px) and (max-width: 1060px) {
     .nav-bar { gap: 16px; }
     .nav-links { gap: 16px; font-size: 0.98rem; }
-    nav :global(.nav-logo) { width: 78px; }
+    nav :global(.nav-logo) { width: 42px; }
+    .nav-name { font-size: 1.3rem; }
     nav :global(.nav-cta) { padding: 10px 14px; }
+  }
+
+  /* With The Wall in the bar (2026-11) the name no longer fits beside six
+     links at the narrowest desktop widths, so the vest alone stands for
+     the brand there (the link keeps its "Trash Talk NYC home" name) and
+     the dropdown chevrons keep their room */
+  @media (min-width: 761px) and (max-width: 900px) {
+    .nav-bar { gap: 12px; }
+    .nav-links { gap: 14px; }
+    .nav-name { display: none; }
   }
 </style>

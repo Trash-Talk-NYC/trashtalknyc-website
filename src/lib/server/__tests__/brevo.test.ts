@@ -272,6 +272,12 @@ describe('buildInquiryEmail', () => {
     );
   });
 
+  it('puts the category tag first and keeps the rest of the subject', () => {
+    expect(buildInquiryEmail({ ...base, inquiryType: 'partnership', organization: 'Acme Org', tag: '[Podcast]' }).subject).toBe(
+      '[Podcast] New collaboration inquiry — Jane Doe · Acme Org',
+    );
+  });
+
   it('escapes submitted values so a malicious message cannot inject markup', () => {
     const { htmlContent } = buildInquiryEmail({
       ...base,

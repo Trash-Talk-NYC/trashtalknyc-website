@@ -5,6 +5,7 @@ import { isValidPhone } from '../phone';
 import { COUNTRY_VALUES, US_COUNTRY } from '../countries';
 import { US_ZIP_PATTERN } from '../zip';
 import { isValidPreferredMonth } from '../months';
+import { BEHALF_VALUES, CLEANING_NEED_VALUES, PARTNERSHIP_TYPE_VALUES, SUPPORT_NEED_VALUES } from '../leadOptions';
 
 /**
  * Fields shared by the site forms, matching the inputs rendered on the
@@ -45,11 +46,6 @@ const requiredPhone = z
   .max(50)
   .refine((v) => isValidPhone(v), 'Please enter a valid phone number');
 
-// Checkboxes submit the string 'on' when checked and are omitted entirely
-// from form data when unchecked, so a literal match both requires the box
-// to be present and rejects any other value.
-const waiverAccepted = z.literal('on', { errorMap: () => ({ message: 'You must accept the liability waiver to sign up' }) });
-
 export const signupSchema = z
   .object({
     ...baseFields,
@@ -63,14 +59,12 @@ export const signupSchema = z
     region: z.string().trim().max(120).optional(),
     postal: z.string().trim().max(20).optional(),
     phone: optionalPhone,
-    experience: z.string().trim().max(2000).optional(),
     hear: z.string().trim().min(1, 'Please tell us how you heard about us').max(200),
     // Free-text "where was that?" companion to the "Somewhere else" choice
     hearOther: z.string().trim().max(200).optional(),
-    waiverCheck: waiverAccepted,
-    ageCheck: waiverAccepted,
-    // Optional photo/video consent: 'on' when checked, absent otherwise
-    photoConsent: z.literal('on').optional(),
+    // No waiver, 18+, or photo-consent boxes and no free-text note: the
+    // newsletter has no tie to events (team round 3, captain 2026-11-08).
+    // Zod strips unknown keys, so a cached old page posting them still lands.
   })
   .superRefine((data, ctx) => {
     if (!COUNTRY_VALUES.includes(data.country)) {
@@ -90,46 +84,78 @@ export const contactSchema = z
   .object({
     ...baseFields,
     inquiryType: z.enum(['general', 'partnership', 'sponsor']),
+    // The Partner tile's "What kind of partnership?" (captain, 2026-10-15)
+    partnershipType: z.enum(PARTNERSHIP_TYPE_VALUES).optional(),
     phone: optionalPhone,
     organization: z.string().trim().max(300).optional(),
     message: z.string().trim().min(1, 'Message is required').max(5000),
   })
-  // Both org-backed tabs (Collaborate and Sponsor) write in on behalf of an
+  // Both org-backed tabs (Partner and Sponsor) write in on behalf of an
   // organization, so the org name is required for either.
   .refine((data) => data.inquiryType === 'general' || !!data.organization?.trim(), {
     message: 'Organization name is required for partnership and sponsorship inquiries',
     path: ['organization'],
+  })
+  // The partnership kind picks the inbox, so a partner inquiry needs one
+  .refine((data) => data.inquiryType !== 'partnership' || !!data.partnershipType, {
+    message: 'Please choose what kind of partnership',
+    path: ['partnershipType'],
   });
 
 /**
- * Lead a Cleanup application (the fourth contact tile). Addresses are
- * re-verified against NYC GeoSearch in the action; photo content
- * validation and re-encoding live in src/lib/server/photos.ts —
+ * Lead a Cleanup support request (the first contact tile). The starting
+ * address is re-verified against NYC GeoSearch in the action; photo
+ * content validation and re-encoding live in src/lib/server/photos.ts —
  * this schema only checks shape (the File array and count land here,
- * sizes and magic bytes in the handler).
+ * sizes and magic bytes in the handler). Route type, the end address,
+ * and the mailing address were dropped on team feedback (2026-10-15);
+ * the choice lists live in src/lib/leadOptions.ts.
  */
 export const leadSchema = z
   .object({
     ...baseFields,
-    behalf: z.enum(['individual', 'organization']),
-    mailingAddress: z.string().trim().min(1, 'Mailing address is required').max(400),
+    // Check all that apply (captain, 2026-10-15), at least one
+    behalf: z
+      .array(z.enum(BEHALF_VALUES))
+      .min(1, 'Please choose who the request is on behalf of')
+      .max(BEHALF_VALUES.length),
+    // What "Other" means, when they checked it
+    behalfOther: z.string().trim().max(200).optional(),
     phone: requiredPhone,
-    routeType: z.enum(['loop', 'oneway']),
     startAddress: z.string().trim().min(1, 'Starting address is required').max(300),
     startAddressId: z.string().trim().min(1, 'Pick a starting address from the list').max(120),
     startAddressPoint: z.string().trim().min(1, 'Pick a starting address from the list').max(60),
-    endAddress: z.string().trim().max(300).optional(),
-    endAddressId: z.string().trim().max(120).optional(),
-    endAddressPoint: z.string().trim().max(60).optional(),
+    // Check all that apply, at least one (team round 3, captain 2026-11-08)
+    cleaningNeed: z
+      .array(z.enum(CLEANING_NEED_VALUES))
+      .min(1, 'Please choose what needs cleaning')
+      .max(CLEANING_NEED_VALUES.length),
+    // What "Other" needs cleaning, when they checked it
+    cleaningOther: z.string().trim().max(200).optional(),
+    support: z
+      .array(z.enum(SUPPORT_NEED_VALUES))
+      .min(1, 'Please choose at least one kind of support')
+      .max(SUPPORT_NEED_VALUES.length),
+    // Optional, so empty is fine; anything typed must be a whole number of
+    // people. `.optional()` stays outermost (see optionalPhone).
+    participants: z
+      .string()
+      .trim()
+      .refine((v) => !v || (/^\d{1,5}$/.test(v) && Number(v) >= 1), 'Please enter a number of participants')
+      .optional(),
     preferredMonth: z
       .string()
       .trim()
       .refine((v) => isValidPreferredMonth(v), 'Please choose an upcoming month'),
     photos: z.array(z.instanceof(File)).optional(),
   })
-  .refine((data) => data.routeType === 'loop' || (!!data.endAddress?.trim() && !!data.endAddressId?.trim() && !!data.endAddressPoint?.trim()), {
-    message: 'An end address is required for a one-way route',
-    path: ['endAddress'],
+  .refine((data) => !data.behalf.includes('other') || !!data.behalfOther?.trim(), {
+    message: 'Please tell us who the request is on behalf of',
+    path: ['behalfOther'],
+  })
+  .refine((data) => !data.cleaningNeed.includes('other') || !!data.cleaningOther?.trim(), {
+    message: 'Please tell us what needs cleaning',
+    path: ['cleaningOther'],
   });
 
 export type SignupInput = z.infer<typeof signupSchema>;

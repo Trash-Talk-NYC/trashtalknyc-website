@@ -50,14 +50,14 @@ Empty-string fields are dropped before upsert (`buildAttributes`) so updates nev
 | `COUNTRY` | ✓ always (country-first location, 2026-10-09) | — | — |
 | `CITY` / `STATE_REGION` / `ZIP_CODE` | ✓ US: ZIP typed, city + full state name from the server's ZIP re-lookup; elsewhere: picked city, optional region, optional free-format postal code | — | — |
 | `BOROUGH` | ✓ only for NYC ZIPs (from the ZIP-range table in `src/lib/zip.ts`, never the lookup service) | — | — |
-| `MESSAGE` | ✓ (experience text) | ✓ (message text) | — |
+| `MESSAGE` | — (signup stopped sending it 2026-11-08; older values stay) | ✓ (message text) | — |
 | `HEAR_ABOUT_US` | ✓ required (values must match the Brevo enum exactly; "Article" and "Somewhere else" are pending dashboard options — the action retries the upsert without the hear attributes when Brevo rejects them and notes the answer instead, `brevo_hear_attrs_rejected`) | — | — |
 | `HEAR_ABOUT_US_OTHER` | ✓ free text behind "Somewhere else" (pending dashboard creation, same fallback) | — | — |
-| `WAIVER_ACCEPTED` (boolean) | ✓ JSON `true` only when both waiver and age checkboxes validated, else `false` — never the strings `'true'`/`'false'`, which Brevo silently drops for boolean attributes (the 2026-07 → 2026-10 bug) | — | — |
-| `PHOTO_CONSENT` (boolean) | ✓ JSON `true`/`false` from the optional photo-consent checkbox | — | — |
+| `WAIVER_ACCEPTED`, `PHOTO_CONSENT` (boolean) | — no longer sent since 2026-11-08 (the newsletter dropped its waiver, 18+, and photo-consent boxes); the attributes keep older signups' values, add-only. If a boolean is ever sent again it must be a JSON boolean, never `'true'`/`'false'`, which Brevo silently drops (the 2026-07 → 2026-10 bug) | — | — |
 | `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership` \| `sponsor`; plain text attribute — verified via the attributes API 2026-08, so new values need no dashboard work) | ✓ (`lead`) |
 | `ORGANIZATION` | — | ✓ (partnership + sponsor tabs, required there) | — |
-| `LEAD_BEHALF`, `MAILING_ADDRESS`, `ROUTE_TYPE`, `ROUTE_START`, `ROUTE_END`, `PREFERRED_MONTH` | — | — | ✓ (`ROUTE_END` one-way only; route labels are the GeoSearch-verified ones) |
+| `LEAD_BEHALF`, `ROUTE_START`, `PREFERRED_MONTH` | — | — | ✓ (`ROUTE_START` is the GeoSearch-verified starting address) |
+| `MAILING_ADDRESS`, `ROUTE_TYPE`, `ROUTE_END` | — | — | no longer sent (2026-10-15); kept in Brevo with older requests' values — never delete attributes |
 
 The 2026-10 attributes (`COUNTRY`, `CITY`, `ZIP_CODE`, and the lead set) must be created in the Brevo dashboard before those flows can land.
 
@@ -78,4 +78,4 @@ Don't retry with different payloads; edit the options directly in the Brevo dash
 
 All three forms (`signup`, `contact`, `leadCleanup`) submit through Astro Actions running as an on-demand Netlify function: zod validation → spam heuristics (honeypot + timing + content patterns) → per-IP Netlify Blobs rate limiting → Cloudflare Turnstile verification (`src/lib/server/turnstile.ts`, live in production — see `AGENTS.md`) → Brevo upsert.
 Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign — any doc still referencing a Web3Forms key is stale.
-Contact-page submissions (every tile, Lead a Cleanup included) also email the team a transactional notification once `CONTACT_NOTIFY_FROM` and the recipient var are set — `CONTACT_NOTIFY_TO`, or `SPONSOR_NOTIFY_TO` for the sponsor tile with no fallback between them (`tryNotifyInquiry` in `src/actions/index.ts`; see `.env.example`); unset means `inquiry_notify_skipped`, never a misroute. Signups send no notification.
+Contact-page submissions (every tile, Lead a Cleanup included) also email the team a transactional notification once `CONTACT_NOTIFY_FROM` is set, each kind to its own inbox var with no fallback between them: `CONTACT_NOTIFY_TO` (general), `SPONSOR_NOTIFY_TO`, `LEAD_NOTIFY_TO`, and for the Partner tile `PARTNER_CONTENT_NOTIFY_TO` / `PODCAST_NOTIFY_TO` / `NONPROFIT_NOTIFY_TO` by partnership kind (`notifyRoute` in `src/lib/server/notifyRouting.ts`; see `.env.example`). An unset inbox var logs `inquiry_notify_unconfigured` naming it and sends nothing, never a misroute. Signups send no notification.

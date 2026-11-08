@@ -1,0 +1,64 @@
+---
+/**
+ * A responsive 16:9 YouTube player through youtube-nocookie.com (no
+ * tracking cookies until playback). Shared by the YouTube subpage and the
+ * homepage's featured posts so both embed the same way.
+ *
+ * The iframe's accessible title is an attribute, which setLang never
+ * translates, so it carries data-title-en/es and the script below swaps
+ * it on language change (the bilingual gate checks that pair).
+ */
+import { youtubeEmbedUrl } from '../lib/media';
+
+interface Props {
+  videoId: string;
+  title: { en: string; es: string };
+}
+
+const { videoId, title } = Astro.props;
+---
+
+<div class="yt-ratio">
+  <iframe
+    src={youtubeEmbedUrl(videoId)}
+    title={title.en}
+    data-title-en={title.en}
+    data-title-es={title.es}
+    loading="lazy"
+    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<script>
+  import { getCurrentLang, onLanguageChange, type Lang } from '../lib/language';
+
+  const frames = Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe[data-title-en]'));
+
+  function applyTitles(lang: Lang) {
+    frames.forEach((f) => {
+      const title = f.getAttribute(`data-title-${lang}`);
+      if (title) f.title = title;
+    });
+  }
+
+  applyTitles(getCurrentLang());
+  onLanguageChange(applyTitles);
+</script>
+
+<style>
+  .yt-ratio {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--black);
+  }
+
+  .yt-ratio iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>

@@ -1,10 +1,12 @@
 ---
-import Bricks from '../../components/Bricks.astro';
-import { brickHeroStyle, type BrickRows } from '../../lib/bricks';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { founderDisplayName, founderMetaDescription, founderName, founderTitle } from '../../lib/founder';
 import founderPhoto from '../../assets/david-founder.jpg';
+import SectionWall from '../../components/SectionWall.astro';
+import WallHero from '../../components/WallHero.astro';
+import wallHero from '../../assets/walls/walk-1839.webp';
+import wallLetter from '../../assets/walls/walk-1836.webp';
 
 /**
  * From the Founder — /about/from-the-founder: David's first-person
@@ -106,31 +108,28 @@ const story: Block[] = [
   },
 ];
 
-// Whole brick rows per half: as many as this hero's height fits
-const bricks: BrickRows = { phone: 6, desktop: 3 };
 ---
 
 <BaseLayout title="From the Founder — Trash Talk NYC" description={founderMetaDescription}>
-  <!-- Brick-framed title with just "About" above it, slightly larger
-       than the usual accent line (captain, 2026-10 redesign). The h1 is
-       the captain's chosen page name (rename, 2026-08-13), split into
-       two leaves so the language toggle can restructure it: EN
-       "From the / Founder" becomes ES "Del / Fundador" leaf by leaf. -->
-  <section class="fd-hero brick-hero" style={brickHeroStyle(bricks)}>
-    <Bricks rows={bricks} />
-    <div class="fd-hero-inner">
-      <div class="mono fd-eyebrow" data-en="About" data-es="Nosotros">About</div>
-      <h1 class="fd-title">
-        <span data-en="From the" data-es="Del">From the</span><br />
-        <span class="accent" data-en="Founder" data-es="Fundador">Founder</span>
-      </h1>
-    </div>
-  </section>
+  <!-- The shared left-aligned hero on the captain's wall pick
+       (2026-10-21), "About" as its eyebrow. The h1 is the captain's
+       chosen page name (rename, 2026-08-13), split into two leaves so the
+       language toggle can restructure it: EN "From the / Founder" becomes
+       ES "Del / Fundador" leaf by leaf. -->
+  <WallHero
+    src={wallHero}
+    eyebrow={{ en: 'About', es: 'Nosotros' }}
+    title={[{ en: 'From the', es: 'Del' }, { en: 'Founder', es: 'Fundador' }]}
+    seed={17}
+  />
 
   <!-- David's letter, unchanged, as ONE wheatpasted sheet; the only
        things beside it are the margin drawings, which are decoration,
        not content. -->
-  <section class="fd-body">
+  <section class="fd-body wall">
+    <!-- The letter is pasted on the captain's photo pick (2026-10-21);
+         every word is on the sheet, so the wall shows in full color -->
+    <SectionWall kind="cleanup" src={wallLetter} tear="top" dim={0} duotone={0} seed={18} />
     <article class="story paste f-staple">
       <!-- Byline card (captain, 2026-08-13): circular photo + name +
            title, replacing the text-only byline. david-founder.jpg is a
@@ -180,51 +179,12 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
 
 <style>
   /* ── HERO ── */
-  /* One brick-frame behavior site-wide (captain): edge-to-edge halves
-     scaling with the viewport, content kept inside the opening by the
-     vw-proportional padding — same pattern as the homepage hero. */
-  .fd-hero {
-    position: relative;
-    overflow: hidden;
-    border-bottom: var(--ink);
-  }
-
-  .fd-hero-inner {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    justify-items: center;
-    gap: 10px;
-    padding: calc(100vw * 0.17) 22px calc(100vw * 0.17);
-  }
-
-  /* "Just About above it, slightly larger" — the captain's call: the
-     accent line runs a step bigger than the usual mono voice. */
-  .fd-eyebrow {
-    color: var(--yellow);
-    font-size: 1.02rem;
-  }
-
-  .fd-title {
-    font-size: 2.9rem;
-    line-height: 0.92;
-    color: var(--beige);
-    text-align: center;
-  }
-
-  .fd-title .accent { color: var(--lavender); }
-
-  @media (min-width: 761px) {
-    .fd-hero-inner { padding: calc(100vw * 0.095) 16px calc(100vw * 0.09); }
-    .fd-title { font-size: clamp(3.2rem, 6vw, 5.4rem); }
-  }
-
   /* ── BODY ── */
   .fd-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
-    padding: 30px 12px 44px;
+    padding: 52px 12px 56px;
     align-items: start;
   }
 
@@ -242,7 +202,7 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
       grid-template-columns: minmax(0, 45rem);
       justify-content: center;
       gap: 28px;
-      padding: 56px clamp(16px, 4vw, 48px) 72px;
+      padding: 80px clamp(16px, 4vw, 48px) 96px;
     }
 
     .story { padding: 44px clamp(22px, 4vw, 56px) 48px; }
@@ -276,7 +236,6 @@ const bricks: BrickRows = { phone: 6, desktop: 3 };
     font-weight: 400;
     font-size: 1.6rem;
     line-height: 1;
-    color: var(--purple);
   }
 
   .byline-title {
