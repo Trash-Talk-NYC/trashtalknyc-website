@@ -73,7 +73,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
            old "best way to hear about events" box -->
       <div class="ev-head">
         <h2 id="upcomingHeading" class="ev-h" data-en="Upcoming" data-es="Próximos">Upcoming</h2>
-        <a class="ev-inbox btn btn-primary btn-lg" href="/#signup" data-en="Get them in your inbox →" data-es="Recíbelos en tu correo →">Get them in your inbox →</a>
+        <a class="ev-inbox btn btn-primary" href="/#signup" data-en="Get them in your inbox →" data-es="Recíbelos en tu correo →">Get them in your inbox →</a>
       </div>
 
       <div class="dist-sort-label mono" id="distSortLabel" style="display:none">
@@ -92,7 +92,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
       )}
 
       <!-- The trash club guide, for anyone who wants to host (2026-11-08) -->
-      <p class="ev-guide"><span data-en="Want to host your own cleanup? " data-es="¿Quieres organizar tu propia limpieza? ">Want to host your own cleanup? </span><a href={GUIDE_PATH} data-en="Read How to Start a Trash Club →" data-es="Lee Cómo empezar un trash club →">Read How to Start a Trash Club →</a></p>
+      <p class="ev-guide"><span data-en="Want to host your own cleanup? Read " data-es="¿Quieres organizar tu propia limpieza? Lee ">Want to host your own cleanup? Read </span><a href={GUIDE_PATH} data-en="How to Start a Trash Club" data-es="Cómo empezar un trash club">How to Start a Trash Club</a><span aria-hidden="true"> →</span></p>
     </section>
 
     {pastGroups.length > 0 && (
@@ -337,20 +337,16 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     color: var(--purple);
   }
 
-  /* The captain's I1 (2026-11-08): the homepage "Events" button's exact
-     size (.btn-lg), with the ink shadow buttons wear on paper */
+  /* The captain's I1 (2026-11-08): the Events button's family (mono,
+     ink border, yellow) at the regular size, so it stays secondary to
+     "Upcoming" (the big .btn-lg version was "too big"), with the ink
+     shadow buttons wear on paper */
   .ev-head { align-items: center; }
   .ev-inbox { box-shadow: 4px 4px 0 var(--black); }
 
   .ev-guide { margin: 36px 0 0; font-size: 1.15rem; font-weight: 500; color: var(--black); }
   .ev-guide a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
-  /* On phones the label (24 characters in both languages) only fits the
-     sheet on one line with narrower sides; font, size, and height stay
-     the Events button's */
-  @media (max-width: 760px) {
-    .ev-inbox { padding-inline: 28px; }
-  }
   .ev-inbox:hover { box-shadow: 6px 6px 0 var(--black); }
 
   .ev-none { margin: 0; font-size: 1.15rem; color: var(--black); }

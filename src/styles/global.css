@@ -226,9 +226,8 @@ body::after {
 .btn:hover { transform: translate(-2px, -2px); }
 
 /* The big destination button: the homepage hero's "Events" (captain,
-   2026-10-09: the small one read "unbelievably small") and Club Events'
-   "Get them in your inbox" (captain's I1, 2026-11-08), one size so the
-   two always match. rem-based, so it grows with the fluid root size. */
+   2026-10-09: the small one read "unbelievably small"). rem-based, so it
+   grows with the fluid root size. */
 .btn-lg { padding: 16px 44px; font-size: 1.05rem; border-width: 3px; }
 
 @media (min-width: 761px) {
