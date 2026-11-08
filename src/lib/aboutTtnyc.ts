@@ -1,5 +1,6 @@
 /**
- * About TTNYC (team round 3, captain 2026-11-08): the club's vision,
+ * About (team round 3, captain 2026-11-08; named "About TTNYC" until the
+ * captain renamed it the same day): the club's vision,
  * mission, and values, the first item in the About menu. It is a page of
  * its own, separate from the "Our Story" page still to come (captain:
  * "About and our story should be separate. mission on about").

@@ -33,7 +33,7 @@ const isFounder  = isUnder(FOUNDER_PATH);
 // The founder page lives under /about/, which isTeam's prefix also matches, so
 // the `!isFounder` guard below is what stops "The Team" double-lighting on
 // the founder page. Keep the guard — declaration order alone does nothing.
-// About TTNYC sits under /about/ too, so it needs the same guard.
+// The About page (/about/ttnyc) sits under /about/ too, so it needs the same guard.
 const isAboutTtnyc = isUnder(ABOUT_TTNYC_PATH);
 const isTeam     = !isFounder && !isAboutTtnyc && isUnder('/about');
 // The recruitment page is top-level at /recruit but belongs to the About menu
@@ -83,7 +83,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           </svg>
         </button>
         <ul class="nav-drop-menu" id="aboutDropMenu">
-          <li><a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About TTNYC" data-es="Sobre TTNYC">About TTNYC</a></li>
+          <li><a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About" data-es="Nosotros">About</a></li>
           <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
           <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
           <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
@@ -140,7 +140,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
           <span class="chev" aria-hidden="true">▾</span>
         </button>
         <div class="m-sub" id="mAboutSub" hidden>
-          <a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About TTNYC" data-es="Sobre TTNYC">About TTNYC</a>
+          <a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About" data-es="Nosotros">About</a>
           <a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a>
           <a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a>
           <a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a>

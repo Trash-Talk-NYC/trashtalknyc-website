@@ -24,7 +24,7 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
 
 <BaseLayout
   title="More Media — Trash Talk NYC"
-  description="Hear Trash Talk NYC talk trash on YouTube, see photos from the club month by month, and read the press coverage."
+  description="Hear Trash Talk NYC talk trash on YouTube, see photos from the club, and read the press coverage."
   stickerFonts
 >
   <WallHero
@@ -57,7 +57,7 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
           {preview.map((p) => <Image src={p.src} alt="" class="mm-thumb" width={240} widths={[120, 240]} sizes="7rem" />)}
         </div>
       )}
-      <p class="mm-blurb" data-en="Photos from Trash Talk NYC, month by month." data-es="Fotos de Trash Talk NYC, mes a mes.">Photos from Trash Talk NYC, month by month.</p>
+      <p class="mm-blurb" data-en="Photos from our cleanups, plantings, and the lab." data-es="Fotos de nuestras limpiezas, siembras y el laboratorio.">Photos from our cleanups, plantings, and the lab.</p>
       <a class="btn btn-purple mm-btn" href={GALLERY.path}>
         <span data-en="See photos →" data-es="Ver fotos →">See photos →</span>
       </a>

@@ -66,7 +66,9 @@ const monthOptions = rollingMonths();
   <div class="ct-bg" data-for="partnership"><SectionWall kind="cleanup" src={wallPartner} dim={0} duotone={0} seed={7} outline /></div>
   <div class="wrap ct-body">
     <div class="ct-form">
-      <div class="pick-label mono" id="pickLabel" data-en="What brings you here?" data-es="¿Qué te trae por aquí?">What brings you here?</div>
+      <!-- The visible yellow tag came off (captain, 2026-11-08); the tiles
+           keep it as their group's accessible name -->
+      <span class="sr-only" id="pickLabel" data-en="What brings you here?" data-es="¿Qué te trae por aquí?">What brings you here?</span>
       <div class="tiles" role="group" aria-labelledby="pickLabel">
         <!-- Four large taped flyers in a 2 × 2 grid (captain's H1 pick,
              2026-10-09); the chosen form opens below as its own sheet -->
@@ -316,19 +318,6 @@ const monthOptions = rollingMonths();
   }
 
   .ct-form { color: var(--beige); }
-
-  /* Anchored as a solid tape label (captain, 2026-10-10: the bare line
-     looked naked on the wall) */
-  .pick-label {
-    display: inline-block;
-    margin-bottom: 26px;
-    padding: 8px 18px;
-    background: var(--yellow);
-    color: var(--black);
-    font-size: 0.95rem;
-    transform: rotate(-1.5deg);
-    clip-path: polygon(0 6%, 3% 0, 97% 4%, 100% 12%, 97% 30%, 100% 50%, 97% 72%, 100% 92%, 96% 100%, 3% 96%, 0 86%, 3% 66%, 0 46%, 3% 26%);
-  }
 
   /* ── TILES ── */
   /* Always 2 × 2, phones included (the captain's pick is a square) */

@@ -507,10 +507,15 @@ const raised = raisedSentence();
     justify-items: start;
     gap: 12px;
     padding: 34px 20px 26px;
+    /* The card is the heading's measure (below) */
+    container-type: inline-size;
   }
 
+  /* Sized by the card, not the viewport: "Contribute" / "Contribuye" set
+     at ~4.4em wide, so 21cqi always fits the card's content box (it ran
+     off the card around 1000px wide, captain 2026-11-08) */
   .contribute-title {
-    font-size: clamp(3.2rem, 15vw, 7.5rem);
+    font-size: min(clamp(3.2rem, 15vw, 7.5rem), 21cqi);
     line-height: 0.9;
   }
 
@@ -556,7 +561,7 @@ const raised = raisedSentence();
     .contribute-sec { padding-block: 128px 140px; }
     .contribute { grid-template-columns: minmax(0, 1fr) clamp(18rem, 30vw, 30rem); gap: clamp(48px, 6vw, 88px); }
     .contribute-main { gap: 16px; padding: 52px clamp(36px, 4vw, 60px) 46px; }
-    .contribute-title { font-size: clamp(5rem, 8vw, 9rem); }
+    .contribute-title { font-size: min(clamp(5rem, 8vw, 9rem), 21cqi); }
     .contribute-photo { width: 100%; margin-right: 1vw; }
     .contribute-note { font-size: 1.35rem; }
   }

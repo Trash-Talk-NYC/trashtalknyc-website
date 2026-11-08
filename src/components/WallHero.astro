@@ -32,12 +32,14 @@ interface Props {
   line?: Copy;
   /** Varies the torn bottom edge between pages. */
   seed?: number;
+  /** Reframes the photo (CSS background-position), e.g. onto people's faces. */
+  framing?: string;
 }
 
-const { src, eyebrow, eyebrowHref, title, line, seed = 1 } = Astro.props;
+const { src, eyebrow, eyebrowHref, title, line, seed = 1, framing } = Astro.props;
 ---
 
-<section class="wh wall">
+<section class="wh wall" style={framing ? `--sw-pos:${framing}` : undefined}>
   <SectionWall kind="cleanup" src={src} tear="bottom" dim={0.7} duotone={0} seed={seed} />
   <div class="wrap wh-inner">
     <slot name="before" />
