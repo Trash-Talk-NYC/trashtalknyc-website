@@ -34,12 +34,17 @@ interface Props {
   seed?: number;
   /** Reframes the photo (CSS background-position), e.g. onto people's faces. */
   framing?: string;
+  /** Fills a hero taller than its photo with one cover-scaled copy instead
+      of the repeating wall, which shows a visible seam there (the 404 on
+      phones). */
+  cover?: boolean;
 }
 
-const { src, eyebrow, eyebrowHref, title, line, seed = 1, framing } = Astro.props;
+const { src, eyebrow, eyebrowHref, title, line, seed = 1, framing, cover } = Astro.props;
+const frame = [framing && `--sw-pos:${framing}`, cover && '--sw-size:cover'].filter(Boolean).join(';');
 ---
 
-<section class="wh wall" style={framing ? `--sw-pos:${framing}` : undefined}>
+<section class="wh wall" style={frame || undefined}>
   <SectionWall kind="cleanup" src={src} tear="bottom" dim={0.7} duotone={0} seed={seed} />
   <div class="wrap wh-inner">
     <slot name="before" />

@@ -96,8 +96,8 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
     <SectionWall kind="cleanup" src={wallStickers} dim={0} duotone={0} seed={13} />
     <div class="wrap sw-body">
 
+      {hasSamples && <span class="sample-mark mono" data-en="Sample partners" data-es="Socios de muestra">Sample partners</span>}
       <div class="stage" id="stage">
-        {hasSamples && <span class="sample-mark mono" data-en="Sample partners" data-es="Socios de muestra">Sample partners</span>}
         {stickers.map((s) => (
           <div class={`ps-spot tier-${s.p.tier}`} style={s.style}>
             <button
@@ -191,11 +191,9 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
     min-height: 760px;
   }
 
+  /* Above the stage, never on it, so it can't cover a sticker at any width */
   .sample-mark {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    z-index: 30;
+    justify-self: end;
     padding: 3px 8px;
     border-radius: 4px;
     background: var(--black);

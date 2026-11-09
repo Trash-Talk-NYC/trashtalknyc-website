@@ -111,6 +111,12 @@ const count = { en: `${photos.length} ${photos.length === 1 ? 'photo' : 'photos'
 
   .gl-link:hover :global(.gl-pic) { transform: rotate(-0.8deg) scale(1.01); }
 
+  /* On phones a page-tall sheet hangs straight: even a 1° tilt swings its
+     far corners 10px+ past the 16px gutter onto the screen edge */
+  @media (max-width: 760px) {
+    .gl-month { transform: none; }
+  }
+
   @media (min-width: 600px) {
     .gl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }

@@ -218,6 +218,12 @@ const items = sortedNews(visibleNews()).map((item) => ({ ...item, when: newsDate
   .np-empty p { margin: 0; font-size: 1.15rem; line-height: 1.5; }
   .np-empty a { color: var(--purple); font-weight: 700; }
 
+  /* On phones a page-tall sheet hangs straight: even a 1° tilt swings its
+     far corners 10px+ past the 16px gutter onto the screen edge */
+  @media (max-width: 760px) {
+    .np { transform: none; }
+  }
+
   @media (min-width: 761px) {
     .nw-body { padding-block: 88px 104px; }
     .np { padding: 40px clamp(28px, 4vw, 56px) 48px; transform: rotate(-0.6deg); }
