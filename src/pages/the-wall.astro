@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionWall from '../components/SectionWall.astro';
 import WallHero from '../components/WallHero.astro';
+import GoFundMe from '../components/GoFundMe.astro';
 import wallStickers from '../assets/walls/wall-9574.webp';
 import { TIER_LABEL, TIER_SIZE, partnersByTier, stickerLook, visiblePartners, type PartnerTier } from '../lib/partners';
 
@@ -140,6 +141,16 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
         ))}
       </div>
 
+      <!-- The GoFundMe here too (David, 2026-11-10): one flyer pasted
+           below the stickers, so anyone can back the work the partners do -->
+      <div class="sw-give paste f-tape">
+        <div class="sw-give-text">
+          <h2 class="sw-give-title" data-en="Contribute" data-es="Contribuye">Contribute</h2>
+          <p class="sw-give-note" data-en="Every partner on this wall helps keep our cleanups free. You can too: contributions fund supplies, free events, and tree guards across NYC." data-es="Cada socio en esta pared ayuda a que nuestras limpiezas sigan siendo gratuitas. Tú también puedes: las contribuciones financian materiales, eventos gratuitos y protectores de árboles en toda NYC.">Every partner on this wall helps keep our cleanups free. You can too: contributions fund supplies, free events, and tree guards across NYC.</p>
+        </div>
+        <GoFundMe />
+      </div>
+
     </div>
   </section>
 </BaseLayout>
@@ -200,6 +211,21 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
     color: var(--yellow);
     font-size: 0.75rem;
   }
+
+  /* Same stock and type as the homepage Contribute flyer, at a size that
+     stays below the stickers in weight */
+  .sw-give {
+    --flyer-bg: var(--beige);
+    color: var(--purple);
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+    padding: 30px 20px 26px;
+  }
+
+  .sw-give-text { display: grid; gap: 10px; }
+  .sw-give-title { font-size: clamp(3rem, 13vw, 4.5rem); line-height: 0.9; }
+  .sw-give-note { margin: 0; max-width: 40ch; font-size: 1.15rem; line-height: 1.5; }
 
   .ps-spot {
     --size: calc(var(--s) * 0.7);
@@ -373,6 +399,14 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
   @media (min-width: 761px) {
     .sw-body { gap: 28px; padding-block: 72px 88px; }
     .stage { min-height: 680px; }
+    .sw-give {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
+      align-items: center;
+      gap: clamp(32px, 4vw, 64px);
+      padding: 44px clamp(32px, 4vw, 56px);
+    }
+    .sw-give-title { font-size: clamp(4rem, 6vw, 6rem); }
+    .sw-give-note { font-size: 1.3rem; }
     .ps-spot { --size: var(--s); left: var(--x); top: var(--y); }
     .note-left-p { left: 0; right: auto; }
     .note-left-d { left: auto; right: 0; }

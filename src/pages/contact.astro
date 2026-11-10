@@ -13,8 +13,8 @@ import { GUIDE_PATH } from '../lib/guide';
 
 /**
  * Contact — Talk Trash (sentence case, captain 2026-10-09). The choices are poster tiles in the captain's
- * order (Lead a Cleanup / Partner / Sponsor / General) and no form
- * shows until a tile is picked. General, Partner and Sponsor share
+ * order (Lead a Cleanup / Partner / Brand Partner / General) and no form
+ * shows until a tile is picked. General, Partner and Brand Partner share
  * one message form (the existing contact action); Lead a Cleanup is
  * its own support request backed by the leadCleanup action, with NYC
  * GeoSearch address picking, libphonenumber validation, and secure
@@ -36,7 +36,7 @@ const monthOptions = rollingMonths();
 
 <BaseLayout
   title="Contact — Trash Talk NYC"
-  description="Get in touch with Trash Talk NYC: get help leading a cleanup, partner with us, sponsor cleanups, or ask us anything."
+  description="Get in touch with Trash Talk NYC: get help leading a cleanup, partner with us as a group or a brand, or ask us anything."
 >
 
   <!-- Turnstile bot check on both forms; implicit rendering picks up the
@@ -82,7 +82,7 @@ const monthOptions = rollingMonths();
           <small data-en="Partner on programs, initiatives, content, or corporate events" data-es="Asóciate con nosotros en programas, iniciativas, contenido o eventos corporativos">Partner on programs, initiatives, content, or corporate events</small>
         </button>
         <button type="button" class="tile paste" aria-pressed="false" data-type="sponsor">
-          <b data-en="Sponsor" data-es="Patrocinar">Sponsor</b>
+          <b data-en="Brand Partner" data-es="Marca Aliada">Brand Partner</b>
           <small data-en="Put your name behind cleanups" data-es="Pon tu nombre detrás de las limpiezas">Put your name behind cleanups</small>
         </button>
         <button type="button" class="tile paste f-tape" aria-pressed="false" data-type="general">
@@ -103,7 +103,7 @@ const monthOptions = rollingMonths();
           <p id="successLine">We'll get back to you as soon as we can.</p>
         </div>
 
-        <!-- GENERAL / PARTNER / SPONSOR -->
+        <!-- GENERAL / PARTNER / BRAND PARTNER -->
         <form id="contactForm" method="POST" action={actions.contact}>
           <input type="hidden" name="botcheck" value="" />
           <input type="hidden" name="startedAt" data-started-at value="" />
@@ -620,8 +620,8 @@ const monthOptions = rollingMonths();
       es: { heading: 'Asóciate con Trash Talk NYC', intro: '¿Tienes una idea para crear algo juntos? Seas una organización, creador o aliado comunitario, ¡hablemos!', ...messageSent.es },
     },
     sponsor: {
-      en: { heading: 'Sponsor Trash Talk NYC', intro: 'Companies and brands: put your name behind cleanup events, supplies, and a cleaner New York City.', ...messageSent.en },
-      es: { heading: 'Patrocina a Trash Talk NYC', intro: 'Empresas y marcas: pongan su nombre detrás de eventos de limpieza, materiales y una Nueva York más limpia.', ...messageSent.es },
+      en: { heading: 'Become a brand partner', intro: 'Companies and brands: put your name behind cleanup events, supplies, and a cleaner New York City.', ...messageSent.en },
+      es: { heading: 'Sé una marca aliada', intro: 'Empresas y marcas: pongan su nombre detrás de eventos de limpieza, materiales y una Nueva York más limpia.', ...messageSent.es },
     },
     general: {
       en: { heading: 'Message Trash Talk NYC', intro: 'Questions, concerns, or report a bug on the site.', ...messageSent.en },
@@ -676,7 +676,7 @@ const monthOptions = rollingMonths();
     leadForm.hidden = !isLead;
 
     if (!isLead) {
-      // Both org-backed inquiries (Partner and Sponsor) come from an
+      // Both org-backed inquiries (Partner and Brand Partner) come from an
       // organization, so the org field shows and is required for either
       const needsOrg = type !== 'general';
       orgGroup.hidden = !needsOrg;

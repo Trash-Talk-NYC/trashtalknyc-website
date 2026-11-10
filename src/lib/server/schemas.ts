@@ -90,10 +90,10 @@ export const contactSchema = z
     organization: z.string().trim().max(300).optional(),
     message: z.string().trim().min(1, 'Message is required').max(5000),
   })
-  // Both org-backed tabs (Partner and Sponsor) write in on behalf of an
+  // Both org-backed tabs (Partner and Brand Partner) write in on behalf of an
   // organization, so the org name is required for either.
   .refine((data) => data.inquiryType === 'general' || !!data.organization?.trim(), {
-    message: 'Organization name is required for partnership and sponsorship inquiries',
+    message: 'Organization name is required for partnership inquiries',
     path: ['organization'],
   })
   // The partnership kind picks the inbox, so a partner inquiry needs one

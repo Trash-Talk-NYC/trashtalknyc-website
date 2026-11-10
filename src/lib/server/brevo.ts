@@ -154,7 +154,7 @@ export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; 
   const labels: Record<InquiryEmailInput['inquiryType'], string> = {
     general: 'New contact message',
     partnership: 'New collaboration inquiry',
-    sponsor: 'New sponsorship inquiry',
+    sponsor: 'New brand partnership inquiry',
     lead: 'New cleanup-lead application',
   };
   const label = labels[input.inquiryType];

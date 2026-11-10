@@ -5,7 +5,7 @@ import { PARTNERSHIP_TYPE_VALUES } from '../../leadOptions';
 describe('notifyRoute', () => {
   it('gives each inquiry kind its own tag and inbox var', () => {
     expect(notifyRoute('general')).toEqual({ tag: '[General]', envVar: 'CONTACT_NOTIFY_TO' });
-    expect(notifyRoute('sponsor')).toEqual({ tag: '[Sponsorship]', envVar: 'SPONSOR_NOTIFY_TO' });
+    expect(notifyRoute('sponsor')).toEqual({ tag: '[Brand partnership]', envVar: 'SPONSOR_NOTIFY_TO' });
     expect(notifyRoute('lead')).toEqual({ tag: '[Lead a cleanup]', envVar: 'LEAD_NOTIFY_TO' });
   });
 

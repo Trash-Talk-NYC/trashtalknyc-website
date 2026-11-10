@@ -206,7 +206,7 @@ describe('contact action team notification', () => {
 
   it.each([
     ['general', '[General] New contact message — Jane Doe'],
-    ['sponsor', '[Sponsorship] New sponsorship inquiry — Jane Doe · Acme Org'],
+    ['sponsor', '[Brand partnership] New brand partnership inquiry — Jane Doe · Acme Org'],
   ])('tags a %s inquiry subject', async (inquiryType, subject) => {
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(contactInput({ inquiryType, organization: inquiryType === 'general' ? undefined : 'Acme Org' }), contactCtx());
@@ -236,7 +236,7 @@ describe('contact action team notification', () => {
     errors.mockRestore();
   });
 
-  it('notifies the sponsorship inbox — not the general team address — for sponsor inquiries', async () => {
+  it('notifies the brand partnership inbox — not the general team address — for sponsor inquiries', async () => {
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(
       contactInput({ inquiryType: 'sponsor', organization: 'Acme Org' }),

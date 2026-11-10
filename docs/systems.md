@@ -42,7 +42,9 @@ Current behavior:
 - Build-time fetch (`fetchEventsAtBuildTime()` in `src/lib/events.ts`) pulls upcoming/past events directly from Eventbrite
 - Events page consumes Eventbrite data
 
-## Donations
+## Contributions (never "donations": the club is an LLC)
+
+The GoFundMe card is `GoFundMe.astro` (URL in `src/lib/contribute.ts`), on the homepage Contribute flyer and The Wall.
 
 Platform:
 - GoFundMe
@@ -72,8 +74,8 @@ Volunteer form (newsletter):
 - Location is country first (captain, 2026-10-09; no borough question). United States (the default): a 5-digit ZIP, previewed on the page as "City, ST · Borough: …" and re-looked-up by the action (zippopotam.us, free/keyless) to send CITY and STATE_REGION; an NYC ZIP also sends BOROUGH (Manhattan / Brooklyn / Queens / The Bronx / Staten Island) from the ZIP-range table in `src/lib/zip.ts`. A ZIP that doesn't exist is refused; a lookup outage still lands the signup with COUNTRY, ZIP_CODE, and (for NYC) BOROUGH. Other countries: City picked from a list (Open-Meteo geocoding), optional State / province / region → STATE_REGION, optional postal code in any format → ZIP_CODE
 
 Contact page (`/contact`, 2026-10 layout):
-- Four poster tiles in the captain's order — Lead a Cleanup / Collaborate / Sponsor / General — and no form shows until a tile is picked
-- Partner (formerly Collaborate), Sponsor, and General share the message form → the `contact` action; tile choice is sent as `inquiryType` (`general` | `partnership` | `sponsor`); the org-backed tiles require `organization`; separate Brevo lists per tile (`CONTACT_GENERAL` / `CONTACT_COLLAB` / `CONTACT_SPONSOR`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
+- Four poster tiles in the captain's order — Lead a Cleanup / Partner / Brand Partner / General — and no form shows until a tile is picked
+- Partner (formerly Collaborate), Brand Partner (formerly Sponsor, 2026-11-10), and General share the message form → the `contact` action; tile choice is sent as `inquiryType` (`general` | `partnership` | `sponsor`); the org-backed tiles require `organization`; separate Brevo lists per tile (`CONTACT_GENERAL` / `CONTACT_COLLAB` / `CONTACT_SPONSOR`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
 - Fields land as Brevo contact attributes (FIRSTNAME, LASTNAME, EMAIL, PHONE (optional), INQUIRY_TYPE, ORGANIZATION, MESSAGE)
 - The Partner tile also asks "What kind of partnership?" (required; `PARTNERSHIP_TYPES` in `src/lib/leadOptions.ts`), recorded in the CRM note and the notification only, and used to pick the team inbox
 - Notifications go to one inbox per kind with no fallback (`src/lib/server/notifyRouting.ts`): CONTACT_NOTIFY_TO (general), SPONSOR_NOTIFY_TO, LEAD_NOTIFY_TO, PARTNER_CONTENT_NOTIFY_TO, PODCAST_NOTIFY_TO, NONPROFIT_NOTIFY_TO; an unset var logs `inquiry_notify_unconfigured`

@@ -1,0 +1,26 @@
+---
+import { GOFUNDME_WIDGET_URL } from '../lib/contribute';
+
+/**
+ * The live GoFundMe card (the homepage Contribute flyer, and The Wall since
+ * David's feedback of 2026-11-10). Its internals are GoFundMe's iframe; the
+ * embed script finds every .gfm-embed on the page, so each page loads it
+ * once through this component.
+ */
+---
+
+<div class="gfm">
+  <div class="gfm-embed" data-url={GOFUNDME_WIDGET_URL}></div>
+</div>
+<script is:inline defer src="https://www.gofundme.com/static/js/embed.js"></script>
+
+<style>
+  /* GoFundMe's card stretches to the iframe up to 480px and then centers
+     on a white page, so the wrapper is capped at exactly that width: wider
+     would show white strips beside the card. Height stays automatic
+     (GoFundMe's script resizes the iframe as the card's title wraps on
+     narrow phones). */
+  .gfm { width: min(100%, 480px); }
+  .gfm :global(.gfm-embed) { min-height: 180px; }
+  .gfm :global(.gfm-embed-iframe) { display: block; }
+</style>

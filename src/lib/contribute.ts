@@ -10,6 +10,9 @@ export const TODO_RAISED_AMOUNT = '';
 
 type Copy = { en: string; es: string };
 
+/** The campaign's medium widget, shown by GoFundMe.astro wherever it appears. */
+export const GOFUNDME_WIDGET_URL = 'https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/';
+
 /** The sentence for an amount, or null while no amount is set. */
 export function raisedSentence(amount: string = TODO_RAISED_AMOUNT): Copy | null {
   const value = amount.trim();

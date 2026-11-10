@@ -84,7 +84,7 @@ export const partners: Partner[] = [
   {
     name: 'Greenpoint Coffee Co.',
     tier: 'city',
-    blurb: { en: 'Sponsored the tree guard build', es: 'Patrocinó la construcción de protectores de árboles' },
+    blurb: { en: 'Funded the tree guard build', es: 'Financió la construcción de protectores de árboles' },
     url: 'https://example.com/greenpoint-coffee',
     look: { bg: '#4E6E65', fg: '#F1F0E4', shape: 'round', font: 'display' },
     sample: true,
@@ -100,7 +100,7 @@ export const partners: Partner[] = [
   {
     name: 'Hudson Hardware',
     tier: 'borough',
-    blurb: { en: 'Donated shovels and rakes', es: 'Donó palas y rastrillos' },
+    blurb: { en: 'Contributed shovels and rakes', es: 'Contribuyó con palas y rastrillos' },
     url: 'https://example.com/hudson-hardware',
     look: { bg: '#1D1D23', fg: '#F3CF02', shape: 'rect', font: 'mono' },
     sample: true,
@@ -148,7 +148,7 @@ export const partners: Partner[] = [
   {
     name: 'Bronx Grill',
     tier: 'block',
-    blurb: { en: 'Sponsored a Bronx River cleanup', es: 'Patrocinó una limpieza del río Bronx' },
+    blurb: { en: 'Partnered on a Bronx River cleanup', es: 'Se asoció en una limpieza del río Bronx' },
     url: 'https://example.com/bronx-grill',
     look: { bg: '#D8372B', fg: '#F3CF02', shape: 'rect', font: 'tab' },
     sample: true,

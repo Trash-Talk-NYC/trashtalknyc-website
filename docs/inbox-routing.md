@@ -1,13 +1,13 @@
 # Inbox routing for contact-page inquiries
 
-Every Contact-page form (General, Partner, Sponsor, Lead a Cleanup) emails the team when someone writes in.
+Every Contact-page form (General, Partner, Brand Partner, Lead a Cleanup) emails the team when someone writes in.
 Each category goes to its own inbox, so nothing sinks in one shared mailbox (captain, 2026-10-15 and 2026-10-19).
 The email subject starts with the category's tag, so each owner can filter on it.
 The rest of the subject is unchanged, for example `[Podcast] New collaboration inquiry — Jane Doe · Acme Org`.
 
 | Category | Subject tag | Owner | Env var | Address |
 |---|---|---|---|---|
-| Sponsorships | `[Sponsorship]` | David Hernandez | `SPONSOR_NOTIFY_TO` | TODO_EMAIL |
+| Brand partnerships (the Brand Partner tile, stored as `sponsor`) | `[Brand partnership]` | David Hernandez | `SPONSOR_NOTIFY_TO` | TODO_EMAIL |
 | Content collaborations, content creation, influencers, corporate events, other partnerships | `[Content]` | David Hernandez | `PARTNER_CONTENT_NOTIFY_TO` | TODO_EMAIL |
 | Podcast | `[Podcast]` | Cooper | `PODCAST_NOTIFY_TO` | TODO_EMAIL |
 | Nonprofit partnerships | `[Nonprofit]` | Nandi | `NONPROFIT_NOTIFY_TO` | TODO_EMAIL |

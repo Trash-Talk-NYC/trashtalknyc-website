@@ -17,20 +17,20 @@ export interface NotifyRoute {
  * naming the var, so a misroute is impossible. docs/inbox-routing.md is
  * the human-readable copy of this table — keep the two in step.
  *
- *   general                                → [General]         CONTACT_NOTIFY_TO
- *   sponsor                                → [Sponsorship]     SPONSOR_NOTIFY_TO
- *   lead a cleanup                         → [Lead a cleanup]  LEAD_NOTIFY_TO
- *   partner: podcast                       → [Podcast]         PODCAST_NOTIFY_TO
- *   partner: nonprofit partnership         → [Nonprofit]       NONPROFIT_NOTIFY_TO
+ *   general                                → [General]            CONTACT_NOTIFY_TO
+ *   sponsor (the Brand Partner tile)       → [Brand partnership]  SPONSOR_NOTIFY_TO
+ *   lead a cleanup                         → [Lead a cleanup]     LEAD_NOTIFY_TO
+ *   partner: podcast                       → [Podcast]            PODCAST_NOTIFY_TO
+ *   partner: nonprofit partnership         → [Nonprofit]          NONPROFIT_NOTIFY_TO
  *   partner: content collaboration/creation,
- *            influencer, corporate event, other → [Content]    PARTNER_CONTENT_NOTIFY_TO
+ *            influencer, corporate event, other → [Content]       PARTNER_CONTENT_NOTIFY_TO
  */
 export function notifyRoute(kind: InquiryKind, partnershipType?: PartnershipType): NotifyRoute {
   switch (kind) {
     case 'general':
       return { tag: '[General]', envVar: 'CONTACT_NOTIFY_TO' };
     case 'sponsor':
-      return { tag: '[Sponsorship]', envVar: 'SPONSOR_NOTIFY_TO' };
+      return { tag: '[Brand partnership]', envVar: 'SPONSOR_NOTIFY_TO' };
     case 'lead':
       return { tag: '[Lead a cleanup]', envVar: 'LEAD_NOTIFY_TO' };
     case 'partnership': {

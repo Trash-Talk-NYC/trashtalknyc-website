@@ -13,6 +13,7 @@ import SectionWall from '../components/SectionWall.astro';
 import BrandSticker from '../components/BrandSticker.astro';
 import type { BrandStickerId } from '../lib/stickers';
 import YouTubeEmbed from '../components/YouTubeEmbed.astro';
+import GoFundMe from '../components/GoFundMe.astro';
 // The captain's own wall photos (2026-10-15), curated for color
 import wallHero from '../assets/walls/wall-9562.webp';
 // A plain textured wall behind Contribute, for visual relief between the
@@ -158,9 +159,7 @@ const raised = raisedSentence();
       {raised && <p class="contribute-note contribute-raised" data-en={raised.en} data-es={raised.es}>{raised.en}</p>}
       <!-- The team's own words (round 3, 2026-11-08) -->
       <p class="contribute-note" data-en="This fund has allowed us to host over 25 free beautification &amp; cleanup events in New York City, construct over 15 tree guards, and develop content that inspires and empowers urban stewardship." data-es="Este fondo nos ha permitido organizar más de 25 eventos gratuitos de embellecimiento y limpieza en la ciudad de Nueva York, construir más de 15 protectores de árboles y crear contenido que inspira y empodera el cuidado urbano.">This fund has allowed us to host over 25 free beautification &amp; cleanup events in New York City, construct over 15 tree guards, and develop content that inspires and empowers urban stewardship.</p>
-      <div class="gfm">
-        <div class="gfm-embed" data-url="https://www.gofundme.com/f/join-trash-talk-clean-up-new-york-together/widget/medium/"></div>
-      </div>
+      <GoFundMe />
     </div>
     <figure class="contribute-photo paste f-tape">
       <Image
@@ -362,7 +361,6 @@ const raised = raisedSentence();
   }
 </script>
 
-<script is:inline defer src="https://www.gofundme.com/static/js/embed.js"></script>
 </BaseLayout>
 
 <style>
@@ -523,16 +521,6 @@ const raised = raisedSentence();
 
   /* The raised line leads the fund line, so the pair reads as one block */
   .contribute-raised { margin-bottom: 6px; font-weight: 700; }
-
-  /* The live widget sits straight on the section; its internals are an
-     iframe and stay GoFundMe's. Their card stretches to the iframe up to
-     480px and then centers on a white page, so the wrapper is capped at
-     exactly that width: wider would show white strips beside the card.
-     Height stays automatic (GoFundMe's script resizes the iframe as the
-     card's title wraps on narrow phones). */
-  .gfm { width: min(100%, 480px); }
-  .gfm :global(.gfm-embed) { min-height: 180px; }
-  .gfm :global(.gfm-embed-iframe) { display: block; }
 
   .contribute-photo {
     justify-self: center;

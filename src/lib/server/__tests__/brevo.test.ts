@@ -257,12 +257,12 @@ describe('buildInquiryEmail', () => {
     expect(new Set([collab, general, sponsor]).size).toBe(3);
     expect(collab.startsWith('New collaboration inquiry')).toBe(true);
     expect(general.startsWith('New contact message')).toBe(true);
-    expect(sponsor.startsWith('New sponsorship inquiry')).toBe(true);
+    expect(sponsor.startsWith('New brand partnership inquiry')).toBe(true);
   });
 
-  it('surfaces the organization in a sponsorship subject like a collaboration one', () => {
+  it('surfaces the organization in a brand partnership subject like a collaboration one', () => {
     expect(buildInquiryEmail({ ...base, inquiryType: 'sponsor', organization: 'Acme Org' }).subject).toBe(
-      'New sponsorship inquiry — Jane Doe · Acme Org',
+      'New brand partnership inquiry — Jane Doe · Acme Org',
     );
   });
 
