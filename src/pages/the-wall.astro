@@ -49,13 +49,17 @@ const stickers = list.map((p, i) => {
   const ph = SLOTS[p.tier].phone[k] ?? fallbackSlot(i + 3);
   const look = stickerLook(p, i);
   const size = TIER_SIZE[p.tier];
-  const tall = look.shape === 'oval' || look.shape === 'rect' ? 0.66 : 1;
+  const words = p.name.replace(/ Co\.$/, '').split(' ');
+  // A squat shape is 2/3 as tall as wide, which three lines of a text
+  // sticker overflow at the smallest size (a Block sticker on phones)
+  const squat = look.shape === 'oval' || look.shape === 'rect';
+  const tall = squat ? (!p.logo && words.length > 2 ? 0.8 : 0.66) : 1;
   return {
     p,
     id: `partner-${i}`,
     look,
     tier: TIER_LABEL[p.tier],
-    words: p.name.replace(/ Co\.$/, '').split(' '),
+    words,
     // Notes near the right edge open leftward so they stay on the wall
     style: `--x:${d[0]}%;--y:${d[1]}%;--r:${d[2]}deg;--px:${ph[0]}%;--py:${ph[1]}%;--s:${size}px;--h:${tall}`,
     noteClass: [d[0] > 55 ? 'note-left-d' : '', ph[0] > 45 ? 'note-left-p' : ''].join(' '),
@@ -300,6 +304,7 @@ const tiers: PartnerTier[] = ['city', 'borough', 'block'];
   }
 
   .tier-city .face { border-width: 4px; }
+  .tier-block .face { padding: 3px; }
 
   .face :global(.face-logo) { width: 80%; height: auto; }
 
