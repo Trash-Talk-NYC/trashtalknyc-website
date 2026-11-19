@@ -294,7 +294,7 @@ form .btn-primary {
 }
 
 /* How each flyer is stuck up — mix them across a page (captain):
-   .f-sticker  pinned by the vest sticker (.slap img inside the card)
+   .f-sticker  pinned by a team sticker (.slap img inside the card)
    .f-tape     two yellow tapes across the top-left and bottom-right
                corners, rough paper edges
    .f-staple   staple at the top, curled bottom-right corner
@@ -428,23 +428,13 @@ form .btn-primary {
    files (one SVG per color), so no masking is involved. */
 img.ill { height: auto; display: block; }
 
-/* Vest sticker slapped over a pasted card's corner */
+/* A team sticker slapped over a pasted card's corner (src/lib/teamStickers.ts) */
 .slap {
   position: absolute;
   z-index: 2;
   width: 118px;
   filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.35));
   pointer-events: none;
-}
-
-/* A printed sticker's white die-cut edge plus its drop shadow, traced
-   around whatever shape the sticker has (BrandSticker, the heroes2
-   mockup's .dc) */
-.die-cut {
-  filter:
-    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
-    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
-    drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.55));
 }
 
 /* ── FORM KIT (newsletter + contact forms) ── */

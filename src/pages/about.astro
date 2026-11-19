@@ -3,7 +3,7 @@ import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { team } from '../lib/team';
 import groupPhoto from '../assets/film-group-pic-1.jpg';
-import vestSticker from '../assets/vest-sticker.png';
+import { spotSticker } from '../lib/teamStickers';
 import SectionWall from '../components/SectionWall.astro';
 import WallHero from '../components/WallHero.astro';
 import wallHero from '../assets/walls/wall-mint-paint.webp';
@@ -38,6 +38,9 @@ const bioFlyer: Record<string, string> = {
   fabiola: 'f-tape f-torn',
 };
 
+
+// The sticker pinning the group photo (spot TM1, src/lib/teamStickers.ts)
+const photoSticker = spotSticker('team', 'TM1');
 ---
 
 <BaseLayout
@@ -60,7 +63,7 @@ const bioFlyer: Record<string, string> = {
     <SectionWall kind="cleanup" src={wallTeam} dim={0} duotone={0} seed={15} />
     <div class="wrap team-inner">
     <figure class="tm-photo paste f-sticker">
-      <Image src={vestSticker} alt="" class="slap tm-slap" width={92} densities={[1, 2]} />
+      <Image src={photoSticker.src} alt="" class="slap tm-slap" data-sticker-spot={photoSticker.spot} width={92} densities={[1, 2]} />
       <Image
         src={groupPhoto}
         alt="Nandi, David, and Fabiola sitting together on a rock in a park"

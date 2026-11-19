@@ -7,7 +7,7 @@ import WallHero from '../../components/WallHero.astro';
 import MediaSubnav from '../../components/MediaSubnav.astro';
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import { MORE_MEDIA_PATH, featuredVideo, getMediaSection } from '../../lib/media';
-import vestSticker from '../../assets/vest-sticker.png';
+import { spotSticker } from '../../lib/teamStickers';
 
 /**
  * More Media → YouTube (captain, 2026-10-09): embeds the video the
@@ -16,6 +16,9 @@ import vestSticker from '../../assets/vest-sticker.png';
  * cookies off the page until someone actually presses play.
  */
 const section = getMediaSection('youtube');
+
+// The sticker pinning the video (spot YT1, src/lib/teamStickers.ts)
+const videoSticker = spotSticker('youtube', 'YT1');
 ---
 
 <BaseLayout
@@ -38,7 +41,7 @@ const section = getMediaSection('youtube');
   <SectionWall kind="cleanup" src={wallYouTube} dim={0} duotone={0} seed={9} />
   <div class="wrap yt-body">
     <figure class="yt-frame paste f-sticker">
-      <Image src={vestSticker} alt="" class="slap yt-slap" width={110} densities={[1, 2]} />
+      <Image src={videoSticker.src} alt="" class="slap yt-slap" data-sticker-spot={videoSticker.spot} width={110} densities={[1, 2]} />
       <YouTubeEmbed videoId={featuredVideo.id} title={featuredVideo.title} />
       <figcaption class="yt-caption" data-en={featuredVideo.caption.en} data-es={featuredVideo.caption.es}>{featuredVideo.caption.en}</figcaption>
     </figure>
@@ -74,9 +77,10 @@ const section = getMediaSection('youtube');
 
   /* Pinned mostly outside the frame so it never hides YouTube's own
      corner controls */
+  /* High enough that its bottom stays off the video's title bar */
   .yt-frame :global(.yt-slap) {
-    top: -40px;
-    right: -14px;
+    top: -52px;
+    right: -8px;
     width: 64px;
     height: auto;
     transform: rotate(9deg);

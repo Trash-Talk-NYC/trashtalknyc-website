@@ -7,7 +7,7 @@ import WallHero from '../../components/WallHero.astro';
 import MediaSubnav from '../../components/MediaSubnav.astro';
 import { GALLERY, IN_THE_NEWS, liveMediaSections, moreMediaTagline } from '../../lib/media';
 import { galleryByMonth } from '../../lib/gallery';
-import wordmarkSticker from '../../assets/wordmark-sticker.png';
+import { spotSticker } from '../../lib/teamStickers';
 
 /**
  * More Media — /more-media (captain, 2026-10-09): the shared hero with
@@ -39,9 +39,13 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
   <section class="mm-wall wall">
   <SectionWall kind="cleanup" src={wallOverview} dim={0} duotone={0} seed={8} />
   <div class="wrap mm-grid" role="group" aria-label="More Media">
-    {liveMediaSections.map((s) => (
+    {liveMediaSections.map((s, i) => {
+      // Spots MM1, MM2, … in src/lib/teamStickers.ts: a newly launched
+      // channel fails the build until it is given its own sticker
+      const flyerSticker = spotSticker('moreMedia', `MM${i + 1}` as 'MM1');
+      return (
       <article class="mm-fly">
-        <Image src={wordmarkSticker} alt="" class="mm-stk" width={120} densities={[1, 2]} />
+        <Image src={flyerSticker.src} alt="" class="mm-stk" data-sticker-spot={flyerSticker.spot} width={120} densities={[1, 2]} />
         <h2 class="mm-name">{s.label}</h2>
         <div class="mm-play" aria-hidden="true"><span></span></div>
         <p class="mm-blurb" data-en={s.blurb.en} data-es={s.blurb.es}>{s.blurb.en}</p>
@@ -49,7 +53,8 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
           <span data-en={`${s.action.en} →`} data-es={`${s.action.es} →`}>{s.action.en} →</span>
         </a>
       </article>
-    ))}
+      );
+    })}
     <article class="mm-fly">
       <h2 class="mm-name" data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</h2>
       {preview.length > 0 && (

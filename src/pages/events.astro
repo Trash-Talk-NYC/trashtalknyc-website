@@ -10,7 +10,7 @@ import wallFlyers from '../assets/walls/wall-9744.webp';
 import wallHero from '../assets/walls/walk-1724.webp';
 import { boroughCovers } from '../lib/boroughCovers';
 import { GUIDE_PATH } from '../lib/guide';
-import vestSticker from '../assets/vest-sticker.png';
+import { eventsSticker } from '../lib/teamStickers';
 
 const { upcoming: upcomingRaw, past } = await fetchEventsAtBuildTime();
 
@@ -35,6 +35,14 @@ const upcoming = upcomingRaw.map(ev => ({
 const flyers = upcoming.length > 0
   ? upcoming
   : SHOW_SAMPLE_EVENTS ? sampleEvents.map((props) => ({ props, latLng: null })) : [];
+// A past event with no photo at all shows a team sticker instead, picking
+// up the sticker order where the flyers above left off (spots EP1, EP2, …)
+const pastStickers = new Map(
+  pastGroups
+    .flatMap((g) => g.events)
+    .filter((ev) => (pastCovers.get(ev.id) ?? { kind: 'none' }).kind === 'none')
+    .map((ev, i) => [ev.id, eventsSticker('EP', i, flyers.length)]),
+);
 // Each borough folds; only the one with the most recent event starts open
 const openGroup = newestGroupIndex(pastGroups, past[0]);
 const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`, es: `${n} ${n === 1 ? 'evento' : 'eventos'}` });
@@ -83,8 +91,8 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
 
       {flyers.length > 0 ? (
         <div class="ev-list" id="eventsListInner">
-          {flyers.map(({ props, latLng }) => (
-            <EventCard {...props} latLng={latLng} />
+          {flyers.map(({ props, latLng }, i) => (
+            <EventCard {...props} latLng={latLng} sticker={eventsSticker('EV', i)} />
           ))}
         </div>
       ) : (
@@ -133,7 +141,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
                       ) : cover.kind === 'photo' ? (
                         <Image class="past-pic" src={cover.photo} alt="" width={600} widths={[300, 600]} sizes="(min-width: 761px) 18rem, 45vw" />
                       ) : (
-                        <span class="past-pic past-pic-none"><Image src={vestSticker} alt="" width={72} densities={[1, 2]} /></span>
+                        <span class="past-pic past-pic-none"><Image src={pastStickers.get(ev.id)!.src} alt="" data-sticker-spot={pastStickers.get(ev.id)!.spot} width={72} densities={[1, 2]} /></span>
                       )}
                       <span class="past-name">{ev.name}</span>
                       <span class="past-date mono" data-en={date.en} data-es={date.es}>{date.en}</span>
