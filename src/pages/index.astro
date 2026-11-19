@@ -612,10 +612,14 @@ const raised = raisedSentence();
      card tall enough that its top corner swings right, and a sticker
      hanging past it pushed the page 3px wider than the screen */
   .feed :global(.feed-slap) {
-    top: -30px;
+    top: -34px;
     right: 0;
     width: 64px;
-    height: auto;
+    /* A short box whatever the sticker's shape, so a tall one never hangs
+       down over the reel's own header and buttons */
+    height: 56px;
+    object-fit: contain;
+    object-position: right top;
     transform: rotate(9deg);
   }
 
@@ -664,7 +668,7 @@ const raised = raisedSentence();
       margin-top: 60px;
     }
     .feed { padding: 18px 16px 16px; }
-    .feed :global(.feed-slap) { top: -40px; right: -30px; width: 90px; }
+    .feed :global(.feed-slap) { top: -48px; right: -30px; width: 90px; height: 76px; }
     .soc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
     .soc-tile { padding: 20px 18px; }
     .soc-tile:last-child:nth-child(odd) { grid-column: auto; }
