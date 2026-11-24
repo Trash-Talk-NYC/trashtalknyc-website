@@ -9,15 +9,15 @@ The rest of the subject is unchanged, for example `[Podcast] New collaboration i
 | Category | Subject tag | Inboxes | Env vars |
 |---|---|---|---|
 | General | `[General]` | contact@ | `CONTACT_NOTIFY_TO` |
-| Brand Partner (stored as `sponsor`) | `[Brand partnership]` | partners@ | `SPONSOR_NOTIFY_TO` |
+| Brand Partner (stored as `sponsor`) | `[Brand partnership]` | partnerships@ | `SPONSOR_NOTIFY_TO` |
 | Lead a cleanup | `[Lead a cleanup]` | events@ | `LEAD_NOTIFY_TO` |
-| Partner: podcast | `[Podcast]` | podcast@ and partners@ | `PODCAST_NOTIFY_TO`, `PARTNER_CONTENT_NOTIFY_TO` |
-| Partner: content collaboration, content creation, influencer, other | `[Content]` | partners@ | `PARTNER_CONTENT_NOTIFY_TO` |
-| Partner: nonprofit partnership | `[Nonprofit]` | partners@ | `NONPROFIT_NOTIFY_TO` |
-| Partner: corporate event | `[Content]` | partners@ and events@ | `PARTNER_CONTENT_NOTIFY_TO`, `LEAD_NOTIFY_TO` |
+| Partner: podcast | `[Podcast]` | podcast@ and partnerships@ | `PODCAST_NOTIFY_TO`, `PARTNER_CONTENT_NOTIFY_TO` |
+| Partner: content collaboration, content creation, influencer, other | `[Content]` | partnerships@ | `PARTNER_CONTENT_NOTIFY_TO` |
+| Partner: nonprofit partnership | `[Nonprofit]` | partnerships@ | `NONPROFIT_NOTIFY_TO` |
+| Partner: corporate event | `[Content]` | partnerships@ and events@ | `PARTNER_CONTENT_NOTIFY_TO`, `LEAD_NOTIFY_TO` |
 
 All addresses are @trashtalknyc.org.
-Several vars hold the same inbox (partners@ sits behind three), and each address gets the email once.
+Several vars hold the same inbox (partnerships@ sits behind three), and each address gets the email once.
 
 ## How a Partner inquiry is routed
 

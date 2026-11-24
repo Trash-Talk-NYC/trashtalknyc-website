@@ -5,11 +5,11 @@ import { PARTNERSHIP_TYPE_VALUES, type PartnershipType } from '../../leadOptions
 // The captain's addresses (2026-11-24), as the vars hold them on Netlify
 const INBOXES: Record<NotifyVar, string> = {
   CONTACT_NOTIFY_TO: 'contact@trashtalknyc.org',
-  SPONSOR_NOTIFY_TO: 'partners@trashtalknyc.org',
+  SPONSOR_NOTIFY_TO: 'partnerships@trashtalknyc.org',
   LEAD_NOTIFY_TO: 'events@trashtalknyc.org',
-  PARTNER_CONTENT_NOTIFY_TO: 'partners@trashtalknyc.org',
+  PARTNER_CONTENT_NOTIFY_TO: 'partnerships@trashtalknyc.org',
   PODCAST_NOTIFY_TO: 'podcast@trashtalknyc.org',
-  NONPROFIT_NOTIFY_TO: 'partners@trashtalknyc.org',
+  NONPROFIT_NOTIFY_TO: 'partnerships@trashtalknyc.org',
 };
 
 function inboxesFor(...args: Parameters<typeof notifyRoute>): string[] {
@@ -22,18 +22,18 @@ describe('notifyRoute', () => {
     expect(notifyRoute('sponsor')).toEqual({ tag: '[Brand partnership]', envVars: ['SPONSOR_NOTIFY_TO'] });
     expect(notifyRoute('lead')).toEqual({ tag: '[Lead a cleanup]', envVars: ['LEAD_NOTIFY_TO'] });
     expect(inboxesFor('general')).toEqual(['contact@trashtalknyc.org']);
-    expect(inboxesFor('sponsor')).toEqual(['partners@trashtalknyc.org']);
+    expect(inboxesFor('sponsor')).toEqual(['partnerships@trashtalknyc.org']);
     expect(inboxesFor('lead')).toEqual(['events@trashtalknyc.org']);
   });
 
   it.each<[PartnershipType, string, string[]]>([
-    ['content-collaboration', '[Content]', ['partners@trashtalknyc.org']],
-    ['content-creation', '[Content]', ['partners@trashtalknyc.org']],
-    ['influencer', '[Content]', ['partners@trashtalknyc.org']],
-    ['podcast', '[Podcast]', ['podcast@trashtalknyc.org', 'partners@trashtalknyc.org']],
-    ['nonprofit', '[Nonprofit]', ['partners@trashtalknyc.org']],
-    ['corporate-event', '[Content]', ['partners@trashtalknyc.org', 'events@trashtalknyc.org']],
-    ['other', '[Content]', ['partners@trashtalknyc.org']],
+    ['content-collaboration', '[Content]', ['partnerships@trashtalknyc.org']],
+    ['content-creation', '[Content]', ['partnerships@trashtalknyc.org']],
+    ['influencer', '[Content]', ['partnerships@trashtalknyc.org']],
+    ['podcast', '[Podcast]', ['podcast@trashtalknyc.org', 'partnerships@trashtalknyc.org']],
+    ['nonprofit', '[Nonprofit]', ['partnerships@trashtalknyc.org']],
+    ['corporate-event', '[Content]', ['partnerships@trashtalknyc.org', 'events@trashtalknyc.org']],
+    ['other', '[Content]', ['partnerships@trashtalknyc.org']],
   ])('routes a %s partnership', (kind, tag, inboxes) => {
     expect(notifyRoute('partnership', { partnershipTypes: [kind] }).tag).toBe(tag);
     expect(inboxesFor('partnership', { partnershipTypes: [kind] })).toEqual(inboxes);
@@ -50,7 +50,7 @@ describe('notifyRoute', () => {
     expect(route.envVars).toEqual(['PARTNER_CONTENT_NOTIFY_TO', 'PODCAST_NOTIFY_TO', 'LEAD_NOTIFY_TO']);
     expect(inboxesFor('partnership', { partnershipTypes: ['corporate-event', 'podcast', 'influencer'] }).sort()).toEqual([
       'events@trashtalknyc.org',
-      'partners@trashtalknyc.org',
+      'partnerships@trashtalknyc.org',
       'podcast@trashtalknyc.org',
     ]);
   });
@@ -61,8 +61,8 @@ describe('notifyRoute', () => {
     );
   });
 
-  it('still reaches partners@ if a partnership arrives with no kind', () => {
-    expect(inboxesFor('partnership', { partnershipTypes: [] })).toEqual(['partners@trashtalknyc.org']);
+  it('still reaches partnerships@ if a partnership arrives with no kind', () => {
+    expect(inboxesFor('partnership', { partnershipTypes: [] })).toEqual(['partnerships@trashtalknyc.org']);
   });
 
   it.each(['We host a podcast', 'PODCAST collab', 'Tenemos un pódcast', 'NUESTRO PÓDCAST', 'two podcasts', 'pódcast'])(
@@ -71,7 +71,7 @@ describe('notifyRoute', () => {
       for (const kind of ['partnership', 'sponsor'] as const) {
         const inboxes = inboxesFor(kind, { partnershipTypes: ['influencer'], message });
         expect(inboxes).toContain('podcast@trashtalknyc.org');
-        expect(inboxes).toContain('partners@trashtalknyc.org');
+        expect(inboxes).toContain('partnerships@trashtalknyc.org');
         expect(new Set(inboxes).size).toBe(inboxes.length);
       }
     },
@@ -85,7 +85,7 @@ describe('notifyRoute', () => {
     expect(inboxesFor('general', { message: 'I love your podcast' })).toEqual(['contact@trashtalknyc.org']);
     expect(inboxesFor('lead', { message: 'podcast' })).toEqual(['events@trashtalknyc.org']);
     expect(inboxesFor('partnership', { partnershipTypes: ['influencer'], message: 'a video series' })).toEqual([
-      'partners@trashtalknyc.org',
+      'partnerships@trashtalknyc.org',
     ]);
   });
 });
@@ -100,19 +100,19 @@ describe('mentionsPodcast', () => {
 describe('resolveRecipients', () => {
   it('lists an address once however many vars hold it, ignoring case and spaces', () => {
     const env: Partial<Record<NotifyVar, string>> = {
-      PARTNER_CONTENT_NOTIFY_TO: 'partners@trashtalknyc.org, Ana@example.com',
-      PODCAST_NOTIFY_TO: ' Partners@TrashTalkNYC.org ,podcast@trashtalknyc.org',
+      PARTNER_CONTENT_NOTIFY_TO: 'partnerships@trashtalknyc.org, Ana@example.com',
+      PODCAST_NOTIFY_TO: ' Partnerships@TrashTalkNYC.org ,podcast@trashtalknyc.org',
     };
     expect(resolveRecipients(['PARTNER_CONTENT_NOTIFY_TO', 'PODCAST_NOTIFY_TO'], (n) => env[n])).toEqual({
-      recipients: [{ email: 'partners@trashtalknyc.org' }, { email: 'Ana@example.com' }, { email: 'podcast@trashtalknyc.org' }],
+      recipients: [{ email: 'partnerships@trashtalknyc.org' }, { email: 'Ana@example.com' }, { email: 'podcast@trashtalknyc.org' }],
       unset: [],
     });
   });
 
   it('reports each unset or empty var and keeps the configured ones, never substituting another inbox', () => {
-    const env: Partial<Record<NotifyVar, string>> = { PARTNER_CONTENT_NOTIFY_TO: 'partners@trashtalknyc.org', LEAD_NOTIFY_TO: ' , ' };
+    const env: Partial<Record<NotifyVar, string>> = { PARTNER_CONTENT_NOTIFY_TO: 'partnerships@trashtalknyc.org', LEAD_NOTIFY_TO: ' , ' };
     expect(
       resolveRecipients(['PODCAST_NOTIFY_TO', 'PARTNER_CONTENT_NOTIFY_TO', 'LEAD_NOTIFY_TO'], (n) => env[n]),
-    ).toEqual({ recipients: [{ email: 'partners@trashtalknyc.org' }], unset: ['PODCAST_NOTIFY_TO', 'LEAD_NOTIFY_TO'] });
+    ).toEqual({ recipients: [{ email: 'partnerships@trashtalknyc.org' }], unset: ['PODCAST_NOTIFY_TO', 'LEAD_NOTIFY_TO'] });
   });
 });

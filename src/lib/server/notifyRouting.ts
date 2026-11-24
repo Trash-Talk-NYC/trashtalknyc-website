@@ -30,7 +30,7 @@ const KIND_ROUTES: Record<Exclude<InquiryKind, 'partnership'>, Route> = {
 };
 
 // A Record, so a new partnership choice can't ship without a route.
-// PARTNER_CONTENT_NOTIFY_TO is the partners@ inbox; corporate events reuse
+// PARTNER_CONTENT_NOTIFY_TO is the partnerships@ inbox; corporate events reuse
 // LEAD_NOTIFY_TO (events@) for their copy rather than adding a var.
 const PARTNERSHIP_ROUTES: Record<PartnershipType, Route> = {
   'content-collaboration': { tag: '[Content]', envVars: ['PARTNER_CONTENT_NOTIFY_TO'] },
@@ -53,10 +53,10 @@ export function mentionsPodcast(text: string): boolean {
 
 /**
  * Who hears about a contact-page inquiry and how its subject is tagged
- * (captain, 2026-11-24): General → contact@, Brand Partner → partners@,
+ * (captain, 2026-11-24): General → contact@, Brand Partner → partnerships@,
  * Lead a cleanup → events@, and on the Partner tile each picked kind adds
- * its inboxes (podcast → podcast@ and partners@, corporate event →
- * partners@ and events@, every other kind → partners@). A Partner or
+ * its inboxes (podcast → podcast@ and partnerships@, corporate event →
+ * partnerships@ and events@, every other kind → partnerships@). A Partner or
  * Brand Partner message that mentions a podcast also copies podcast@.
  * docs/inbox-routing.md is the human-readable copy of this table — keep
  * the two in step.
@@ -72,7 +72,7 @@ export function notifyRoute(
   if (kind === 'partnership') {
     // Choice-list order, not tick order, so the tag reads the same however
     // they were ticked; an empty pick (never valid past the schema) still
-    // reaches partners@ rather than nobody
+    // reaches partnerships@ rather than nobody
     const picked = PARTNERSHIP_TYPES.map((t) => t.value).filter((v) => partnershipTypes.includes(v));
     routes = picked.length ? picked.map((v) => PARTNERSHIP_ROUTES[v]) : [PARTNERSHIP_ROUTES.other];
   } else {
@@ -91,7 +91,7 @@ export function notifyRoute(
 /**
  * Turns the route's vars into one deduped recipient list. A var may hold
  * several comma-separated addresses, and several vars may hold the same
- * inbox (partners@ sits behind three of them), so an address is listed
+ * inbox (partnerships@ sits behind three of them), so an address is listed
  * once however many vars name it, compared case-insensitively.
  */
 export function resolveRecipients(

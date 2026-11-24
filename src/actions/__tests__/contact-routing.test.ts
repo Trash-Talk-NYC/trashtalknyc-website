@@ -210,9 +210,9 @@ describe('contact action team notification', () => {
   });
 
   it('sends one email to every picked kind, each shared inbox once', async () => {
-    // As on Netlify: partners@ sits behind the content, nonprofit and sponsor vars
-    process.env.PARTNER_CONTENT_NOTIFY_TO = 'partners@trashtalknyc.org';
-    process.env.NONPROFIT_NOTIFY_TO = 'partners@trashtalknyc.org';
+    // As on Netlify: partnerships@ sits behind the content, nonprofit and sponsor vars
+    process.env.PARTNER_CONTENT_NOTIFY_TO = 'partnerships@trashtalknyc.org';
+    process.env.NONPROFIT_NOTIFY_TO = 'partnerships@trashtalknyc.org';
     createBrevoNote.mockClear();
 
     // @ts-expect-error handler is untyped once defineAction is stubbed
@@ -224,7 +224,7 @@ describe('contact action team notification', () => {
     expect(sendBrevoEmail).toHaveBeenCalledTimes(1);
     expect(sendBrevoEmail.mock.calls[0][1].to).toEqual([
       { email: 'podcast@trashtalknyc.org' },
-      { email: 'partners@trashtalknyc.org' },
+      { email: 'partnerships@trashtalknyc.org' },
       { email: 'events@trashtalknyc.org' },
     ]);
     expect(sendBrevoEmail.mock.calls[0][1].subject).toBe('[Podcast] [Nonprofit] [Content] New collaboration inquiry — Jane Doe · Acme Org');
