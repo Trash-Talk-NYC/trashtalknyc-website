@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EventCard from '../components/EventCard.astro';
 import { Image } from 'astro:assets';
-import { assignPastCovers, boroughPreviewCovers, EVENTS_HERO_LINE, fetchEventsAtBuildTime, formatDate, groupPastByBorough, newestGroupIndex, sampleEvents, SHOW_EVENTS_HERO_LINE, SHOW_SAMPLE_EVENTS, toEventCardProps, type EventPlace } from '../lib/events';
+import { assignPastCovers, boroughPreviewCovers, EVENTS_HERO_LINE, fetchEventsAtBuildTime, formatDate, groupPastByBorough, sampleEvents, SHOW_EVENTS_HERO_LINE, SHOW_SAMPLE_EVENTS, toEventCardProps, type EventPlace } from '../lib/events';
 import { streetPhotos } from '../lib/streetPhotos';
 import WallHero from '../components/WallHero.astro';
 import SectionWall from '../components/SectionWall.astro';
@@ -43,8 +43,6 @@ const pastStickers = new Map(
     .filter((ev) => (pastCovers.get(ev.id) ?? { kind: 'none' }).kind === 'none')
     .map((ev, i) => [ev.id, eventsSticker('EP', i, flyers.length)]),
 );
-// Each borough folds; only the one with the most recent event starts open
-const openGroup = newestGroupIndex(pastGroups, past[0]);
 const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`, es: `${n} ${n === 1 ? 'evento' : 'eventos'}` });
 ---
 
@@ -115,7 +113,8 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
           const cover = group.borough ? boroughCovers[group.borough] : undefined;
           const strip = boroughPreviewCovers(group, cover ? 3 : 4);
           return (
-          <details class="past-group" open={gi === openGroup}>
+          <!-- Every borough starts folded (the captain's F1, 2026-11-24) -->
+          <details class="past-group">
             <summary class="past-sum">
               <span class="past-row">
                 <span class="past-place" data-en={placeName(group.borough).en} data-es={placeName(group.borough).es}>{placeName(group.borough).en}</span>
@@ -272,8 +271,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
         return haversineKm(userLat, userLng, aLat, aLng) - haversineKm(userLat, userLng, bLat, bLng);
       });
       cards.forEach(function(card) { list.appendChild(card); });
-      // Distance badges: every slot a card carries (the desktop maps row
-      // and the phone card's date line), in the page's language
+      // The distance pill on each card's date line, in the page's language
       cards.forEach(function(card) {
         var lat = parseFloat(card.dataset.lat), lng = parseFloat(card.dataset.lng);
         if (isNaN(lat)) return;
@@ -391,19 +389,11 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
 
   .dist-sort-label svg { width: 13px; height: 13px; stroke: var(--green); flex-shrink: 0; }
 
-  .ev-section :global(.dist-badge) {
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: 0.7rem;
-    color: var(--green);
-    white-space: nowrap;
-  }
-
-  /* Flyers side by side on the sheet; the gap leaves room for the
-     stickers that cross each flyer's edge */
+  /* One ticket per row (the captain's D1, 2026-11-24); the gap leaves
+     room for the sticker that crosses each card's corner */
   .ev-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 30rem), 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 48px 40px;
     /* Clears the sticker that rides ~34px above the first flyer, so it
        never touches the inbox button or the chip */

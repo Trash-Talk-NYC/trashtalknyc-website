@@ -114,17 +114,7 @@ export function eventBorough(ev: EventData): EventPlace {
   return boroughForZip(zip) ?? null;
 }
 
-/**
- * The index of the past-events group holding the most recent event, the
- * one borough the page opens (round 10: start collapsed except that one).
- * `newest` is the first event of the newest-first past list.
- */
-export function newestGroupIndex(groups: PastEventGroup[], newest: EventData | undefined): number {
-  if (!newest) return -1;
-  return groups.findIndex((g) => g.events.some((ev) => ev.id === newest.id));
-}
-
-/** A planting event carries the glove drawing instead of the bin. */
+/** Whether an event is a planting, which names its headline "Clean & Plant". */
 export function flyerKind(name: string): FlyerKind {
   return /plant/i.test(name) ? 'planting' : 'cleanup';
 }
@@ -143,25 +133,13 @@ export function flyerHeadline(name: string, borough: EventPlace): Copy {
     : { en: `${en} Cleanup`, es: `Limpieza en ${es}` };
 }
 
-/** The flyer's date block: "October 18" over "at 10 AM", minutes only when not on the hour. */
-export function flyerWhen(iso: string, lang: Lang): { date: string; time: string } {
-  const { date, clock, d } = whenParts(iso, lang);
-  const at = lang === 'es' ? (d.getHours() % 12 === 1 ? 'a la' : 'a las') : 'at';
-  return { date, time: `${at} ${clock}` };
-}
-
-/** The phone card's one-line "December 5 · 10 AM" (captain's E3, 2026-11-24). */
+/** The event card's one-line "December 5 · 10 AM" (captain's E3/D1, 2026-11-24). */
 export function cardWhen(iso: string, lang: Lang): string {
-  const { date, clock } = whenParts(iso, lang);
-  return `${date} · ${clock}`;
-}
-
-function whenParts(iso: string, lang: Lang): { date: string; clock: string; d: Date } {
   const locale = lang === 'es' ? 'es-419' : 'en-US';
   const d = new Date(iso);
   const date = d.toLocaleDateString(locale, { month: 'long', day: 'numeric' });
   const clock = d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true }).replace(/:00(?=\D)/, '');
-  return { date, clock, d };
+  return `${date} · ${clock}`;
 }
 
 /**
