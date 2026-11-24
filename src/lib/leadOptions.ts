@@ -63,18 +63,18 @@ export function leadBehalfAttribute(behalf: readonly Behalf[]): 'individual' | '
 
 /**
  * The Partner tile's "What kind of partnership?" choices (captain,
- * 2026-10-15). `bucket` picks the team inbox the notification goes to
- * (src/lib/server/notifyRouting.ts).
+ * 2026-10-15). People may tick several (captain, 2026-11-24); each kind's
+ * inboxes are in PARTNERSHIP_ROUTES (src/lib/server/notifyRouting.ts).
  */
 export const PARTNERSHIP_TYPES = [
-  { value: 'content-collaboration', en: 'Content collaboration', es: 'Colaboración de contenido', bucket: 'content' },
-  { value: 'content-creation', en: 'Content creation', es: 'Creación de contenido', bucket: 'content' },
-  { value: 'influencer', en: 'Influencer', es: 'Influencer', bucket: 'content' },
-  { value: 'podcast', en: 'Podcast', es: 'Pódcast', bucket: 'podcast' },
-  { value: 'nonprofit', en: 'Nonprofit partnership', es: 'Alianza con una organización sin fines de lucro', bucket: 'nonprofit' },
-  { value: 'corporate-event', en: 'Corporate event', es: 'Evento corporativo', bucket: 'content' },
-  { value: 'other', en: 'Other', es: 'Otro', bucket: 'content' },
-] as const satisfies readonly (Option<string> & { bucket: 'content' | 'podcast' | 'nonprofit' })[];
+  { value: 'content-collaboration', en: 'Content collaboration', es: 'Colaboración de contenido' },
+  { value: 'content-creation', en: 'Content creation', es: 'Creación de contenido' },
+  { value: 'influencer', en: 'Influencer', es: 'Influencer' },
+  { value: 'podcast', en: 'Podcast', es: 'Pódcast' },
+  { value: 'nonprofit', en: 'Nonprofit partnership', es: 'Alianza con una organización sin fines de lucro' },
+  { value: 'corporate-event', en: 'Corporate event', es: 'Evento corporativo' },
+  { value: 'other', en: 'Other', es: 'Otro' },
+] as const satisfies readonly Option<string>[];
 
 export type PartnershipType = (typeof PARTNERSHIP_TYPES)[number]['value'];
 export const PARTNERSHIP_TYPE_VALUES = PARTNERSHIP_TYPES.map((o) => o.value) as [PartnershipType, ...PartnershipType[]];

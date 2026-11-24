@@ -2,42 +2,117 @@ import { PARTNERSHIP_TYPES, type PartnershipType } from '../leadOptions';
 
 export type InquiryKind = 'general' | 'partnership' | 'sponsor' | 'lead';
 
+/** The env vars that hold the team inboxes, read at runtime per Netlify context. */
+export type NotifyVar =
+  | 'CONTACT_NOTIFY_TO'
+  | 'SPONSOR_NOTIFY_TO'
+  | 'LEAD_NOTIFY_TO'
+  | 'PARTNER_CONTENT_NOTIFY_TO'
+  | 'PODCAST_NOTIFY_TO'
+  | 'NONPROFIT_NOTIFY_TO';
+
 export interface NotifyRoute {
-  /** Bracket tag that starts the email subject, for inbox filters. */
+  /** Bracket tag(s) that start the email subject, for inbox filters. */
   tag: string;
-  /** The env var holding that category's inbox. */
-  envVar: string;
+  /** Every inbox var that hears about it, deduped, in a stable order. */
+  envVars: NotifyVar[];
+}
+
+interface Route {
+  tag: string;
+  envVars: readonly NotifyVar[];
+}
+
+const KIND_ROUTES: Record<Exclude<InquiryKind, 'partnership'>, Route> = {
+  general: { tag: '[General]', envVars: ['CONTACT_NOTIFY_TO'] },
+  sponsor: { tag: '[Brand partnership]', envVars: ['SPONSOR_NOTIFY_TO'] },
+  lead: { tag: '[Lead a cleanup]', envVars: ['LEAD_NOTIFY_TO'] },
+};
+
+// A Record, so a new partnership choice can't ship without a route.
+// PARTNER_CONTENT_NOTIFY_TO is the partners@ inbox; corporate events reuse
+// LEAD_NOTIFY_TO (events@) for their copy rather than adding a var.
+const PARTNERSHIP_ROUTES: Record<PartnershipType, Route> = {
+  'content-collaboration': { tag: '[Content]', envVars: ['PARTNER_CONTENT_NOTIFY_TO'] },
+  'content-creation': { tag: '[Content]', envVars: ['PARTNER_CONTENT_NOTIFY_TO'] },
+  influencer: { tag: '[Content]', envVars: ['PARTNER_CONTENT_NOTIFY_TO'] },
+  podcast: { tag: '[Podcast]', envVars: ['PODCAST_NOTIFY_TO', 'PARTNER_CONTENT_NOTIFY_TO'] },
+  nonprofit: { tag: '[Nonprofit]', envVars: ['NONPROFIT_NOTIFY_TO'] },
+  'corporate-event': { tag: '[Content]', envVars: ['PARTNER_CONTENT_NOTIFY_TO', 'LEAD_NOTIFY_TO'] },
+  other: { tag: '[Content]', envVars: ['PARTNER_CONTENT_NOTIFY_TO'] },
+};
+
+// "podcast" in either language (ES "pódcast"), any case, plurals included
+const PODCAST_MENTION = /p[oó]dcast/i;
+
+/** Whether free text mentions a podcast, so the podcast inbox gets a copy. */
+export function mentionsPodcast(text: string): boolean {
+  // NFC first: a decomposed "ó" (o + combining accent) must still match
+  return PODCAST_MENTION.test(text.normalize('NFC'));
 }
 
 /**
- * Where a contact-page notification goes and how its subject is tagged
- * (captain, 2026-10-15/19: route by category so nothing sinks in one shared
- * inbox). One var per category, with NO fallback between them: an unset
- * var means that notification isn't sent and the action logs an error
- * naming the var, so a misroute is impossible. docs/inbox-routing.md is
- * the human-readable copy of this table — keep the two in step.
+ * Who hears about a contact-page inquiry and how its subject is tagged
+ * (captain, 2026-11-24): General → contact@, Brand Partner → partners@,
+ * Lead a cleanup → events@, and on the Partner tile each picked kind adds
+ * its inboxes (podcast → podcast@ and partners@, corporate event →
+ * partners@ and events@, every other kind → partners@). A Partner or
+ * Brand Partner message that mentions a podcast also copies podcast@.
+ * docs/inbox-routing.md is the human-readable copy of this table — keep
+ * the two in step.
  *
- *   general                                → [General]            CONTACT_NOTIFY_TO
- *   sponsor (the Brand Partner tile)       → [Brand partnership]  SPONSOR_NOTIFY_TO
- *   lead a cleanup                         → [Lead a cleanup]     LEAD_NOTIFY_TO
- *   partner: podcast                       → [Podcast]            PODCAST_NOTIFY_TO
- *   partner: nonprofit partnership         → [Nonprofit]          NONPROFIT_NOTIFY_TO
- *   partner: content collaboration/creation,
- *            influencer, corporate event, other → [Content]       PARTNER_CONTENT_NOTIFY_TO
+ * There is NO fallback between vars: an unset one is reported by
+ * resolveRecipients and never replaced with another inbox.
  */
-export function notifyRoute(kind: InquiryKind, partnershipType?: PartnershipType): NotifyRoute {
-  switch (kind) {
-    case 'general':
-      return { tag: '[General]', envVar: 'CONTACT_NOTIFY_TO' };
-    case 'sponsor':
-      return { tag: '[Brand partnership]', envVar: 'SPONSOR_NOTIFY_TO' };
-    case 'lead':
-      return { tag: '[Lead a cleanup]', envVar: 'LEAD_NOTIFY_TO' };
-    case 'partnership': {
-      const bucket = PARTNERSHIP_TYPES.find((t) => t.value === partnershipType)?.bucket ?? 'content';
-      if (bucket === 'podcast') return { tag: '[Podcast]', envVar: 'PODCAST_NOTIFY_TO' };
-      if (bucket === 'nonprofit') return { tag: '[Nonprofit]', envVar: 'NONPROFIT_NOTIFY_TO' };
-      return { tag: '[Content]', envVar: 'PARTNER_CONTENT_NOTIFY_TO' };
+export function notifyRoute(
+  kind: InquiryKind,
+  { partnershipTypes = [], message = '' }: { partnershipTypes?: readonly PartnershipType[]; message?: string } = {},
+): NotifyRoute {
+  let routes: Route[];
+  if (kind === 'partnership') {
+    // Choice-list order, not tick order, so the tag reads the same however
+    // they were ticked; an empty pick (never valid past the schema) still
+    // reaches partners@ rather than nobody
+    const picked = PARTNERSHIP_TYPES.map((t) => t.value).filter((v) => partnershipTypes.includes(v));
+    routes = picked.length ? picked.map((v) => PARTNERSHIP_ROUTES[v]) : [PARTNERSHIP_ROUTES.other];
+  } else {
+    routes = [KIND_ROUTES[kind]];
+  }
+
+  const envVars = new Set(routes.flatMap((r) => r.envVars));
+  if ((kind === 'partnership' || kind === 'sponsor') && mentionsPodcast(message)) envVars.add('PODCAST_NOTIFY_TO');
+
+  return {
+    tag: [...new Set(routes.map((r) => r.tag))].join(' '),
+    envVars: [...envVars],
+  };
+}
+
+/**
+ * Turns the route's vars into one deduped recipient list. A var may hold
+ * several comma-separated addresses, and several vars may hold the same
+ * inbox (partners@ sits behind three of them), so an address is listed
+ * once however many vars name it, compared case-insensitively.
+ */
+export function resolveRecipients(
+  envVars: readonly NotifyVar[],
+  readEnv: (name: NotifyVar) => string | undefined,
+): { recipients: { email: string }[]; unset: NotifyVar[] } {
+  const seen = new Set<string>();
+  const recipients: { email: string }[] = [];
+  const unset: NotifyVar[] = [];
+  for (const name of envVars) {
+    const addresses = (readEnv(name) ?? '')
+      .split(',')
+      .map((address) => address.trim())
+      .filter(Boolean);
+    if (addresses.length === 0) unset.push(name);
+    for (const email of addresses) {
+      const key = email.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      recipients.push({ email });
     }
   }
+  return { recipients, unset };
 }
