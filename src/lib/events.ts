@@ -145,12 +145,23 @@ export function flyerHeadline(name: string, borough: EventPlace): Copy {
 
 /** The flyer's date block: "October 18" over "at 10 AM", minutes only when not on the hour. */
 export function flyerWhen(iso: string, lang: Lang): { date: string; time: string } {
+  const { date, clock, d } = whenParts(iso, lang);
+  const at = lang === 'es' ? (d.getHours() % 12 === 1 ? 'a la' : 'a las') : 'at';
+  return { date, time: `${at} ${clock}` };
+}
+
+/** The phone card's one-line "December 5 · 10 AM" (captain's E3, 2026-11-24). */
+export function cardWhen(iso: string, lang: Lang): string {
+  const { date, clock } = whenParts(iso, lang);
+  return `${date} · ${clock}`;
+}
+
+function whenParts(iso: string, lang: Lang): { date: string; clock: string; d: Date } {
   const locale = lang === 'es' ? 'es-419' : 'en-US';
   const d = new Date(iso);
   const date = d.toLocaleDateString(locale, { month: 'long', day: 'numeric' });
   const clock = d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true }).replace(/:00(?=\D)/, '');
-  const at = lang === 'es' ? (d.getHours() % 12 === 1 ? 'a la' : 'a las') : 'at';
-  return { date, time: `${at} ${clock}` };
+  return { date, clock, d };
 }
 
 /**

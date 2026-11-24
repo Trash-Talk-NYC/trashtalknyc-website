@@ -104,14 +104,13 @@ export const GALLERY = {
  * src/lib/news.ts. A top-level route, but it lives under the More Media
  * dropdown and switcher like the Gallery.
  *
- * Out of this release since 2026-11-24 (captain: "we also have to take out
- * In The News") while real articles are gathered: NEWS_LIVE = false drops
- * the nav, switcher, and More Media links, and the page is parked as
- * src/pages/_in-the-news.astro (the underscore keeps Astro from routing
- * it). To bring it back, set the flag to true and rename the file to
- * in-the-news.astro; media.test.ts fails until both agree.
+ * Back in the release since 2026-11-24 with the press scout's verified
+ * clippings (it was out earlier that day). NEWS_LIVE = false would drop the
+ * nav, switcher, and More Media links again; the page must then be parked
+ * as src/pages/_in-the-news.astro (the underscore keeps Astro from routing
+ * it), and news.test.ts fails until both agree.
  */
-export const NEWS_LIVE = false;
+export const NEWS_LIVE = true;
 
 export const IN_THE_NEWS = {
   path: '/in-the-news',

@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { EventCardProps } from '../lib/events';
-import { formatDate, formatTime, flyerWhen } from '../lib/events';
+import { cardWhen, formatDate, formatTime, flyerWhen } from '../lib/events';
 import binDrawing from '../assets/ill-trash-purple.svg';
 import gloveDrawing from '../assets/ill-glove-plant-purple.svg';
 import type { PlacedSticker } from '../lib/teamStickers';
@@ -15,6 +15,14 @@ import type { PlacedSticker } from '../lib/teamStickers';
  * right, and Register. Die-cut stickers straddle the edge: one of the
  * team's stickers (the page picks it, so no two flyers share one), plus a
  * host badge when the event has one.
+ *
+ * On phones the card is the captain's E3 "ticket" (2026-11-24: "very
+ * messy on mobile, and too verbose"): the headline, one line of date and
+ * time with the distance, the venue, the event's name, address, and maps
+ * folded under "Address & maps", and a full-width Register. The drawing
+ * and the desktop's date block are hidden there; desktop is unchanged.
+ * The distance fills every [data-dist-slot] once the visitor shares
+ * their location (the events page script).
  *
  * The `.past` class is only ever added client-side by the staleness check
  * on the events page. A sample flyer links nowhere and wears a "Sample"
@@ -42,6 +50,9 @@ const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
 // borough, so nothing the organizer wrote is lost
 const showName = name !== headline.en;
 
+const shortWhen = { en: cardWhen(startIso, 'en'), es: cardWhen(startIso, 'es') };
+const [venue, ...addressLines] = venueLines;
+
 const btnId = `eb-trigger-${id}`;
 ---
 
@@ -58,6 +69,28 @@ const btnId = `eb-trigger-${id}`;
   <h2 class="ev-head" data-en={headline.en} data-es={headline.es}>{headline.en}</h2>
   {showName && <p class="ev-name">{name}</p>}
   {host && <p class="sr-only"><span data-en="Hosted with" data-es="Organizado con">Hosted with</span> {host}</p>}
+
+  <!-- Phones only (E3) -->
+  <div class="ev-m">
+    <p class="ev-m-when">
+      <span data-en={shortWhen.en} data-es={shortWhen.es}>{shortWhen.en}</span>
+      <span class="ev-pill" data-dist-slot hidden></span>
+    </p>
+    {venue && <p class="ev-m-venue">{venue}</p>}
+    {(showName || addressLines.length > 0 || mapUrls) && (
+      <details class="ev-m-more">
+        <summary><span data-en="Address & maps" data-es="Dirección y mapas">Address &amp; maps</span></summary>
+        {showName && <p>{name}</p>}
+        {addressLines.length > 0 && <p>{addressLines.join(', ')}</p>}
+        {mapUrls && (
+          <p class="maps">
+            <a href={mapUrls.google} target="_blank" rel="noopener">Google Maps</a>
+            <a href={mapUrls.apple} target="_blank" rel="noopener">Apple Maps</a>
+          </p>
+        )}
+      </details>
+    )}
+  </div>
 
   <div class="ev-row">
     <div class="ev-art">
@@ -76,6 +109,7 @@ const btnId = `eb-trigger-${id}`;
         <p class="maps">
           <a href={mapUrls.google} target="_blank" rel="noopener">Google Maps</a>
           <a href={mapUrls.apple} target="_blank" rel="noopener">Apple Maps</a>
+          <span class="dist-badge" data-dist-slot hidden></span>
         </p>
       )}
       {sample ? (
@@ -239,6 +273,70 @@ const btnId = `eb-trigger-${id}`;
   .ev-rsvp { margin-top: 8px; padding: 11px 18px; }
   .ev-rsvp[aria-disabled='true'] { cursor: default; }
   .ev-rsvp[aria-disabled='true']:hover { background: var(--purple); color: var(--beige); }
+
+  /* ── Phones: E3 ── */
+  .ev-m { display: none; }
+
+  @media (max-width: 760px) {
+    .ev-card { padding: 24px 18px 20px; gap: 0; }
+    .ev-card :global(.ev-stk) { width: 76px; height: 56px; top: -18px; right: -8px; }
+    .ev-head { font-size: clamp(2.2rem, 11cqi, 2.6rem); padding-right: 3.6rem; }
+    .ev-name,
+    .ev-art,
+    .ev-meta > .ev-when,
+    .ev-meta > .ev-where,
+    .ev-meta > .maps { display: none; }
+
+    .ev-m { display: grid; gap: 4px; margin-top: 10px; color: var(--black); }
+
+    .ev-m-when {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px 10px;
+      margin: 0;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .ev-pill {
+      padding: 3px 8px;
+      border: 2px solid var(--black);
+      background: var(--yellow);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .ev-m-venue {
+      margin: 2px 0 0;
+      font-size: 1.02rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ev-m-more { margin-top: 4px; font-size: 0.95rem; }
+
+    .ev-m-more summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: var(--tap);
+      cursor: pointer;
+      color: var(--purple);
+      font-weight: 700;
+    }
+
+    .ev-m-more summary span { text-decoration: underline; text-underline-offset: 3px; }
+    .ev-m-more p { margin: 0 0 6px; line-height: 1.35; }
+    .ev-m-more .maps { gap: 18px; }
+
+    .ev-row { display: block; margin-top: 6px; }
+    .ev-meta { justify-items: stretch; }
+    .ev-rsvp { width: 100%; justify-content: center; margin-top: 6px; }
+  }
 
   @media (min-width: 761px) {
     .ev-card { padding: 42px 40px 34px; gap: 10px; }

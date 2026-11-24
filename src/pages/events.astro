@@ -272,20 +272,19 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
         return haversineKm(userLat, userLng, aLat, aLng) - haversineKm(userLat, userLng, bLat, bLng);
       });
       cards.forEach(function(card) { list.appendChild(card); });
-      // Add distance badges
+      // Distance badges: every slot a card carries (the desktop maps row
+      // and the phone card's date line), in the page's language
       cards.forEach(function(card) {
         var lat = parseFloat(card.dataset.lat), lng = parseFloat(card.dataset.lng);
         if (isNaN(lat)) return;
-        var mi = kmToMiles(haversineKm(userLat, userLng, lat, lng));
-        var existing = card.querySelector('.dist-badge');
-        if (existing) { existing.textContent = mi.toFixed(1) + ' mi away'; return; }
-        var info = card.querySelector('.maps');
-        if (info) {
-          var badge = document.createElement('span');
-          badge.className = 'dist-badge';
-          badge.textContent = mi.toFixed(1) + ' mi away';
-          info.appendChild(badge);
-        }
+        var mi = kmToMiles(haversineKm(userLat, userLng, lat, lng)).toFixed(1);
+        var en = mi + ' mi away', es = 'a ' + mi + ' mi';
+        card.querySelectorAll('[data-dist-slot]').forEach(function(slot) {
+          slot.setAttribute('data-en', en);
+          slot.setAttribute('data-es', es);
+          slot.textContent = document.documentElement.lang === 'es' ? es : en;
+          slot.hidden = false;
+        });
       });
     }
 
