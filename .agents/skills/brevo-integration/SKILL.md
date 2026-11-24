@@ -1,6 +1,6 @@
 ---
 name: brevo-integration
-description: Use when working with the Brevo integration on trashtalknyc-website — debugging form submissions failing in production or preview (HTTP 500, Brevo API errors), adding or editing Brevo custom attributes or multiple-choice options, changing what the signup or contact forms send, reading per-submission history, changing list routing or Brevo env vars, or touching Brevo account/security settings.
+description: Use when working with the Brevo integration on trashtalknyc-website — debugging form submissions failing in production or preview (HTTP 500, Brevo API errors), adding or editing Brevo custom attributes or multiple-choice options, changing what the signup, contact, or Lead a Cleanup forms send, reading per-submission history, changing list routing or Brevo env vars, or touching Brevo account/security settings.
 ---
 
 # Brevo Integration (trashtalknyc-website)
@@ -30,8 +30,9 @@ This took down all 3 form paths in production and preview with HTTP 500 for ~2 d
 | 10 | general contact | `CONTACT_GENERAL` |
 | 11 | collab/partnership contact | `CONTACT_COLLAB` |
 | 13 | sponsor contact | `CONTACT_SPONSOR` (documented as 13 in `.env.example`; must also be set in Netlify all deploy contexts — if missing, sponsor submissions fail loudly with `form_env_missing`) |
+| — | Lead a Cleanup applications (2026-10) | `BREVO_LIST_ID_LEADS` (the list must be created in Brevo and the var set per context; ID not yet recorded here — same loud `form_env_missing` failure when missing) |
 
-The contact env var names are short because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones — keep as-is.
+The `CONTACT_*` env var names are short because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones — keep as-is.
 Do not assume the vars match across Netlify deploy contexts: a 2026-08 validation found `deploy-preview` missing the list IDs, the Turnstile secret and both notify addresses while production was complete (the earlier "identical across all contexts, verified 2026-07" claim was false; firstmate has since copied them across).
 Verify per context when debugging — `form_env_missing` in the function logs is the tell.
 
@@ -42,22 +43,30 @@ Empty-string fields are dropped before upsert (`buildAttributes`) so updates nev
 `EXPERIENCE` is dormant — kept in Brevo for historical contacts, no longer written.
 `PHONE` is a custom text attribute, not Brevo's native SMS/phone field, so it (and `ORGANIZATION`) can look "missing" in the Brevo list view while being present — check the contact's attribute panel or the API, not the list view.
 
-| Attribute | Signup sends | Contact sends |
-|---|---|---|
-| `FIRSTNAME` / `LASTNAME` | ✓ | ✓ |
-| `PHONE` | ✓ | ✓ (optional) |
-| `BOROUGH` | ✓ | — |
-| `MESSAGE` | ✓ (experience text) | ✓ (message text) |
-| `HEAR_ABOUT_US` | ✓ (values must match the Brevo enum exactly) | — |
-| `WAIVER_ACCEPTED` | ✓ (`'true'` only when both waiver and age checkboxes validated) | — |
-| `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership` \| `sponsor`; plain text attribute — verified via the attributes API 2026-08, so new values need no dashboard work) |
-| `ORGANIZATION` | — | ✓ (partnership + sponsor tabs, required there) |
+| Attribute | Signup sends | Contact sends | Lead a Cleanup sends |
+|---|---|---|---|
+| `FIRSTNAME` / `LASTNAME` | ✓ | ✓ | ✓ |
+| `PHONE` | ✓ | ✓ (optional) | ✓ (required) |
+| `COUNTRY` | ✓ always (country-first location, 2026-10-09) | — | — |
+| `CITY` / `STATE_REGION` / `ZIP_CODE` | ✓ US: ZIP typed, city + full state name from the server's ZIP re-lookup; elsewhere: picked city, optional region, optional free-format postal code | — | — |
+| `BOROUGH` | ✓ only for NYC ZIPs (from the ZIP-range table in `src/lib/zip.ts`, never the lookup service) | — | — |
+| `MESSAGE` | — (signup stopped sending it 2026-11-08; older values stay) | ✓ (message text) | — |
+| `HEAR_ABOUT_US` | ✓ required (values must match the Brevo enum exactly; "Article" and "Somewhere else" are pending dashboard options — the action retries the upsert without the hear attributes when Brevo rejects them and notes the answer instead, `brevo_hear_attrs_rejected`) | — | — |
+| `HEAR_ABOUT_US_OTHER` | ✓ free text behind "Somewhere else" (pending dashboard creation, same fallback) | — | — |
+| `WAIVER_ACCEPTED`, `PHOTO_CONSENT` (boolean) | — no longer sent since 2026-11-08 (the newsletter dropped its waiver, 18+, and photo-consent boxes); the attributes keep older signups' values, add-only. If a boolean is ever sent again it must be a JSON boolean, never `'true'`/`'false'`, which Brevo silently drops (the 2026-07 → 2026-10 bug) | — | — |
+| `INQUIRY_TYPE` | — | ✓ (`general` \| `partnership` \| `sponsor`; plain text attribute — verified via the attributes API 2026-08, so new values need no dashboard work) | ✓ (`lead`) |
+| `ORGANIZATION` | — | ✓ (partnership + sponsor tabs, required there) | — |
+| `LEAD_BEHALF`, `ROUTE_START`, `PREFERRED_MONTH` | — | — | ✓ (`ROUTE_START` is the GeoSearch-verified starting address) |
+| `MAILING_ADDRESS`, `ROUTE_TYPE`, `ROUTE_END` | — | — | no longer sent (2026-10-15); kept in Brevo with older requests' values — never delete attributes |
+
+The 2026-10 attributes (`COUNTRY`, `CITY`, `ZIP_CODE`, and the lead set) must be created in the Brevo dashboard before those flows can land.
 
 ## Submission history: CRM notes, because attributes are last-write-wins
 
 Attributes only keep the latest value, so each submission's free-text field is also attached to the contact as a Brevo CRM note with a queryable header:
-`form=<signup|contact-general|contact-collab> | field=message | submitted=<ISO>` then `—` then the raw content (`buildNoteText` in `src/lib/server/brevo.ts`).
-Note creation is best-effort and never fails the submission (`tryCreateNote` — the upsert already succeeded); failures only log `brevo_note_failed`.
+`form=<signup|contact-general|contact-collab|contact-sponsor|contact-lead> | field=message | submitted=<ISO>` then `—` then the raw content (`buildNoteText` in `src/lib/server/brevo.ts`).
+The `contact-lead` note carries the full application, including the private Blobs keys of any route photos (store `lead-route-photos`).
+Note creation is best-effort and never fails the submission (`tryCreateNote` — the upsert already succeeded); failures only log `brevo_note_failed` (plus `lead_photo_keys_unrecorded` with the keys when a lead note with photos fails, so they stay findable).
 
 ## Editing attribute options: use the dashboard, not the API
 
@@ -67,6 +76,6 @@ Don't retry with different payloads; edit the options directly in the Brevo dash
 
 ## Form-path facts
 
-Both forms submit through Astro Actions running as an on-demand Netlify function: zod validation → spam heuristics (honeypot + timing + content patterns) → per-IP Netlify Blobs rate limiting → Cloudflare Turnstile verification (`src/lib/server/turnstile.ts`, live in production — see `AGENTS.md`) → Brevo upsert.
+All three forms (`signup`, `contact`, `leadCleanup`) submit through Astro Actions running as an on-demand Netlify function: zod validation → spam heuristics (honeypot + timing + content patterns) → per-IP Netlify Blobs rate limiting → Cloudflare Turnstile verification (`src/lib/server/turnstile.ts`, live in production — see `AGENTS.md`) → Brevo upsert.
 Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign — any doc still referencing a Web3Forms key is stale.
-Nothing emails the team on submission and there is no dedicated partnerships inbox; contact submissions land only in Brevo (list + attributes + CRM note), and a transactional-email notification is a known follow-up (`docs/systems.md`, Forms).
+Contact-page submissions (every tile, Lead a Cleanup included) also email the team a transactional notification once `CONTACT_NOTIFY_FROM` is set, to every inbox var it routes to, each address once, with no fallback between them: `CONTACT_NOTIFY_TO` (general), `SPONSOR_NOTIFY_TO`, `LEAD_NOTIFY_TO`, and for the Partner tile `PARTNER_CONTENT_NOTIFY_TO` / `PODCAST_NOTIFY_TO` / `NONPROFIT_NOTIFY_TO` (plus `LEAD_NOTIFY_TO` for corporate events) by each ticked partnership kind, with a podcast-keyword copy (`notifyRoute` in `src/lib/server/notifyRouting.ts`; table in `docs/inbox-routing.md`). An unset inbox var logs `inquiry_notify_unconfigured` naming it and that inbox gets nothing, never a misroute. Signups send no notification.

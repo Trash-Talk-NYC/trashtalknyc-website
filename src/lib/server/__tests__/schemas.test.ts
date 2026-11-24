@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { signupSchema, contactSchema, BOROUGHS } from '../schemas';
+import { signupSchema, contactSchema } from '../schemas';
 
 const validSignup = {
   fname: 'Jane',
   lname: 'Doe',
   email: 'jane@example.com',
-  borough: 'Brooklyn',
-  waiverCheck: 'on',
-  ageCheck: 'on',
+  country: 'United States',
+  zip: '11211',
+  hear: 'Word of Mouth',
+};
+
+const validAbroad = {
+  ...validSignup,
+  country: 'United Kingdom',
+  zip: '',
+  city: 'London, England',
 };
 
 const validContact = {
@@ -24,8 +31,20 @@ describe('signupSchema', () => {
   });
 
   it('accepts optional fields as empty strings (how empty inputs submit)', () => {
-    const result = signupSchema.safeParse({ ...validSignup, phone: '', experience: '', hear: '', botcheck: '' });
+    const result = signupSchema.safeParse({ ...validSignup, phone: '', hearOther: '', region: '', postal: '', city: '', botcheck: '' });
     expect(result.success).toBe(true);
+  });
+
+  it('requires how-did-you-hear (captain, 2026-10)', () => {
+    expect(signupSchema.safeParse({ ...validSignup, hear: '' }).success).toBe(false);
+    const { hear: _omitted, ...withoutHear } = validSignup;
+    expect(signupSchema.safeParse(withoutHear).success).toBe(false);
+  });
+
+  it('accepts the new hear choices with and without the free-text companion', () => {
+    expect(signupSchema.safeParse({ ...validSignup, hear: 'Article' }).success).toBe(true);
+    expect(signupSchema.safeParse({ ...validSignup, hear: 'Somewhere else', hearOther: 'A podcast' }).success).toBe(true);
+    expect(signupSchema.safeParse({ ...validSignup, hear: 'Somewhere else', hearOther: '' }).success).toBe(true);
   });
 
   it.each(['fname', 'lname', 'email'])('rejects missing %s', (field) => {
@@ -36,29 +55,16 @@ describe('signupSchema', () => {
     expect(signupSchema.safeParse({ ...validSignup, email: 'not-an-email' }).success).toBe(false);
   });
 
-  it.each(BOROUGHS)('accepts borough %s', (borough) => {
-    expect(signupSchema.safeParse({ ...validSignup, borough }).success).toBe(true);
-  });
-
-  it('rejects an unknown borough', () => {
-    expect(signupSchema.safeParse({ ...validSignup, borough: 'Hoboken' }).success).toBe(false);
-  });
-
   it('trims whitespace-only names down to invalid', () => {
     expect(signupSchema.safeParse({ ...validSignup, fname: '   ' }).success).toBe(false);
   });
 
-  it.each(['waiverCheck', 'ageCheck'])('rejects a submission missing %s (checkbox unchecked)', (field) => {
-    const { [field]: _omitted, ...rest } = validSignup as Record<string, string>;
-    expect(signupSchema.safeParse(rest).success).toBe(false);
-  });
-
-  it.each(['waiverCheck', 'ageCheck'])('rejects a non-"on" value for %s', (field) => {
-    expect(signupSchema.safeParse({ ...validSignup, [field]: 'true' }).success).toBe(false);
-  });
-
-  it('requires both waiver checkboxes to be accepted', () => {
+  // The newsletter has no tie to events (team round 3, captain 2026-11-08)
+  it('needs no waiver, 18+, or photo-consent box, and drops them if posted', () => {
     expect(signupSchema.safeParse(validSignup).success).toBe(true);
+    const old = signupSchema.safeParse({ ...validSignup, waiverCheck: 'on', ageCheck: 'on', photoConsent: 'on', experience: 'Hi' });
+    expect(old.success).toBe(true);
+    expect(old.success && Object.keys(old.data)).not.toContain('waiverCheck');
   });
 
   it('passes the Turnstile token through and tolerates its absence', () => {
@@ -69,6 +75,36 @@ describe('signupSchema', () => {
 
   it('rejects a Turnstile token beyond the documented 2048-char max', () => {
     expect(signupSchema.safeParse({ ...validSignup, 'cf-turnstile-response': 'x'.repeat(2049) }).success).toBe(false);
+  });
+
+  describe('location (country first)', () => {
+    it('a US signup needs only a 5-digit ZIP', () => {
+      expect(signupSchema.safeParse(validSignup).success).toBe(true);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '1121' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: 'abcde' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, zip: '11211-1234' }).success).toBe(false);
+    });
+
+    it('outside the US requires a city, with region and postal code optional', () => {
+      expect(signupSchema.safeParse(validAbroad).success).toBe(true);
+      expect(signupSchema.safeParse({ ...validAbroad, city: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validAbroad, region: 'Greater London', postal: 'SW1A 1AA' }).success).toBe(true);
+    });
+
+    it('takes postal codes in any format outside the US', () => {
+      expect(signupSchema.safeParse({ ...validAbroad, country: 'Canada', city: 'Toronto, Ontario', postal: 'M5V 2T6' }).success).toBe(true);
+    });
+
+    it('rejects a missing country or one outside the offered list', () => {
+      expect(signupSchema.safeParse({ ...validSignup, country: '' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validAbroad, country: 'Atlantis' }).success).toBe(false);
+    });
+
+    it('enforces phone validity when a phone is given', () => {
+      expect(signupSchema.safeParse({ ...validSignup, phone: 'abc' }).success).toBe(false);
+      expect(signupSchema.safeParse({ ...validSignup, phone: '(212) 555-0123' }).success).toBe(true);
+    });
   });
 });
 
@@ -95,10 +131,20 @@ describe('contactSchema', () => {
   });
 
   it.each(['partnership', 'sponsor'])('requires organization for %s inquiries', (inquiryType) => {
-    const orgBacked = { ...validContact, inquiryType };
+    const orgBacked = { ...validContact, inquiryType, partnershipType: ['podcast'] };
     expect(contactSchema.safeParse(orgBacked).success).toBe(false);
     expect(contactSchema.safeParse({ ...orgBacked, organization: '  ' }).success).toBe(false);
     expect(contactSchema.safeParse({ ...orgBacked, organization: 'Acme Co' }).success).toBe(true);
+  });
+
+  it('requires the kind of partnership for partner inquiries only', () => {
+    const partner = { ...validContact, inquiryType: 'partnership', organization: 'Acme Co' };
+    expect(contactSchema.safeParse(partner).success).toBe(false);
+    expect(contactSchema.safeParse({ ...partner, partnershipType: [] }).success).toBe(false);
+    expect(contactSchema.safeParse({ ...partner, partnershipType: ['influencer'] }).success).toBe(true);
+    expect(contactSchema.safeParse({ ...partner, partnershipType: ['podcast', 'corporate-event'] }).success).toBe(true);
+    expect(contactSchema.safeParse({ ...partner, partnershipType: ['influencer', 'merch'] }).success).toBe(false);
+    expect(contactSchema.safeParse(validContact).success).toBe(true);
   });
 
   it('accepts a complete sponsor inquiry', () => {

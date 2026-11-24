@@ -2,30 +2,34 @@
 /**
  * EN/ES language toggle. Owns its buttons, styling, and click wiring;
  * language state itself lives in src/lib/language.ts so any component
- * can subscribe via onLanguageChange().
+ * can subscribe via onLanguageChange(). Styled for the beige header:
+ * ink-outlined pill, pressed side inverts to black.
  */
 ---
 
 <div class="lang-toggle" role="group" aria-label="Language">
-  <button class="lang-btn active" id="btnEN" type="button" aria-pressed="true">EN</button>
-  <button class="lang-btn" id="btnES" type="button" aria-pressed="false">ES</button>
+  <button class="lang-btn active" data-lang-btn="en" type="button" aria-pressed="true">EN</button>
+  <button class="lang-btn" data-lang-btn="es" type="button" aria-pressed="false">ES</button>
 </div>
 
 <script>
   import { getCurrentLang, setLang, onLanguageChange } from '../lib/language';
 
-  const btnEN = document.getElementById('btnEN');
-  const btnES = document.getElementById('btnES');
+  // The toggle renders twice (desktop nav + phone menu), so wire every
+  // instance by data attribute rather than by id.
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-lang-btn]'));
 
   function updateButtons(lang: string) {
-    btnEN?.classList.toggle('active', lang === 'en');
-    btnES?.classList.toggle('active', lang === 'es');
-    btnEN?.setAttribute('aria-pressed', String(lang === 'en'));
-    btnES?.setAttribute('aria-pressed', String(lang === 'es'));
+    buttons.forEach((btn) => {
+      const active = btn.dataset.langBtn === lang;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
   }
 
-  btnEN?.addEventListener('click', () => setLang('en'));
-  btnES?.addEventListener('click', () => setLang('es'));
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => setLang(btn.dataset.langBtn === 'es' ? 'es' : 'en'));
+  });
 
   // Stay in sync when language changes from any source
   onLanguageChange(updateButtons);
@@ -35,31 +39,29 @@
 <style>
   .lang-toggle {
     display: flex;
-    align-items: center;
-    border: 2px solid var(--purple-light);
-    border-radius: 22px;
+    border: 2.5px solid var(--black);
+    border-radius: 8px;
     overflow: hidden;
     flex-shrink: 0;
   }
 
   .lang-btn {
+    border: 0;
     background: transparent;
-    color: var(--paper-a55);
-    border: none;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.62rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.35rem 0.8rem;
+    padding: 5px 9px;
+    min-width: var(--tap);
+    min-height: 38px;
     cursor: pointer;
+    color: var(--black);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 700;
     transition: background 0.15s, color 0.15s;
   }
 
-  .lang-btn.active { background: var(--purple-light); color: #fff; }
-  .lang-btn:hover:not(.active) { color: var(--off-white); }
+  .lang-btn.active { background: var(--black); color: var(--beige); }
 
-  @media (pointer: coarse) {
-    .lang-btn { min-height: 38px; min-width: var(--tap); }
+  @media (prefers-reduced-motion: reduce) {
+    .lang-btn { transition: none; }
   }
 </style>

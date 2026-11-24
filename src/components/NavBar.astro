@@ -1,16 +1,27 @@
 ---
 /**
- * Sticky top navigation: logo, page links, Join CTA, language toggle,
- * and the mobile hamburger. Owns active-page detection and the mobile
- * menu open/close wiring. Deliberately a PLAIN sticky header — see the
- * header bullet in AGENTS.md before adding any positioning tricks.
- * The iOS 26 header-gap bug was never the nav's fault: the device-
+ * Sticky top navigation: the vest sticker and the "Trash Talk NYC" name
+ * (captain's N1, 2026-10-15), page links, About
+ * dropdown, EN/ES toggle, Join CTA, and the phone menu (a beige sheet
+ * that expands inside the sticky nav, under the bar). Owns active-page
+ * detection. Deliberately a PLAIN sticky header — see the header
+ * bullet in AGENTS.md before adding any positioning tricks. The
+ * iOS 26 header-gap bug was never the nav's fault: the device-
  * verified trigger was a position:fixed full-viewport overlay layered
  * above it (the grain, since fixed — see global.css). Never stack a
  * fixed full-viewport layer above this nav.
+ *
+ * The header stays Poster Beige on the Roadtop Black page ground
+ * (captain, 2026-09-30).
  */
+import { Image } from 'astro:assets';
 import LangToggle from './LangToggle.astro';
 import { FOUNDER_PATH } from '../lib/founder';
+import { ABOUT_TTNYC_PATH } from '../lib/aboutTtnyc';
+import { GUIDE_PATH } from '../lib/guide';
+import { WALL_LIVE, WALL_PATH } from '../lib/partners';
+import { GALLERY, IN_THE_NEWS, MORE_MEDIA_PATH, NEWS_LIVE, liveMediaSections } from '../lib/media';
+import vestSticker from '../assets/vest-sticker.png';
 
 const pathname = Astro.url.pathname;
 
@@ -23,126 +34,238 @@ const isFounder  = isUnder(FOUNDER_PATH);
 // The founder page lives under /about/, which isTeam's prefix also matches, so
 // the `!isFounder` guard below is what stops "The Team" double-lighting on
 // the founder page. Keep the guard — declaration order alone does nothing.
-const isTeam     = !isFounder && isUnder('/about');
+// The About page (/about/ttnyc) sits under /about/ too, so it needs the same guard.
+const isAboutTtnyc = isUnder(ABOUT_TTNYC_PATH);
+const isTeam     = !isFounder && !isAboutTtnyc && isUnder('/about');
 // The recruitment page is top-level at /recruit but belongs to the About menu
 const isRecruit  = isUnder('/recruit');
+// The partners page is its own top-level link (team round 3, captain
+// 2026-11-08: "pretty important page", so not hidden inside About)
+const isWall = isUnder(WALL_PATH);
 // The About parent highlights when any of its children is current
-const isAbout    = isTeam || isFounder || isRecruit;
+// The trash club guide is top-level too, and sits with how the club works
+const isGuide    = isUnder(GUIDE_PATH);
+const isAbout    = isAboutTtnyc || isTeam || isFounder || isRecruit || isGuide;
 const isContact  = isUnder('/contact');
+// More Media parent lights for the overview and every channel subpage;
+// the "All Media" child lights only on the overview itself
+// In The News is a top-level route but a More Media page, so it lights
+// the More Media parent too
+const isMedia    = isUnder(MORE_MEDIA_PATH) || isUnder(IN_THE_NEWS.path);
+const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH + '/';
 ---
 
 <nav aria-label="Main">
-  <a class="nav-logo" href="/">Trash Talk <span>NYC</span></a>
-  <div class="nav-right">
-    <LangToggle />
-    <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-  <ul class="nav-links" id="navLinks">
-    <li><a href="/" class:list={{ active: isHome }} data-en="Home" data-es="Inicio">Home</a></li>
-    <li><a href="/events" class:list={{ active: isEvents }} data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-    <li class="nav-dropdown" id="aboutDropdown">
-      <!-- Disclosure pattern (APG): the parent is a toggle, not a link —
-           /about stays reachable as "The Team" below. aria-expanded is the
-           whole submenu contract; no menu roles, no aria-haspopup.
-           "Open Roles" is the captain's chosen label (round 20): "Join"
-           is taken by the mailing-list nav CTA and "Work With Us" was
-           rejected as confusable with Contact.
-           Projects stays decoupled on fm/projects-tree-guard and rejoins
-           this list when it lands. -->
-      <button
-        type="button"
-        class:list={['nav-drop-toggle', { active: isAbout }]}
-        id="aboutDropToggle"
-        aria-expanded="false"
-        aria-controls="aboutDropMenu"
-      >
-        <span data-en="About" data-es="Nosotros">About</span>
-        <svg class="drop-caret" aria-hidden="true" width="10" height="7" viewBox="0 0 10 7" fill="none">
-          <path d="M1 1.5 5 5.5 9 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+  <div class:list={['nav-bar', { 'has-wall': WALL_LIVE }]}>
+    <a class="nav-logo-link" href="/" aria-label="Trash Talk NYC home">
+      <Image src={vestSticker} alt="" class="nav-logo" width={64} densities={[1, 2]} loading="eager" />
+      <span class="nav-name" aria-hidden="true">Trash Talk NYC</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="/" class:list={{ active: isHome }} data-en="Home" data-es="Inicio">Home</a></li>
+      <li><a href="/events" class:list={{ active: isEvents }} data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
+      <li class="nav-dropdown">
+        <!-- Disclosure pattern (APG): the parent is a toggle, not a link —
+             /about stays reachable as "The Team" below. aria-expanded is the
+             whole submenu contract; no menu roles, no aria-haspopup.
+             "Open Roles" is the captain's chosen label (round 20): "Join"
+             is taken by the mailing-list nav CTA and "Work With Us" was
+             rejected as confusable with Contact.
+             Projects stays decoupled on fm/projects-tree-guard and rejoins
+             this list when it lands. -->
+        <button
+          type="button"
+          class:list={['nav-drop-toggle', { active: isAbout }]}
+          aria-expanded="false"
+          aria-controls="aboutDropMenu"
+        >
+          <span data-en="About" data-es="Nosotros">About</span>
+          <svg class="drop-caret" aria-hidden="true" width="10" height="7" viewBox="0 0 10 7" fill="none">
+            <path d="M1 1.5 5 5.5 9 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <ul class="nav-drop-menu" id="aboutDropMenu">
+          <li><a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About" data-es="Nosotros">About</a></li>
+          <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
+          <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
+          <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
+          <li><a href={GUIDE_PATH} class:list={{ active: isGuide }} data-en="Start a Trash Club" data-es="Crea un trash club">Start a Trash Club</a></li>
+        </ul>
+      </li>
+      {WALL_LIVE && <li><a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a></li>}
+      <!-- More Media (captain, 2026-10-09): same disclosure pattern as
+           About — the overview is the first child, then one link per
+           channel subpage, all from media.ts. -->
+      <li class="nav-dropdown">
+        <button
+          type="button"
+          class:list={['nav-drop-toggle', { active: isMedia }]}
+          aria-expanded="false"
+          aria-controls="mediaDropMenu"
+        >
+          <span data-en="More Media" data-es="Más Medios">More Media</span>
+          <svg class="drop-caret" aria-hidden="true" width="10" height="7" viewBox="0 0 10 7" fill="none">
+            <path d="M1 1.5 5 5.5 9 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <ul class="nav-drop-menu" id="mediaDropMenu">
+          <li><a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a></li>
+          {liveMediaSections.map((m) => (
+            <li><a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a></li>
+          ))}
+          <li><a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a></li>
+          {NEWS_LIVE && <li><a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a></li>}
+        </ul>
+      </li>
+      <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <div class="nav-lang"><LangToggle /></div>
+      <a href="/#signup" class="btn btn-primary nav-cta" data-en="Join" data-es="Únete">Join</a>
+      <button class="burger" id="navBurger" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="mMenu">
+        <svg viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M1 2h18M1 8h18M1 14h18" /></svg>
       </button>
-      <ul class="nav-drop-menu" id="aboutDropMenu">
-        <li><a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a></li>
-        <li><a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
-        <li><a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
-      </ul>
-    </li>
-    <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
-    <li><a href="/#signup" class="nav-cta" data-en="Join" data-es="Únete">Join</a></li>
-  </ul>
+    </div>
+  </div>
+
+  <!-- PHONE MENU: a beige poster sheet under the light header. About is
+       a dropdown; no sticker inside the menu; the yellow button says
+       "Newsletter" (captain). Lives inside the sticky nav so it pins
+       with the bar — no fixed layers. -->
+  <div class="m-menu" id="mMenu" hidden>
+    <div class="m-links">
+      <a href="/" class:list={{ active: isHome }} data-en="Home" data-es="Inicio">Home</a>
+      <a href="/events" class:list={{ active: isEvents }} data-en="Club Events" data-es="Eventos del Club">Club Events</a>
+      <div class="m-group">
+        <button type="button" class:list={['m-drop', { active: isAbout }]} aria-expanded="false" aria-controls="mAboutSub">
+          <span data-en="About" data-es="Nosotros">About</span>
+          <span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <div class="m-sub" id="mAboutSub" hidden>
+          <a href={ABOUT_TTNYC_PATH} class:list={{ active: isAboutTtnyc }} data-en="About" data-es="Nosotros">About</a>
+          <a href="/about" class:list={{ active: isTeam }} data-en="The Team" data-es="El Equipo">The Team</a>
+          <a href={FOUNDER_PATH} class:list={{ active: isFounder }} data-en="From the Founder" data-es="Del Fundador">From the Founder</a>
+          <a href="/recruit" class:list={{ active: isRecruit }} data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a>
+          <a href={GUIDE_PATH} class:list={{ active: isGuide }} data-en="Start a Trash Club" data-es="Crea un trash club">Start a Trash Club</a>
+        </div>
+      </div>
+      {WALL_LIVE && <a href={WALL_PATH} class:list={{ active: isWall }} data-en="The Wall" data-es="La Pared">The Wall</a>}
+      <div class="m-group">
+        <button type="button" class:list={['m-drop', { active: isMedia }]} aria-expanded="false" aria-controls="mMediaSub">
+          <span data-en="More Media" data-es="Más Medios">More Media</span>
+          <span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <div class="m-sub" id="mMediaSub" hidden>
+          <a href={MORE_MEDIA_PATH} class:list={{ active: isMediaHub }} data-en="All Media" data-es="Todos los Medios">All Media</a>
+          {liveMediaSections.map((m) => (
+            <a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a>
+          ))}
+          <a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a>
+          {NEWS_LIVE && <a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a>}
+        </div>
+      </div>
+      <a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a>
+    </div>
+    <div class="m-foot">
+      <a href="/#signup" class="btn btn-primary m-newsletter" data-en="Newsletter" data-es="Boletín">Newsletter</a>
+      <LangToggle />
+    </div>
+  </div>
 </nav>
 
 <script>
-  const hamburger = document.getElementById('navHamburger');
-  const links = document.getElementById('navLinks');
+  const burger = document.getElementById('navBurger');
+  const menu = document.getElementById('mMenu');
 
-  const dropdown = document.getElementById('aboutDropdown');
-  const dropToggle = document.getElementById('aboutDropToggle');
-  const dropMenu = document.getElementById('aboutDropMenu');
-
-  function setDropOpen(open: boolean) {
-    dropdown?.classList.toggle('open', open);
-    dropToggle?.setAttribute('aria-expanded', String(open));
+  function setMenuOpen(open: boolean) {
+    if (menu) menu.hidden = !open;
+    burger?.classList.toggle('open', open);
+    burger?.setAttribute('aria-expanded', String(open));
   }
 
-  function setOpen(open: boolean) {
-    hamburger?.classList.toggle('open', open);
-    links?.classList.toggle('open', open);
-    hamburger?.setAttribute('aria-expanded', String(open));
-    // A stale open submenu inside a re-opened mobile panel is disorienting
-    if (!open) setDropOpen(false);
-  }
-
-  hamburger?.addEventListener('click', () => {
-    setOpen(!hamburger.classList.contains('open'));
+  burger?.addEventListener('click', () => {
+    setMenuOpen(menu?.hidden ?? false);
   });
 
-  // Close the mobile menu after navigating (matters for same-page #anchors)
-  links?.querySelectorAll('a').forEach((a) => {
-    a.addEventListener('click', () => setOpen(false));
+  // Close the phone menu after navigating (matters for same-page #anchors)
+  menu?.querySelectorAll('a').forEach((a) => {
+    a.addEventListener('click', () => setMenuOpen(false));
   });
 
-  // ── About dropdown (disclosure pattern) ──
-  dropToggle?.addEventListener('click', () => {
-    setDropOpen(dropToggle.getAttribute('aria-expanded') !== 'true');
+  // ── Phone sub-lists (About, More Media) ──
+  // Each starts open when one of its pages is current, so the lit child
+  // is visible the moment the sheet opens
+  document.querySelectorAll<HTMLButtonElement>('.m-drop').forEach((toggle) => {
+    const sub = document.getElementById(toggle.getAttribute('aria-controls') ?? '');
+    const setOpen = (open: boolean) => {
+      if (sub) sub.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+    toggle.addEventListener('click', () => setOpen(sub?.hidden ?? false));
+    if (toggle.classList.contains('active')) setOpen(true);
   });
 
-  // ArrowDown on the closed toggle opens and moves into the list, per APG
-  dropToggle?.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown') {
+  // ── Desktop dropdowns (disclosure pattern), one wiring per menu ──
+  const dropdowns = Array.from(document.querySelectorAll<HTMLElement>('.nav-dropdown'));
+  const closers = new Map<HTMLElement, () => void>();
+
+  function wireDropdown(dropdown: HTMLElement) {
+    const toggle = dropdown.querySelector<HTMLButtonElement>('.nav-drop-toggle');
+    const list = dropdown.querySelector<HTMLElement>('.nav-drop-menu');
+    if (!toggle || !list) return;
+
+    const setOpen = (open: boolean) => {
+      dropdown.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+    closers.set(dropdown, () => setOpen(false));
+
+    toggle.addEventListener('click', () => {
+      const open = toggle.getAttribute('aria-expanded') !== 'true';
+      // One menu open at a time, so the two panels never overlap
+      if (open) closers.forEach((close, d) => d !== dropdown && close());
+      setOpen(open);
+    });
+
+    // ArrowDown on the closed toggle opens and moves into the list, per APG
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setOpen(true);
+        list.querySelector('a')?.focus();
+      }
+    });
+
+    list.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const items = Array.from(list.querySelectorAll('a'));
+      const i = items.indexOf(document.activeElement as HTMLAnchorElement);
+      if (i === -1) return;
       e.preventDefault();
-      setDropOpen(true);
-      dropMenu?.querySelector('a')?.focus();
-    }
-  });
+      const next = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+      items[next].focus();
+    });
 
-  dropMenu?.addEventListener('keydown', (e) => {
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-    const items = Array.from(dropMenu.querySelectorAll('a'));
-    const i = items.indexOf(document.activeElement as HTMLAnchorElement);
-    if (i === -1) return;
-    e.preventDefault();
-    const next = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
-    items[next].focus();
-  });
+    dropdown.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
 
-  dropdown?.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && dropdown.classList.contains('open')) {
-      setDropOpen(false);
-      dropToggle?.focus();
-    }
-  });
+    // Click-away and focus-leave both dismiss; Tab itself is never trapped
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target as Node)) setOpen(false);
+    });
 
-  // Click-away and focus-leave both dismiss; Tab itself is never trapped
-  document.addEventListener('click', (e) => {
-    if (dropdown && !dropdown.contains(e.target as Node)) setDropOpen(false);
-  });
+    dropdown.addEventListener('focusout', (e) => {
+      if (!dropdown.contains(e.relatedTarget as Node)) setOpen(false);
+    });
+  }
 
-  dropdown?.addEventListener('focusout', (e) => {
-    if (!dropdown.contains(e.relatedTarget as Node)) setDropOpen(false);
-  });
+  dropdowns.forEach(wireDropdown);
 </script>
 
 <style>
@@ -150,102 +273,109 @@ const isContact  = isUnder('/contact');
     position: sticky;
     top: 0;
     z-index: 200;
-    background: var(--charcoal);
+    background: var(--beige);
+    color: var(--black);
+    border-bottom: var(--ink);
+  }
+
+  .nav-bar {
+    max-width: var(--container);
+    margin-inline: auto;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    column-gap: var(--space-md);
-    flex-wrap: wrap;
+    gap: 12px;
+    height: 62px;
     /* No safe-area padding: viewport-fit=cover is gone (BaseLayout), so
        env(safe-area-inset-*) is always 0 — reintroducing cover would
        require adding it back here. */
-    padding: 0 var(--gutter);
-    min-height: 60px;
-    border-bottom: 3px solid var(--purple-light);
+    padding-inline: max(var(--gutter), var(--safe-left)) max(var(--gutter), var(--safe-right));
   }
 
-  .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem);
-    color: var(--yellow);
-    letter-spacing: 0.06em;
-    text-decoration: none;
-    white-space: nowrap;
-    display: inline-flex;
+  .nav-logo-link {
+    display: flex;
     align-items: center;
-    min-height: 60px;
+    gap: 8px;
+    min-width: 0;
+    margin-right: auto;
+    text-decoration: none;
   }
 
-  .nav-logo span { color: var(--purple-light); margin-left: 0.3em; }
+  nav :global(.nav-logo) {
+    flex: none;
+    width: 40px;
+    height: auto;
+    transform: rotate(-4deg);
+    filter: drop-shadow(2px 2px 0 var(--black));
+  }
+
+  /* The one Londrina Black (900) use on the site (captain's N1): flat
+     purple, with no drop shadow (team round 3) and no ink outline (the
+     captain's W1), both 2026-11-08. One line at every width: the name
+     shrinks on narrow phones rather than wrapping. */
+  .nav-name {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(1.15rem, 5.4vw, 1.5rem);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    color: var(--purple);
+  }
+
+  .nav-links {
+    display: none;
+    align-items: center;
+    gap: 26px;
+    list-style: none;
+    font-weight: 500;
+    font-size: 1.08rem;
+  }
+
+  .nav-links a,
+  .nav-drop-toggle {
+    text-decoration: none;
+    color: var(--black);
+    padding-block: 4px;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+  }
+
+  .nav-links > li > a:hover,
+  .nav-drop-toggle:hover { color: var(--purple); }
+
+  .nav-links > li > a.active,
+  .nav-drop-toggle.active {
+    border-color: var(--purple);
+    color: var(--purple);
+  }
 
   .nav-right {
     display: flex;
     align-items: center;
-    gap: clamp(0.5rem, 2vw, 2rem);
-    order: 3;
+    gap: 12px;
   }
 
-  .nav-links {
-    display: flex;
-    gap: clamp(1rem, 2.5vw, 2rem);
-    list-style: none;
-    order: 2;
-    align-items: center;
+  .nav-lang { display: none; }
+
+  nav :global(.nav-cta) {
+    padding: 10px 18px;
+    box-shadow: 3px 3px 0 var(--black);
   }
-
-  .nav-links a {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--paper-a70);
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    display: inline-flex;
-    align-items: center;
-    min-height: 60px;
-    transition: color 0.15s;
-  }
-
-  .nav-links a:hover,
-  .nav-links a.active { color: var(--yellow); }
-
-  .nav-links a.nav-cta {
-    background: var(--yellow);
-    color: var(--charcoal);
-    padding: 0.4rem 1.1rem;
-    border-radius: 4px;
-    font-weight: 800;
-    min-height: 0;
-  }
-
-  .nav-links a.nav-cta:hover { background: var(--purple-light); color: #fff; }
 
   /* ── ABOUT DROPDOWN ── */
   .nav-dropdown { position: relative; }
 
-  /* The toggle mirrors the sibling links exactly, plus a caret so it
-     reads as "opens something", not a dead link */
   .nav-drop-toggle {
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--paper-a70);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font: inherit;
+    font-weight: 500;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
     display: inline-flex;
     align-items: center;
     gap: 0.4em;
-    min-height: 60px;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    transition: color 0.15s;
   }
-
-  .nav-drop-toggle:hover,
-  .nav-drop-toggle.active { color: var(--yellow); }
 
   .drop-caret { transition: transform 0.15s; }
   .nav-dropdown.open .drop-caret { transform: rotate(180deg); }
@@ -254,17 +384,19 @@ const isContact  = isUnder('/contact');
      but the open/close still gets a transition */
   .nav-drop-menu {
     position: absolute;
-    top: calc(100% + 3px);
-    left: 50%;
-    min-width: 11rem;
+    top: calc(100% + 10px);
+    left: -14px;
+    min-width: 200px;
     list-style: none;
-    padding: 0.35rem 0;
-    background: var(--charcoal);
-    border: 1px solid var(--paper-a12);
-    border-bottom: 3px solid var(--purple-light);
+    display: grid;
+    padding: 8px;
+    background: var(--paper);
+    border: var(--ink);
+    border-radius: 10px;
+    box-shadow: 5px 5px 0 var(--black);
     opacity: 0;
     visibility: hidden;
-    transform: translate(-50%, 6px);
+    transform: translateY(6px);
     /* visibility flips only after the fade-out completes on close… */
     transition: opacity 0.15s, transform 0.15s, visibility 0s 0.15s;
   }
@@ -272,7 +404,7 @@ const isContact  = isUnder('/contact');
   .nav-dropdown.open .nav-drop-menu {
     opacity: 1;
     visibility: visible;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
     /* …but instantly on open, so ArrowDown can focus a child link in the
        same keystroke that opened the menu */
     transition: opacity 0.15s, transform 0.15s, visibility 0s;
@@ -280,104 +412,170 @@ const isContact  = isUnder('/contact');
 
   .nav-drop-menu a {
     display: flex;
+    align-items: center;
     width: 100%;
-    padding: 0 1.1rem;
+    padding: 8px 10px;
     min-height: var(--tap);
+    border-radius: 6px;
+    border-bottom: none;
     white-space: nowrap;
   }
+
+  .nav-drop-menu a:hover { background: var(--yellow); color: var(--black); }
+  .nav-drop-menu a.active { color: var(--purple); }
 
   @media (prefers-reduced-motion: reduce) {
     .nav-drop-menu,
     .drop-caret { transition: none; }
   }
 
-  /* ── HAMBURGER ── */
-  .nav-hamburger {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    background: none;
-    border: none;
+  /* ── BURGER ── */
+  .burger {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: var(--ink);
+    border-radius: 10px;
+    background: var(--beige);
+    color: var(--black);
+    padding: 0;
+    box-shadow: 3px 3px 0 var(--black);
     cursor: pointer;
-    min-width: var(--tap);
+  }
+
+  .burger svg { width: 20px; }
+  .burger.open { background: var(--yellow); }
+
+  /* ── PHONE MENU SHEET ── */
+  .m-menu {
+    border-top: var(--ink);
+    padding: 22px 22px 26px;
+    display: grid;
+    gap: 22px;
+  }
+
+  .m-menu[hidden] { display: none; }
+
+  .m-links { display: grid; gap: 2px; }
+
+  .m-links > a,
+  .m-drop {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 2.6rem;
+    line-height: 1.05;
+    text-decoration: none;
+    color: var(--black);
+    padding-block: 4px;
+    border-bottom: 2px solid rgba(29, 29, 35, 0.12);
+  }
+
+  .m-links > a.active,
+  .m-drop.active { color: var(--purple); }
+
+  .m-links > a:hover,
+  .m-drop:hover { color: var(--purple); }
+
+  .m-drop {
+    background: none;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .m-drop .chev {
+    font-family: var(--body);
+    font-size: 1.4rem;
+    transition: transform 0.15s;
+  }
+
+  .m-drop[aria-expanded='true'] .chev { transform: rotate(180deg); }
+
+  .m-sub { display: grid; padding: 4px 0 6px; }
+  .m-sub[hidden] { display: none; }
+
+  .m-sub a {
+    font-family: var(--body);
+    font-weight: 500;
+    font-size: 1.25rem;
+    text-decoration: none;
+    padding: 7px 0 7px 18px;
     min-height: var(--tap);
+    display: flex;
+    align-items: center;
+    color: var(--black);
   }
 
-  .nav-hamburger span {
-    display: block;
-    width: 24px;
-    height: 2px;
-    background: var(--cream);
-    border-radius: 2px;
-    transition: transform 0.2s, opacity 0.2s;
+  .m-sub a:hover,
+  .m-sub a.active { color: var(--purple); }
+
+  .m-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
   }
 
-  .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-  .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  nav :global(.m-newsletter) { box-shadow: 3px 3px 0 var(--black); }
 
-  /* ── MOBILE MENU ── */
-  @media (max-width: 768px) {
-    .nav-hamburger { display: flex; }
+  @media (prefers-reduced-motion: reduce) {
+    .m-drop .chev { transition: none; }
+  }
 
-    .nav-links {
-      display: none;
-      width: 100%;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0;
-      padding: 0.5rem 0 1rem;
-      order: 3;
-    }
+  /* ── DESKTOP ── */
+  @media (min-width: 761px) {
+    .nav-bar { height: 74px; gap: 28px; }
 
-    .nav-links.open { display: flex; }
-    .nav-links li { border-top: 1px solid var(--paper-a12); }
+    nav :global(.nav-logo) { width: 50px; }
+    .nav-name { font-size: 1.6rem; }
 
-    .nav-links a {
-      display: flex;
-      justify-content: center;
-      padding: 0.85rem 0.5rem;
-      font-size: 0.9rem;
-      min-height: var(--tap);
-    }
+    .nav-links { display: flex; margin-left: auto; }
+    .nav-logo-link { margin-right: 0; flex: none; }
+    .nav-lang { display: block; }
+    .burger { display: none; }
+    .m-menu { display: none !important; }
 
-    .nav-links a.nav-cta {
-      margin: 0.6rem 0 0.25rem;
-      padding: 0.85rem 1.25rem;
-      border-radius: 6px;
-      min-height: var(--tap);
-    }
+    /* Labels never wrap: a two-line "Club Events" breaks the bar */
+    .nav-links a,
+    .nav-drop-toggle { white-space: nowrap; }
+  }
 
-    /* Inside the panel the dropdown becomes an in-flow expanding sub-list —
-       nothing floats, so nothing can clip or overflow */
-    .nav-drop-toggle {
-      width: 100%;
-      justify-content: center;
-      padding: 0.85rem 0.5rem;
-      font-size: 0.9rem;
-      min-height: var(--tap);
-    }
+  /* Five or six top-level items (six while The Wall is live) only fit the
+     narrow end of desktop with tighter spacing and type */
+  @media (min-width: 761px) and (max-width: 1060px) {
+    .nav-bar { gap: 16px; }
+    .nav-links { gap: 16px; font-size: 0.98rem; }
+    nav :global(.nav-logo) { width: 42px; }
+    .nav-name { font-size: 1.3rem; }
+    nav :global(.nav-cta) { padding: 10px 14px; }
+  }
 
-    .nav-drop-menu {
-      position: static;
-      min-width: 0;
-      padding: 0;
-      border: none;
-      transform: none;
-      transition: none;
-      display: none;
-      opacity: 1;
-      visibility: visible;
-      background: var(--paper-a08);
-    }
+  /* The name beside the vest needs these last pixels at the narrow end of
+     desktop, or the dropdown chevrons get squeezed out; below 841px the
+     Spanish labels leave it no room at all, so the vest alone stands for
+     the brand there (the link keeps its "Trash Talk NYC home" name) */
+  @media (min-width: 761px) and (max-width: 860px) {
+    .nav-bar { gap: 12px; }
+    .nav-links { gap: 13px; }
+    .nav-name { font-size: 1.12rem; }
+  }
 
-    .nav-dropdown.open .nav-drop-menu {
-      display: block;
-      transform: none;
-    }
+  @media (min-width: 761px) and (max-width: 840px) {
+    .nav-name { display: none; }
+  }
 
-    .nav-drop-menu a { justify-content: center; font-size: 0.85rem; }
+  /* With The Wall in the bar the name no longer fits beside six links
+     until 901px */
+  @media (min-width: 761px) and (max-width: 900px) {
+    .has-wall { gap: 12px; }
+    .has-wall .nav-links { gap: 14px; }
+    .has-wall .nav-name { display: none; }
   }
 </style>

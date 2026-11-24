@@ -1,0 +1,66 @@
+---
+/**
+ * Subpage switcher at the top of each More Media page, under its hero, so readers can
+ * hop between the live channels and the Gallery without going back up to
+ * the overview. Channel labels are brand names, identical in EN and ES;
+ * Gallery translates. Channels that aren't ready are left out.
+ */
+import { GALLERY, IN_THE_NEWS, NEWS_LIVE, liveMediaSections, type MediaSectionId } from '../lib/media';
+
+interface Props {
+  /** The page being shown; the overview passes none. */
+  current?: MediaSectionId | 'gallery' | 'in-the-news';
+}
+
+const { current } = Astro.props;
+---
+
+<nav class="ms-nav" aria-labelledby="msNavLabel">
+  <span class="sr-only" id="msNavLabel" data-en="More Media pages" data-es="Páginas de Más Medios">More Media pages</span>
+  <ul>
+    {liveMediaSections.map((s) => (
+      <li>
+        <a href={s.path} aria-current={s.id === current ? 'page' : undefined}>{s.label}</a>
+      </li>
+    ))}
+    <li>
+      <a href={GALLERY.path} aria-current={current === 'gallery' ? 'page' : undefined} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a>
+    </li>
+    {NEWS_LIVE && (
+      <li>
+        <a href={IN_THE_NEWS.path} aria-current={current === 'in-the-news' ? 'page' : undefined} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a>
+      </li>
+    )}
+  </ul>
+</nav>
+
+<style>
+  /* Plain underlined text links in a row, the current page in bold
+     (captain, 2026-10-21: the tape-label buttons were "ugly both on
+     desktop and mobile") */
+  .ms-nav { padding-block: 20px 4px; }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 28px;
+    list-style: none;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-family: var(--body);
+    font-weight: 500;
+    font-size: 1.1rem;
+    color: var(--beige);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+  }
+
+  a:hover { color: var(--yellow); }
+
+  a[aria-current='page'] { font-weight: 700; }
+</style>

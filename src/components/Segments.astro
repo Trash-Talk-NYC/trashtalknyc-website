@@ -1,0 +1,24 @@
+---
+/**
+ * A bilingual sentence that contains links: each segment is its own leaf
+ * (a span, or a link when it has an href), because setLang swaps leaf
+ * text only and can't translate around a link. External links open in a
+ * new tab.
+ */
+import type { Segment } from '../lib/guide';
+
+interface Props {
+  segments: Segment[];
+}
+
+const { segments } = Astro.props;
+const external = (href: string) => /^https?:/.test(href);
+---
+
+{segments.map((s) =>
+  s.href ? (
+    <a href={s.href} data-en={s.en} data-es={s.es} {...(external(s.href) ? { target: '_blank', rel: 'noopener' } : {})}>{s.en}</a>
+  ) : (
+    <span data-en={s.en} data-es={s.es}>{s.en}</span>
+  ),
+)}

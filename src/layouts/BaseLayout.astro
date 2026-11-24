@@ -1,6 +1,5 @@
 ---
 import '../styles/global.css';
-import SocialBar from '../components/SocialBar.astro';
 import NavBar from '../components/NavBar.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 
@@ -12,16 +11,40 @@ interface Props {
   ogTitle?: string;
   /** Set on pages that must not be indexed (404). */
   noindex?: boolean;
-  showSocialBar?: boolean;
+  /** Loads the print faces (The Wall's partner stickers,
+      the Trash Talk Times masthead) on the pages that show them. */
+  stickerFonts?: boolean;
 }
 
-const { title, description, ogTitle = title, noindex = false, showSocialBar = true } = Astro.props;
+const { title, description, ogTitle = title, noindex = false, stickerFonts = false } = Astro.props;
+
+// Oswald (tab labels), Permanent Marker (handwriting), and UnifrakturMaguntia
+// (newspaper blackletter) are sticker print faces from the captain's picked
+// mockup (2026-10-21), never body type
+const fontFamilies = [
+  'Londrina+Solid:wght@400;900',
+  'Barlow+Semi+Condensed:wght@400;500;700',
+  'Space+Mono:wght@700',
+  ...(stickerFonts ? ['Oswald:wght@700', 'Permanent+Marker', 'UnifrakturMaguntia'] : []),
+];
+const fontsHref = `https://fonts.googleapis.com/css2?${fontFamilies.map((f) => `family=${f}`).join('&')}&display=swap`;
 
 // Astro.site comes from astro.config.mjs, so canonical/og URLs are absolute
 // production URLs even on previews and local builds — which is what social
 // scrapers and Google need to see.
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
-const ogImageUrl = new URL('/og-image.png', Astro.site);
+// The version query makes link-preview fetchers (iMessage, Slack, …) treat
+// the 2026-11-24 card as a new image instead of reusing the old vest logo
+// they cached; bump it whenever scripts/generate-icons.mjs changes the card.
+// The image (only) comes from the deploy itself outside production: a
+// development or preview link would otherwise preview production's card,
+// so a new card couldn't be checked before release. Netlify sets CONTEXT
+// and DEPLOY_PRIME_URL at build time.
+const imageOrigin =
+  process.env.CONTEXT && process.env.CONTEXT !== 'production' && process.env.DEPLOY_PRIME_URL
+    ? process.env.DEPLOY_PRIME_URL
+    : Astro.site;
+const ogImageUrl = new URL('/og-image.png?v=2026-11-24', imageOrigin);
 ---
 
 <!DOCTYPE html>
@@ -45,7 +68,7 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
        html and body charcoal (device-confirmed fix; exactly which surface
        iOS 26 samples is unverified — earlier "samples the body" claims
        came from iOS 18 simulator tests). Kept for the older-iOS audience. -->
-  <meta name="theme-color" content="#1c1c22" />
+  <meta name="theme-color" content="#1D1D23" />
   <title>{title}</title>
   <meta name="description" content={description} />
   {noindex && <meta name="robots" content="noindex" />}
@@ -68,7 +91,7 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
   <meta property="og:image" content={ogImageUrl} />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Trash Talk NYC cleanup-vest logo" />
+  <meta property="og:image:alt" content="Trash Talk NYC, New York City's Cleanup Club: the vest sticker logo on a wall of the team's stickers" />
   <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={ogTitle} />
@@ -79,14 +102,15 @@ const ogImageUrl = new URL('/og-image.png', Astro.site);
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap"
-    rel="stylesheet"
-  />
+  <!-- Type per the TTNYC Style Guide: Londrina Solid Regular (display),
+       Barlow Semi Condensed (body, at the guide's Regular / Medium /
+       Bold only), Space Mono Bold (accents). Londrina Black (900) is
+       loaded for the header's "Trash Talk NYC" name (captain's N1,
+       2026-10-15) and the printed stickers. Load nothing else: an unloaded
+       weight gets faux-bolded by the browser. -->
+  <link href={fontsHref} rel="stylesheet" />
 </head>
 <body>
-
-  {showSocialBar && <SocialBar />}
 
   <NavBar />
 

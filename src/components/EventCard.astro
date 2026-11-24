@@ -1,221 +1,343 @@
 ---
+import { Image } from 'astro:assets';
 import type { EventCardProps } from '../lib/events';
-import { formatDate, formatTime } from '../lib/events';
+import { cardWhen, formatDate, formatTime } from '../lib/events';
+import type { PlacedSticker } from '../lib/teamStickers';
 
+/**
+ * One upcoming event as a ticket, the captain's E3 on phones and D1 on
+ * desktop (2026-11-24: the flyers were "very messy on mobile, and too
+ * verbose"; "apply the same neat style of event cards to desktop"): a flat
+ * white card with the borough-built headline, one line of date and time
+ * with the distance, the venue, the event's name, address, and maps folded
+ * under "Address & maps", and Register (full width on phones, its own
+ * column on desktop, one ticket per row). On phones one of the team's
+ * stickers straddles the corner (the page picks it, so no two cards share
+ * one); on desktop a strip of seven, led by that one, is slapped along the
+ * top edge instead (the captain's S3a, 2026-11-24). A host badge joins
+ * when the event has one. The distance fills the
+ * [data-dist-slot] once the visitor shares their location (the events
+ * page script).
+ *
+ * The `.past` class is only ever added client-side by the staleness check
+ * on the events page. A sample card links nowhere and wears a "Sample"
+ * mark.
+ */
 interface Props extends EventCardProps {
-  isPast?: boolean;
   latLng?: { lat: number; lng: number } | null;
+  sticker: PlacedSticker;
+  /** Desktop's sticker-bombed top strip (S3a), led by `sticker`. */
+  strip: PlacedSticker[];
 }
 
 const {
   id, name, url, startIso, endIso, location, mapUrls,
-  isPast = false,
+  headline, venueLines, host, sample,
   latLng = null,
+  sticker,
+  strip,
 } = Astro.props;
 
-const start = new Date(startIso);
-const monthEN = start.toLocaleDateString('en-US', { month: 'short' });
-const monthES = start.toLocaleDateString('es-419', { month: 'short' });
-const dowEN   = start.toLocaleDateString('en-US', { weekday: 'short' });
-const dowES   = start.toLocaleDateString('es-419', { weekday: 'short' });
-const day     = start.getDate();
+// Tilts and nudges for the strip, fixed so the build is stable
+const TILT = [-12, 8, -5, 14, -9, 6, -14];
+const NUDGE = [3, -3, 4, -2, 2, -4, 2];
 
 const dateStr = formatDate(startIso, 'en');
 const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
 
+// The Eventbrite name stays in the fold when the headline was rebuilt from
+// the borough, so nothing the organizer wrote is lost
+const showName = name !== headline.en;
+
+const when = { en: cardWhen(startIso, 'en'), es: cardWhen(startIso, 'es') };
+const [venue, ...addressLines] = venueLines;
+
 const btnId = `eb-trigger-${id}`;
 ---
 
-<div
-  class:list={['event-card', isPast ? 'past' : 'upcoming']}
-  data-event-id={id}
-  data-end={endIso}
+<article
+  class:list={['ev-card', { upcoming: !sample, 'has-host': host }]}
+  data-end={sample ? undefined : endIso}
   data-lat={latLng?.lat ?? undefined}
   data-lng={latLng?.lng ?? undefined}
 >
-  <div class="event-date-block">
-    <span class="month" data-en={monthEN} data-es={monthES}>{monthEN}</span>
-    <span class="day">{day}</span>
-    <span class="dow" data-en={dowEN} data-es={dowES}>{dowEN}</span>
+  <Image src={sticker.src} alt="" class="ev-stk" data-sticker-spot={sticker.spot} width={140} densities={[1, 2]} />
+  <!-- Desktop only: the sticker-bombed top (captain's S3a, 2026-11-24) -->
+  <div class="ev-strip" aria-hidden="true">
+    {strip.map((s, k) => (
+      <Image
+        src={s.src}
+        alt=""
+        class="ev-strip-stk"
+        data-sticker-spot={s.spot}
+        width={62}
+        densities={[1, 2]}
+        style={`--i:${k};--tilt:${TILT[k % TILT.length]}deg;--nudge:${NUDGE[k % NUDGE.length]}px`}
+      />
+    ))}
   </div>
+  {host && <span class="ev-host" aria-hidden="true">{host}</span>}
 
-  <div class="event-info">
-    <div class="event-name">{name}</div>
-    <div class="event-details">
-      <span class="event-detail">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        {timeStr}
-      </span>
-      {location && (
-        <>
-          <span class="event-detail">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            {location}
-          </span>
-          {mapUrls && (
-            <span class="map-links">
-              <a class="map-link" href={mapUrls.google} target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Google Maps
-              </a>
-              <a class="map-link" href={mapUrls.apple} target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Apple Maps
-              </a>
-            </span>
-          )}
-        </>
-      )}
-    </div>
-  </div>
-
-  <div class="event-cta">
-    {isPast ? (
-      <span class="card-status" data-en="Past" data-es="Pasado">Past</span>
-    ) : (
-      <button
-        class="btn-card btn-card-purple"
-        id={btnId}
-        data-event-id={id}
-        data-url={url}
-        data-name={name}
-        data-date={dateStr}
-        data-time={timeStr}
-        data-loc={location}
-      >
-        RSVP &rarr;
-      </button>
+  <div class="ev-info">
+    {sample && <span class="ev-sample mono" data-en="Sample" data-es="Muestra">Sample</span>}
+    <h2 class="ev-head" data-en={headline.en} data-es={headline.es}>{headline.en}</h2>
+    {host && <p class="sr-only"><span data-en="Hosted with" data-es="Organizado con">Hosted with</span> {host}</p>}
+    <p class="ev-when">
+      <span data-en={when.en} data-es={when.es}>{when.en}</span>
+      <span class="ev-pill" data-dist-slot hidden></span>
+    </p>
+    {venue && <p class="ev-venue">{venue}</p>}
+    {(showName || addressLines.length > 0 || mapUrls) && (
+      <details class="ev-more">
+        <summary><span data-en="Address & maps" data-es="Dirección y mapas">Address &amp; maps</span></summary>
+        {showName && <p>{name}</p>}
+        {addressLines.length > 0 && <p>{addressLines.join(', ')}</p>}
+        {mapUrls && (
+          <p class="maps">
+            <a href={mapUrls.google} target="_blank" rel="noopener">Google Maps</a>
+            <a href={mapUrls.apple} target="_blank" rel="noopener">Apple Maps</a>
+          </p>
+        )}
+      </details>
     )}
   </div>
-</div>
+
+  {sample ? (
+    <span class="btn btn-purple ev-rsvp" aria-disabled="true" data-en="Register →" data-es="Regístrate →">Register &rarr;</span>
+  ) : (
+    <button
+      class="btn btn-purple ev-rsvp"
+      id={btnId}
+      data-event-id={id}
+      data-url={url}
+      data-name={name}
+      data-date={dateStr}
+      data-time={timeStr}
+      data-loc={location}
+      data-en="Register →"
+      data-es="Regístrate →"
+    >
+      Register &rarr;
+    </button>
+  )}
+</article>
 
 <style>
-  /* Ticket-stub card: charcoal date stub + dashed perforation line */
-  .event-card {
-    background: white;
-    border: 2px solid var(--charcoal);
-    border-radius: 10px;
-    padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3.5vw, 1.75rem);
-    display: grid;
-    grid-template-columns: 84px 1fr auto;
-    gap: clamp(0.9rem, 2.5vw, 1.5rem);
-    align-items: center;
-    opacity: 0;
-    transform: translateY(8px);
-    animation: cardIn 260ms var(--ease-out) forwards;
-    transition: box-shadow 150ms var(--ease-out);
-  }
-  @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
-  .event-card:nth-child(1) { animation-delay: 0ms; }
-  .event-card:nth-child(2) { animation-delay: 45ms; }
-  .event-card:nth-child(3) { animation-delay: 90ms; }
-  .event-card:nth-child(4) { animation-delay: 135ms; }
-  .event-card:nth-child(5) { animation-delay: 180ms; }
-  @media (prefers-reduced-motion: reduce) { .event-card { animation: none; opacity: 1; transform: none; } }
-  @media (hover: hover) and (pointer: fine) {
-    .event-card:hover { box-shadow: 5px 5px 0 var(--purple-light); }
-  }
-  .event-card.past { opacity: 0.5; animation: none; border-color: var(--warm-gray); }
-  .event-card.past .event-date-block { background: var(--warm-gray); }
-
-  .event-date-block {
-    text-align: center;
-    background: var(--charcoal);
-    border-radius: 6px;
-    padding: 0.6rem 0.5rem;
-    flex-shrink: 0;
+  /* Flat and straight on purpose: no tape, no shadow, so it reads as a
+     printed flyer, and the stickers crossing its edge tie it down. Bright
+     white stock so it shows against the cream sheet it sits on (EL3);
+     the lighter purple below still holds AA on it (5.5:1) */
+  .ev-card {
     position: relative;
+    container-type: inline-size;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    background: var(--paper-bright);
+    color: var(--purple);
+    padding: 30px 22px 24px;
   }
-  /* perforation between the stub and the rest of the ticket */
-  .event-date-block::after {
-    content: '';
+
+  .ev-card.has-host { padding-top: 56px; }
+
+  .ev-card.past { opacity: 0.6; }
+  .ev-card.past .ev-rsvp { display: none; }
+
+  /* The team sticker slapped across the top-right corner. The stickers
+     come tall, square, and wide, so each one fits a short landscape box
+     (object-fit) and never hangs down into the headline */
+  .ev-card :global(.ev-stk) {
     position: absolute;
-    top: 8%;
-    bottom: 8%;
-    right: calc(clamp(0.9rem, 2.5vw, 1.5rem) / -2);
-    border-right: 2px dashed #d8d3c8;
-  }
-  .event-date-block .month {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
-    color: var(--yellow); display: block;
-  }
-  .event-date-block .day {
-    font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--off-white);
-    line-height: 1; display: block;
-  }
-  .event-date-block .dow {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.55rem; font-weight: 700; color: var(--paper-a55);
-    text-transform: uppercase; letter-spacing: 0.1em; display: block;
+    z-index: 2;
+    top: -24px;
+    right: -12px;
+    width: 104px;
+    height: 74px;
+    object-fit: contain;
+    object-position: right top;
+    transform: rotate(8deg);
+    filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+    pointer-events: none;
   }
 
-  .event-info { min-width: 0; }
-  .event-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.35rem; letter-spacing: 0.03em; margin-bottom: 0.3rem;
-  }
-  .event-details { display: flex; flex-wrap: wrap; gap: 1rem; }
-  .event-detail {
-    display: flex; align-items: center; gap: 0.35rem;
-    font-size: 0.75rem; font-weight: 700; color: var(--gray);
-  }
-  .event-detail svg { width: 12px; height: 12px; flex-shrink: 0; }
+  /* Desktop's sticker-bombed top: seven overlapping, tilted stickers in a
+     band from the left edge, half on the card; phones keep the corner
+     sticker alone */
+  .ev-strip { display: none; }
 
-  .map-links { display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
-  .map-link {
-    display: inline-flex; align-items: center; gap: 0.2rem;
-    font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-    color: rgba(122,122,138,0.7); text-decoration: none;
-    border: 1px solid rgba(122,122,138,0.3); border-radius: 4px;
-    padding: 0.1rem 0.4rem; transition: border-color 0.15s, color 0.15s; white-space: nowrap;
+  /* A round die-cut partner badge across the top-left corner */
+  .ev-host {
+    position: absolute;
+    z-index: 2;
+    top: -26px;
+    left: -12px;
+    display: grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    padding: 10px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--purple);
+    font-family: var(--display);
+    font-size: 0.95rem;
+    line-height: 0.9;
+    text-align: center;
+    transform: rotate(-14deg);
+    filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
   }
-  .map-link:hover { color: var(--purple); border-color: var(--purple); }
-  .map-link svg { width: 9px; height: 9px; flex-shrink: 0; }
 
-  .event-cta {
-    flex-shrink: 0; text-align: right;
-    display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;
+  .ev-sample {
+    justify-self: start;
+    padding: 3px 8px;
+    background: var(--purple);
+    color: var(--beige);
+    font-size: 0.72rem;
   }
-  .btn-card {
-    display: inline-flex; align-items: center; font-family: 'Nunito', sans-serif;
-    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-    padding: 0.4rem 1.1rem; min-height: 40px; border-radius: 6px; border: 2px solid;
-    cursor: pointer; text-decoration: none; background: none;
-    transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), background 150ms var(--ease-out), color 150ms var(--ease-out);
+
+  .ev-info { display: grid; gap: 4px; min-width: 0; color: var(--black); }
+
+  .ev-head {
+    font-family: var(--display);
+    font-weight: 400;
+    /* Sized to the card, so the longest borough ("Staten Island") breaks
+       between words, never inside one */
+    font-size: clamp(2.2rem, 11cqi, 2.6rem);
+    line-height: 0.88;
+    color: var(--purple);
+    /* Clear of the corner sticker */
+    padding-right: 3.6rem;
+    margin-bottom: 6px;
+  }
+
+  .ev-when {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 10px;
+    margin: 0;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+
+  .ev-pill {
+    padding: 3px 8px;
+    border: 2px solid var(--black);
+    background: var(--yellow);
+    font-size: 0.78rem;
     white-space: nowrap;
   }
-  .btn-card-purple {
-    color: var(--charcoal); border-color: var(--charcoal); background: var(--yellow);
-    box-shadow: 3px 3px 0 var(--charcoal);
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .btn-card-purple:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--charcoal); }
-    .btn-card-purple:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--charcoal); }
-  }
-  .card-status {
-    font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--warm-gray);
+
+  .ev-venue {
+    margin: 2px 0 0;
+    font-size: 1.02rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  @media (max-width: 768px) {
-    .event-card { grid-template-columns: 72px 1fr; }
-    .event-date-block::after { display: none; }
-    .event-cta { grid-column: 1 / -1; display: flex; justify-content: flex-start; padding-top: 0.25rem; }
-    .event-card.past .event-cta { display: none; }
+  .ev-more { margin-top: 4px; font-size: 0.95rem; }
+
+  .ev-more summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--tap);
+    list-style: none;
+    cursor: pointer;
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  .ev-more summary::-webkit-details-marker { display: none; }
+
+  /* The flex summary drops the native marker, so the arrow is drawn
+     here and turns when the fold opens */
+  .ev-more summary::before {
+    content: '';
+    border-style: solid;
+    border-width: 6px 0 6px 9px;
+    border-color: transparent transparent transparent currentColor;
+    transition: transform 0.15s;
+  }
+
+  .ev-more[open] summary::before { transform: rotate(90deg); }
+  .ev-more summary span { text-decoration: underline; text-underline-offset: 3px; }
+  .ev-more p { margin: 0 0 6px; line-height: 1.35; }
+
+  .maps { display: flex; gap: 18px; margin: 0; }
+  .maps a {
+    color: var(--purple);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+
+  .ev-rsvp { width: 100%; justify-content: center; margin-top: 12px; padding: 11px 18px; }
+  .ev-rsvp[aria-disabled='true'] { cursor: default; }
+  .ev-rsvp[aria-disabled='true']:hover { background: var(--purple); color: var(--beige); }
+
+  /* Phones: E3, a compact stacked ticket */
+  @media (max-width: 760px) {
+    .ev-card { padding: 24px 18px 20px; gap: 0; }
+    .ev-card :global(.ev-stk) { width: 76px; height: 56px; top: -18px; right: -8px; }
+  }
+
+  /* Desktop: D1, one wide ticket per row, Register in its own column */
+  @media (min-width: 761px) {
+    .ev-card {
+      grid-template-columns: minmax(0, 1fr) 15rem;
+      align-items: center;
+      column-gap: 48px;
+      padding: 40px 40px 34px;
+    }
+    .ev-card :global(.ev-stk) { display: none; }
+
+    .ev-card { padding-top: 64px; }
+
+    .ev-strip {
+      display: block;
+      position: absolute;
+      z-index: 2;
+      top: -24px;
+      left: -8px;
+      /* About a fifth of each sticker tucks under the next */
+      width: calc(62px + 6 * 50px);
+      height: 62px;
+      pointer-events: none;
+    }
+
+    /* A host badge keeps the top-left corner; the strip starts after it */
+    .has-host .ev-strip { left: 84px; }
+
+    .ev-strip :global(.ev-strip-stk) {
+      position: absolute;
+      top: var(--nudge);
+      /* Seven across the band, each overlapping the next */
+      left: calc(var(--i) * (100% - 62px) / 6);
+      width: 62px;
+      height: 56px;
+      object-fit: contain;
+      transform: rotate(var(--tilt));
+      filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+    }
+    .ev-host { width: 104px; height: 104px; font-size: 1.1rem; top: -34px; left: -30px; }
+    .ev-head { font-size: clamp(3rem, 4.6vw, 3.6rem); padding-right: 0; }
+    .ev-when { justify-content: flex-start; gap: 6px 14px; font-size: 1.05rem; }
+    .ev-pill { font-size: 0.85rem; }
+    .ev-venue { font-size: 1.15rem; }
+    .ev-more { font-size: 1rem; }
+    .ev-rsvp { margin-top: 0; }
+  }
+
+  @media (pointer: coarse) {
+    .maps a { min-height: var(--tap); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ev-more summary::before { transition: none; }
   }
 </style>

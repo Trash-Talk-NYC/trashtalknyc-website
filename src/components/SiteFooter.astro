@@ -1,118 +1,147 @@
 ---
 /**
- * Single site-wide footer. Replaces the three per-page footer variants
- * that existed before the redesign (row layout on home, two slightly
- * different centered layouts on events/about) with one centered design.
+ * Single site-wide footer in the 2026-10 identity: links, a large vest
+ * sticker, and the full sticker icon row (every channel). No bricks here — the
+ * captain removed the footer brick frame (2026-09-30). The wordmark
+ * sticker on the left was dropped so the logo shows once (team
+ * feedback, 2026-10-15).
  */
+import { Image } from 'astro:assets';
 import SocialLinks from './SocialLinks.astro';
 import { FOUNDER_PATH } from '../lib/founder';
+import { ABOUT_TTNYC_PATH } from '../lib/aboutTtnyc';
+import { GUIDE_PATH } from '../lib/guide';
+import { WALL_LIVE, WALL_PATH } from '../lib/partners';
+import { MORE_MEDIA_PATH } from '../lib/media';
+import vestSticker from '../assets/vest-sticker.png';
 
 const year = new Date().getFullYear();
 ---
 
 <footer>
-  <div class="footer-logo">Trash Talk NYC</div>
-  <ul class="footer-links">
-    <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
-    <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
-    <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
-    <li><a href="/about" data-en="About" data-es="Nosotros">About</a></li>
-    <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
-    <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
-    <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
-  </ul>
-  <div class="footer-socials">
-    <SocialLinks all />
+  <div class="wrap foot-grid">
+    <ul class="foot-links">
+      <li><a href="/" data-en="Home" data-es="Inicio">Home</a></li>
+      <li><a href={ABOUT_TTNYC_PATH} data-en="About" data-es="Nosotros">About</a></li>
+      <li><a href="/about" data-en="The Team" data-es="El Equipo">The Team</a></li>
+      <li><a href="/events" data-en="Club Events" data-es="Eventos del Club">Club Events</a></li>
+      <li><a href={FOUNDER_PATH} data-en="From the Founder" data-es="Del Fundador">From the Founder</a></li>
+      <li><a href="/#signup" data-en="Join" data-es="Únete">Join</a></li>
+      {WALL_LIVE && <li><a href={WALL_PATH} data-en="The Wall" data-es="La Pared">The Wall</a></li>}
+      <li><a href="/recruit" data-en="Open Roles" data-es="Puestos Abiertos">Open Roles</a></li>
+      <li><a href={GUIDE_PATH} data-en="Start a Trash Club" data-es="Crea un trash club">Start a Trash Club</a></li>
+      <li><a href={MORE_MEDIA_PATH} data-en="More Media" data-es="Más Medios">More Media</a></li>
+      <li><a href="/contact" data-en="Contact" data-es="Contacto">Contact</a></li>
+    </ul>
+    <div class="foot-right">
+      <!-- The footer's only logo now, so it names the brand -->
+      <Image src={vestSticker} alt="Trash Talk NYC" class="foot-vest" width={220} densities={[1, 2]} />
+      <SocialLinks ids={['instagram', 'tiktok', 'youtube', 'spotify', 'facebook', 'linkedin']} />
+    </div>
+    <div class="copy">© {year} Trash Talk NYC</div>
   </div>
-  <div class="footer-copy">© {year} Trash Talk NYC</div>
 </footer>
 
 <style>
-  /* One deliberate vertical rhythm: logo, links, socials, copyright at
-     an even --space-sm beat. Wrapped rows (links at phone widths,
-     socials now that there are four) get NO extra row gap — the items'
-     own min-height tap targets provide the breathing room, so wrapping
-     never doubles the spacing. */
   footer {
-    background: var(--charcoal);
-    padding:
-      var(--space-lg)
-      max(var(--gutter), var(--safe-right))
-      max(var(--space-lg), var(--safe-bottom))
-      max(var(--gutter), var(--safe-left));
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-sm);
-    border-top: 3px solid var(--purple-light);
-    text-align: center;
+    background: var(--black);
+    color: var(--beige);
+    border-top: 3px solid var(--beige);
+    padding-block: 40px 28px;
+    padding-bottom: max(28px, var(--safe-bottom));
   }
 
-  .footer-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: var(--step-2);
-    color: var(--yellow);
-    letter-spacing: 0.04em;
-    line-height: 1;
+  .foot-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
   }
 
-  .footer-links {
-    display: flex;
-    justify-content: center;
-    gap: 0 clamp(1rem, 3vw, 2rem);
+  /* The vest as its own large sticker beside the sign-off, right-
+     aligned with the rest of the column on desktop (captain: larger
+     and right-aligned, not slapped over the wordmark) and set straight,
+     not tilted (captain, 2026-10-09). */
+  footer :global(.foot-vest) {
+    width: 150px;
+    height: auto;
+    filter: drop-shadow(3px 4px 0 rgba(234, 233, 218, 0.22));
+    justify-self: end;
+  }
+
+  .foot-links {
     list-style: none;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 8px 48px;
+    font-weight: 500;
+    font-size: 1.05rem;
   }
 
-  .footer-links a {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--paper-a55);
+  .foot-links a {
     text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     display: inline-flex;
     align-items: center;
     min-height: 32px;
-    transition: color 0.15s;
   }
 
-  .footer-links a:hover { color: var(--yellow); }
+  .foot-links a:hover { color: var(--yellow); }
 
-  .footer-socials {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    justify-content: center;
-    gap: 0 clamp(1rem, 3vw, 1.5rem);
-    flex-wrap: wrap;
-    padding-top: var(--space-sm);
-    border-top: 1px solid var(--paper-a12);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--paper-a35);
+  .foot-right {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
   }
 
-  .footer-socials :global(.social-link) { min-height: 32px; }
-  .footer-socials :global(.social-link:hover) { color: var(--purple-light); }
 
-  .footer-copy {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: rgba(247, 244, 237, 0.22);
-    line-height: 1;
+  .copy {
+    border-top: 1px solid rgba(234, 233, 218, 0.2);
+    padding-top: 18px;
+    font-size: 0.9rem;
+    opacity: 0.65;
   }
 
-  @media (pointer: coarse) {
-    .footer-links a,
-    .footer-socials :global(.social-link) { min-height: var(--tap); }
+  /* Phones (captain, 2026-11-24: "mobile footer spacing is weird"): the
+     vest and the icons share one compact block at the top, the icons in a
+     3×2 grid beside it, then the links in close rows. 40px rows still
+     clear the 24px minimum target size with room to spare. */
+  @media (max-width: 760px) {
+    .foot-grid { gap: 24px; }
+
+    .foot-right {
+      order: -1;
+      grid-template-columns: auto auto;
+      align-items: center;
+      justify-content: start;
+      gap: 22px;
+    }
+
+    footer :global(.foot-vest) { width: 92px; justify-self: start; }
+
+    .foot-right :global(.icons) {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 14px 16px;
+    }
+
+    .foot-links { gap: 0 40px; }
+    .foot-links a { min-height: 40px; }
   }
 
-  /* Four socials at phone widths wrap 3+1, stranding the last one;
-     capping the row width forces an even 2+2 instead */
-  @media (max-width: 480px) {
-    .footer-socials { max-width: 300px; }
+  @media (pointer: coarse) and (min-width: 761px) {
+    .foot-links a { min-height: var(--tap); }
+  }
+
+  @media (min-width: 761px) {
+    footer { padding-block: 56px 32px; }
+
+    .foot-grid {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 48px;
+    }
+
+    .foot-right { justify-items: end; }
+    footer :global(.foot-vest) { width: 200px; }
+    .copy { grid-column: 1 / -1; }
   }
 </style>

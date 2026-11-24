@@ -25,7 +25,7 @@ Pages:
 - About -> (The Team; From the Founder -> `/about/from-the-founder`, a first-person account of how Trash Talk NYC started, English verbatim, attributed to David via a photo byline card and the meta description composed in `src/lib/founder.ts` (captain confirmed 2026-08-13), closing with his "Sincerely, David" sign-off — see AGENTS.md, "From the Founder")
 - Open Roles -> (`/recruit`; a top-level route listed under About in the nav; recruitment page, email-only intake — see AGENTS.md, "Open Roles")
 - Contact
-- 404 -> (Not Found; prerendered pure-CSS 3D street scene, bilingual, links to Home and Events)
+- 404 -> (Not Found; prerendered dead-end block — a yellow "Dead End" sign beside the trash can illustration — bilingual, links to Home and Events)
 
 SEO & share metadata (2026-07 overhaul):
 - `src/layouts/BaseLayout.astro` owns the head: per-page title + required description feed the meta description, canonical URL, and full Open Graph/Twitter tags; the homepage adds JSON-LD Organization schema via `slot="head"`
@@ -42,7 +42,9 @@ Current behavior:
 - Build-time fetch (`fetchEventsAtBuildTime()` in `src/lib/events.ts`) pulls upcoming/past events directly from Eventbrite
 - Events page consumes Eventbrite data
 
-## Donations
+## Contributions (never "donations": the club is an LLC)
+
+The GoFundMe card is `GoFundMe.astro` (URL in `src/lib/contribute.ts`), on the homepage Contribute flyer and The Wall.
 
 Platform:
 - GoFundMe
@@ -54,26 +56,38 @@ Current behavior:
 
 ## Forms
 
-Both forms submit through Astro Actions (`src/actions/index.ts`) running as an on-demand Netlify function via `@astrojs/netlify`.
+The forms submit through Astro Actions (`src/actions/index.ts` — `signup`, `contact`, and since the 2026-10 redesign `leadCleanup`) running as an on-demand Netlify function via `@astrojs/netlify`.
 Each action validates with zod, runs spam heuristics (honeypot + timing + content patterns), rate limits per IP via Netlify Blobs, verifies a Cloudflare Turnstile token server-side (`src/lib/server/turnstile.ts`), and upserts the submitter as a Brevo contact with a raw `fetch()` call (no Brevo SDK).
+Phone numbers are validated with `libphonenumber-js` on both client and server (10-digit US, or international with a + country code).
 Web3Forms and `netlify/functions/submit-form.mjs` were retired in the 2026-07 redesign.
 
 Turnstile (bot check, added 2026-07 after the security-scale audit flagged bot list-pollution):
-- Widget renders on both forms only when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time; the token lands as the `cf-turnstile-response` form field.
+- Widget renders on all three forms (signup, contact, Lead a Cleanup) only when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time; the token lands as the `cf-turnstile-response` form field.
 - The actions enforce verification only when that site key is set at runtime; production has one, so verification runs there, and any context without a site key skips it (logged as `turnstile_not_configured` on every submission).
 - Once the site key is set, a missing `TURNSTILE_SECRET_KEY` fails closed (`form_env_missing`), and any verification failure rejects with the same generic message as other validation failures (`form_turnstile_rejected` in logs).
 - Turnstile sits alongside the honeypot/timing heuristics, not instead of them; setting the keys in Netlify requires a redeploy because the site key bakes into the prerendered pages.
 
-Volunteer form:
+Volunteer form (newsletter):
 - Home page `#signup` → Brevo list `signups_list` (`BREVO_LIST_ID_SIGNUP`)
-- Fields land as Brevo contact attributes (BOROUGH, PHONE, MESSAGE, HEAR_ABOUT_US, WAIVER_ACCEPTED); HEAR_ABOUT_US values must match the Brevo enum exactly (the select's value attributes do). WAIVER_ACCEPTED reflects server-validated checkbox state — both the waiver and age checkboxes are required and zod-validated (`'on'` literal), not assumed just because the handler was reached. EXPERIENCE is dormant — historical only
+- Fields land as Brevo contact attributes (COUNTRY, STATE_REGION, CITY, ZIP_CODE, BOROUGH, PHONE, HEAR_ABOUT_US, HEAR_ABOUT_US_OTHER); HEAR_ABOUT_US values must match the Brevo enum exactly (the select's value attributes do). Since 2026-11-08 (team round 3) the form has no waiver, 18+ box, photo consent, or "Anything we should know?" note, because the newsletter has no tie to events: WAIVER_ACCEPTED, PHOTO_CONSENT, and MESSAGE are no longer sent and keep older signups' values in Brevo. EXPERIENCE is dormant — historical only
+- How-did-you-hear is required (captain, 2026-10) and the choices include "Article" and "Somewhere else"; "Somewhere else" reveals an optional free-text "Where was that?" box that lands in HEAR_ABOUT_US_OTHER. Until the two new options and the HEAR_ABOUT_US_OTHER text attribute exist in the Brevo dashboard, Brevo rejects payloads carrying them — the action retries the upsert without them and preserves the answer as a CRM note (`field=hear`), so no signup is lost to dashboard lag (`brevo_hear_attrs_rejected` in logs)
+- Location is country first (captain, 2026-10-09; no borough question). United States (the default): a 5-digit ZIP, previewed on the page as "City, ST · Borough: …" and re-looked-up by the action (zippopotam.us, free/keyless) to send CITY and STATE_REGION; an NYC ZIP also sends BOROUGH (Manhattan / Brooklyn / Queens / The Bronx / Staten Island) from the ZIP-range table in `src/lib/zip.ts`. A ZIP that doesn't exist is refused; a lookup outage still lands the signup with COUNTRY, ZIP_CODE, and (for NYC) BOROUGH. Other countries: City picked from a list (Open-Meteo geocoding), optional State / province / region → STATE_REGION, optional postal code in any format → ZIP_CODE
 
-Contact form:
-- Single page (`/contact`), tabbed: General / Collaborate → separate Brevo lists per tab (`CONTACT_GENERAL` / `CONTACT_COLLAB`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
-- Tab choice is sent as `inquiryType` (`general` | `partnership`); partnership requires `organization`
+Contact page (`/contact`, 2026-10 layout):
+- Four poster tiles in the captain's order — Lead a Cleanup / Partner / Brand Partner / General — and no form shows until a tile is picked
+- Partner (formerly Collaborate), Brand Partner (formerly Sponsor, 2026-11-10), and General share the message form → the `contact` action; tile choice is sent as `inquiryType` (`general` | `partnership` | `sponsor`); the org-backed tiles require `organization`; separate Brevo lists per tile (`CONTACT_GENERAL` / `CONTACT_COLLAB` / `CONTACT_SPONSOR`; short names because Netlify rejected the longer `BREVO_LIST_ID_`-prefixed ones)
 - Fields land as Brevo contact attributes (FIRSTNAME, LASTNAME, EMAIL, PHONE (optional), INQUIRY_TYPE, ORGANIZATION, MESSAGE)
-- Message text is stored as a Brevo contact attribute (MESSAGE, latest value only) AND as a Brevo CRM note per submission (full history, header form=…|field=…|submitted=…); nothing emails the team directly anymore; a transactional-email notification is a known follow-up
-- "Host an Event" as a third inquiry type was considered and deferred — not built
+- The Partner tile also asks "What kind of partnership?" (check all that apply, at least one; `PARTNERSHIP_TYPES` in `src/lib/leadOptions.ts`), recorded in the CRM note and the notification only, and used to pick the team inboxes
+- Notifications go to every inbox the inquiry routes to, each address once, with no fallback (`src/lib/server/notifyRouting.ts`, table in `docs/inbox-routing.md`): CONTACT_NOTIFY_TO (general), SPONSOR_NOTIFY_TO, LEAD_NOTIFY_TO, PARTNER_CONTENT_NOTIFY_TO, PODCAST_NOTIFY_TO, NONPROFIT_NOTIFY_TO; a Partner or Brand Partner message mentioning a podcast also copies PODCAST_NOTIFY_TO; an unset var logs `inquiry_notify_unconfigured`
+- Message text is stored as a Brevo contact attribute (MESSAGE, latest value only) AND as a Brevo CRM note per submission (full history, header form=…|field=…|submitted=…); the team is also notified by transactional email when the notify vars are set (see `.env.example`)
+
+Lead a Cleanup form (the fourth tile → the `leadCleanup` action, 2026-10):
+- A request for support, never an "application" (team feedback, 2026-10-15)
+- Asks: requesting on behalf of (check all that apply) an individual, a nonprofit, an educational institution, a religious institution, or other (with a required description); first/last name, email, phone (all required); a starting address; what needs cleaning (check all that apply from `src/lib/leadOptions.ts`'s list, at least one; "Other" reveals a required short description, `cleaningOther`, carried into the note); the support needed (one or more, required); the number of participants (optional); preferred month (rolling, current month onward); up to 5 route photos. Mailing address, route type, and the one-way end address were dropped 2026-10-15
+- The starting address is picked from NYC Planning Labs GeoSearch suggestions client-side (keyboard-operable combobox shared with the newsletter city picker, `src/lib/combobox.ts`); the picked feature's `gid` and `lon,lat` point are submitted with its label and the action looks that exact feature up again server-side (GeoSearch's `/v2/place` rejects `nycpad` ids, so it re-runs autocomplete for the label confined to a 0.5 km circle around the point), storing its label only if the gid, label, and NYC locality all match (`src/lib/server/geosearch.ts` — fails closed in every case, including GeoSearch being unreachable, and never substitutes a different result); a rejected address comes back as a field-level error on that address field (`src/lib/addressErrors.ts` codes), which the page shows under the picker, clearing the pick unless the cause was a GeoSearch outage
+- Photos are validated by content (magic bytes — SVG and non-raster rejected), re-encoded with sharp to bounded JPEGs with all metadata including GPS stripped, and stored privately in Netlify Blobs under random keys (store `lead-route-photos`, `src/lib/server/photos.ts`); the CRM note records the keys
+- Routes to Brevo list `BREVO_LIST_ID_LEADS` with attributes LEAD_BEHALF, ROUTE_START, PREFERRED_MONTH (+ FIRSTNAME/LASTNAME/PHONE, INQUIRY_TYPE=`lead`); what needs cleaning, the support, and the group size live only in the CRM note and the notification (`src/lib/server/leadNote.ts`), so they need no Brevo attributes; MAILING_ADDRESS, ROUTE_TYPE, and ROUTE_END are no longer sent but stay in Brevo (add-only); the team notification goes to LEAD_NOTIFY_TO
+- "Host an Event" as a separate inquiry type was considered and deferred — Lead a Cleanup (2026-10) is the shipped descendant of that idea
 
 ## Email
 

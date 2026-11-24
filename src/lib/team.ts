@@ -140,15 +140,17 @@ export const team: TeamMember[] = [
     name: 'Fabiola',
     role: { en: 'Technology', es: 'Tecnología' },
     // The captain's own words (round 18) — VERBATIM, already through an
-    // editing pass and approved. "I'm on anything Trash Talk tech" and
+    // editing pass and approved. "I'm on anything Trash Talk NYC tech" and
     // "this stuff" are deliberately casual; the em dashes are
     // intentional pacing. Only the paragraph breaks are ours. The
     // second paragraph is split into leaf segments so "please get in
     // touch" can be a real link to /contact and still translate.
+    // "Trash Talk" → "Trash Talk NYC" was approved by the captain on
+    // 2026-10-09 (site-wide naming rule), EN and ES.
     bio: [
       {
-        en: "Hi, I'm Fabiola! I'm on anything Trash Talk tech — this website included. I care that this stuff actually works for everyone.",
-        es: '¡Hola, soy Fabiola! Ando metida en todo lo tech de Trash Talk — este sitio incluido. Me importa que estas cosas de verdad funcionen para todos.',
+        en: "Hi, I'm Fabiola! I'm on anything Trash Talk NYC tech — this website included. I care that this stuff actually works for everyone.",
+        es: '¡Hola, soy Fabiola! Ando metida en todo lo tech de Trash Talk NYC — este sitio incluido. Me importa que estas cosas de verdad funcionen para todos.',
       },
       {
         // Captain-written (round 27): the ellipses runs — three dots

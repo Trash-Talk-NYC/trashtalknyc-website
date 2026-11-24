@@ -3,8 +3,9 @@
  * raw fetch() — the @getbrevo/brevo SDK would add a dependency for a
  * couple of endpoints.
  *
- * The custom attributes sent here (BOROUGH, PHONE, HEAR_ABOUT_US,
- * WAIVER_ACCEPTED, ORGANIZATION, MESSAGE, INQUIRY_TYPE) exist live in
+ * The custom attributes sent here (BOROUGH, COUNTRY, STATE_REGION, CITY,
+ * ZIP_CODE, PHONE, HEAR_ABOUT_US, WAIVER_ACCEPTED, ORGANIZATION, MESSAGE,
+ * INQUIRY_TYPE, and the lead-application set) exist live in
  * Brevo; adding a new one requires creating it in the Brevo dashboard
  * first or Brevo rejects the payload. (EXPERIENCE is dormant — kept in
  * Brevo for historical contacts, no longer written.)
@@ -48,9 +49,12 @@ function retryDelayMs(res: Response): number {
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
+/** Text attributes are strings; Brevo boolean attributes take a real JSON boolean. */
+export type BrevoAttributes = Record<string, string | boolean>;
+
 export interface BrevoUpsert {
   email: string;
-  attributes: Record<string, string>;
+  attributes: BrevoAttributes;
   listId: number;
 }
 
@@ -120,13 +124,20 @@ export function escapeHtml(value: string): string {
 }
 
 export interface InquiryEmailInput {
-  inquiryType: 'general' | 'partnership' | 'sponsor';
+  inquiryType: 'general' | 'partnership' | 'sponsor' | 'lead';
   fname: string;
   lname: string;
   email: string;
   message: string;
   phone?: string;
   organization?: string;
+  /** Extra label/value rows (the lead request's preferred month). */
+  extraRows?: Array<[label: string, value: string | undefined]>;
+  /**
+   * The category's bracket tag ("[Podcast]"), put first in the subject so
+   * each owner can filter their inbox (see docs/inbox-routing.md).
+   */
+  tag?: string;
 }
 
 /**
@@ -143,18 +154,21 @@ export function buildInquiryEmail(input: InquiryEmailInput): { subject: string; 
   const labels: Record<InquiryEmailInput['inquiryType'], string> = {
     general: 'New contact message',
     partnership: 'New collaboration inquiry',
-    sponsor: 'New sponsorship inquiry',
+    sponsor: 'New brand partnership inquiry',
+    lead: 'New cleanup-lead application',
   };
   const label = labels[input.inquiryType];
   const name = `${input.fname} ${input.lname}`.trim();
   const org = input.organization?.trim();
-  const subject = input.inquiryType !== 'general' && org ? `${label} — ${name} · ${org}` : `${label} — ${name}`;
+  const base = input.inquiryType !== 'general' && org ? `${label} — ${name} · ${org}` : `${label} — ${name}`;
+  const subject = input.tag ? `${input.tag} ${base}` : base;
 
   const rows: Array<[string, string | undefined]> = [
     ['Name', name],
     ['Email', input.email],
     ['Phone', input.phone],
     ['Organization', input.organization],
+    ...(input.extraRows ?? []),
   ];
   const rowsHtml = rows
     .filter(([, value]) => value?.trim())

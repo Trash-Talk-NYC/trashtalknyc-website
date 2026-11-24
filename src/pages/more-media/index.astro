@@ -1,0 +1,223 @@
+---
+import SectionWall from '../../components/SectionWall.astro';
+import wallOverview from '../../assets/walls/wall-9568.webp';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WallHero from '../../components/WallHero.astro';
+import MediaSubnav from '../../components/MediaSubnav.astro';
+import { GALLERY, IN_THE_NEWS, NEWS_LIVE, getMediaSection, liveMediaSections, moreMediaTagline } from '../../lib/media';
+import { socials } from '../../lib/socials';
+import { galleryByMonth } from '../../lib/gallery';
+import { spotSticker } from '../../lib/teamStickers';
+
+/**
+ * More Media — /more-media (captain, 2026-10-09): the shared hero with
+ * "Hear us talk trash across several platforms.", then one flyer per
+ * channel on the wall (captain's M1, 2026-10-21): each a flat cream
+ * sheet with a big purple title, a small preview, and one button, like
+ * the event flyers. Substack is hidden until it's ready (captain,
+ * 2026-10-15). The podcast has no subpage yet, so its flyer links straight
+ * to Spotify (captain, 2026-11-24); In The News waits behind NEWS_LIVE.
+ */
+
+const podcast = getMediaSection('podcast');
+
+// The newest month's first photos preview the Gallery
+const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
+---
+
+<BaseLayout
+  title="More Media — Trash Talk NYC"
+  description="Hear Trash Talk NYC talk trash on YouTube and the podcast, and see photos from the club."
+  stickerFonts={NEWS_LIVE}
+>
+  <WallHero
+    src={wallOverview}
+    title={[{ en: 'More', es: 'Más' }, { en: 'Media', es: 'Medios' }]}
+    line={moreMediaTagline}
+    seed={25}
+  >
+    <MediaSubnav />
+  </WallHero>
+
+  <section class="mm-wall wall">
+  <SectionWall kind="cleanup" src={wallOverview} dim={0} duotone={0} seed={8} />
+  <div class="wrap mm-grid" role="group" aria-label="More Media">
+    {liveMediaSections.map((s, i) => {
+      // Spots MM1, MM2, … in src/lib/teamStickers.ts: a newly launched
+      // channel fails the build until it is given its own sticker
+      const flyerSticker = spotSticker('moreMedia', `MM${i + 1}` as 'MM1');
+      return (
+      <article class="mm-fly">
+        <Image src={flyerSticker.src} alt="" class="mm-stk" data-sticker-spot={flyerSticker.spot} width={120} densities={[1, 2]} />
+        <h2 class="mm-name">{s.label}</h2>
+        <div class="mm-play" aria-hidden="true"><span></span></div>
+        <p class="mm-blurb" data-en={s.blurb.en} data-es={s.blurb.es}>{s.blurb.en}</p>
+        <a class="btn btn-purple mm-btn" href={s.path}>
+          <span data-en={`${s.action.en} →`} data-es={`${s.action.es} →`}>{s.action.en} →</span>
+        </a>
+      </article>
+      );
+    })}
+    {podcast.channelHref && (
+      <article class="mm-fly">
+        <h2 class="mm-name" data-en={podcast.label} data-es="Pódcast">{podcast.label}</h2>
+        <div class="mm-play mm-pod" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={socials.spotify.path} /></svg></div>
+        <p class="mm-blurb" data-en={podcast.blurb.en} data-es={podcast.blurb.es}>{podcast.blurb.en}</p>
+        <a class="btn btn-purple mm-btn" href={podcast.channelHref} target="_blank" rel="noopener">
+          <span data-en={`${podcast.action.en} on Spotify →`} data-es={`${podcast.action.es} en Spotify →`}>{podcast.action.en} on Spotify →</span>
+        </a>
+      </article>
+    )}
+    <article class="mm-fly">
+      <h2 class="mm-name" data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</h2>
+      {preview.length > 0 && (
+        <div class="mm-thumbs" aria-hidden="true">
+          {preview.map((p) => <Image src={p.src} alt="" class="mm-thumb" width={240} widths={[120, 240]} sizes="7rem" />)}
+        </div>
+      )}
+      <p class="mm-blurb" data-en="Photos from our cleanups, plantings, and the lab." data-es="Fotos de nuestras limpiezas, siembras y el laboratorio.">Photos from our cleanups, plantings, and the lab.</p>
+      <a class="btn btn-purple mm-btn" href={GALLERY.path}>
+        <span data-en="See photos →" data-es="Ver fotos →">See photos →</span>
+      </a>
+    </article>
+    {NEWS_LIVE && (
+      <article class="mm-fly">
+        <span class="mm-badge" aria-hidden="true" data-en="Extra!" data-es="¡Extra!">Extra!</span>
+        <h2 class="mm-name" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h2>
+        <p class="mm-mast" aria-hidden="true">The Trash Talk Times</p>
+        <p class="mm-blurb" data-en="Articles and interviews that feature Trash Talk NYC." data-es="Artículos y entrevistas sobre Trash Talk NYC.">Articles and interviews that feature Trash Talk NYC.</p>
+        <a class="btn btn-purple mm-btn" href={IN_THE_NEWS.path}>
+          <span data-en="Read →" data-es="Leer →">Read →</span>
+        </a>
+      </article>
+    )}
+  </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .mm-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    padding-block: 64px 72px;
+  }
+
+  /* A flat, straight cream flyer like the event flyers: no tape, no
+     shadow; the stickers crossing its edge tie it to the wall */
+  .mm-fly {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 30px 22px 26px;
+    background: var(--beige);
+    color: var(--purple);
+  }
+
+  .mm-name {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(3rem, 13vw, 3.6rem);
+    line-height: 0.9;
+    color: var(--purple);
+    padding-right: 4rem;
+  }
+
+  .mm-blurb { margin: 0; font-size: 1.1rem; line-height: 1.4; color: var(--black); }
+
+  .mm-fly :global(.mm-stk) {
+    position: absolute;
+    top: -22px;
+    right: -12px;
+    width: 100px;
+    height: auto;
+    transform: rotate(8deg);
+    filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+    pointer-events: none;
+  }
+
+  /* YouTube's preview: a play button on a purple screen */
+  .mm-play {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    background: var(--purple);
+  }
+
+  /* The podcast's preview: Spotify's mark on the same purple screen */
+  .mm-pod svg { width: 56px; height: 56px; fill: var(--beige); }
+
+  .mm-play span {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 18px 0 18px 30px;
+    border-color: transparent transparent transparent var(--beige);
+    margin-left: 6px;
+  }
+
+  .mm-thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
+
+  .mm-thumbs :global(.mm-thumb) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border: 2.5px solid var(--black);
+  }
+
+  /* In The News' preview: the paper's masthead */
+  .mm-mast {
+    width: 100%;
+    margin: 0;
+    padding: 10px 0 8px;
+    border-block: 4px double var(--black);
+    font-family: 'UnifrakturMaguntia', Georgia, serif;
+    font-size: clamp(1.4rem, 6vw, 1.8rem);
+    line-height: 1;
+    text-align: center;
+    color: var(--black);
+  }
+
+  .mm-badge {
+    position: absolute;
+    left: -14px;
+    bottom: -18px;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--purple);
+    font-family: var(--display);
+    font-size: 1rem;
+    transform: rotate(-10deg);
+    filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+  }
+
+  /* The buttons line up along the flyers' bottom edges on desktop;
+     square-cornered across More Media (captain, 2026-10-09) */
+  .mm-btn { margin-top: auto; border-radius: 0; }
+
+  @media (min-width: 761px) {
+    .mm-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 56px clamp(32px, 3.5vw, 48px);
+      padding-block: 88px 104px;
+    }
+
+    .mm-fly { padding: 38px clamp(22px, 2.6vw, 34px) 32px; }
+    .mm-name { font-size: clamp(3.2rem, 4vw, 4.2rem); }
+    .mm-fly :global(.mm-stk) { width: 118px; top: -28px; right: -24px; }
+  }
+
+  @media (min-width: 1100px) {
+    .mm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

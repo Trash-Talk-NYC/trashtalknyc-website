@@ -1,0 +1,105 @@
+---
+import SectionWall from '../../components/SectionWall.astro';
+import wallYouTube from '../../assets/walls/wall-9744.webp';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WallHero from '../../components/WallHero.astro';
+import MediaSubnav from '../../components/MediaSubnav.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+import { MORE_MEDIA_PATH, featuredVideo, getMediaSection } from '../../lib/media';
+import { spotSticker } from '../../lib/teamStickers';
+
+/**
+ * More Media → YouTube (captain, 2026-10-09): embeds the video the
+ * captain sent, pasted up on the wall and pinned by the vest sticker
+ * like the team photo. youtube-nocookie keeps YouTube's tracking
+ * cookies off the page until someone actually presses play.
+ */
+const section = getMediaSection('youtube');
+
+// The sticker pinning the video (spot YT1, src/lib/teamStickers.ts)
+const videoSticker = spotSticker('youtube', 'YT1');
+---
+
+<BaseLayout
+  title="YouTube — Trash Talk NYC"
+  description="Watch Trash Talk NYC on YouTube: longer videos from the cleanups, the crew, and everything around them."
+>
+  <WallHero
+    src={wallYouTube}
+    eyebrow={{ en: 'More Media', es: 'Más Medios' }}
+    eyebrowHref={MORE_MEDIA_PATH}
+    title={[{ en: section.label, es: section.label }]}
+    line={section.blurb}
+    seed={23}
+  >
+    <MediaSubnav current="youtube" />
+  </WallHero>
+
+  <!-- Torn-edge wall like the other More Media pages (captain, 2026-10-09) -->
+  <section class="yt-wall wall">
+  <SectionWall kind="cleanup" src={wallYouTube} dim={0} duotone={0} seed={9} />
+  <div class="wrap yt-body">
+    <figure class="yt-frame paste f-sticker">
+      <Image src={videoSticker.src} alt="" class="slap yt-slap" data-sticker-spot={videoSticker.spot} width={110} densities={[1, 2]} />
+      <YouTubeEmbed videoId={featuredVideo.id} title={featuredVideo.title} />
+      <figcaption class="yt-caption" data-en={featuredVideo.caption.en} data-es={featuredVideo.caption.es}>{featuredVideo.caption.en}</figcaption>
+    </figure>
+
+    {section.channelHref && (
+      <a class="btn btn-primary yt-channel" href={section.channelHref} target="_blank" rel="noopener">
+        <span data-en="More on our YouTube channel →" data-es="Más en nuestro canal de YouTube →">More on our YouTube channel →</span>
+      </a>
+    )}
+  </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .yt-body {
+    display: grid;
+    justify-items: center;
+    gap: 32px;
+    padding-block: 64px 80px;
+  }
+
+  /* The video pasted up as a poster: paper border around the frame,
+     the vest sticker pinning its corner */
+  .yt-frame {
+    position: relative;
+    width: 100%;
+    max-width: 60rem;
+    margin: 0;
+    padding: 12px 12px 14px;
+    --flyer-bg: var(--paper);
+    color: var(--black);
+  }
+
+  /* Pinned mostly outside the frame so it never hides YouTube's own
+     corner controls */
+  /* High enough that its bottom stays off the video's title bar */
+  .yt-frame :global(.yt-slap) {
+    top: -52px;
+    right: -8px;
+    width: 64px;
+    height: auto;
+    transform: rotate(9deg);
+  }
+
+  /* Square-cornered buttons across More Media (captain, 2026-10-09) */
+  .yt-channel { border-radius: 0; }
+
+  .yt-caption {
+    padding-top: 12px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  @media (min-width: 761px) {
+    .yt-body { padding-block: 72px 104px; }
+    .yt-frame { padding: 18px 18px 20px; }
+    .yt-frame :global(.yt-slap) { top: -62px; right: -66px; width: 110px; }
+    .yt-caption { font-size: 0.95rem; padding-top: 16px; }
+  }
+</style>
