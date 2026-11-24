@@ -1,13 +1,13 @@
 /**
  * The club's social channels — single source for every surface that
- * lists them (social bar, footer, homepage sticker tiles). Icon paths
+ * lists them (footer, homepage sticker tiles, the Events page). Icon paths
  * are the 24×24 glyphs the approved mockups use.
  *
  * A channel without a real URL yet uses href '#' with `placeholder: true`
  * (rendered without target=_blank); all five are real since 2026-10-09.
  */
 
-export type SocialId = 'instagram' | 'tiktok' | 'youtube' | 'linkedin' | 'facebook';
+export type SocialId = 'instagram' | 'tiktok' | 'youtube' | 'linkedin' | 'facebook' | 'eventbrite';
 
 export interface SocialChannel {
   id: SocialId;
@@ -57,6 +57,17 @@ export const socials: Record<SocialId, SocialChannel> = {
     handle: 'Trash Talk NYC',
     href: 'https://www.facebook.com/p/Trash-Talk-NYC-61589884530275/',
     path: 'M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z',
+  },
+  // Where the club's events are listed and RSVPs happen (captain,
+  // 2026-10-15: events go to Instagram stories and Eventbrite only). Not a
+  // social feed, so it stays off the footer and homepage rows. The glyph
+  // is Eventbrite's lowercase "e".
+  eventbrite: {
+    id: 'eventbrite',
+    label: 'Eventbrite',
+    handle: 'trashtalknyc',
+    href: 'https://trashtalknyc.eventbrite.com',
+    path: 'M12 3a9 9 0 1 0 6.9 14.8l-2.3-1.9A6 6 0 0 1 6.1 13.4h14.8c.1-.5.1-.9.1-1.4a9 9 0 0 0-9-9zm-5.8 7.6a6 6 0 0 1 11.6 0z',
   },
 };
 

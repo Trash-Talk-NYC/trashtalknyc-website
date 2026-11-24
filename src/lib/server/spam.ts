@@ -7,7 +7,7 @@ export interface SpamCheckInput {
   botcheck?: string;
   /** Epoch-ms render timestamp set by page JS; absent on no-JS submits. */
   startedAt?: string;
-  /** Free-text fields worth scanning (message, experience). */
+  /** Free-text fields worth scanning (message, the signup's hearOther). */
   text?: string;
 }
 

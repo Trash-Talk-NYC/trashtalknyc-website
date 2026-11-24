@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionWall from '../../components/SectionWall.astro';
+import WallHero from '../../components/WallHero.astro';
+import groupPhoto from '../../assets/cleanups/group-1628.webp';
+import wallValues from '../../assets/walls/wall-9726.webp';
+import { mission, values, vision } from '../../lib/aboutTtnyc';
+
+/**
+ * About (team round 3, captain 2026-11-08; "About TTNYC" until the
+ * captain renamed it the same day): the shared hero on a cleanup group
+ * photo, then the club's vision, mission, and values in the team's words
+ * (src/lib/aboutTtnyc.ts).
+ */
+---
+
+<BaseLayout
+  title="About — Trash Talk NYC"
+  description="Trash Talk NYC's vision, mission, and values: New Yorkers leading the way in keeping the city's public spaces clean."
+>
+  <!-- The shared hero like every inner page (captain, 2026-11-08), on the
+       cleanup group photo, framed on the crew. No eyebrow: "About" above
+       "About" was redundant. -->
+  <WallHero src={groupPhoto} title={[{ en: 'About', es: 'Nosotros' }]} framing="50% 42%" seed={30} />
+
+  <section class="at-sec wall">
+    <SectionWall kind="cleanup" src={wallValues} tear="bottom" dim={0} duotone={0} seed={31} />
+    <div class="wrap at-grid">
+      <article class="at-card paste f-tape">
+        <h2 class="at-h" data-en="Vision" data-es="Visión">Vision</h2>
+        <p class="at-text" data-en={vision.en} data-es={vision.es}>{vision.en}</p>
+      </article>
+      <article class="at-card paste f-staple">
+        <h2 class="at-h" data-en="Mission" data-es="Misión">Mission</h2>
+        <p class="at-text" data-en={mission.en} data-es={mission.es}>{mission.en}</p>
+      </article>
+      <article class="at-card at-values paste f-tape">
+        <h2 class="at-h" data-en="Values" data-es="Valores">Values</h2>
+        <ul class="at-list">
+          {values.map((v) => (
+            <li data-en={v.en} data-es={v.es}>{v.en}</li>
+          ))}
+        </ul>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .at-sec { padding-block: 56px 80px; }
+
+  .at-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 44px;
+  }
+
+  .at-card {
+    --flyer-bg: var(--beige);
+    color: var(--purple);
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 28px 22px 30px;
+  }
+
+  .at-h {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.4rem, 10vw, 3.2rem);
+    line-height: 0.95;
+  }
+
+  .at-text {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--black);
+  }
+
+  /* The values as a printed list, one per line on phones and in two
+     columns on desktop; no chips (tilted label chips stay banned) */
+  .at-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px 32px;
+  }
+
+  .at-list li {
+    font-family: var(--display);
+    font-size: clamp(1.7rem, 7vw, 2.1rem);
+    line-height: 1.05;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed currentColor;
+  }
+
+  @media (min-width: 761px) {
+    .at-sec { padding-block: 88px 120px; }
+    .at-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 48px; }
+    .at-card { padding: 40px 40px 42px; gap: 16px; }
+    .at-text { font-size: clamp(1.35rem, 1.7vw, 1.6rem); }
+    .at-values { grid-column: 1 / -1; }
+    .at-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .at-list li { font-size: clamp(1.8rem, 2.4vw, 2.4rem); }
+  }
+</style>
