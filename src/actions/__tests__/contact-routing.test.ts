@@ -25,6 +25,8 @@ function contactInput(overrides: Record<string, unknown> = {}) {
     botcheck: '',
     startedAt: String(Date.now() - 10_000),
     inquiryType: 'general',
+    // The schema's default; the handler always sees an array
+    partnershipType: [],
     organization: undefined,
     message: 'Hello there',
     ...overrides,
@@ -58,7 +60,7 @@ describe('contact action Brevo list routing', () => {
   it('routes partnership inquiries to the CONTACT_COLLAB list', async () => {
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(
-      contactInput({ inquiryType: 'partnership', partnershipType: 'podcast', organization: 'Acme Org' }),
+      contactInput({ inquiryType: 'partnership', partnershipType: ['podcast'], organization: 'Acme Org' }),
       contactCtx(),
     );
 
@@ -153,6 +155,7 @@ describe('contact action team notification', () => {
     process.env.PARTNER_CONTENT_NOTIFY_TO = 'content@trashtalknyc.org';
     process.env.PODCAST_NOTIFY_TO = 'podcast@trashtalknyc.org';
     process.env.NONPROFIT_NOTIFY_TO = 'nonprofits@trashtalknyc.org';
+    process.env.LEAD_NOTIFY_TO = 'events@trashtalknyc.org';
     process.env.CONTACT_NOTIFY_FROM = 'site@trashtalknyc.org';
   });
 
@@ -166,6 +169,7 @@ describe('contact action team notification', () => {
     delete process.env.PARTNER_CONTENT_NOTIFY_TO;
     delete process.env.PODCAST_NOTIFY_TO;
     delete process.env.NONPROFIT_NOTIFY_TO;
+    delete process.env.LEAD_NOTIFY_TO;
     delete process.env.CONTACT_NOTIFY_FROM;
   });
 
@@ -174,7 +178,7 @@ describe('contact action team notification', () => {
     await server.contact.handler(contactInput({ inquiryType: 'general' }), contactCtx());
     // @ts-expect-error handler is untyped once defineAction is stubbed
     await server.contact.handler(
-      contactInput({ inquiryType: 'partnership', partnershipType: 'influencer', organization: 'Acme Org' }),
+      contactInput({ inquiryType: 'partnership', partnershipType: ['influencer'], organization: 'Acme Org' }),
       contactCtx(),
     );
 
@@ -189,19 +193,53 @@ describe('contact action team notification', () => {
   });
 
   it.each([
-    ['content-collaboration', 'content@trashtalknyc.org', '[Content]'],
-    ['content-creation', 'content@trashtalknyc.org', '[Content]'],
-    ['influencer', 'content@trashtalknyc.org', '[Content]'],
-    ['corporate-event', 'content@trashtalknyc.org', '[Content]'],
-    ['other', 'content@trashtalknyc.org', '[Content]'],
-    ['podcast', 'podcast@trashtalknyc.org', '[Podcast]'],
-    ['nonprofit', 'nonprofits@trashtalknyc.org', '[Nonprofit]'],
-  ])('routes a %s partnership to its own inbox, tagged', async (partnershipType, inbox, tag) => {
+    ['content-collaboration', ['content@trashtalknyc.org'], '[Content]'],
+    ['content-creation', ['content@trashtalknyc.org'], '[Content]'],
+    ['influencer', ['content@trashtalknyc.org'], '[Content]'],
+    ['corporate-event', ['content@trashtalknyc.org', 'events@trashtalknyc.org'], '[Content]'],
+    ['other', ['content@trashtalknyc.org'], '[Content]'],
+    ['podcast', ['podcast@trashtalknyc.org', 'content@trashtalknyc.org'], '[Podcast]'],
+    ['nonprofit', ['nonprofits@trashtalknyc.org'], '[Nonprofit]'],
+  ])('routes a %s partnership to its inboxes, tagged', async (partnershipType, inboxes, tag) => {
     // @ts-expect-error handler is untyped once defineAction is stubbed
-    await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType, organization: 'Acme Org' }), contactCtx());
+    await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType: [partnershipType], organization: 'Acme Org' }), contactCtx());
 
-    expect(sendBrevoEmail).toHaveBeenCalledWith('test-key', expect.objectContaining({ to: [{ email: inbox }] }));
+    expect(sendBrevoEmail).toHaveBeenCalledTimes(1);
+    expect(sendBrevoEmail.mock.calls[0][1].to).toEqual(inboxes.map((email) => ({ email })));
     expect(sendBrevoEmail.mock.calls[0][1].subject).toBe(`${tag} New collaboration inquiry — Jane Doe · Acme Org`);
+  });
+
+  it('sends one email to every picked kind, each shared inbox once', async () => {
+    // As on Netlify: partnerships@ sits behind the content, nonprofit and sponsor vars
+    process.env.PARTNER_CONTENT_NOTIFY_TO = 'partnerships@trashtalknyc.org';
+    process.env.NONPROFIT_NOTIFY_TO = 'partnerships@trashtalknyc.org';
+    createBrevoNote.mockClear();
+
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(
+      contactInput({ inquiryType: 'partnership', partnershipType: ['nonprofit', 'podcast', 'corporate-event'], organization: 'Acme Org' }),
+      contactCtx(),
+    );
+
+    expect(sendBrevoEmail).toHaveBeenCalledTimes(1);
+    expect(sendBrevoEmail.mock.calls[0][1].to).toEqual([
+      { email: 'podcast@trashtalknyc.org' },
+      { email: 'partnerships@trashtalknyc.org' },
+      { email: 'events@trashtalknyc.org' },
+    ]);
+    expect(sendBrevoEmail.mock.calls[0][1].subject).toBe('[Podcast] [Nonprofit] [Content] New collaboration inquiry — Jane Doe · Acme Org');
+    expect(createBrevoNote.mock.calls[0][2]).toContain('Partnership: Podcast, Nonprofit partnership, Corporate event');
+  });
+
+  it('copies the podcast inbox when a Brand Partner message mentions a pódcast', async () => {
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(
+      contactInput({ inquiryType: 'sponsor', organization: 'Acme Org', message: 'Queremos patrocinar su PÓDCAST' }),
+      contactCtx(),
+    );
+
+    expect(sendBrevoEmail.mock.calls[0][1].to).toEqual([{ email: 'sponsors@trashtalknyc.org' }, { email: 'podcast@trashtalknyc.org' }]);
+    expect(sendBrevoEmail.mock.calls[0][1].subject).toBe('[Brand partnership] New brand partnership inquiry — Jane Doe · Acme Org');
   });
 
   it.each([
@@ -217,21 +255,22 @@ describe('contact action team notification', () => {
   it('names the partnership kind in the email and the CRM note', async () => {
     createBrevoNote.mockClear();
     // @ts-expect-error handler is untyped once defineAction is stubbed
-    await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType: 'podcast', organization: 'Acme Org' }), contactCtx());
+    await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType: ['podcast'], organization: 'Acme Org' }), contactCtx());
 
     expect(sendBrevoEmail.mock.calls[0][1].htmlContent).toContain('Podcast');
     expect(createBrevoNote.mock.calls[0][2]).toContain('Partnership: Podcast');
   });
 
-  it('logs an error naming the unset inbox — and never falls back to the general address', async () => {
+  it('logs an error naming the unset inbox, still tells the configured ones, and never falls back to the general address', async () => {
     delete process.env.PODCAST_NOTIFY_TO;
     const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // @ts-expect-error handler is untyped once defineAction is stubbed
-    const result = await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType: 'podcast', organization: 'Acme Org' }), contactCtx());
+    const result = await server.contact.handler(contactInput({ inquiryType: 'partnership', partnershipType: ['podcast'], organization: 'Acme Org' }), contactCtx());
 
     expect(result).toEqual({ ok: true });
-    expect(sendBrevoEmail).not.toHaveBeenCalled();
+    expect(sendBrevoEmail).toHaveBeenCalledTimes(1);
+    expect(sendBrevoEmail.mock.calls[0][1].to).toEqual([{ email: 'content@trashtalknyc.org' }]);
     expect(errors.mock.calls.map(([line]) => String(line)).join('\n')).toContain('"envVar":"PODCAST_NOTIFY_TO"');
     errors.mockRestore();
   });

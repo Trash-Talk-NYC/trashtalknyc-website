@@ -44,15 +44,26 @@ interface Props {
    * captain 2026-10-10).
    */
   outline?: boolean;
+  /**
+   * Cleanup only: `src` is a seamless pattern tile (the founder page's
+   * sticker bomb), repeated both ways at this CSS width instead of framed
+   * as a photo, so one small image covers a section of any height.
+   */
+  tileWidth?: string;
 }
 
-const { kind, src, tear = 'both', dim = 0.35, duotone = 1, seed = 1, outline = false } = Astro.props;
+const { kind, src, tear = 'both', dim = 0.35, duotone = 1, seed = 1, outline = false, tileWidth } = Astro.props;
 if (kind === 'cleanup' && !src) throw new Error('SectionWall: a cleanup wall needs a photo (src)');
 
 // 2400 is the chalk original's full width, so zoomed framings stay sharp;
 // cleanup walls now span the full section width unzoomed (Z2), so they get
 // their full 2000px derivative
-const photo = await getImage({ src: kind === 'planting' ? chalkPhoto : src!, width: kind === 'planting' ? 2400 : 2000, format: 'webp' });
+// A tile is already sized for its 2x repeat, so it keeps its own width
+const photo = await getImage({
+  src: kind === 'planting' ? chalkPhoto : src!,
+  width: tileWidth ? src!.width : kind === 'planting' ? 2400 : 2000,
+  format: 'webp',
+});
 
 /** A ragged edge: deterministic jitter so builds are stable. */
 function edge(fromTop: boolean): string[] {
@@ -71,7 +82,9 @@ const top = tear === 'top' || tear === 'both' ? edge(true) : ['0 0', '100% 0'];
 const bottom = tear === 'bottom' || tear === 'both' ? edge(false) : ['100% 100%', '0 100%'];
 const clip = `polygon(${[...top, ...bottom].join(',')})`;
 
-const bg = `background-image:url(${photo.src})`;
+const bg = tileWidth
+  ? `background-image:url(${photo.src});background-size:${tileWidth} auto;background-repeat:repeat;background-position:center top`
+  : `background-image:url(${photo.src})`;
 // webp keeps the alpha channel the mask needs at a fraction of the PNG's bytes
 const mask = kind === 'planting' ? await getImage({ src: chalkMaskPng, width: 1600, format: 'webp' }) : null;
 ---

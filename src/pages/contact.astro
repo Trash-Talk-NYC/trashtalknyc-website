@@ -12,7 +12,8 @@ import { BEHALF_OPTIONS, CLEANING_NEEDS, PARTNERSHIP_TYPES, SUPPORT_NEEDS } from
 import { GUIDE_PATH } from '../lib/guide';
 
 /**
- * Contact — Talk Trash (sentence case, captain 2026-10-09). The choices are poster tiles in the captain's
+ * Contact — "Let's talk trash together" (captain, 2026-11-24; plain, with no
+ * highlight or hover on "together"). The choices are poster tiles in the captain's
  * order (Lead a Cleanup / Partner / Brand Partner / General) and no form
  * shows until a tile is picked. General, Partner and Brand Partner share
  * one message form (the existing contact action); Lead a Cleanup is
@@ -44,11 +45,11 @@ const monthOptions = rollingMonths();
   {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
   <!-- The shared left-aligned hero on the captain's wall pick
-       (2026-10-21), with the captain's headline (2026-10-15) -->
+       (2026-10-21), with the captain's headline (2026-11-24) -->
   <WallHero
     src={wallHero}
     eyebrow={{ en: 'Contact', es: 'Contacto' }}
-    title={[{ en: "Let's Talk", es: 'Hablemos' }, { en: 'Trash', es: 'de Basura' }]}
+    title={[{ en: "Let's talk", es: 'Hablemos' }, { en: 'trash together', es: 'de basura juntos' }]}
     seed={20}
   />
 
@@ -125,16 +126,21 @@ const monthOptions = rollingMonths();
             <label for="c-phone"><span data-en="Phone number" data-es="Teléfono">Phone number</span> <span class="opt" data-en="(optional)" data-es="(opcional)">(optional)</span></label>
             <input type="tel" id="c-phone" name="phone" autocomplete="tel" />
           </div>
-          <!-- Partner only: the kind picks which team inbox hears about it -->
-          <div class="field full" id="partnerTypeGroup" hidden>
-            <label for="c-ptype" data-en="What kind of partnership? *" data-es="¿Qué tipo de alianza? *">What kind of partnership? *</label>
-            <select id="c-ptype" name="partnershipType">
-              <option value="" selected disabled data-en="Select one" data-es="Selecciona una opción">Select one</option>
+          <!-- Partner only: each kind ticked adds its team inboxes (check
+               all that apply, captain 2026-11-24); at least one is required,
+               which the submit handler checks (HTML can't) -->
+          <fieldset class="field full bare-fieldset" id="partnerTypeGroup" aria-describedby="partnerTypeErr" hidden>
+            <legend class="lbl" data-en="What kind of partnership? (check all that apply) *" data-es="¿Qué tipo de alianza? (marca todo lo que corresponda) *">What kind of partnership? (check all that apply) *</legend>
+            <div class="checks">
               {PARTNERSHIP_TYPES.map((t) => (
-                <option value={t.value} data-en={t.en} data-es={t.es}>{t.en}</option>
+                <label class="check-chip">
+                  <input type="checkbox" name="partnershipType" value={t.value} />
+                  <span data-en={t.en} data-es={t.es}>{t.en}</span>
+                </label>
               ))}
-            </select>
-          </div>
+            </div>
+            <p class="f-err" id="partnerTypeErr" aria-live="polite" hidden></p>
+          </fieldset>
           <div class="field full" id="orgGroup" hidden>
             <label for="c-org" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
             <input type="text" id="c-org" name="organization" autocomplete="organization" />
@@ -581,7 +587,18 @@ const monthOptions = rollingMonths();
   const leadForm = document.getElementById('leadForm') as HTMLFormElement;
   const orgGroup = document.getElementById('orgGroup') as HTMLElement;
   const partnerTypeGroup = document.getElementById('partnerTypeGroup') as HTMLElement;
-  const partnerTypeSelect = document.getElementById('c-ptype') as HTMLSelectElement;
+  const partnerTypeBoxes = Array.from(partnerTypeGroup.querySelectorAll<HTMLInputElement>('input[name="partnershipType"]'));
+  const partnerTypeErr = document.getElementById('partnerTypeErr') as HTMLParagraphElement;
+  const PARTNER_TYPE_MSG = { en: 'Check at least one.', es: 'Marca al menos una opción.' };
+
+  function showPartnerTypeError(show: boolean) {
+    partnerTypeErr.hidden = !show;
+    partnerTypeErr.textContent = show ? PARTNER_TYPE_MSG[getCurrentLang()] : '';
+  }
+
+  partnerTypeBoxes.forEach((box) => box.addEventListener('change', () => {
+    if (partnerTypeBoxes.some((b) => b.checked)) showPartnerTypeError(false);
+  }));
   const orgInput = document.getElementById('c-org') as HTMLInputElement;
   const inquiryTypeInput = document.getElementById('inquiryType') as HTMLInputElement;
   const successDiv = document.getElementById('formSuccess') as HTMLElement;
@@ -683,9 +700,8 @@ const monthOptions = rollingMonths();
       orgInput.required = needsOrg;
       const isPartner = type === 'partnership';
       partnerTypeGroup.hidden = !isPartner;
-      partnerTypeSelect.required = isPartner;
-      // A hidden select must never submit a stale choice
-      if (!isPartner) partnerTypeSelect.selectedIndex = 0;
+      // Hidden boxes must never submit a stale choice
+      if (!isPartner) partnerTypeBoxes.forEach((b) => { b.checked = false; });
       inquiryTypeInput.value = type;
     }
 
@@ -695,6 +711,7 @@ const monthOptions = rollingMonths();
     showSupportError(false);
     showBehalfError(false);
     showNeedError(false);
+    showPartnerTypeError(false);
     applyCopy();
   }
 
@@ -709,6 +726,7 @@ const monthOptions = rollingMonths();
     if (!supportErr.hidden) showSupportError(true);
     if (!behalfErr.hidden) showBehalfError(true);
     if (!needErr.hidden) showNeedError(true);
+    if (!partnerTypeErr.hidden) showPartnerTypeError(true);
   });
 
   // ── SUPPORT NEEDED (at least one) ──
@@ -1051,6 +1069,14 @@ const monthOptions = rollingMonths();
   ) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (form === msgForm && currentType === 'partnership') {
+        const noKind = !partnerTypeBoxes.some((b) => b.checked);
+        showPartnerTypeError(noKind);
+        if (noKind) {
+          partnerTypeBoxes[0]?.focus();
+          return;
+        }
+      }
       if (form === leadForm) {
         const noBehalf = !behalfBoxes.some((b) => b.checked);
         const noNeed = !needBoxes.some((b) => b.checked);

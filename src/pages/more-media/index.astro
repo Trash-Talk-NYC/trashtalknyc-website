@@ -5,7 +5,8 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WallHero from '../../components/WallHero.astro';
 import MediaSubnav from '../../components/MediaSubnav.astro';
-import { GALLERY, IN_THE_NEWS, liveMediaSections, moreMediaTagline } from '../../lib/media';
+import { GALLERY, IN_THE_NEWS, NEWS_LIVE, getMediaSection, liveMediaSections, moreMediaTagline } from '../../lib/media';
+import { socials } from '../../lib/socials';
 import { galleryByMonth } from '../../lib/gallery';
 import { spotSticker } from '../../lib/teamStickers';
 
@@ -14,9 +15,12 @@ import { spotSticker } from '../../lib/teamStickers';
  * "Hear us talk trash across several platforms.", then one flyer per
  * channel on the wall (captain's M1, 2026-10-21): each a flat cream
  * sheet with a big purple title, a small preview, and one button, like
- * the event flyers. Podcast and Substack are hidden until they're ready
- * (captain, 2026-10-15); `comingSoon` in media.ts brings them back.
+ * the event flyers. Substack is hidden until it's ready (captain,
+ * 2026-10-15). The podcast has no subpage yet, so its flyer links straight
+ * to Spotify (captain, 2026-11-24); In The News waits behind NEWS_LIVE.
  */
+
+const podcast = getMediaSection('podcast');
 
 // The newest month's first photos preview the Gallery
 const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
@@ -24,8 +28,8 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
 
 <BaseLayout
   title="More Media — Trash Talk NYC"
-  description="Hear Trash Talk NYC talk trash on YouTube, see photos from the club, and read the press coverage."
-  stickerFonts
+  description="Hear Trash Talk NYC talk trash on YouTube and the podcast, and see photos from the club."
+  stickerFonts={NEWS_LIVE}
 >
   <WallHero
     src={wallOverview}
@@ -55,6 +59,16 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
       </article>
       );
     })}
+    {podcast.channelHref && (
+      <article class="mm-fly">
+        <h2 class="mm-name" data-en={podcast.label} data-es="Pódcast">{podcast.label}</h2>
+        <div class="mm-play mm-pod" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={socials.spotify.path} /></svg></div>
+        <p class="mm-blurb" data-en={podcast.blurb.en} data-es={podcast.blurb.es}>{podcast.blurb.en}</p>
+        <a class="btn btn-purple mm-btn" href={podcast.channelHref} target="_blank" rel="noopener">
+          <span data-en={`${podcast.action.en} on Spotify →`} data-es={`${podcast.action.es} en Spotify →`}>{podcast.action.en} on Spotify →</span>
+        </a>
+      </article>
+    )}
     <article class="mm-fly">
       <h2 class="mm-name" data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</h2>
       {preview.length > 0 && (
@@ -67,15 +81,17 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
         <span data-en="See photos →" data-es="Ver fotos →">See photos →</span>
       </a>
     </article>
-    <article class="mm-fly">
-      <span class="mm-badge" aria-hidden="true" data-en="Extra!" data-es="¡Extra!">Extra!</span>
-      <h2 class="mm-name" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h2>
-      <p class="mm-mast" aria-hidden="true">The Trash Talk Times</p>
-      <p class="mm-blurb" data-en="Articles and podcasts that feature Trash Talk NYC." data-es="Artículos y pódcasts sobre Trash Talk NYC.">Articles and podcasts that feature Trash Talk NYC.</p>
-      <a class="btn btn-purple mm-btn" href={IN_THE_NEWS.path}>
-        <span data-en="Read →" data-es="Leer →">Read →</span>
-      </a>
-    </article>
+    {NEWS_LIVE && (
+      <article class="mm-fly">
+        <span class="mm-badge" aria-hidden="true" data-en="Extra!" data-es="¡Extra!">Extra!</span>
+        <h2 class="mm-name" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h2>
+        <p class="mm-mast" aria-hidden="true">The Trash Talk Times</p>
+        <p class="mm-blurb" data-en="Articles and interviews that feature Trash Talk NYC." data-es="Artículos y entrevistas sobre Trash Talk NYC.">Articles and interviews that feature Trash Talk NYC.</p>
+        <a class="btn btn-purple mm-btn" href={IN_THE_NEWS.path}>
+          <span data-en="Read →" data-es="Leer →">Read →</span>
+        </a>
+      </article>
+    )}
   </div>
   </section>
 </BaseLayout>
@@ -131,6 +147,9 @@ const preview = galleryByMonth()[0]?.photos.slice(0, 3) ?? [];
     aspect-ratio: 16 / 7;
     background: var(--purple);
   }
+
+  /* The podcast's preview: Spotify's mark on the same purple screen */
+  .mm-pod svg { width: 56px; height: 56px; fill: var(--beige); }
 
   .mm-play span {
     width: 0;

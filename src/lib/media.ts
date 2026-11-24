@@ -60,7 +60,9 @@ export const mediaSections: MediaSection[] = [
       es: 'Conversaciones sobre la basura, nuestra ciudad y la gente que intenta arreglarla.',
     },
     action: { en: 'Listen', es: 'Escuchar' },
-    channelHref: hrefOrNull(mediaLinks.podcast),
+    channelHref: hrefOrNull(socials.spotify),
+    // No subpage until the Spotify player is embedded (a later item); the
+    // More Media page's podcast flyer links straight to Spotify meanwhile
     comingSoon: true,
   },
   {
@@ -101,7 +103,15 @@ export const GALLERY = {
  * In The News (captain, 2026-10-19): press coverage, listed from
  * src/lib/news.ts. A top-level route, but it lives under the More Media
  * dropdown and switcher like the Gallery.
+ *
+ * Back in the release since 2026-11-24 with the press scout's verified
+ * clippings (it was out earlier that day). NEWS_LIVE = false would drop the
+ * nav, switcher, and More Media links again; the page must then be parked
+ * as src/pages/_in-the-news.astro (the underscore keeps Astro from routing
+ * it), and news.test.ts fails until both agree.
  */
+export const NEWS_LIVE = true;
+
 export const IN_THE_NEWS = {
   path: '/in-the-news',
   label: { en: 'In The News', es: 'En las Noticias' },

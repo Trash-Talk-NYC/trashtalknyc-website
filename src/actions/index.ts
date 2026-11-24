@@ -8,8 +8,8 @@ import { verifyTurnstileToken } from '../lib/server/turnstile';
 import { verifyNycAddress, type GeoVerifyResult } from '../lib/server/geosearch';
 import { MAX_PHOTOS, deleteLeadPhotos, processPhoto, storeLeadPhotos } from '../lib/server/photos';
 import { buildLeadNoteLines } from '../lib/server/leadNote';
-import { notifyRoute } from '../lib/server/notifyRouting';
-import { PARTNERSHIP_TYPES, leadBehalfAttribute, leadOptionLabel, type PartnershipType } from '../lib/leadOptions';
+import { notifyRoute, resolveRecipients } from '../lib/server/notifyRouting';
+import { PARTNERSHIP_TYPES, leadBehalfAttribute, type PartnershipType } from '../lib/leadOptions';
 import {
   buildAttributes,
   buildInquiryEmail,
@@ -263,19 +263,21 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
 /**
  * Emails the team the moment a contact-form inquiry arrives (every tab) so a
  * new lead is seen without polling Brevo. Reply-to is the person who wrote
- * in, so a reply reaches them directly. Each kind of inquiry goes to its own
- * inbox with its own subject tag (notifyRoute: general, sponsor, lead, and
- * the partnership categories), with no fallback between them, so a
- * misroute is impossible.
+ * in, so a reply reaches them directly. notifyRoute picks every inbox that
+ * hears about it and the subject tag (captain, 2026-11-24), and one email
+ * goes to all of them with each address listed once.
  *
- * An unset inbox var is logged as an error naming it
- * (`inquiry_notify_unconfigured`), since that inquiry then reaches nobody by
- * email. Without CONTACT_NOTIFY_FROM (a verified Brevo sender) nothing is
- * sent at all, so environments that haven't opted in stay quiet. Best-effort
- * and never throws: the contact upsert already succeeded and must not be
- * undone by a notification failure.
+ * Each unset inbox var is logged as an error naming it
+ * (`inquiry_notify_unconfigured`) and never replaced with another inbox, so
+ * a misroute is impossible; the configured ones still hear about it.
+ * Without CONTACT_NOTIFY_FROM (a verified Brevo sender) nothing is sent at
+ * all, so environments that haven't opted in stay quiet. Best-effort and
+ * never throws: the contact upsert already succeeded and must not be undone
+ * by a notification failure.
  */
-async function tryNotifyInquiry(input: InquiryEmailInput & { partnershipType?: PartnershipType }): Promise<void> {
+async function tryNotifyInquiry(
+  input: InquiryEmailInput & { partnershipTypes?: readonly PartnershipType[] },
+): Promise<void> {
   const form: FormName = input.inquiryType === 'lead' ? 'lead' : 'contact';
   try {
     const apiKey = getEnv('BREVO_API_KEY');
@@ -284,24 +286,15 @@ async function tryNotifyInquiry(input: InquiryEmailInput & { partnershipType?: P
       log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
       return;
     }
-    const { tag, envVar: toVar } = notifyRoute(input.inquiryType, input.partnershipType);
-    const to = getEnv(toVar);
-    if (!to) {
-      log('error', 'inquiry_notify_unconfigured', { form, inquiry: input.inquiryType, envVar: toVar });
-      return;
+    const { tag, envVars } = notifyRoute(input.inquiryType, {
+      partnershipTypes: input.partnershipTypes,
+      message: input.message,
+    });
+    const { recipients, unset } = resolveRecipients(envVars, getEnv);
+    for (const envVar of unset) {
+      log('error', 'inquiry_notify_unconfigured', { form, inquiry: input.inquiryType, envVar });
     }
-
-    // CONTACT_NOTIFY_TO may list several recipients, comma-separated, so the
-    // team can alert more than one address (e.g. a shared inbox plus a person).
-    const recipients = to
-      .split(',')
-      .map((address) => address.trim())
-      .filter(Boolean)
-      .map((email) => ({ email }));
-    if (recipients.length === 0) {
-      log('error', 'inquiry_notify_unconfigured', { form, inquiry: input.inquiryType, envVar: toVar });
-      return;
-    }
+    if (recipients.length === 0) return;
 
     const { subject, htmlContent } = buildInquiryEmail({ ...input, tag });
 
@@ -443,14 +436,16 @@ export const server = {
       const noteForm = noteForms[input.inquiryType];
       // The partnership kind rides in the note and the email, not a Brevo
       // attribute, so no dashboard change can lose an inquiry (add-only)
-      const partnership =
-        input.inquiryType === 'partnership' && input.partnershipType
-          ? leadOptionLabel(PARTNERSHIP_TYPES, input.partnershipType)
-          : undefined;
+      const partnershipTypes = input.inquiryType === 'partnership' ? input.partnershipType : [];
+      const partnership = partnershipTypes.length
+        ? PARTNERSHIP_TYPES.filter((t) => partnershipTypes.includes(t.value))
+            .map((t) => t.en)
+            .join(', ')
+        : undefined;
       await tryCreateNote(noteForm, input.email, partnership ? `Partnership: ${partnership}\n\n${input.message}` : input.message);
       await tryNotifyInquiry({
         ...input,
-        partnershipType: input.inquiryType === 'partnership' ? input.partnershipType : undefined,
+        partnershipTypes,
         extraRows: partnership ? [['Partnership', partnership]] : undefined,
       });
 

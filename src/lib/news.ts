@@ -1,117 +1,85 @@
 /**
  * In The News (/in-the-news, captain 2026-10-19) — the single source for
- * the press coverage the page lists: articles, podcasts, and other pieces
- * that feature Trash Talk NYC. Add an entry here and the page shows it,
- * newest first.
+ * the press coverage the page lists. Real, verified coverage only (the
+ * 2026-11-24 press scout, firstmate data ttnyc-news-scout-n6): each entry
+ * was checked to be about this David Clarke and @trashtalk_nyc.
  *
- * Real coverage only, with one sanctioned exception: the sample entries
- * below (captain, 2026-10-21: "have dummy articles/podcast features"),
- * each marked `sample: true`, shown with a "Sample" mark, and shown at all
- * only while SHOW_SAMPLE_NEWS is true. Their outlets are generic on
- * purpose, never real publications. Turn the flag off (or delete the
- * samples) when real coverage arrives; with nothing to show the page says
- * "No clippings yet".
- *
- * Images are optional; put them in src/assets/news/ and import them so
- * they ship through astro:assets. Their alt text describes the picture.
+ * The page lists entries in this file's order, which is the captain's
+ * (2026-11-24), not date order. Each is plain text, as the outlets'
+ * terms allow: the outlet, the exact headline linking out, the date, and
+ * at most one short verbatim quote. No outlet logos or pictures: none of
+ * the outlets grants their use. Outlet names and headlines stay in
+ * English in both languages; only the page's own labels translate.
  */
-import type { ImageMetadata } from 'astro';
 
 type Copy = { en: string; es: string };
 
-/** Shows the sample entries; set to false once real coverage is in. */
-export const SHOW_SAMPLE_NEWS = true;
-
 export interface NewsItem {
-  /** A written piece or a podcast feature. */
-  kind: 'article' | 'podcast';
-  /** The piece's own headline, as published (not translated). */
-  title: string;
-  /** The publication, show, or channel. */
+  /** The publication or show, as it names itself. */
   outlet: string;
+  /** The piece's exact headline, character for character (never translated). */
+  title: string;
   /** Publication date, YYYY-MM-DD. */
   date: string;
-  /** Where to read, watch, or listen. */
+  /** The live piece. */
   link: string;
-  image?: { src: ImageMetadata; alt: Copy };
-  /** A made-up entry that shows the layout; never real coverage. */
-  sample?: true;
+  /**
+   * One short verbatim quote of David's from the piece, never more than a
+   * sentence: the spoken words only, since the page adds the quote marks
+   * and the attribution.
+   */
+  quote?: string;
 }
 
-// Sample links use example.com (reserved for examples, RFC 2606), and the
-// page never links a sample anywhere
 export const newsItems: NewsItem[] = [
   {
-    kind: 'article',
-    title: 'The grabber brigade: how one daily cleanup became a citywide club',
-    outlet: 'Neighborhood Gazette',
-    date: '2026-10-12',
-    link: 'https://example.com/sample-1',
-    sample: true,
+    outlet: 'ABC7 New York',
+    title: 'Rubbish revolution: NYC man goes viral for cleaning up trash throughout city',
+    date: '2026-05-30',
+    link: 'https://abc7ny.com/post/columbia-university-grad-takes-cleaning-passion-nyc-streets-viral-social-media-videos/19194204/',
+    quote: 'It’s about making people feel cared for.',
   },
   {
-    kind: 'podcast',
-    title: 'Talking trash with Trash Talk NYC',
-    outlet: 'Five Borough Podcast',
-    date: '2026-09-28',
-    link: 'https://example.com/sample-2',
-    sample: true,
+    outlet: 'Streetsblog NYC',
+    title: "New York's Rampant Illegal Parking Stumps Viral Good Samaritan Street Cleaners",
+    date: '2026-07-10',
+    link: 'https://nyc.streetsblog.org/2026/07/10/new-yorks-rampant-illegal-parking-stumps-viral-good-samaritan-street-cleaners',
+    quote: 'The tickets have to be proportional to the cost of parking in the area.',
   },
   {
-    kind: 'article',
-    title: 'Volunteers clear an uptown block in under two hours',
-    outlet: 'Uptown Ledger',
-    date: '2026-09-03',
-    link: 'https://example.com/sample-3',
-    sample: true,
+    outlet: 'WNYC All Of It',
+    title: "Taking Out NYC's Trash, One Block at a Time",
+    date: '2026-06-23',
+    link: 'https://www.wnyc.org/story/taking-out-nycs-trash-one-block-at-a-time',
+    quote: 'I do think the best stewards for a neighborhood are going to be the people who live there.',
   },
   {
-    kind: 'podcast',
-    title: 'Cleanup clubs and the city that never sweeps',
-    outlet: 'Curbside Conversations',
-    date: '2026-08-19',
-    link: 'https://example.com/sample-4',
-    sample: true,
+    outlet: 'The Mary Sue',
+    title:
+      "A Man Spent 100 Days Cleaning One Block of New York City Per Day. It Transformed His Neighborhood: 'The Story of Trash is The Story of People'",
+    date: '2026-08-25',
+    link: 'https://www.themarysue.com/a-man-spent-100-days-cleaning-his-one-block-of-new-york-city-per-day-it-transformed-his-neighborhood-the-story-of-trash-is-the-story-of-people/',
   },
   {
-    kind: 'article',
-    title: 'Tree guards, built by neighbors',
-    outlet: 'Borough Bulletin',
-    date: '2026-07-30',
-    link: 'https://example.com/sample-5',
-    sample: true,
-  },
-  {
-    kind: 'podcast',
-    title: 'Why a cleanup video took over our feeds',
-    outlet: 'Sidewalk Sessions',
-    date: '2026-06-14',
-    link: 'https://example.com/sample-6',
-    sample: true,
+    // Headline and link only: its terms restrict quoting without permission
+    outlet: 'Good News Network',
+    title: "Neighbors Get Swept Up in Man's Viral Journey to Clean a NYC Street Block Every Day for 100 Days",
+    date: '2026-09-04',
+    link: 'https://www.goodnewsnetwork.org/neighbors-gets-swept-up-in-mans-viral-journey-to-clean-1-nyc-street-block-every-day-for-100-days/',
   },
 ];
 
-/** The entries the page shows: real ones always, samples only while the flag is on. */
-export function visibleNews(items: NewsItem[] = newsItems, showSamples: boolean = SHOW_SAMPLE_NEWS): NewsItem[] {
-  return items.filter((item) => showSamples || !item.sample);
-}
-
-/** "Article" / "Podcast" in both languages. */
-export function newsKindLabel(kind: NewsItem['kind']): Copy {
-  return kind === 'podcast' ? { en: 'Podcast', es: 'Pódcast' } : { en: 'Article', es: 'Artículo' };
-}
-
-/** Entries newest first; throws on a malformed date so a typo can't misorder the page. */
-export function sortedNews(items: NewsItem[] = newsItems): NewsItem[] {
+/** The entries in their listed order; throws on a malformed entry so a typo can't ship. */
+export function checkedNews(items: NewsItem[] = newsItems): NewsItem[] {
   for (const item of items) {
     if (!/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(item.date)) {
       throw new Error(`In The News: date must be YYYY-MM-DD, got "${item.date}" for "${item.title}"`);
     }
-    if (!/^https?:\/\//.test(item.link)) {
-      throw new Error(`In The News: link must be a full URL, got "${item.link}" for "${item.title}"`);
+    if (!/^https:\/\//.test(item.link)) {
+      throw new Error(`In The News: link must be a full https URL, got "${item.link}" for "${item.title}"`);
     }
   }
-  return [...items].sort((a, b) => b.date.localeCompare(a.date));
+  return items;
 }
 
 /** "October 19, 2026" / "19 de octubre de 2026" for a YYYY-MM-DD date. */

@@ -4,10 +4,11 @@
  * are the 24×24 glyphs the approved mockups use.
  *
  * A channel without a real URL yet uses href '#' with `placeholder: true`
- * (rendered without target=_blank); all five are real since 2026-10-09.
+ * (rendered without target=_blank); all are real since 2026-10-09, and
+ * Spotify (the podcast) joined on 2026-11-24.
  */
 
-export type SocialId = 'instagram' | 'tiktok' | 'youtube' | 'linkedin' | 'facebook' | 'eventbrite';
+export type SocialId = 'instagram' | 'tiktok' | 'youtube' | 'linkedin' | 'facebook' | 'spotify' | 'eventbrite';
 
 export interface SocialChannel {
   id: SocialId;
@@ -58,6 +59,15 @@ export const socials: Record<SocialId, SocialChannel> = {
     href: 'https://www.facebook.com/p/Trash-Talk-NYC-61589884530275/',
     path: 'M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z',
   },
+  // The Trash Talk NYC podcast (captain, 2026-11-24), without the share
+  // link's ?si= tracking parameter
+  spotify: {
+    id: 'spotify',
+    label: 'Spotify',
+    handle: 'Trash Talk NYC',
+    href: 'https://open.spotify.com/show/796d9SSI5ISlX5IRnxsvNW',
+    path: 'M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.52 17.34c-.24.36-.66.48-1.02.24-2.82-1.74-6.36-2.1-10.56-1.14-.42.12-.78-.18-.9-.54-.12-.42.18-.78.54-.9 4.56-1.02 8.52-.6 11.64 1.32.42.18.48.66.3 1.02zm1.44-3.3c-.3.42-.84.6-1.26.3-3.24-1.98-8.16-2.58-11.94-1.38-.48.12-1.02-.12-1.14-.6-.12-.48.12-1.02.6-1.14C9.6 9.9 15 10.56 18.72 12.84c.36.18.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.3c-.6.18-1.2-.18-1.38-.72-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.72 1.62.54.3.72 1.02.42 1.56-.3.42-1.02.6-1.56.3z',
+  },
   // Where the club's events are listed and RSVPs happen (captain,
   // 2026-10-15: events go to Instagram stories and Eventbrite only). Not a
   // social feed, so it stays off the footer and homepage rows. The glyph
@@ -79,11 +89,11 @@ export function getSocials(ids: SocialId[]): SocialChannel[] {
  * Long-form channels that have no sticker icon yet but still need a
  * home URL — the More Media pages link out from here.
  *
- * TODO(captain): real Podcast and Substack URLs. Until then these stay
- * `placeholder: true` and the More Media pages render an honest
- * "coming soon" state instead of a link (no invented shows or posts).
+ * TODO(captain): the real Substack URL. Until then it stays
+ * `placeholder: true` and More Media leaves it out (no invented posts).
+ * The podcast's home is socials.spotify.
  */
-export type MediaLinkId = 'podcast' | 'substack';
+export type MediaLinkId = 'substack';
 
 export interface MediaLink {
   id: MediaLinkId;
@@ -93,6 +103,5 @@ export interface MediaLink {
 }
 
 export const mediaLinks: Record<MediaLinkId, MediaLink> = {
-  podcast: { id: 'podcast', label: 'Podcast', href: '#', placeholder: true },
   substack: { id: 'substack', label: 'Substack', href: '#', placeholder: true },
 };

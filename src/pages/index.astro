@@ -22,7 +22,7 @@ import wallStickerPole from '../assets/walls/wall-sticker-pole.webp';
 import { featuredVideo } from '../lib/media';
 import { raisedSentence } from '../lib/contribute';
 
-const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin']);
+const socialTiles = getSocials(['instagram', 'tiktok', 'youtube', 'spotify', 'facebook', 'linkedin']);
 
 // Baked in at build time (pages are prerendered): when unset, no widget
 // renders and the signup action skips Turnstile verification. After setting
@@ -41,6 +41,7 @@ const orgSchema = {
     'https://www.instagram.com/trashtalk_nyc/',
     'https://www.tiktok.com/@trashtalk_nyc',
     'https://trashtalknyc.eventbrite.com',
+    'https://open.spotify.com/show/796d9SSI5ISlX5IRnxsvNW',
   ],
 };
 
@@ -669,9 +670,15 @@ const raised = raisedSentence();
     }
     .feed { padding: 18px 16px 16px; }
     .feed :global(.feed-slap) { top: -48px; right: -30px; width: 90px; height: 76px; }
-    .soc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+    /* Six channels: two rows of three until a row of six has room for
+       "@trashtalk_nyc" */
+    .soc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
     .soc-tile { padding: 20px 18px; }
     .soc-tile:last-child:nth-child(odd) { grid-column: auto; }
+  }
+
+  @media (min-width: 1200px) {
+    .soc-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   }
 
   @media (prefers-reduced-motion: reduce) {

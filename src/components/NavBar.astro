@@ -20,7 +20,7 @@ import { FOUNDER_PATH } from '../lib/founder';
 import { ABOUT_TTNYC_PATH } from '../lib/aboutTtnyc';
 import { GUIDE_PATH } from '../lib/guide';
 import { WALL_LIVE, WALL_PATH } from '../lib/partners';
-import { GALLERY, IN_THE_NEWS, MORE_MEDIA_PATH, liveMediaSections } from '../lib/media';
+import { GALLERY, IN_THE_NEWS, MORE_MEDIA_PATH, NEWS_LIVE, liveMediaSections } from '../lib/media';
 import vestSticker from '../assets/vest-sticker.png';
 
 const pathname = Astro.url.pathname;
@@ -115,7 +115,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
             <li><a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a></li>
           ))}
           <li><a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a></li>
-          <li><a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a></li>
+          {NEWS_LIVE && <li><a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a></li>}
         </ul>
       </li>
       <li><a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a></li>
@@ -163,7 +163,7 @@ const isMediaHub = pathname === MORE_MEDIA_PATH || pathname === MORE_MEDIA_PATH 
             <a href={m.path} class:list={{ active: isUnder(m.path) }}>{m.label}</a>
           ))}
           <a href={GALLERY.path} class:list={{ active: isUnder(GALLERY.path) }} data-en={GALLERY.label.en} data-es={GALLERY.label.es}>{GALLERY.label.en}</a>
-          <a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a>
+          {NEWS_LIVE && <a href={IN_THE_NEWS.path} class:list={{ active: isUnder(IN_THE_NEWS.path) }} data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</a>}
         </div>
       </div>
       <a href="/contact" class:list={{ active: isContact }} data-en="Contact" data-es="Contacto">Contact</a>

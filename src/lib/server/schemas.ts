@@ -84,8 +84,11 @@ export const contactSchema = z
   .object({
     ...baseFields,
     inquiryType: z.enum(['general', 'partnership', 'sponsor']),
-    // The Partner tile's "What kind of partnership?" (captain, 2026-10-15)
-    partnershipType: z.enum(PARTNERSHIP_TYPE_VALUES).optional(),
+    // The Partner tile's "What kind of partnership?" (captain, 2026-10-15),
+    // check all that apply since 2026-11-24. The field keeps its singular
+    // name so a page cached from the one-choice select still posts a valid
+    // answer (the form parser collects every value of an array field).
+    partnershipType: z.array(z.enum(PARTNERSHIP_TYPE_VALUES)).max(PARTNERSHIP_TYPE_VALUES.length).default([]),
     phone: optionalPhone,
     organization: z.string().trim().max(300).optional(),
     message: z.string().trim().min(1, 'Message is required').max(5000),
@@ -97,7 +100,7 @@ export const contactSchema = z
     path: ['organization'],
   })
   // The partnership kind picks the inbox, so a partner inquiry needs one
-  .refine((data) => data.inquiryType !== 'partnership' || !!data.partnershipType, {
+  .refine((data) => data.inquiryType !== 'partnership' || data.partnershipType.length > 0, {
     message: 'Please choose what kind of partnership',
     path: ['partnershipType'],
   });
