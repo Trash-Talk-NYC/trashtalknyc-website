@@ -329,6 +329,20 @@ const btnId = `eb-trigger-${id}`;
       font-weight: 700;
     }
 
+    .ev-m-more summary { list-style: none; }
+    .ev-m-more summary::-webkit-details-marker { display: none; }
+
+    /* The flex summary drops the native marker, so the arrow is drawn
+       here and turns when the fold opens */
+    .ev-m-more summary::before {
+      content: '';
+      border-style: solid;
+      border-width: 6px 0 6px 9px;
+      border-color: transparent transparent transparent currentColor;
+      transition: transform 0.15s;
+    }
+
+    .ev-m-more[open] summary::before { transform: rotate(90deg); }
     .ev-m-more summary span { text-decoration: underline; text-underline-offset: 3px; }
     .ev-m-more p { margin: 0 0 6px; line-height: 1.35; }
     .ev-m-more .maps { gap: 18px; }
@@ -336,6 +350,10 @@ const btnId = `eb-trigger-${id}`;
     .ev-row { display: block; margin-top: 6px; }
     .ev-meta { justify-items: stretch; }
     .ev-rsvp { width: 100%; justify-content: center; margin-top: 6px; }
+  }
+
+  @media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+    .ev-m-more summary::before { transition: none; }
   }
 
   @media (min-width: 761px) {
