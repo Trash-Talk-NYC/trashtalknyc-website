@@ -156,6 +156,7 @@ describe('contact action team notification', () => {
     process.env.PODCAST_NOTIFY_TO = 'podcast@trashtalknyc.org';
     process.env.NONPROFIT_NOTIFY_TO = 'nonprofits@trashtalknyc.org';
     process.env.LEAD_NOTIFY_TO = 'events@trashtalknyc.org';
+    process.env.BUG_NOTIFY_TO = 'fabiola@trashtalknyc.org';
     process.env.CONTACT_NOTIFY_FROM = 'site@trashtalknyc.org';
   });
 
@@ -170,6 +171,7 @@ describe('contact action team notification', () => {
     delete process.env.PODCAST_NOTIFY_TO;
     delete process.env.NONPROFIT_NOTIFY_TO;
     delete process.env.LEAD_NOTIFY_TO;
+    delete process.env.BUG_NOTIFY_TO;
     delete process.env.CONTACT_NOTIFY_FROM;
   });
 
@@ -229,6 +231,16 @@ describe('contact action team notification', () => {
     ]);
     expect(sendBrevoEmail.mock.calls[0][1].subject).toBe('[Podcast] [Nonprofit] [Content] New collaboration inquiry — Jane Doe · Acme Org');
     expect(createBrevoNote.mock.calls[0][2]).toContain('Partnership: Podcast, Nonprofit partnership, Corporate event');
+  });
+
+  it('sends a website problem to the bug inbox, tagged, with the topic in the note', async () => {
+    createBrevoNote.mockClear();
+    // @ts-expect-error handler is untyped once defineAction is stubbed
+    await server.contact.handler(contactInput({ topic: 'bug', message: 'The menu is stuck' }), contactCtx());
+
+    expect(sendBrevoEmail.mock.calls[0][1].to).toEqual([{ email: 'fabiola@trashtalknyc.org' }]);
+    expect(sendBrevoEmail.mock.calls[0][1].subject).toBe('[Bug] New contact message — Jane Doe');
+    expect(createBrevoNote.mock.calls[0][2]).toContain('Topic: Website problem / bug');
   });
 
   it('copies the podcast inbox when a Brand Partner message mentions a pódcast', async () => {

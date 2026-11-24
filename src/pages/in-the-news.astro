@@ -5,7 +5,7 @@ import MediaSubnav from '../components/MediaSubnav.astro';
 import SectionWall from '../components/SectionWall.astro';
 import wallNews from '../assets/walls/wall-paste-ups.webp';
 import { IN_THE_NEWS, MORE_MEDIA_PATH } from '../lib/media';
-import { checkedNews, newsDate } from '../lib/news';
+import { newsByYear, newsDate, newsMonth } from '../lib/news';
 
 /**
  * In The News (captain, 2026-10-19: "Format a trash newspaper, soiled
@@ -15,10 +15,20 @@ import { checkedNews, newsDate } from '../lib/news';
  * enough that the text keeps AA contrast. Each clipping is plain text
  * (captain, 2026-11-24): the outlet, the exact headline linking out in a
  * new tab, and the date; no quotes (captain, 2026-11-24: "take out the
- * quoting"). Outlet names and
+ * quoting"). They're grouped by year, newest first (the captain's N2,
+ * 2026-11-24): each year folds like Club Events' past boroughs, the
+ * newest open and older ones folded with their count, and every card
+ * carries a month tag. Outlet names and
  * headlines stay English in Spanish; only the page's labels translate.
  */
-const items = checkedNews().map((item) => ({ ...item, when: newsDate(item.date) }));
+const years = newsByYear().map((y) => ({
+  ...y,
+  count: {
+    en: `${y.items.length} ${y.items.length === 1 ? 'article' : 'articles'}`,
+    es: `${y.items.length} ${y.items.length === 1 ? 'artículo' : 'artículos'}`,
+  },
+  items: y.items.map((item) => ({ ...item, when: newsDate(item.date), month: newsMonth(item.date) })),
+}));
 ---
 
 <BaseLayout
@@ -49,18 +59,30 @@ const items = checkedNews().map((item) => ({ ...item, when: newsDate(item.date) 
           <h2 class="np-mast" id="npMast" data-en={IN_THE_NEWS.label.en} data-es={IN_THE_NEWS.label.es}>{IN_THE_NEWS.label.en}</h2>
         </header>
 
-        {items.length > 0 ? (
-          <ul class="np-cols">
-            {items.map((item) => (
-              <li class="np-item">
-                <p class="np-by mono">{item.outlet}</p>
-                <h3 class="np-title">
-                  <a href={item.link} target="_blank" rel="noopener">{item.title}<span class="sr-only" data-en=" (opens in a new tab)" data-es=" (se abre en una pestaña nueva)"> (opens in a new tab)</span></a>
-                </h3>
-                <p class="np-date mono"><time datetime={item.date} data-en={item.when.en} data-es={item.when.es}>{item.when.en}</time></p>
-              </li>
+        {years.length > 0 ? (
+          <div class="np-years">
+            {years.map((y, yi) => (
+              <details class="np-year" open={yi === 0}>
+                <summary class="np-year-sum">
+                  <span class="np-year-name">{y.year}</span>
+                  <span class="np-year-count mono" data-en={y.count.en} data-es={y.count.es}>{y.count.en}</span>
+                  <svg class="np-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </summary>
+                <ul class="np-cols">
+                  {y.items.map((item) => (
+                    <li class="np-item">
+                      <span class="np-tag mono" data-en={item.month.en} data-es={item.month.es}>{item.month.en}</span>
+                      <p class="np-by mono">{item.outlet}</p>
+                      <h3 class="np-title">
+                        <a href={item.link} target="_blank" rel="noopener">{item.title}<span class="sr-only" data-en=" (opens in a new tab)" data-es=" (se abre en una pestaña nueva)"> (opens in a new tab)</span></a>
+                      </h3>
+                      <p class="np-date mono"><time datetime={item.date} data-en={item.when.en} data-es={item.when.es}>{item.when.en}</time></p>
+                    </li>
+                  ))}
+                </ul>
+              </details>
             ))}
-          </ul>
+          </div>
         ) : (
           <div class="np-empty">
             <h3 class="np-title np-empty-title" data-en="No clippings yet" data-es="Aún no hay recortes">No clippings yet</h3>
@@ -131,11 +153,52 @@ const items = checkedNews().map((item) => ({ ...item, when: newsDate(item.date) 
     border-bottom: 5px double var(--black);
   }
 
+  /* One fold per year, like Club Events' past boroughs, ruled like a
+     newspaper section */
+  .np-year { border-top: 4px double var(--black); }
+  .np-year + .np-year { margin-top: 18px; }
+
+  .np-year-sum {
+    display: flex;
+    align-items: center;
+    gap: 6px 14px;
+    min-height: var(--tap);
+    padding: 12px 0 10px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .np-year-sum::-webkit-details-marker { display: none; }
+  .np-year-sum:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+
+  .np-year-name { font-family: var(--display); font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1; }
+  .np-year-count { font-size: 0.8rem; }
+
+  .np-chev {
+    width: 28px;
+    height: 28px;
+    margin-left: auto;
+    color: var(--purple);
+    transition: transform 150ms ease;
+  }
+
+  .np-year[open] .np-chev { transform: rotate(180deg); }
+
+  /* The month each piece ran, as a small ink tag */
+  .np-tag {
+    justify-self: start;
+    padding: 2px 8px;
+    background: var(--black);
+    color: var(--paper);
+    font-size: 0.72rem;
+  }
+
   .np-cols {
     list-style: none;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 28px;
+    padding-bottom: 8px;
   }
 
   .np-item {
@@ -197,5 +260,9 @@ const items = checkedNews().map((item) => ({ ...item, when: newsDate(item.date) 
 
   @media (min-width: 1100px) {
     .np-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .np-chev { transition: none; }
   }
 </style>

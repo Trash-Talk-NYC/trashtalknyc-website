@@ -276,7 +276,7 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
  * by a notification failure.
  */
 async function tryNotifyInquiry(
-  input: InquiryEmailInput & { partnershipTypes?: readonly PartnershipType[] },
+  input: InquiryEmailInput & { partnershipTypes?: readonly PartnershipType[]; bug?: boolean },
 ): Promise<void> {
   const form: FormName = input.inquiryType === 'lead' ? 'lead' : 'contact';
   try {
@@ -289,6 +289,7 @@ async function tryNotifyInquiry(
     const { tag, envVars } = notifyRoute(input.inquiryType, {
       partnershipTypes: input.partnershipTypes,
       message: input.message,
+      bug: input.bug,
     });
     const { recipients, unset } = resolveRecipients(envVars, getEnv);
     for (const envVar of unset) {
@@ -442,11 +443,16 @@ export const server = {
             .map((t) => t.en)
             .join(', ')
         : undefined;
-      await tryCreateNote(noteForm, input.email, partnership ? `Partnership: ${partnership}\n\n${input.message}` : input.message);
+      // A website problem rides the same way, as a topic in the note and
+      // the email, and picks the bug inbox
+      const bug = input.inquiryType === 'general' && input.topic === 'bug';
+      const lead = partnership ? `Partnership: ${partnership}` : bug ? 'Topic: Website problem / bug' : undefined;
+      await tryCreateNote(noteForm, input.email, lead ? `${lead}\n\n${input.message}` : input.message);
       await tryNotifyInquiry({
         ...input,
         partnershipTypes,
-        extraRows: partnership ? [['Partnership', partnership]] : undefined,
+        bug,
+        extraRows: partnership ? [['Partnership', partnership]] : bug ? [['Topic', 'Website problem / bug']] : undefined,
       });
 
       return { ok: true };

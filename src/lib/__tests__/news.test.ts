@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { IN_THE_NEWS, NEWS_LIVE } from '../media';
-import { checkedNews, newsDate, newsItems, type NewsItem } from '../news';
+import { checkedNews, newsByYear, newsDate, newsItems, newsMonth, type NewsItem } from '../news';
 
 const item = (title: string, date: string, link = 'https://example.com/story'): NewsItem => ({
   title,
@@ -28,20 +28,39 @@ describe('checkedNews', () => {
   });
 });
 
-// The captain's five verified clippings (2026-11-24), in the captain's order
+// The captain's five verified clippings (2026-11-24)
 describe('newsItems', () => {
-  it('lists the verified coverage in the captain\'s order', () => {
-    expect(newsItems.map((n) => n.outlet)).toEqual([
+  it('holds the five verified pieces', () => {
+    expect(newsItems.map((n) => n.outlet).sort()).toEqual([
       'ABC7 New York',
-      'Streetsblog NYC',
-      'WNYC All Of It',
-      'The Mary Sue',
       'Good News Network',
+      'Streetsblog NYC',
+      'The Mary Sue',
+      'WNYC All Of It',
     ]);
   });
 
   it('carries no placeholder entries', () => {
     for (const n of newsItems) expect(new URL(n.link).hostname).not.toBe('example.com');
+  });
+});
+
+describe('newsByYear', () => {
+  it('groups by year, newest year first and newest piece first within it', () => {
+    const years = newsByYear([item('a', '2025-12-01'), item('b', '2026-03-01'), item('c', '2026-09-01'), item('d', '2025-01-01')]);
+    expect(years.map((y) => y.year)).toEqual(['2026', '2025']);
+    expect(years[0].items.map((n) => n.title)).toEqual(['c', 'b']);
+    expect(years[1].items.map((n) => n.title)).toEqual(['a', 'd']);
+  });
+
+  it('puts the shipped coverage newest first', () => {
+    expect(newsByYear()[0].items[0].outlet).toBe('Good News Network');
+  });
+});
+
+describe('newsMonth', () => {
+  it('names the month in both languages', () => {
+    expect(newsMonth('2026-09-04')).toEqual({ en: 'September', es: 'septiembre' });
   });
 });
 

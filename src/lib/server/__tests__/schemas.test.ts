@@ -147,6 +147,12 @@ describe('contactSchema', () => {
     expect(contactSchema.safeParse(validContact).success).toBe(true);
   });
 
+  it('takes the website-problem topic on general messages only', () => {
+    expect(contactSchema.safeParse({ ...validContact, topic: 'bug' }).success).toBe(true);
+    expect(contactSchema.safeParse({ ...validContact, topic: 'spam' }).success).toBe(false);
+    expect(contactSchema.safeParse({ ...validContact, inquiryType: 'sponsor', organization: 'Acme Co', topic: 'bug' }).success).toBe(false);
+  });
+
   it('accepts a complete sponsor inquiry', () => {
     expect(
       contactSchema.safeParse({ ...validContact, inquiryType: 'sponsor', organization: 'Acme Co' }).success,
