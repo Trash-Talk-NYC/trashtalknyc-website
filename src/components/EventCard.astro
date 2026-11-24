@@ -11,9 +11,11 @@ import type { PlacedSticker } from '../lib/teamStickers';
  * white card with the borough-built headline, one line of date and time
  * with the distance, the venue, the event's name, address, and maps folded
  * under "Address & maps", and Register (full width on phones, its own
- * column on desktop, one ticket per row). One of the team's stickers
- * straddles the corner (the page picks it, so no two cards share one),
- * plus a host badge when the event has one. The distance fills the
+ * column on desktop, one ticket per row). On phones one of the team's
+ * stickers straddles the corner (the page picks it, so no two cards share
+ * one); on desktop a strip of seven, led by that one, is slapped along the
+ * top edge instead (the captain's S3a, 2026-11-24). A host badge joins
+ * when the event has one. The distance fills the
  * [data-dist-slot] once the visitor shares their location (the events
  * page script).
  *
@@ -24,6 +26,8 @@ import type { PlacedSticker } from '../lib/teamStickers';
 interface Props extends EventCardProps {
   latLng?: { lat: number; lng: number } | null;
   sticker: PlacedSticker;
+  /** Desktop's sticker-bombed top strip (S3a), led by `sticker`. */
+  strip: PlacedSticker[];
 }
 
 const {
@@ -31,7 +35,12 @@ const {
   headline, venueLines, host, sample,
   latLng = null,
   sticker,
+  strip,
 } = Astro.props;
+
+// Tilts and nudges for the strip, fixed so the build is stable
+const TILT = [-12, 8, -5, 14, -9, 6, -14];
+const NUDGE = [3, -3, 4, -2, 2, -4, 2];
 
 const dateStr = formatDate(startIso, 'en');
 const timeStr = formatTime(startIso, 'en') + ' – ' + formatTime(endIso, 'en');
@@ -53,6 +62,20 @@ const btnId = `eb-trigger-${id}`;
   data-lng={latLng?.lng ?? undefined}
 >
   <Image src={sticker.src} alt="" class="ev-stk" data-sticker-spot={sticker.spot} width={140} densities={[1, 2]} />
+  <!-- Desktop only: the sticker-bombed top (captain's S3a, 2026-11-24) -->
+  <div class="ev-strip" aria-hidden="true">
+    {strip.map((s, k) => (
+      <Image
+        src={s.src}
+        alt=""
+        class="ev-strip-stk"
+        data-sticker-spot={s.spot}
+        width={62}
+        densities={[1, 2]}
+        style={`--i:${k};--tilt:${TILT[k % TILT.length]}deg;--nudge:${NUDGE[k % NUDGE.length]}px`}
+      />
+    ))}
+  </div>
   {host && <span class="ev-host" aria-hidden="true">{host}</span>}
 
   <div class="ev-info">
@@ -136,6 +159,11 @@ const btnId = `eb-trigger-${id}`;
     filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
     pointer-events: none;
   }
+
+  /* Desktop's sticker-bombed top: seven overlapping, tilted stickers in a
+     band from the left edge, half on the card; phones keep the corner
+     sticker alone */
+  .ev-strip { display: none; }
 
   /* A round die-cut partner badge across the top-left corner */
   .ev-host {
@@ -266,8 +294,35 @@ const btnId = `eb-trigger-${id}`;
       column-gap: 48px;
       padding: 40px 40px 34px;
     }
-    .ev-card.has-host { padding-top: 64px; }
-    .ev-card :global(.ev-stk) { width: 132px; height: 96px; top: -34px; right: -30px; }
+    .ev-card :global(.ev-stk) { display: none; }
+
+    .ev-card { padding-top: 64px; }
+
+    .ev-strip {
+      display: block;
+      position: absolute;
+      z-index: 2;
+      top: -24px;
+      left: -8px;
+      width: 28rem;
+      height: 62px;
+      pointer-events: none;
+    }
+
+    /* A host badge keeps the top-left corner; the strip starts after it */
+    .has-host .ev-strip { left: 84px; }
+
+    .ev-strip :global(.ev-strip-stk) {
+      position: absolute;
+      top: var(--nudge);
+      /* Seven across the band, each overlapping the next */
+      left: calc(var(--i) * (100% - 62px) / 6);
+      width: 62px;
+      height: 56px;
+      object-fit: contain;
+      transform: rotate(var(--tilt));
+      filter: drop-shadow(2px 3px 0 rgba(29, 29, 35, 0.4));
+    }
     .ev-host { width: 104px; height: 104px; font-size: 1.1rem; top: -34px; left: -30px; }
     .ev-head { font-size: clamp(3rem, 4.6vw, 3.6rem); padding-right: 0; }
     .ev-when { justify-content: flex-start; gap: 6px 14px; font-size: 1.05rem; }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EVENTS_STICKER_ORDER, STICKER_SPOTS, TEAM_STICKERS, eventsSticker, spotSticker } from '../teamStickers';
+import { EVENTS_STICKER_ORDER, STICKER_SPOTS, TEAM_STICKERS, eventsSticker, eventsStickerStrip, spotSticker } from '../teamStickers';
 
 const allIds = Object.keys(TEAM_STICKERS).sort();
 
@@ -36,5 +36,21 @@ describe('eventsSticker', () => {
 
   it('continues past-event spots from where the flyers left off', () => {
     expect(eventsSticker('EP', 0, 2)).toEqual({ spot: 'EP1', src: eventsSticker('EV', 2).src });
+  });
+});
+
+describe('eventsStickerStrip', () => {
+  it("starts with the card's own sticker and never repeats one within a card", () => {
+    for (let i = 0; i < 12; i++) {
+      const strip = eventsStickerStrip(i);
+      expect(strip).toHaveLength(7);
+      expect(strip[0].src).toBe(eventsSticker('EV', i).src);
+      expect(new Set(strip.map((s) => s.src)).size).toBe(7);
+      expect(strip[0].spot).toBe(`EV${i + 1}.1`);
+    }
+  });
+
+  it('refuses a strip longer than the stickers there are', () => {
+    expect(() => eventsStickerStrip(0, EVENTS_STICKER_ORDER.length + 1)).toThrow(/at most/);
   });
 });

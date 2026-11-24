@@ -10,7 +10,7 @@ import wallFlyers from '../assets/walls/wall-9744.webp';
 import wallHero from '../assets/walls/walk-1724.webp';
 import { boroughCovers } from '../lib/boroughCovers';
 import { GUIDE_PATH } from '../lib/guide';
-import { eventsSticker } from '../lib/teamStickers';
+import { eventsSticker, eventsStickerStrip } from '../lib/teamStickers';
 
 const { upcoming: upcomingRaw, past } = await fetchEventsAtBuildTime();
 
@@ -90,7 +90,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
       {flyers.length > 0 ? (
         <div class="ev-list" id="eventsListInner">
           {flyers.map(({ props, latLng }, i) => (
-            <EventCard {...props} latLng={latLng} sticker={eventsSticker('EV', i)} />
+            <EventCard {...props} latLng={latLng} sticker={eventsSticker('EV', i)} strip={eventsStickerStrip(i)} />
           ))}
         </div>
       ) : (
