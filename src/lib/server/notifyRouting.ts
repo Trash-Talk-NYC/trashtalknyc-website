@@ -9,7 +9,8 @@ export type NotifyVar =
   | 'LEAD_NOTIFY_TO'
   | 'PARTNER_CONTENT_NOTIFY_TO'
   | 'PODCAST_NOTIFY_TO'
-  | 'NONPROFIT_NOTIFY_TO';
+  | 'NONPROFIT_NOTIFY_TO'
+  | 'BUG_NOTIFY_TO';
 
 export interface NotifyRoute {
   /** Bracket tag(s) that start the email subject, for inbox filters. */
@@ -22,6 +23,10 @@ interface Route {
   tag: string;
   envVars: readonly NotifyVar[];
 }
+
+// A General message ticked as a website problem goes to the bug inbox
+// instead (captain, 2026-11-24: "straight to my inbox")
+const BUG_ROUTE: Route = { tag: '[Bug]', envVars: ['BUG_NOTIFY_TO'] };
 
 const KIND_ROUTES: Record<Exclude<InquiryKind, 'partnership'>, Route> = {
   general: { tag: '[General]', envVars: ['CONTACT_NOTIFY_TO'] },
@@ -57,8 +62,9 @@ export function mentionsPodcast(text: string): boolean {
  * Lead a cleanup → events@, and on the Partner tile each picked kind adds
  * its inboxes (podcast → podcast@ and partnerships@, corporate event →
  * partnerships@ and events@, every other kind → partnerships@). A Partner or
- * Brand Partner message that mentions a podcast also copies podcast@.
- * docs/inbox-routing.md is the human-readable copy of this table — keep
+ * Brand Partner message that mentions a podcast also copies podcast@, and
+ * a General message ticked as a website problem goes to the bug inbox
+ * (fabiola@) tagged [Bug] instead of contact@. docs/inbox-routing.md is the human-readable copy of this table — keep
  * the two in step.
  *
  * There is NO fallback between vars: an unset one is reported by
@@ -66,10 +72,16 @@ export function mentionsPodcast(text: string): boolean {
  */
 export function notifyRoute(
   kind: InquiryKind,
-  { partnershipTypes = [], message = '' }: { partnershipTypes?: readonly PartnershipType[]; message?: string } = {},
+  {
+    partnershipTypes = [],
+    message = '',
+    bug = false,
+  }: { partnershipTypes?: readonly PartnershipType[]; message?: string; bug?: boolean } = {},
 ): NotifyRoute {
   let routes: Route[];
-  if (kind === 'partnership') {
+  if (kind === 'general' && bug) {
+    routes = [BUG_ROUTE];
+  } else if (kind === 'partnership') {
     // Choice-list order, not tick order, so the tag reads the same however
     // they were ticked; an empty pick (never valid past the schema) still
     // reaches partnerships@ rather than nobody

@@ -141,6 +141,14 @@ const monthOptions = rollingMonths();
             </div>
             <p class="f-err" id="partnerTypeErr" aria-live="polite" hidden></p>
           </fieldset>
+          <!-- General only: a website problem goes to Fabiola's inbox, tagged
+               [Bug] (captain, 2026-11-24) -->
+          <div class="field full" id="bugGroup" hidden>
+            <label class="check-chip">
+              <input type="checkbox" id="c-bug" name="topic" value="bug" />
+              <span data-en="This is about a website problem or bug" data-es="Es sobre un problema o error del sitio">This is about a website problem or bug</span>
+            </label>
+          </div>
           <div class="field full" id="orgGroup" hidden>
             <label for="c-org" data-en="Organization, brand, or group name *" data-es="Organización, marca o grupo *">Organization, brand, or group name *</label>
             <input type="text" id="c-org" name="organization" autocomplete="organization" />
@@ -591,6 +599,8 @@ const monthOptions = rollingMonths();
   const partnerTypeGroup = document.getElementById('partnerTypeGroup') as HTMLElement;
   const partnerTypeBoxes = Array.from(partnerTypeGroup.querySelectorAll<HTMLInputElement>('input[name="partnershipType"]'));
   const partnerTypeErr = document.getElementById('partnerTypeErr') as HTMLParagraphElement;
+  const bugGroup = document.getElementById('bugGroup') as HTMLElement;
+  const bugBox = document.getElementById('c-bug') as HTMLInputElement;
   const PARTNER_TYPE_MSG = { en: 'Check at least one.', es: 'Marca al menos una opción.' };
 
   function showPartnerTypeError(show: boolean) {
@@ -704,6 +714,10 @@ const monthOptions = rollingMonths();
       partnerTypeGroup.hidden = !isPartner;
       // Hidden boxes must never submit a stale choice
       if (!isPartner) partnerTypeBoxes.forEach((b) => { b.checked = false; });
+      const isGeneral = type === 'general';
+      bugGroup.hidden = !isGeneral;
+      // A hidden box must never submit a stale choice
+      if (!isGeneral) bugBox.checked = false;
       inquiryTypeInput.value = type;
     }
 
@@ -717,8 +731,29 @@ const monthOptions = rollingMonths();
     applyCopy();
   }
 
+  /**
+   * Picking a tile brings its form up to meet you (captain, 2026-11-24:
+   * on desktop "it doesn't immediately scroll auto for you"): the form
+   * scrolls to just below the sticky header, smoothly unless the visitor
+   * asks for reduced motion, and its first field takes focus without a
+   * second jump.
+   */
+  function showForm() {
+    const header = document.querySelector<HTMLElement>('nav[aria-label="Main"]');
+    const offset = (header?.getBoundingClientRect().height ?? 0) + 16;
+    const top = formArea.getBoundingClientRect().top + window.scrollY - offset;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+    const form = leadForm.hidden ? msgForm : leadForm;
+    const first = form.querySelector<HTMLElement>('input:not([type="hidden"]):not([disabled]), select, textarea');
+    first?.focus({ preventScroll: true });
+  }
+
   tiles.forEach((tile) => {
-    tile.addEventListener('click', () => setType(tile.dataset.type as TileType));
+    tile.addEventListener('click', () => {
+      setType(tile.dataset.type as TileType);
+      showForm();
+    });
   });
 
   onLanguageChange((lang) => {

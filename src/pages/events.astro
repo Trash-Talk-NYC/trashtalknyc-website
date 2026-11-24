@@ -75,16 +75,16 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     <div class="wrap">
     <div class="ev-sheet">
     <section class="ev-upcoming" aria-labelledby="upcomingHeading">
-      <!-- R2: one quiet newsletter link beside the heading replaces the
-           old "best way to hear about events" box -->
+      <!-- The captain's U5 (2026-11-24): "Upcoming" alone, with a tiny
+           label that shows only once the list is sorted by distance (the
+           geolocation script reveals it); the inbox ask waits after the
+           list -->
       <div class="ev-head">
         <h2 id="upcomingHeading" class="ev-h" data-en="Upcoming" data-es="Próximos">Upcoming</h2>
-        <a class="ev-inbox btn btn-primary" href="/#signup" data-en="Get them in your inbox →" data-es="Recíbelos en tu correo →">Get them in your inbox →</a>
-      </div>
-
-      <div class="dist-sort-label mono" id="distSortLabel" style="display:none">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-        <span data-en="Sorted nearest to farthest" data-es="Ordenado del más cercano al más lejano">Sorted nearest to farthest</span>
+        <p class="dist-sort-label mono" id="distSortLabel" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+          <span data-en="Nearest first" data-es="Los más cercanos primero">Nearest first</span>
+        </p>
       </div>
 
       {flyers.length > 0 ? (
@@ -96,6 +96,12 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
       ) : (
         <p class="ev-none" data-en="No dates are posted yet. New cleanups get posted here." data-es="Aún no hay fechas publicadas. Las nuevas limpiezas se publican aquí.">No dates are posted yet. New cleanups get posted here.</p>
       )}
+
+      <!-- The inbox ask, after the events (the captain's U5, 2026-11-24) -->
+      <div class="ev-inbox-banner">
+        <p class="ev-inbox-line" data-en="Never miss a cleanup." data-es="No te pierdas ninguna limpieza.">Never miss a cleanup.</p>
+        <a class="ev-inbox btn btn-primary" href="/#signup" data-en="Get them in your inbox →" data-es="Recíbelos en tu correo →">Get them in your inbox →</a>
+      </div>
 
       <!-- The trash club guide, for anyone who wants to host (2026-11-08) -->
       <p class="ev-guide"><span data-en="Want to host your own cleanup? Read " data-es="¿Quieres organizar tu propia limpieza? Lee ">Want to host your own cleanup? Read </span><span class="nowrap"><a href={GUIDE_PATH} data-en="How to Start a Trash Club" data-es="Cómo empezar un trash club">How to Start a Trash Club</a><span aria-hidden="true">&nbsp;→</span></span></p>
@@ -324,15 +330,10 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
   }
 
   .ev-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 6px 18px;
-    /* The "Sorted nearest to farthest" chip sits right under it as its
-       pair (captain, 2026-11-24: "spaced weird"); the room the first
-       flyer's sticker needs lives on .ev-list instead */
-    margin-bottom: 16px;
+    display: grid;
+    gap: 6px;
+    /* The room the first card's sticker needs lives on .ev-list */
+    margin-bottom: 4px;
   }
 
   .ev-h {
@@ -347,8 +348,32 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
      ink border, yellow) at the regular size, so it stays secondary to
      "Upcoming" (the big .btn-lg version was "too big"), with the ink
      shadow buttons wear on paper */
-  .ev-head { align-items: center; }
+  /* A slim white banner after the list, ruled in yellow on the left */
+  .ev-inbox-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 24px;
+    margin-top: 44px;
+    padding: 18px 20px;
+    background: var(--paper-bright);
+    border-left: 6px solid var(--yellow);
+  }
+
+  .ev-inbox-line {
+    margin: 0;
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 6vw, 2rem);
+    line-height: 1;
+    color: var(--purple);
+  }
+
   .ev-inbox { box-shadow: 4px 4px 0 var(--black); }
+
+  @media (max-width: 760px) {
+    .ev-inbox { width: 100%; justify-content: center; }
+  }
 
   .ev-guide { margin: 36px 0 0; font-size: 1.15rem; font-weight: 500; color: var(--black); }
   /* The guide's name and its arrow never split across lines (captain,
@@ -368,6 +393,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
   }
 
   @media (min-width: 761px) {
+    .ev-inbox-banner { padding: 22px 28px; }
     .ev-section { padding-block: 64px 88px; }
     .ev-sheet { padding: 44px clamp(28px, 4vw, 56px) 52px; }
     .ev-h { font-size: clamp(3.4rem, 5vw, 4.4rem); }
@@ -375,14 +401,12 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
   }
 
   /* A small tag on the sheet */
+  /* A tiny label under the heading, no box (U5) */
   .dist-sort-label {
     display: flex;
     align-items: center;
-    justify-self: start;
-    width: fit-content;
     gap: 0.4rem;
-    padding: 6px 12px;
-    background: var(--paper-bright);
+    margin: 0;
     color: var(--black);
     font-size: 0.75rem;
   }
