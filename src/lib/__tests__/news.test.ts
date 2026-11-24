@@ -43,17 +43,6 @@ describe('newsItems', () => {
   it('carries no placeholder entries', () => {
     for (const n of newsItems) expect(new URL(n.link).hostname).not.toBe('example.com');
   });
-
-  it('quotes WNYC as the captain chose and Good News Network not at all', () => {
-    expect(newsItems.find((n) => n.outlet === 'WNYC All Of It')?.quote).toBe(
-      'I do think the best stewards for a neighborhood are going to be the people who live there.',
-    );
-    expect(newsItems.find((n) => n.outlet === 'Good News Network')?.quote).toBeUndefined();
-  });
-
-  it('keeps each quote to one short sentence', () => {
-    for (const n of newsItems) if (n.quote) expect(n.quote.split(/[.!?](\s|$)/).filter((x) => x?.trim()).length).toBe(1);
-  });
 });
 
 describe('newsDate', () => {

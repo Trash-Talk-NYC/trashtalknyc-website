@@ -14,7 +14,8 @@ import { checkedNews, newsDate } from '../lib/news';
  * torn edge are drawn with the site's own ink and paper tokens, all faint
  * enough that the text keeps AA contrast. Each clipping is plain text
  * (captain, 2026-11-24): the outlet, the exact headline linking out in a
- * new tab, the date, and at most one short quote. Outlet names and
+ * new tab, and the date; no quotes (captain, 2026-11-24: "take out the
+ * quoting"). Outlet names and
  * headlines stay English in Spanish; only the page's labels translate.
  */
 const items = checkedNews().map((item) => ({ ...item, when: newsDate(item.date) }));
@@ -57,12 +58,6 @@ const items = checkedNews().map((item) => ({ ...item, when: newsDate(item.date) 
                   <a href={item.link} target="_blank" rel="noopener">{item.title}<span class="sr-only" data-en=" (opens in a new tab)" data-es=" (se abre en una pestaña nueva)"> (opens in a new tab)</span></a>
                 </h3>
                 <p class="np-date mono"><time datetime={item.date} data-en={item.when.en} data-es={item.when.es}>{item.when.en}</time></p>
-                {item.quote && (
-                  <figure class="np-quote">
-                    <blockquote><p>“{item.quote}”</p></blockquote>
-                    <figcaption>— David Clarke</figcaption>
-                  </figure>
-                )}
               </li>
             ))}
           </ul>
@@ -173,10 +168,6 @@ const items = checkedNews().map((item) => ({ ...item, when: newsDate(item.date) 
 
   .np-date { margin: 0; font-size: 0.8rem; color: var(--black); }
 
-  .np-quote { margin: 4px 0 0; padding-left: 12px; border-left: 3px solid var(--purple); }
-  .np-quote blockquote { margin: 0; }
-  .np-quote p { margin: 0; font-size: 1.05rem; line-height: 1.4; }
-  .np-quote figcaption { margin-top: 4px; font-size: 0.9rem; }
 
   .np-empty {
     display: grid;

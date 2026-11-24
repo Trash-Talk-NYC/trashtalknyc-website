@@ -168,7 +168,7 @@ const monthOptions = rollingMonths();
           <input type="hidden" name="startedAt" data-started-at value="" />
 
           <!-- The trash club guide, for anyone about to host (2026-11-08) -->
-          <p class="lead-guide full"><span data-en="New to hosting? Read " data-es="¿Primera vez organizando? Lee ">New to hosting? Read </span><a href={GUIDE_PATH} data-en="How to Start a Trash Club" data-es="Cómo empezar un trash club">How to Start a Trash Club</a><span aria-hidden="true">&nbsp;→</span></p>
+          <p class="lead-guide full"><span data-en="New to hosting? Read " data-es="¿Primera vez organizando? Lee ">New to hosting? Read </span><span class="nowrap"><a href={GUIDE_PATH} data-en="How to Start a Trash Club" data-es="Cómo empezar un trash club">How to Start a Trash Club</a><span aria-hidden="true">&nbsp;→</span></span></p>
 
           <!-- Check all that apply (captain, 2026-10-15); at least one is
                required, which the submit handler checks (HTML can't) -->
@@ -411,6 +411,8 @@ const monthOptions = rollingMonths();
   .bare-fieldset legend { padding: 0; margin-bottom: 6px; }
 
   .lead-guide { margin: 0; font-size: 1.05rem; font-weight: 500; }
+  /* The guide's name and its arrow stay on one line (as on Club Events) */
+  .lead-guide .nowrap { white-space: nowrap; }
   .lead-guide a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
   .route-note {
