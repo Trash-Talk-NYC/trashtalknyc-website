@@ -184,11 +184,14 @@ const story: Block[] = [
 <style>
   /* ── HERO ── */
   /* ── BODY ── */
+  /* Wide margins all round so the sticker wall shows around the sheet
+     (captain, 2026-11-24: "more space between background container so we
+     can see stickers background more"); the longer page is expected */
   .fd-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
-    padding: 52px 16px 56px;
+    padding: 88px clamp(32px, 10vw, 48px) 96px;
     align-items: start;
   }
 
@@ -202,7 +205,7 @@ const story: Block[] = [
   }
 
   /* On phones a page-tall sheet hangs straight: even a 1° tilt swings its
-     far corners 10px+ past the 16px gutter onto the screen edge */
+     far corners 10px+ into the gutter */
   @media (max-width: 760px) {
     .story { transform: none; }
   }
@@ -212,7 +215,7 @@ const story: Block[] = [
       grid-template-columns: minmax(0, 45rem);
       justify-content: center;
       gap: 28px;
-      padding: 80px clamp(16px, 4vw, 48px) 96px;
+      padding: 136px clamp(48px, 6vw, 96px) 152px;
     }
 
     .story { padding: 44px clamp(22px, 4vw, 56px) 48px; }

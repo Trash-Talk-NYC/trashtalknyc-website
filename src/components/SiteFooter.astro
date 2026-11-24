@@ -1,8 +1,7 @@
 ---
 /**
- * Single site-wide footer in the 2026-10 identity: links, the "Let's
- * clean NYC, together" sign-off with a large vest sticker above it, and
- * the full sticker icon row (all five channels). No bricks here — the
+ * Single site-wide footer in the 2026-10 identity: links, a large vest
+ * sticker, and the full sticker icon row (every channel). No bricks here — the
  * captain removed the footer brick frame (2026-09-30). The wordmark
  * sticker on the left was dropped so the logo shows once (team
  * feedback, 2026-10-15).
@@ -102,7 +101,34 @@ const year = new Date().getFullYear();
     opacity: 0.65;
   }
 
-  @media (pointer: coarse) {
+  /* Phones (captain, 2026-11-24: "mobile footer spacing is weird"): the
+     vest and the icons share one compact block at the top, the icons in a
+     3×2 grid beside it, then the links in close rows. 40px rows still
+     clear the 24px minimum target size with room to spare. */
+  @media (max-width: 760px) {
+    .foot-grid { gap: 24px; }
+
+    .foot-right {
+      order: -1;
+      grid-template-columns: auto auto;
+      align-items: center;
+      justify-content: start;
+      gap: 22px;
+    }
+
+    footer :global(.foot-vest) { width: 92px; justify-self: start; }
+
+    .foot-right :global(.icons) {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 14px 16px;
+    }
+
+    .foot-links { gap: 0 40px; }
+    .foot-links a { min-height: 40px; }
+  }
+
+  @media (pointer: coarse) and (min-width: 761px) {
     .foot-links a { min-height: var(--tap); }
   }
 
