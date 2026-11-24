@@ -25,6 +25,16 @@ export const SHOW_SAMPLE_PARTNERS = true;
 
 export const WALL_PATH = '/the-wall';
 
+/**
+ * The Wall is out of this release (captain, 2026-11-24: "deploy to dev
+ * without the wall"); its code stays. While false, nothing links to it
+ * and its page file is `src/pages/_the-wall.astro`, which Astro never
+ * routes, so /the-wall is the normal 404. To bring it back, set this to
+ * true and rename the page to `the-wall.astro` (partners.test.ts fails
+ * until both agree).
+ */
+export const WALL_LIVE = false;
+
 export type PartnerTier = 'city' | 'borough' | 'block';
 
 /** A text sticker's print: paper and ink colors, die shape, and face. */

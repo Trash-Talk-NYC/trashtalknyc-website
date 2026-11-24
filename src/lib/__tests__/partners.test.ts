@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { WALL_PATH, TIER_LABEL, partners, partnersByTier, stickerLook, visiblePartners, type Partner } from '../partners';
+import { WALL_LIVE, WALL_PATH, TIER_LABEL, partners, partnersByTier, stickerLook, visiblePartners, type Partner } from '../partners';
 
 const partner = (name: string, tier: Partner['tier'], sample?: true): Partner => ({
   name,
@@ -48,7 +48,10 @@ describe('partner data', () => {
     expect(stickerLook(partner('x', 'block'), 0).bg).toMatch(/^#/);
   });
 
-  it('points WALL_PATH at an existing page', () => {
-    expect(existsSync(join(process.cwd(), `src/pages${WALL_PATH}.astro`))).toBe(true);
+  // The Wall is out of this release behind WALL_LIVE: its page is kept as
+  // _the-wall.astro (never routed) until the flag comes back on
+  it('builds the page exactly when WALL_LIVE is on', () => {
+    expect(existsSync(join(process.cwd(), `src/pages${WALL_PATH}.astro`))).toBe(WALL_LIVE);
+    expect(existsSync(join(process.cwd(), `src/pages/_${WALL_PATH.slice(1)}.astro`))).toBe(!WALL_LIVE);
   });
 });
