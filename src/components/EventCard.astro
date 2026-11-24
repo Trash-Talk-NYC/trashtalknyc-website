@@ -304,7 +304,8 @@ const btnId = `eb-trigger-${id}`;
       z-index: 2;
       top: -24px;
       left: -8px;
-      width: 28rem;
+      /* About a fifth of each sticker tucks under the next */
+      width: calc(62px + 6 * 50px);
       height: 62px;
       pointer-events: none;
     }
