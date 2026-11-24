@@ -4,8 +4,10 @@
  * 2026-11-24 press scout, firstmate data ttnyc-news-scout-n6): each entry
  * was checked to be about this David Clarke and @trashtalk_nyc.
  *
- * The page lists entries in this file's order, which is the captain's
- * (2026-11-24), not date order. Each is plain text, as the outlets'
+ * The page groups them by year, newest first, each year a fold with the
+ * newest open and every card tagged with its month (the captain's N2,
+ * 2026-11-24, so the page never becomes an endless list); the order in
+ * this file doesn't matter. Each is plain text, as the outlets'
  * terms allow: the outlet, the exact headline linking out, and the date.
  * No quotes (captain, 2026-11-24: "take out the quoting"), and no outlet
  * logos or pictures: none of
@@ -79,5 +81,31 @@ export function newsDate(date: string): Copy {
   // Noon UTC so no timezone can tip it into a neighboring day
   const when = new Date(Date.UTC(y, m - 1, d, 12));
   const fmt = (locale: string) => when.toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  return { en: fmt('en-US'), es: fmt('es-419') };
+}
+
+export interface NewsYear {
+  year: string;
+  items: NewsItem[];
+}
+
+/** Coverage by year, newest year first and newest piece first in each. */
+export function newsByYear(items: NewsItem[] = newsItems): NewsYear[] {
+  const sorted = [...checkedNews(items)].sort((a, b) => b.date.localeCompare(a.date));
+  const years: NewsYear[] = [];
+  for (const item of sorted) {
+    const year = item.date.slice(0, 4);
+    const last = years[years.length - 1];
+    if (last?.year === year) last.items.push(item);
+    else years.push({ year, items: [item] });
+  }
+  return years;
+}
+
+/** The card's month tag: "September" / "septiembre" for a YYYY-MM-DD date. */
+export function newsMonth(date: string): Copy {
+  const [y, m] = date.split('-').map(Number);
+  const when = new Date(Date.UTC(y, m - 1, 15, 12));
+  const fmt = (locale: string) => when.toLocaleDateString(locale, { month: 'long', timeZone: 'UTC' });
   return { en: fmt('en-US'), es: fmt('es-419') };
 }
