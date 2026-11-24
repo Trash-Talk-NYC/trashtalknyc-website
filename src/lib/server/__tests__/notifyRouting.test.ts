@@ -10,6 +10,7 @@ const INBOXES: Record<NotifyVar, string> = {
   PARTNER_CONTENT_NOTIFY_TO: 'partnerships@trashtalknyc.org',
   PODCAST_NOTIFY_TO: 'podcast@trashtalknyc.org',
   NONPROFIT_NOTIFY_TO: 'partnerships@trashtalknyc.org',
+  BUG_NOTIFY_TO: 'fabiola@trashtalknyc.org',
 };
 
 function inboxesFor(...args: Parameters<typeof notifyRoute>): string[] {
@@ -24,6 +25,16 @@ describe('notifyRoute', () => {
     expect(inboxesFor('general')).toEqual(['contact@trashtalknyc.org']);
     expect(inboxesFor('sponsor')).toEqual(['partnerships@trashtalknyc.org']);
     expect(inboxesFor('lead')).toEqual(['events@trashtalknyc.org']);
+  });
+
+  it('sends a General message ticked as a website problem to the bug inbox only, tagged [Bug]', () => {
+    expect(notifyRoute('general', { bug: true })).toEqual({ tag: '[Bug]', envVars: ['BUG_NOTIFY_TO'] });
+    expect(inboxesFor('general', { bug: true })).toEqual(['fabiola@trashtalknyc.org']);
+  });
+
+  it('ignores the bug flag on every other tile', () => {
+    expect(notifyRoute('sponsor', { bug: true }).tag).toBe('[Brand partnership]');
+    expect(notifyRoute('lead', { bug: true }).envVars).toEqual(['LEAD_NOTIFY_TO']);
   });
 
   it.each<[PartnershipType, string, string[]]>([

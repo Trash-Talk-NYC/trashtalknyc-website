@@ -89,6 +89,9 @@ export const contactSchema = z
     // name so a page cached from the one-choice select still posts a valid
     // answer (the form parser collects every value of an array field).
     partnershipType: z.array(z.enum(PARTNERSHIP_TYPE_VALUES)).max(PARTNERSHIP_TYPE_VALUES.length).default([]),
+    // General only: "This is about a website problem or bug" (captain,
+    // 2026-11-24), which routes the message to the bug inbox
+    topic: z.enum(['bug']).optional(),
     phone: optionalPhone,
     organization: z.string().trim().max(300).optional(),
     message: z.string().trim().min(1, 'Message is required').max(5000),
@@ -98,6 +101,10 @@ export const contactSchema = z
   .refine((data) => data.inquiryType === 'general' || !!data.organization?.trim(), {
     message: 'Organization name is required for partnership inquiries',
     path: ['organization'],
+  })
+  .refine((data) => data.inquiryType === 'general' || data.topic === undefined, {
+    message: 'Only a general message can be a bug report',
+    path: ['topic'],
   })
   // The partnership kind picks the inbox, so a partner inquiry needs one
   .refine((data) => data.inquiryType !== 'partnership' || data.partnershipType.length > 0, {

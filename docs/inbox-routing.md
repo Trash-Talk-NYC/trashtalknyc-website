@@ -9,6 +9,7 @@ The rest of the subject is unchanged, for example `[Podcast] New collaboration i
 | Category | Subject tag | Inboxes | Env vars |
 |---|---|---|---|
 | General | `[General]` | contact@ | `CONTACT_NOTIFY_TO` |
+| General, ticked "This is about a website problem or bug" | `[Bug]` | fabiola@ | `BUG_NOTIFY_TO` |
 | Brand Partner (stored as `sponsor`) | `[Brand partnership]` | partnerships@ | `SPONSOR_NOTIFY_TO` |
 | Lead a cleanup | `[Lead a cleanup]` | events@ | `LEAD_NOTIFY_TO` |
 | Partner: podcast | `[Podcast]` | podcast@ and partnerships@ | `PODCAST_NOTIFY_TO`, `PARTNER_CONTENT_NOTIFY_TO` |
@@ -24,6 +25,11 @@ Several vars hold the same inbox (partnerships@ sits behind three), and each add
 The Partner tile asks "What kind of partnership?" and people may tick more than one kind.
 The email goes once to every inbox of every kind they ticked, and the subject carries each kind's tag once, for example `[Podcast] [Content]`.
 The answer list lives in `PARTNERSHIP_TYPES` in `src/lib/leadOptions.ts`, and each kind's inboxes in `PARTNERSHIP_ROUTES`.
+
+## Website problems
+
+The General form has a box: "This is about a website problem or bug" (captain, 2026-11-24).
+Ticked, the message goes only to fabiola@, tagged `[Bug]`, instead of contact@, and the topic is recorded in the CRM note.
 
 ## The podcast keyword copy
 
