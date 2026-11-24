@@ -6,8 +6,9 @@
  *
  * The page lists entries in this file's order, which is the captain's
  * (2026-11-24), not date order. Each is plain text, as the outlets'
- * terms allow: the outlet, the exact headline linking out, the date, and
- * at most one short verbatim quote. No outlet logos or pictures: none of
+ * terms allow: the outlet, the exact headline linking out, and the date.
+ * No quotes (captain, 2026-11-24: "take out the quoting"), and no outlet
+ * logos or pictures: none of
  * the outlets grants their use. Outlet names and headlines stay in
  * English in both languages; only the page's own labels translate.
  */
@@ -23,12 +24,6 @@ export interface NewsItem {
   date: string;
   /** The live piece. */
   link: string;
-  /**
-   * One short verbatim quote of David's from the piece, never more than a
-   * sentence: the spoken words only, since the page adds the quote marks
-   * and the attribution.
-   */
-  quote?: string;
 }
 
 export const newsItems: NewsItem[] = [
@@ -37,21 +32,18 @@ export const newsItems: NewsItem[] = [
     title: 'Rubbish revolution: NYC man goes viral for cleaning up trash throughout city',
     date: '2026-05-30',
     link: 'https://abc7ny.com/post/columbia-university-grad-takes-cleaning-passion-nyc-streets-viral-social-media-videos/19194204/',
-    quote: 'It’s about making people feel cared for.',
   },
   {
     outlet: 'Streetsblog NYC',
     title: "New York's Rampant Illegal Parking Stumps Viral Good Samaritan Street Cleaners",
     date: '2026-07-10',
     link: 'https://nyc.streetsblog.org/2026/07/10/new-yorks-rampant-illegal-parking-stumps-viral-good-samaritan-street-cleaners',
-    quote: 'The tickets have to be proportional to the cost of parking in the area.',
   },
   {
     outlet: 'WNYC All Of It',
     title: "Taking Out NYC's Trash, One Block at a Time",
     date: '2026-06-23',
     link: 'https://www.wnyc.org/story/taking-out-nycs-trash-one-block-at-a-time',
-    quote: 'I do think the best stewards for a neighborhood are going to be the people who live there.',
   },
   {
     outlet: 'The Mary Sue',
@@ -61,7 +53,6 @@ export const newsItems: NewsItem[] = [
     link: 'https://www.themarysue.com/a-man-spent-100-days-cleaning-his-one-block-of-new-york-city-per-day-it-transformed-his-neighborhood-the-story-of-trash-is-the-story-of-people/',
   },
   {
-    // Headline and link only: its terms restrict quoting without permission
     outlet: 'Good News Network',
     title: "Neighbors Get Swept Up in Man's Viral Journey to Clean a NYC Street Block Every Day for 100 Days",
     date: '2026-09-04',

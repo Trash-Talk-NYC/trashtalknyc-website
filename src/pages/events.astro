@@ -100,7 +100,7 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
       )}
 
       <!-- The trash club guide, for anyone who wants to host (2026-11-08) -->
-      <p class="ev-guide"><span data-en="Want to host your own cleanup? Read " data-es="¿Quieres organizar tu propia limpieza? Lee ">Want to host your own cleanup? Read </span><a href={GUIDE_PATH} data-en="How to Start a Trash Club" data-es="Cómo empezar un trash club">How to Start a Trash Club</a><span aria-hidden="true">&nbsp;→</span></p>
+      <p class="ev-guide"><span data-en="Want to host your own cleanup? Read " data-es="¿Quieres organizar tu propia limpieza? Lee ">Want to host your own cleanup? Read </span><span class="nowrap"><a href={GUIDE_PATH} data-en="How to Start a Trash Club" data-es="Cómo empezar un trash club">How to Start a Trash Club</a><span aria-hidden="true">&nbsp;→</span></span></p>
     </section>
 
     {pastGroups.length > 0 && (
@@ -331,9 +331,10 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     align-items: baseline;
     justify-content: space-between;
     gap: 6px 18px;
-    /* Clears the wordmark sticker that rides ~30px above the first flyer,
-       so it never touches the inbox button (2026-11-08) */
-    margin-bottom: 48px;
+    /* The "Sorted nearest to farthest" chip sits right under it as its
+       pair (captain, 2026-11-24: "spaced weird"); the room the first
+       flyer's sticker needs lives on .ev-list instead */
+    margin-bottom: 16px;
   }
 
   .ev-h {
@@ -352,6 +353,9 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
   .ev-inbox { box-shadow: 4px 4px 0 var(--black); }
 
   .ev-guide { margin: 36px 0 0; font-size: 1.15rem; font-weight: 500; color: var(--black); }
+  /* The guide's name and its arrow never split across lines (captain,
+     2026-11-24: "wrapped odd"); the sentence before it wraps instead */
+  .ev-guide .nowrap { white-space: nowrap; }
   .ev-guide a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
   .ev-inbox:hover { box-shadow: 6px 6px 0 var(--black); }
@@ -383,7 +387,6 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     background: var(--paper-bright);
     color: var(--black);
     font-size: 0.75rem;
-    margin-bottom: 14px;
   }
 
   .dist-sort-label svg { width: 13px; height: 13px; stroke: var(--green); flex-shrink: 0; }
@@ -402,7 +405,9 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 30rem), 1fr));
     gap: 48px 40px;
-    padding-top: 14px;
+    /* Clears the sticker that rides ~34px above the first flyer, so it
+       never touches the inbox button or the chip */
+    padding-top: 48px;
   }
 
   /* ── PAST EVENTS ── */
