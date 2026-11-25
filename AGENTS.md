@@ -233,6 +233,13 @@ Prioritize:
 5. Performance
 6. Clear architecture
 
+## Branches and releases
+
+Work lands on `development` through PRs; `main` is the live site and changes only by a release.
+A release is one `development` → `main` PR merged with **"Create a merge commit"**, never "Squash and merge" or "Rebase and merge" (captain, 2026-11-25: "keep dev and live in sync").
+A squash gives `main` development's content without its commits, so the next release PR conflicts on every file both sides touched even when they already match; this happened after releases #43 and #45 and was repaired by merging `main` back into `development`.
+If `main` ever does get a squashed or hotfix commit, merge `main` back into `development` with a merge commit (and merge that PR with a merge commit too) before the next release.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
