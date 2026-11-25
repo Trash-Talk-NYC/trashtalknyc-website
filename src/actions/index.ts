@@ -9,6 +9,7 @@ import { verifyNycAddress, type GeoVerifyResult } from '../lib/server/geosearch'
 import { MAX_PHOTOS, deleteLeadPhotos, processPhoto, storeLeadPhotos } from '../lib/server/photos';
 import { buildLeadNoteLines } from '../lib/server/leadNote';
 import { notifyRoute, resolveRecipients } from '../lib/server/notifyRouting';
+import { HEALTH_CONTACT, isHealthRequest, planNotification, type HealthActionReport } from '../lib/server/health/healthMode';
 import { PARTNERSHIP_TYPES, leadBehalfAttribute, type PartnershipType } from '../lib/leadOptions';
 import {
   buildAttributes,
@@ -90,11 +91,26 @@ function requireEnv(name: string, form: FormName): string {
   return value;
 }
 
+const HEALTH_RATE_KEY = 'site-health-check';
+const HEALTH_MAX_REQUESTS = 20;
+
+/** Whether this request is the daily health check (see healthMode.ts). */
+function isHealthRun(ctx: ActionAPIContext): boolean {
+  // No request (unit-test stubs) is never a health run
+  const headers = ctx.request?.headers;
+  return !!headers && isHealthRequest(headers, getEnv);
+}
+
 /**
  * Runs the spam + rate-limit gate. Returns true when the caller should
  * silently pretend success (honeypot hits — never tip off the bot).
  */
-async function shouldSilentlyDrop(form: FormName, ctx: ActionAPIContext, spamInput: SpamCheckInput): Promise<boolean> {
+async function shouldSilentlyDrop(
+  form: FormName,
+  ctx: ActionAPIContext,
+  spamInput: SpamCheckInput,
+  health = false,
+): Promise<boolean> {
   const verdict = checkSpam(spamInput);
   if (verdict.spam) {
     log('warn', 'form_spam_rejected', { form, reason: verdict.reason });
@@ -102,7 +118,13 @@ async function shouldSilentlyDrop(form: FormName, ctx: ActionAPIContext, spamInp
     throw new ActionError({ code: 'BAD_REQUEST', message: GENERIC_FAILURE });
   }
 
-  if (await isRateLimitedByBlobs(ctx.clientAddress)) {
+  // Health runs still go through the limiter, on their own bucket: the
+  // scheduled function's egress IP must neither eat a visitor's allowance
+  // nor be locked out by one, and a leaked secret still can't flood
+  const limited = health
+    ? await isRateLimitedByBlobs(HEALTH_RATE_KEY, { maxRequests: HEALTH_MAX_REQUESTS })
+    : await isRateLimitedByBlobs(ctx.clientAddress);
+  if (limited) {
     log('warn', 'form_rate_limited', { form });
     throw new ActionError({
       code: 'TOO_MANY_REQUESTS',
@@ -121,7 +143,18 @@ async function shouldSilentlyDrop(form: FormName, ctx: ActionAPIContext, spamInp
  * reject every legitimate submission. Once the site key is set, a missing
  * secret is a misconfiguration and fails closed like any missing form env.
  */
-async function requireTurnstile(form: FormName, ctx: ActionAPIContext, token: string | undefined): Promise<void> {
+async function requireTurnstile(
+  form: FormName,
+  ctx: ActionAPIContext,
+  token: string | undefined,
+  health = false,
+): Promise<void> {
+  // The only skip besides an unprovisioned site key: a request that
+  // presented HEALTHCHECK_SECRET, checked in constant time server-side
+  if (health) {
+    log('info', 'turnstile_skipped_health', { form });
+    return;
+  }
   if (!getEnv('PUBLIC_TURNSTILE_SITE_KEY')) {
     log('warn', 'turnstile_not_configured', { form });
     return;
@@ -275,16 +308,20 @@ async function tryCreateNote(noteForm: string, email: string, content: string | 
  * never throws: the contact upsert already succeeded and must not be undone
  * by a notification failure.
  */
+type NotifyReport = Pick<HealthActionReport, 'routedTo' | 'unset' | 'messageId' | 'notifyError'>;
+
 async function tryNotifyInquiry(
   input: InquiryEmailInput & { partnershipTypes?: readonly PartnershipType[]; bug?: boolean },
-): Promise<void> {
+  health = false,
+): Promise<NotifyReport> {
   const form: FormName = input.inquiryType === 'lead' ? 'lead' : 'contact';
+  const report: NotifyReport = { routedTo: [], unset: [] };
   try {
     const apiKey = getEnv('BREVO_API_KEY');
     const from = getEnv('CONTACT_NOTIFY_FROM');
     if (!apiKey || !from) {
       log('info', 'inquiry_notify_skipped', { form, inquiry: input.inquiryType });
-      return;
+      return { ...report, notifyError: 'CONTACT_NOTIFY_FROM or BREVO_API_KEY unset' };
     }
     const { tag, envVars } = notifyRoute(input.inquiryType, {
       partnershipTypes: input.partnershipTypes,
@@ -292,16 +329,20 @@ async function tryNotifyInquiry(
       bug: input.bug,
     });
     const { recipients, unset } = resolveRecipients(envVars, getEnv);
+    report.unset = unset;
     for (const envVar of unset) {
       log('error', 'inquiry_notify_unconfigured', { form, inquiry: input.inquiryType, envVar });
     }
-    if (recipients.length === 0) return;
+    // In health mode the routed inboxes are only reported, never emailed
+    const plan = planNotification(health, tag, recipients);
+    report.routedTo = plan.routedTo;
+    if (recipients.length === 0) return { ...report, notifyError: 'no inbox configured for this route' };
 
-    const { subject, htmlContent } = buildInquiryEmail({ ...input, tag });
+    const { subject, htmlContent } = buildInquiryEmail({ ...input, tag: plan.tag });
 
     const result = await sendBrevoEmail(apiKey, {
       sender: { email: from, name: 'Trash Talk NYC Website' },
-      to: recipients,
+      to: plan.to,
       replyTo: { email: input.email, name: `${input.fname} ${input.lname}`.trim() },
       subject,
       htmlContent,
@@ -314,33 +355,48 @@ async function tryNotifyInquiry(
         status: result.status ?? 0,
         detail: result.detail,
       });
-      return;
+      return { ...report, notifyError: `Brevo ${result.status ?? 'network'}: ${result.detail}` };
     }
 
     log('info', 'inquiry_notify_sent', { form, inquiry: input.inquiryType });
+    return { ...report, messageId: result.messageId, notifyError: result.messageId ? undefined : 'accepted without a messageId' };
   } catch (err) {
     log('warn', 'inquiry_notify_failed', {
       form,
       stage: 'unexpected',
       detail: err instanceof Error ? err.message : 'unknown',
     });
+    return { ...report, notifyError: 'unexpected error' };
   }
+}
+
+/** A health run's report back to the health check; everyone else gets a bare ok. */
+function done(health: boolean, report: HealthActionReport): { ok: true; health?: HealthActionReport } {
+  return health ? { ok: true, health: report } : { ok: true };
 }
 
 export const server = {
   signup: defineAction({
     accept: 'form',
     input: signupSchema,
-    handler: async (input, ctx) => {
-      const dropped = await shouldSilentlyDrop('signup', ctx, {
-        botcheck: input.botcheck,
-        startedAt: input.startedAt,
-        // The form's one free-text field left
-        text: input.hearOther,
-      });
+    handler: async (submitted, ctx) => {
+      const health = isHealthRun(ctx);
+      // A health run always lands on the one fixed contact
+      const input = health ? { ...submitted, ...HEALTH_CONTACT } : submitted;
+      const dropped = await shouldSilentlyDrop(
+        'signup',
+        ctx,
+        {
+          botcheck: input.botcheck,
+          startedAt: input.startedAt,
+          // The form's one free-text field left
+          text: input.hearOther,
+        },
+        health,
+      );
       if (dropped) return { ok: true };
 
-      await requireTurnstile('signup', ctx, input['cf-turnstile-response']);
+      await requireTurnstile('signup', ctx, input['cf-turnstile-response'], health);
 
       // Country-first location (captain, 2026-10-09). A US ZIP is re-looked-
       // up here (the page's preview is never trusted) and an NYC ZIP sets
@@ -358,6 +414,7 @@ export const server = {
       // stale hidden field must never attach it to another choice.
       const hearOther = input.hear === HEAR_SOMEWHERE_ELSE ? input.hearOther : undefined;
 
+      const signupTarget = requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP');
       const hearNoteNeeded = await upsertSignupWithHearFallback(
         input.email,
         {
@@ -380,7 +437,7 @@ export const server = {
           // Brevo with older signups' values (add-only, never deleted), and
           // leaving them out of the payload never blanks those values.
         },
-        requireBrevoTarget('signup', 'BREVO_LIST_ID_SIGNUP'),
+        signupTarget,
       );
 
       if (hearNoteNeeded) {
@@ -388,22 +445,26 @@ export const server = {
         await tryCreateNote('signup', input.email, hearAnswer, 'hear');
       }
 
-      return { ok: true };
+      // Signups send no team notification
+      return done(health, { listId: signupTarget.listId, routedTo: [], unset: [] });
     },
   }),
 
   contact: defineAction({
     accept: 'form',
     input: contactSchema,
-    handler: async (input, ctx) => {
-      const dropped = await shouldSilentlyDrop('contact', ctx, {
-        botcheck: input.botcheck,
-        startedAt: input.startedAt,
-        text: input.message,
-      });
+    handler: async (submitted, ctx) => {
+      const health = isHealthRun(ctx);
+      const input = health ? { ...submitted, ...HEALTH_CONTACT } : submitted;
+      const dropped = await shouldSilentlyDrop(
+        'contact',
+        ctx,
+        { botcheck: input.botcheck, startedAt: input.startedAt, text: input.message },
+        health,
+      );
       if (dropped) return { ok: true };
 
-      await requireTurnstile('contact', ctx, input['cf-turnstile-response']);
+      await requireTurnstile('contact', ctx, input['cf-turnstile-response'], health);
 
       // Each tab routes to its own Brevo list. These env-var names are
       // short (no BREVO_LIST_ID_ prefix) because Netlify rejected the
@@ -414,6 +475,7 @@ export const server = {
         sponsor: 'CONTACT_SPONSOR',
       };
       const listIdVar = listIdVars[input.inquiryType];
+      const contactTarget = requireBrevoTarget('contact', listIdVar);
 
       await upsertOrThrow(
         'contact',
@@ -426,7 +488,7 @@ export const server = {
           ORGANIZATION: input.organization,
           MESSAGE: input.message,
         }),
-        requireBrevoTarget('contact', listIdVar),
+        contactTarget,
       );
 
       const noteForms: Record<ContactInput['inquiryType'], string> = {
@@ -448,28 +510,30 @@ export const server = {
       const bug = input.inquiryType === 'general' && input.topic === 'bug';
       const lead = partnership ? `Partnership: ${partnership}` : bug ? 'Topic: Website problem / bug' : undefined;
       await tryCreateNote(noteForm, input.email, lead ? `${lead}\n\n${input.message}` : input.message);
-      await tryNotifyInquiry({
-        ...input,
-        partnershipTypes,
-        bug,
-        extraRows: partnership ? [['Partnership', partnership]] : bug ? [['Topic', 'Website problem / bug']] : undefined,
-      });
+      const notified = await tryNotifyInquiry(
+        {
+          ...input,
+          partnershipTypes,
+          bug,
+          extraRows: partnership ? [['Partnership', partnership]] : bug ? [['Topic', 'Website problem / bug']] : undefined,
+        },
+        health,
+      );
 
-      return { ok: true };
+      return done(health, { listId: contactTarget.listId, ...notified });
     },
   }),
 
   leadCleanup: defineAction({
     accept: 'form',
     input: leadSchema,
-    handler: async (input, ctx) => {
-      const dropped = await shouldSilentlyDrop('lead', ctx, {
-        botcheck: input.botcheck,
-        startedAt: input.startedAt,
-      });
+    handler: async (submitted, ctx) => {
+      const health = isHealthRun(ctx);
+      const input = health ? { ...submitted, ...HEALTH_CONTACT } : submitted;
+      const dropped = await shouldSilentlyDrop('lead', ctx, { botcheck: input.botcheck, startedAt: input.startedAt }, health);
       if (dropped) return { ok: true };
 
-      await requireTurnstile('lead', ctx, input['cf-turnstile-response']);
+      await requireTurnstile('lead', ctx, input['cf-turnstile-response'], health);
 
       const brevo = requireBrevoTarget('lead', 'BREVO_LIST_ID_LEADS');
 
@@ -550,17 +614,20 @@ export const server = {
         log('warn', 'lead_photo_keys_unrecorded', { form: 'lead', keys: photoKeys.join(', ') });
       }
 
-      await tryNotifyInquiry({
-        inquiryType: 'lead',
-        fname: input.fname,
-        lname: input.lname,
-        email: input.email,
-        phone: input.phone,
-        message: noteLines.join('\n'),
-        extraRows: [['Preferred month', input.preferredMonth]],
-      });
+      const notified = await tryNotifyInquiry(
+        {
+          inquiryType: 'lead',
+          fname: input.fname,
+          lname: input.lname,
+          email: input.email,
+          phone: input.phone,
+          message: noteLines.join('\n'),
+          extraRows: [['Preferred month', input.preferredMonth]],
+        },
+        health,
+      );
 
-      return { ok: true };
+      return done(health, { listId: brevo.listId, ...notified });
     },
   }),
 };

@@ -279,11 +279,17 @@ async function fetchAllEventbritePages(
   const events: EventbriteApiEvent[] = [];
   let continuation = '';
   for (let page = 0; page < MAX_EVENT_PAGES; page++) {
-    const res = await fetch(
-      `https://www.eventbriteapi.com/v3/organizations/${orgId}/events/` +
-        `?${query}&expand=venue&page_size=100${continuation && `&continuation=${continuation}`}`,
-      { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
-    );
+    let res: Response;
+    try {
+      res = await fetch(
+        `https://www.eventbriteapi.com/v3/organizations/${orgId}/events/` +
+          `?${query}&expand=venue&page_size=100${continuation && `&continuation=${continuation}`}`,
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
+      );
+    } catch (err) {
+      console.warn(`[events] Eventbrite API unreachable (${query}): ${err instanceof Error ? err.message : 'unknown'}`);
+      return null;
+    }
     if (!res.ok) {
       console.warn(`[events] Eventbrite API request failed at build time (${query}): ${res.status} ${res.statusText}`);
       return null;
@@ -295,6 +301,13 @@ async function fetchAllEventbritePages(
   }
   console.warn(`[events] Eventbrite returned more than ${MAX_EVENT_PAGES} pages (${query}); later events were dropped`);
   return events;
+}
+
+export interface EventbriteEvents {
+  upcoming: EventData[];
+  past: EventData[];
+  /** Which queries failed outright (vs. returning no events); empty when both answered. */
+  failed: ('upcoming' | 'past')[];
 }
 
 export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[]; past: EventData[] }> {
@@ -310,6 +323,16 @@ export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[];
     return { upcoming: [], past: [] };
   }
 
+  const { upcoming, past } = await fetchEventbriteEvents(token, orgId);
+  return { upcoming, past };
+}
+
+/**
+ * The exact Eventbrite fetch the Club Events page builds from, shared with
+ * the daily health check so "the events still come back" is checked on the
+ * same code path, and reporting which query failed outright.
+ */
+export async function fetchEventbriteEvents(token: string, orgId: string): Promise<EventbriteEvents> {
   // Two queries instead of one time_filter=all fetch: sorted start_asc, a
   // single query fills page 1 with the oldest events, so upcoming events
   // silently vanish once the org passes 100 lifetime events.
@@ -332,6 +355,7 @@ export async function fetchEventsAtBuildTime(): Promise<{ upcoming: EventData[];
   return {
     upcoming: events.filter(e => e.end.utc > now).sort((a, b) => a.start.utc.localeCompare(b.start.utc)),
     past: events.filter(e => e.end.utc <= now).sort((a, b) => b.start.utc.localeCompare(a.start.utc)),
+    failed: [...(upcomingRaw ? [] : ['upcoming' as const]), ...(pastRaw ? [] : ['past' as const])],
   };
 }
 

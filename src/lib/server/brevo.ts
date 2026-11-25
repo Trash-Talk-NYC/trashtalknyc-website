@@ -14,6 +14,11 @@
 const BREVO_CONTACTS_URL = 'https://api.brevo.com/v3/contacts';
 const BREVO_NOTES_URL = 'https://api.brevo.com/v3/crm/notes';
 const BREVO_EMAIL_URL = 'https://api.brevo.com/v3/smtp/email';
+const BREVO_ACCOUNT_URL = 'https://api.brevo.com/v3/account';
+const BREVO_LISTS_URL = 'https://api.brevo.com/v3/contacts/lists';
+// The daily health check's reads; it runs in its own function, off the
+// form budget, but a hung read must still fail rather than stall the run
+const HEALTH_READ_TIMEOUT_MS = 5000;
 
 // The action runs in a synchronous Netlify function with a 10s budget and
 // makes up to three sequential Brevo calls; without timeouts one hung
@@ -261,7 +266,10 @@ export interface BrevoEmail {
  * notification, so it reports failures without throwing and bounds the request
  * with a timeout, exactly like the note flow.
  */
-export async function sendBrevoEmail(apiKey: string, email: BrevoEmail): Promise<BrevoResult> {
+/** A send Brevo accepted carries its messageId, which the health check reports. */
+export type BrevoSendResult = { ok: true; messageId?: string } | { ok: false; status?: number; detail: string };
+
+export async function sendBrevoEmail(apiKey: string, email: BrevoEmail): Promise<BrevoSendResult> {
   let res: Response;
   try {
     res = await fetch(BREVO_EMAIL_URL, {
@@ -284,8 +292,44 @@ export async function sendBrevoEmail(apiKey: string, email: BrevoEmail): Promise
     return { ok: false, detail: err instanceof Error ? err.message : 'network error' };
   }
 
-  if (res.ok) return { ok: true };
-  return { ok: false, status: res.status, detail: await errorCode(res) };
+  if (!res.ok) return { ok: false, status: res.status, detail: await errorCode(res) };
+  try {
+    const body = (await res.json()) as { messageId?: unknown };
+    return { ok: true, messageId: typeof body.messageId === 'string' ? body.messageId : undefined };
+  } catch {
+    // Accepted all the same; only the id is missing
+    return { ok: true };
+  }
+}
+
+export type BrevoReadResult<T> = { ok: true; data: T } | { ok: false; status?: number; detail: string };
+
+async function brevoRead<T>(apiKey: string, url: string): Promise<BrevoReadResult<T>> {
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { 'api-key': apiKey, Accept: 'application/json' },
+      signal: AbortSignal.timeout(HEALTH_READ_TIMEOUT_MS),
+    });
+  } catch (err) {
+    return { ok: false, detail: err instanceof Error ? err.message : 'network error' };
+  }
+  if (!res.ok) return { ok: false, status: res.status, detail: await errorCode(res) };
+  try {
+    return { ok: true, data: (await res.json()) as T };
+  } catch {
+    return { ok: false, status: res.status, detail: 'invalid_json' };
+  }
+}
+
+/** The account read that proves the API key is valid (health check). */
+export function getBrevoAccount(apiKey: string): Promise<BrevoReadResult<{ email?: string; companyName?: string }>> {
+  return brevoRead(apiKey, BREVO_ACCOUNT_URL);
+}
+
+/** One contact list, read by id (health check). */
+export function getBrevoList(apiKey: string, listId: number): Promise<BrevoReadResult<{ id?: number; name?: string; uniqueSubscribers?: number }>> {
+  return brevoRead(apiKey, `${BREVO_LISTS_URL}/${listId}`);
 }
 
 /**

@@ -150,6 +150,12 @@ Declaration order is not the protection; keep the guard.
 The route itself is `FOUNDER_PATH` in `src/lib/founder.ts`, consumed by that guard, the nav link, and the footer link, so a fifth rename cannot light the wrong nav item or leave a dead link behind; `founder.test.ts` asserts the constant still points at an existing page file.
 Paper cards (`.paste` in `global.css`) set their stock with `--flyer-bg`, never `background-color` or the `background` shorthand: the tape, staple, and torn devices move the paper onto a clipped `::before` layer and read that variable, so a direct background would paint an unclipped rectangle behind the rough edges.
 
+## Daily site health check
+
+A Netlify Scheduled Function (`netlify/functions/site-health-daily.mts`, captain 2026-11-25) runs at 8:00 New York time and posts one Slack message to `SLACK_HEALTH_WEBHOOK_URL`: a header naming any failure, then a green or red line per check (each failure is retried once). The checks live in `src/lib/server/health/checks.ts`: the Brevo key and the five form lists, a real run of each form action, the email routing table, Eventbrite, and the production pages.
+The form runs go through the real Astro Actions in **health mode**: a post carrying `HEALTHCHECK_SECRET` in the `x-healthcheck-secret` header (constant-time compared, `healthMode.ts`) skips Turnstile and nothing else, always lands on the one contact `healthcheck@trashtalknyc.org` ("Site Health Check"), and emails only fabiola@ tagged `[Health check]`, reporting the inboxes the routing table chose without emailing them. Never add another way to skip Turnstile, never expose the secret client-side, and never delete that contact.
+Run it on demand with `curl -X POST -H "x-healthcheck-secret: …" https://<deploy>/.netlify/functions/site-health` (it checks the deploy it is called on). Scheduled functions only run on the published production deploy.
+
 ## E2E Testing
 
 See the `e2e-testing` skill (`.agents/skills/e2e-testing/SKILL.md`) for how to choose between `astro dev`, `npm run dev`, and `netlify dev`, and what to verify for each kind of change (UI-only, Eventbrite-rendering, signups, contact forms, Brevo). Kept out of this always-loaded file so it only enters context when actually testing something.
