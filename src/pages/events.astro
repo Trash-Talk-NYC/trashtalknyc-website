@@ -379,7 +379,9 @@ const eventCount = (n: number) => ({ en: `${n} ${n === 1 ? 'event' : 'events'}`,
   /* The guide's name and its arrow never split across lines (captain,
      2026-11-24: "wrapped odd"); the sentence before it wraps instead */
   .ev-guide .nowrap { white-space: nowrap; }
-  .ev-guide a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+  /* The link wears only its underline, in the sentence's own color and
+     weight: no accent color inside a sentence (captain, 2026-11-25) */
+  .ev-guide a { color: inherit; font-weight: inherit; text-decoration: underline; text-underline-offset: 3px; }
 
   .ev-inbox:hover { box-shadow: 6px 6px 0 var(--black); }
 

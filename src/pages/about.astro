@@ -217,7 +217,9 @@ const photoSticker = spotSticker('team', 'TM1');
 
   .bio h2 { font-size: 2.4rem; color: var(--purple); }
   .bio p { margin: 0; font-size: 1.05rem; line-height: 1.55; }
-  .bio a { color: var(--purple); font-weight: 700; }
+  /* Underline only, in the sentence's color and weight: no accent color
+     inside a sentence (captain, 2026-11-25) */
+  .bio a { color: inherit; font-weight: inherit; text-decoration: underline; text-underline-offset: 3px; }
 
   /* Photo order on desktop, David first on phones */
   .b-david { order: 1; }
