@@ -233,6 +233,11 @@ Prioritize:
 5. Performance
 6. Clear architecture
 
+## Site baseline
+
+`docs/site-baseline.md` records the pages as they stand after the 2026-11-24 release, the form routing and env var names, the test checklist every change should pass, and the release routine (captain, 2026-11-25: build on these pages rather than renovating them).
+Run its checklist before calling a change done, and update the file in the same PR when a change moves the baseline.
+
 ## Branches and releases
 
 Work lands on `development` through PRs; `main` is the live site and changes only by a release.
