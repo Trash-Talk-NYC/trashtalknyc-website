@@ -312,7 +312,8 @@ describe('sendBrevoEmail', () => {
 
     const result = await sendBrevoEmail('key-123', email);
 
-    expect(result).toEqual({ ok: true });
+    // The messageId is what the daily health check reports as "accepted"
+    expect(result).toEqual({ ok: true, messageId: 'x' });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://api.brevo.com/v3/smtp/email');
     expect(init.headers['api-key']).toBe('key-123');
