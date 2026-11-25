@@ -4,6 +4,13 @@ This is the state of the site as of the 2026-11-24 production release (PRs #40â€
 The captain asked for it (2026-11-25) so the current pages become the base we build on, instead of renovating them wholesale each round.
 When a change moves the baseline, update this file in the same PR.
 
+## Standing design rules
+
+The captain set these on 2026-11-25: "no random text highlighting / color accenting within a sentence, and also, footer and header should now stay the same unless page being added".
+
+- Sentences carry no highlighted or recolored words. Text inside a sentence stays one color with no highlight, the same rule as the one-color headings in `AGENTS.md`.
+- The header and footer stay exactly as they are. The only change allowed is adding a link when a new page is added.
+
 ## Site-wide
 
 - The header has the vest logo and "Trash Talk NYC", the Join button, the menu, and the EN/ES toggle. The toggle works in the page, so there is no `/es` route.
